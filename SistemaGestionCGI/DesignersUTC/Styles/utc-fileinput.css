@@ -1,0 +1,225 @@
+﻿/* ============================================================
+   VARIABLES UTC
+============================================================ */
+:root {
+    --utc-azul: #233C7B;
+    --utc-azul-oscuro: #162653;
+    --utc-celeste: #4BA3F7;
+    --utc-bg-light: #f8f9fa;
+}
+
+/* ============================================================
+   CONTENEDOR PRINCIPAL
+============================================================ */
+.utc-fileinput-wrapper {
+    border: 2px solid var(--utc-azul);
+    border-radius: .9rem;
+    padding: 1.25rem;
+    background: white;
+    transition: .25s ease;
+    box-shadow: 0 3px 10px rgba(0,0,0,.08);
+    position: relative;
+}
+
+    .utc-fileinput-wrapper.has-file {
+        padding-bottom: 1.5rem;
+    }
+
+/* ============================================================
+   INPUT REAL (OCULTO)
+============================================================ */
+.utc-fileinput-input {
+    visibility: hidden;
+    height: 0;
+}
+
+/* ============================================================
+   LOADER
+============================================================ */
+.utc-fileinput-loader {
+    display: none;
+    text-align: center;
+    padding: 1rem;
+    color: var(--utc-azul);
+    font-weight: 600;
+    margin-bottom: .5rem;
+}
+
+/* ============================================================
+   DRAG & DROP
+============================================================ */
+.utc-dropzone {
+    border: 2px dashed var(--utc-azul);
+    border-radius: .8rem;
+    padding: 1.4rem;
+    text-align: center;
+    color: var(--utc-azul);
+    font-weight: 600;
+    background: #f7faff;
+    transition: .25s ease;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+    .utc-dropzone.dragover {
+        background-color: #e5f0ff;
+        border-color: var(--utc-celeste);
+        color: var(--utc-celeste);
+        box-shadow: 0 0 0 .18rem rgba(75,163,247,.35);
+    }
+
+.utc-fileinput-wrapper.has-file .utc-dropzone {
+    margin-top: 1rem;
+    opacity: .6;
+    transform: scale(.97);
+}
+
+/* ============================================================
+   VISOR – CONTENEDOR
+============================================================ */
+.utc-fileinput-preview {
+    display: none;
+    margin-bottom: .8rem;
+    animation: fadeIn .3s ease;
+}
+
+/* Fade-in */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================================
+   VISOR PDF
+============================================================ */
+.utc-pdf-viewer {
+    background: var(--utc-bg-light);
+    border-radius: .75rem;
+    padding: .75rem;
+    border: 1px solid #dee2e6;
+}
+
+.utc-pdf-toolbar .btn {
+    border-radius: .4rem;
+}
+
+.utc-pdf-canvas-container {
+    max-height: 420px;
+    overflow: auto;
+    border-radius: .5rem;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    padding: .5rem;
+    text-align: center;
+}
+
+.utc-pdf-canvas {
+    display: inline-block;
+}
+
+/* ============================================================
+   VISTA PREVIA IMAGEN
+============================================================ */
+.utc-image-preview {
+    width: 130px;
+    height: 130px;
+    object-fit: cover;
+    border-radius: .6rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,.15);
+    border: 2px solid var(--utc-azul);
+}
+
+/* ============================================================
+   VISTA PREVIA GENERICA
+============================================================ */
+.utc-generic-preview {
+    padding: 1rem;
+    border-radius: .5rem;
+    border: 1px dashed #ced4da;
+    background: #fdfdfd;
+    color: #6c757d;
+    font-size: .9rem;
+    text-align: center;
+}
+
+/* ============================================
+   OPTIMIZACIÓN ESTÉTICA — ESPACIADOS Y LAYOUT
+   ============================================ */
+
+/* Contenedor del componente */
+.utc-fileinput-wrapper {
+    padding: 1.8rem !important;
+    margin-top: 0.8rem;
+}
+
+/* Nombre + botones */
+.utc-fileinput-header {
+    margin-bottom: 1rem;
+}
+
+/* Nombre de archivo */
+.utc-fileinput-name {
+    padding-left: .3rem;
+}
+
+/* Botones renombrar / eliminar */
+.utc-fileinput-buttons button {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+}
+
+/* Zona del visor */
+.utc-pdf-viewer {
+    margin-top: 1rem;
+    padding: 1rem !important;
+    border-radius: .85rem;
+    border: 1px solid #ccd4e2;
+    background: #fdfdfd;
+}
+
+/* Toolbar del visor */
+.utc-pdf-toolbar {
+    padding-bottom: .5rem;
+    border-bottom: 1px solid #e0e6ef;
+    margin-bottom: .8rem;
+}
+
+/* Canvas contenedor */
+.utc-pdf-canvas-container {
+    padding: 1rem !important;
+    background: white;
+    border-radius: .5rem;
+    margin-bottom: .8rem;
+}
+
+/* Canvas centrado */
+.utc-pdf-canvas {
+    margin: auto;
+    display: block;
+}
+
+/* Drag & drop */
+.utc-dropzone {
+    margin-top: 1.5rem !important;
+    padding: 2rem !important;
+    font-size: .95rem;
+    border-radius: .9rem;
+}
+
+/* Botón Examinar */
+.utc-fileinput-wrapper .select-btn {
+    margin-top: 1rem !important;
+}
+
+/* Espacio entre visor y drag */
+.utc-fileinput-preview {
+    margin-bottom: 1rem !important;
+}

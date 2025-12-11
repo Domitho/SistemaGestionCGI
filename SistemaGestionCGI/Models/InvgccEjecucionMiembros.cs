@@ -1,0 +1,28 @@
+﻿using Newtonsoft.Json;
+
+namespace SistemaGestionCGI.Models
+{
+    public class InvgccEjecucionMiembros
+    {
+        [JsonProperty("strId_miembro")]
+        public string strId_miembro { get; set; }
+
+        [JsonProperty("fkId_ejec")]
+        public string fkId_ejec { get; set; }
+
+        [JsonProperty("strCedula_miembro")]
+        public string strCedula_miembro { get; set; }
+
+        [JsonProperty("strNombres_miembro")]
+        public string strNombres_miembro { get; set; }
+
+        [JsonProperty("strApellidos_miembro")]
+        public string strApellidos_miembro { get; set; }
+
+        [JsonProperty("strRol_miembro")]
+        public string strRol_miembro { get; set; }
+
+        [JsonProperty("bitActivo_miembro")]
+        public bool bitActivo_miembro { get; set; }
+    }
+}

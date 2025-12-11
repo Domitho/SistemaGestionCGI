@@ -1,0 +1,157 @@
+﻿/* =========================================================
+           🟦 LOGIN UTC — DISEÑO INSTITUCIONAL PROFESIONAL
+           ========================================================= */
+
+body {
+    font-family: 'Varela Round', sans-serif;
+    background-color: #f5f5f7;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.page-wrapper {
+    margin: 15px;
+}
+
+/* HEADER UTC */
+.utc-header {
+    background: linear-gradient(90deg, #312783 0%, #241d66 100%);
+    padding: 25px 40px;
+    color: white;
+    display: flex;
+    align-items: center;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    width: 100%;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+    .utc-header img {
+        width: 230px;
+    }
+
+.utc-header-title {
+    flex-grow: 1;
+    text-align: center;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.12em;
+}
+
+/* CARD DE LOGIN */
+.modal-login {
+    width: 420px;
+    max-width: 100%;
+}
+
+    .modal-login .modal-content {
+        padding: 40px 38px 30px;
+        border-radius: 18px;
+        border: 1px solid rgba(49, 39, 131, 0.18);
+        background-color: #ffffff;
+        box-shadow: 0 12px 28px rgba(49, 39, 131, 0.18);
+        position: relative;
+    }
+
+    /* AVATAR */
+    .modal-login .avatar {
+        position: absolute;
+        left: 0;
+        right: 0;
+        margin: 0 auto;
+        top: -70px;
+        width: 115px;
+        height: 115px;
+        border-radius: 50%;
+        background: #ffffff;
+        border: 5px solid #d51317 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        z-index: 10;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+        .modal-login .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 1 !important;
+        }
+
+    /* TITULO */
+    .modal-login h4 {
+        text-align: center;
+        font-size: 26px;
+        margin-top: 48px;
+        font-weight: 700;
+        color: #312783;
+        letter-spacing: 0.03em;
+    }
+
+/* INPUTS */
+.form-control {
+    border-radius: 10px;
+    padding: 12px 14px;
+    border: 1px solid #cfcfe3;
+    font-size: 15px;
+}
+
+    .form-control:focus {
+        border-color: #312783;
+        box-shadow: 0 0 0 0.15rem rgba(49, 39, 131, 0.25);
+    }
+
+/* BOTONES */
+.modal-login .btn {
+    background: #312783 !important;
+    color: white !important;
+    border-radius: 50rem;
+    min-height: 46px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    box-shadow: 0 4px 10px rgba(49, 39, 131, 0.20);
+    transition: .3s;
+    border: none;
+}
+
+    .modal-login .btn:hover {
+        background: #241d66 !important;
+    }
+
+/* FOOTER */
+.modal-footer {
+    background: transparent !important;
+    border: none !important;
+    text-align: center;
+}
+
+    .modal-footer a {
+        color: #312783;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+        .modal-footer a:hover {
+            text-decoration: underline;
+            color: #241d66;
+        }
+
+/* RESPONSIVE */
+@media (max-width: 576px) {
+    .utc-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px 20px;
+        gap: 10px;
+    }
+
+        .utc-header img {
+            width: 160px;
+        }
+
+    .modal-login .modal-content {
+        padding: 30px 25px 25px;
+    }
+}

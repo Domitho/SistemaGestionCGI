@@ -1,0 +1,146 @@
+﻿/* =========================================
+   ESTILOS PARA REPORTE DE HISTORIAL (TIMELINE)
+   ========================================= */
+
+/* Estructura General del Reporte */
+.report-header {
+    text-align: center;
+    border-bottom: 2px solid #312783;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+
+    .report-header h4 {
+        color: #312783; /* Azul UTC */
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+.info-card {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 5px solid #312783;
+    margin-bottom: 30px;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* Línea de Tiempo (Timeline) */
+.timeline-report {
+    position: relative;
+    padding: 10px 0;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 40px;
+    margin-bottom: 25px;
+}
+
+    /* Línea Vertical */
+    .timeline-item:before {
+        content: '';
+        position: absolute;
+        left: 7px; /* Ajustado al centro del punto */
+        top: 0;
+        width: 2px;
+        height: 100%;
+        background: #e0e0e0;
+        z-index: 0;
+    }
+
+    /* Ocultar línea en el último elemento para que no cuelgue */
+    .timeline-item:last-child:before {
+        height: 0;
+    }
+
+/* Punto (Dot) */
+.timeline-dot {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #312783;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px #312783; /* Anillo externo */
+    z-index: 1;
+}
+
+.timeline-date {
+    font-size: 0.85rem;
+    color: #999;
+    margin-bottom: 5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.timeline-content {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    transition: transform 0.2s ease;
+}
+
+    .timeline-content:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+.timeline-title {
+    font-weight: 700;
+    color: #333;
+    font-size: 1rem;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.timeline-user {
+    font-size: 0.85rem;
+    color: #6c757d;
+    font-style: italic;
+    background: #f1f3f5;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+/* =========================================
+   AJUSTES PARA IMPRESIÓN (FORZAR COLORES)
+   ========================================= */
+@media print {
+    /* 1. Forzar impresión de backgrounds y colores exactos */
+    body {
+        -webkit-print-color-adjust: exact !important; /* Chrome, Safari, Edge */
+        print-color-adjust: exact !important; /* Firefox */
+        margin: 0;
+        padding: 20px;
+    }
+
+    /* 2. Ocultar elementos innecesarios */
+    .no-print, .btn, button, .modal-footer, .btn-close {
+        display: none !important;
+    }
+
+    /* 3. Asegurar que la línea de tiempo no se rompa entre páginas */
+    .timeline-item {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    /* 4. Asegurar bordes y sombras en papel */
+    .timeline-dot {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        box-shadow: 0 0 0 2px #312783 !important; /* Simular el anillo */
+    }
+
+    .info-card {
+        background-color: #f8f9fa !important; /* Forzar gris claro */
+        border: 1px solid #ddd;
+    }
+}
