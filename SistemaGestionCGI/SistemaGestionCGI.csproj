@@ -133,10 +133,14 @@
     <Content Include="Content\bootstrap.css.map" />
     <Content Include="Content\bootstrap-theme.min.css.map" />
     <Content Include="Content\bootstrap-theme.css.map" />
+    <Content Include="public\captcha.ashx" />
+    <Content Include="public\Web.config" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="GruposInvestigacion.aspx" />
     <Content Include="InscripcionProyectos.aspx" />
     <Content Include="Login.aspx" />
+    <Content Include="public\avatar.png" />
+    <Content Include="public\prev.png" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\jquery-3.4.1.js" />
@@ -182,6 +186,7 @@
     </Compile>
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="BLL\ManejadorCalificacionGrupo.cs" />
+    <Compile Include="BLL\ManejadorDashboard.cs" />
     <Compile Include="BLL\ManejadorEjecucionProyectos.cs" />
     <Compile Include="BLL\ManejadorGruposInvestigacion.cs" />
     <Compile Include="BLL\ManejadorProyectos.cs" />
@@ -240,6 +245,7 @@
     </Compile>
     <Compile Include="Models\InvgccCalificacionGrupo.cs" />
     <Compile Include="Models\InvgccConvocatoria.cs" />
+    <Compile Include="Models\InvgccDashboard.cs" />
     <Compile Include="Models\InvgccEjecucionMiembros.cs" />
     <Compile Include="Login.aspx.cs">
       <DependentUpon>Login.aspx</DependentUpon>

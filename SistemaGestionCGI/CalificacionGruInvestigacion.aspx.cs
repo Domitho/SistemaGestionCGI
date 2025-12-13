@@ -17,18 +17,15 @@ namespace SistemaGestionCGI
         {
             if (!IsPostBack)
             {
-                // 1. Seguridad
                 if (Session["UsuarioLogueado"] == null)
                 {
                     Response.Redirect("Login.aspx");
                     return;
                 }
 
-                // 2. Carga Inicial
                 CargarCombos();
                 CargarGrilla();
 
-                // 3. Flash Messages (PRG)
                 if (Session["TempMsg"] != null)
                 {
                     Msg(Session["TempMsg"].ToString(), Session["TempTipo"].ToString());
@@ -43,7 +40,7 @@ namespace SistemaGestionCGI
             try
             {
                 int anio = 0;
-                if (ddlFiltroAnio.SelectedIndex > 0) // Si no es "Todos"
+                if (ddlFiltroAnio.SelectedIndex > 0)
                     int.TryParse(ddlFiltroAnio.SelectedValue, out anio);
 
                 var lista = _manejador.ObtenerCalificaciones(anio);
@@ -60,7 +57,6 @@ namespace SistemaGestionCGI
         {
             try
             {
-                // 1. Combo Grupos (Para Formulario)
                 var grupos = _manejador.ObtenerGruposParaCombo();
                 ddlGrupoAdd.DataSource = grupos;
                 ddlGrupoAdd.DataTextField = "strNombre_gru";
@@ -68,7 +64,6 @@ namespace SistemaGestionCGI
                 ddlGrupoAdd.DataBind();
                 ddlGrupoAdd.Items.Insert(0, new ListItem("-- Seleccione Grupo --", ""));
 
-                // 2. Combo Filtro Años (Histórico)
                 var aniosDisponibles = _manejador.ObtenerAniosDisponibles();
                 ddlFiltroAnio.Items.Clear();
                 ddlFiltroAnio.Items.Add(new ListItem("Todos los Años", "0"));
@@ -77,14 +72,12 @@ namespace SistemaGestionCGI
                     ddlFiltroAnio.Items.Add(new ListItem(y.ToString(), y.ToString()));
                 }
 
-                // 3. Combo Años Métricas (Rango de 5 años)
                 int currentYear = DateTime.Now.Year;
                 ddlAnioMetricas.Items.Clear();
                 for (int i = currentYear - 2; i <= currentYear + 2; i++)
                 {
                     ddlAnioMetricas.Items.Add(new ListItem(i.ToString(), i.ToString()));
                 }
-                // Seleccionar año actual por defecto
                 ddlAnioMetricas.SelectedValue = currentYear.ToString();
             }
             catch (Exception ex)

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Web.UI;
-// Importamos los nuevos namespaces
 using SistemaGestionCGI.BLL;
 using SistemaGestionCGI.Models;
 
-// CAMBIO DE NAMESPACE:
 namespace SistemaGestionCGI
 {
     public partial class Login : System.Web.UI.Page

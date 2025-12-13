@@ -11,7 +11,6 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("fkId_pro")]
         public string fkId_pro { get; set; }
 
-        // Propiedad auxiliar para mostrar el nombre del proyecto (JOIN)
         [JsonProperty("TituloProyecto")]
         public string TituloProyecto { get; set; }
 
@@ -25,7 +24,7 @@ namespace SistemaGestionCGI.Models
         public DateTime dtFechaini_ejec { get; set; }
 
         [JsonProperty("dtFechafin_ejec")]
-        public DateTime? dtFechafin_ejec { get; set; } // Puede ser nulo
+        public DateTime? dtFechafin_ejec { get; set; }
 
         [JsonProperty("strInforme_ejec")]
         public string strInforme_ejec { get; set; }
