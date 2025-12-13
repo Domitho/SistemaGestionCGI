@@ -19,7 +19,7 @@ namespace SistemaGestionCGI
             {
                 if (Session["UsuarioLogueado"] == null)
                 {
-                    Response.Redirect("Login.aspx");
+                    Response.Redirect("Login.aspx", true);
                     return;
                 }
 
@@ -57,13 +57,6 @@ namespace SistemaGestionCGI
         {
             try
             {
-                var grupos = _manejador.ObtenerGruposParaCombo();
-                ddlGrupoAdd.DataSource = grupos;
-                ddlGrupoAdd.DataTextField = "strNombre_gru";
-                ddlGrupoAdd.DataValueField = "strId_gru";
-                ddlGrupoAdd.DataBind();
-                ddlGrupoAdd.Items.Insert(0, new ListItem("-- Seleccione Grupo --", ""));
-
                 var aniosDisponibles = _manejador.ObtenerAniosDisponibles();
                 ddlFiltroAnio.Items.Clear();
                 ddlFiltroAnio.Items.Add(new ListItem("Todos los Años", "0"));
@@ -86,6 +79,38 @@ namespace SistemaGestionCGI
             }
         }
 
+        private void CargarGruposPendientes()
+        {
+            try
+            {
+                // 1. Obtenemos el año seleccionado en el formulario
+                int anioSeleccionado = DateTime.Now.Year;
+                if (!string.IsNullOrEmpty(ddlAnioMetricaSeleccion.SelectedValue))
+                {
+                    anioSeleccionado = int.Parse(ddlAnioMetricaSeleccion.SelectedValue);
+                }
+
+                // 2. Llamamos a la BLL pasándole el año
+                var grupos = _manejador.ObtenerGruposParaCombo(anioSeleccionado);
+
+                // 3. Llenamos el combo
+                ddlGrupoAdd.DataSource = grupos;
+                ddlGrupoAdd.DataTextField = "strNombre_gru";
+                ddlGrupoAdd.DataValueField = "strId_gru";
+                ddlGrupoAdd.DataBind();
+
+                // 4. Agregamos opción por defecto o mensaje si no hay grupos
+                if (grupos.Count > 0)
+                    ddlGrupoAdd.Items.Insert(0, new ListItem("-- Seleccione Grupo --", ""));
+                else
+                    ddlGrupoAdd.Items.Insert(0, new ListItem("-- Todos los grupos ya fueron calificados este año --", ""));
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al cargar grupos pendientes: " + ex.Message, "ee");
+            }
+        }
+
         protected void ddlFiltroAnio_SelectedIndexChanged(object sender, EventArgs e)
         {
             CargarGrilla();
@@ -98,23 +123,24 @@ namespace SistemaGestionCGI
             pnlFormulario.Visible = true;
             headerCalificacion.Visible = false;
 
-            // Limpiar campos
-            ddlGrupoAdd.SelectedIndex = 0;
+            // ... (tu código de limpiar campos) ...
             txtFechaAdd.Text = DateTime.Now.ToString("yyyy-MM-dd");
             txtPuntajeAdd.Text = "";
             txtReconocimientoAdd.Text = "";
 
-            // 1. Cargar Años de Métricas Disponibles
+            // Cargar Años de Métricas
             var aniosMetricas = _manejador.ObtenerAniosConMetricasConfiguradas();
             ddlAnioMetricaSeleccion.DataSource = aniosMetricas;
             ddlAnioMetricaSeleccion.DataBind();
 
-            // 2. Intentar seleccionar el año actual por defecto
+            // Seleccionar año actual
             string anioActual = DateTime.Now.Year.ToString();
             if (ddlAnioMetricaSeleccion.Items.FindByValue(anioActual) != null)
                 ddlAnioMetricaSeleccion.SelectedValue = anioActual;
 
-            // 3. Mostrar la regla visualmente
+            // --- NUEVO: Cargar los grupos filtrados por ese año ---
+            CargarGruposPendientes();
+
             ActualizarMetricaVisual();
         }
 
@@ -122,28 +148,26 @@ namespace SistemaGestionCGI
         {
             try
             {
-                // 1. Validaciones
                 if (string.IsNullOrEmpty(ddlGrupoAdd.SelectedValue)) { Msg("Seleccione un grupo.", "ww"); return; }
                 if (string.IsNullOrEmpty(txtPuntajeAdd.Text)) { Msg("Ingrese el puntaje.", "ww"); return; }
                 if (string.IsNullOrEmpty(txtFechaAdd.Text)) { Msg("Ingrese la fecha.", "ww"); return; }
                 if (!flpArchivoAdd.HasFile) { Msg("Debe subir el informe PDF.", "ww"); return; }
 
-                // 2. Validar Archivo
                 string ext = Path.GetExtension(flpArchivoAdd.FileName).ToLower();
                 if (ext != ".pdf") { Msg("Solo se permiten archivos PDF.", "ww"); return; }
 
-                // 3. Preparar Objeto
                 InvgccCalificacionGrupo obj = new InvgccCalificacionGrupo();
                 obj.fkId_gru = ddlGrupoAdd.SelectedValue;
+
+                // Parseo de fecha seguro
                 obj.dtFecha_valo = DateTime.Parse(txtFechaAdd.Text);
+
                 obj.intPuntaje_valo = int.Parse(txtPuntajeAdd.Text);
                 obj.strReconocimiento_valo = txtReconocimientoAdd.Text.Trim();
 
                 int anioM = int.Parse(ddlAnioMetricaSeleccion.SelectedValue);
                 obj.intAnioMetrica = anioM;
 
-                // 4. LÓGICA DE NEGOCIO: Calcular Categoría
-                // Obtenemos el mínimo requerido para ese año desde la BDD
                 int minConsolidado = _manejador.ObtenerMinimoConsolidado(anioM);
 
                 if (obj.intPuntaje_valo >= minConsolidado)
@@ -151,14 +175,11 @@ namespace SistemaGestionCGI
                 else
                     obj.strCategoria_valo = "EMERGENTE";
 
-                // 5. Guardar Archivo
                 string nombreArchivo = $"VAL_{DateTime.Now.Ticks}.pdf";
                 obj.strInforme_valo = GuardarArchivo(flpArchivoAdd, "Valoraciones", nombreArchivo);
 
-                // 6. Guardar en BDD
                 _manejador.GuardarCalificacion(obj);
 
-                // 7. PRG
                 SetFlashMessage($"Calificación registrada. El grupo ahora es <b>{obj.strCategoria_valo}</b>.", "ss");
                 Response.Redirect("CalificacionGruInvestigacion.aspx", false);
             }
@@ -170,13 +191,12 @@ namespace SistemaGestionCGI
 
         protected void rptCalificaciones_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
-            string arg = e.CommandArgument.ToString();
+            string id = e.CommandArgument.ToString(); // AHORA ES STRING (VAL-1)
 
             if (e.CommandName == "Eliminar")
             {
                 try
                 {
-                    int id = int.Parse(arg);
                     _manejador.EliminarCalificacion(id);
                     SetFlashMessage("Calificación eliminada correctamente.", "ss");
                     Response.Redirect("CalificacionGruInvestigacion.aspx", false);
@@ -188,9 +208,8 @@ namespace SistemaGestionCGI
             }
             else if (e.CommandName == "Ver")
             {
-                string url = ResolveUrl(arg);
-
-                ScriptManager.RegisterStartupScript(this, GetType(), "OpenPDF", $"VerPDF('{url}');", true);
+                string script = $"VerPDF('{id}');";
+                ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalPDF", script, true); 
             }
         }
 
@@ -201,6 +220,9 @@ namespace SistemaGestionCGI
 
         protected void ddlAnioMetricaSeleccion_SelectedIndexChanged(object sender, EventArgs e)
         {
+            // --- NUEVO: Si cambio el año, recargo la lista de grupos disponibles ---
+            CargarGruposPendientes();
+
             ActualizarMetricaVisual();
         }
 
@@ -253,6 +275,23 @@ namespace SistemaGestionCGI
             return rutaCompleta;
         }
 
+        private void DescargarArchivo(string rutaFisica)
+        {
+            if (File.Exists(rutaFisica))
+            {
+                string nombreArchivo = Path.GetFileName(rutaFisica);
+                Response.Clear();
+                Response.ContentType = "application/pdf";
+                Response.AppendHeader("Content-Disposition", "inline; filename=" + nombreArchivo);
+                Response.TransmitFile(rutaFisica);
+                Response.End();
+            }
+            else
+            {
+                Msg("El archivo físico no existe en la ruta especificada.", "ww");
+            }
+        }
+
         private void SetFlashMessage(string msg, string type)
         {
             Session["TempMsg"] = msg;
@@ -261,11 +300,14 @@ namespace SistemaGestionCGI
 
         private void Msg(string msg, string type)
         {
-            string cleanMsg = msg.Replace("'", "\\'");
-            // Usamos Toastify que es tu librería actual
+            string cleanMsg = msg.Replace("'", "\\'")
+                                 .Replace("\r\n", " ")
+                                 .Replace("\n", " ")
+                                 .Replace("\r", " ")
+                                 .Replace("\\", "\\\\");
+
             string script = $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema'); }});";
             ScriptManager.RegisterStartupScript(this, GetType(), "alert", script, true);
         }
-
     }
 }

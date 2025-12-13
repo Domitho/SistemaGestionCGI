@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq; // Necesario para JObject
 using SistemaGestionCGI.Models;
 using SistemaGestionCGI.Settings;
 
@@ -14,7 +15,6 @@ namespace SistemaGestionCGI.BLL
 
         public List<InvgccCalificacionGrupo> ObtenerCalificaciones(int anioFiltro = 0)
         {
-            // Hacemos un JOIN manual en la consulta para traer el nombre del grupo
             string sql = @"
                 SELECT c.*, g.strNombre_gru as NombreGrupo 
                 FROM INVGCCCALIFICACION_GRUPO c
@@ -30,33 +30,22 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<InvgccCalificacionGrupo>(sql);
         }
 
-        public InvgccCalificacionGrupo ObtenerPorId(int id)
+        public InvgccCalificacionGrupo ObtenerPorId(string id)
         {
-            string sql = $"SELECT * FROM INVGCCCALIFICACION_GRUPO WHERE strId_valo = {id}";
+            string sql = $"SELECT * FROM INVGCCCALIFICACION_GRUPO WHERE strId_valo = '{id}'";
             var lista = _dal.SelectSql<InvgccCalificacionGrupo>(sql);
             return (lista != null && lista.Count > 0) ? lista[0] : null;
         }
 
         public void GuardarCalificacion(InvgccCalificacionGrupo obj)
         {
-            // 1. Obtener ID Manual (Max + 1) ya que parece no ser Identity
-            string sqlMax = "SELECT MAX(strId_valo) as maxId FROM INVGCCCALIFICACION_GRUPO";
-            var res = _dal.SelectSql<dynamic>(sqlMax).FirstOrDefault();
-            int nextId = 1;
+            // 1. Generamos ID Manual "VAL-1"
+            obj.strId_valo = GenerarCodigoAlfanumerico("INVGCCCALIFICACION_GRUPO", "strId_valo", "VAL");
 
-            // Validar si devolvió nulo o tiene valor
-            if (res != null)
-            {
-                // Manejar JObject o Dynamic según tu DAL
-                try { nextId = (int)res.maxId + 1; } catch { nextId = 1; }
-            }
-
-            obj.strId_valo = nextId;
-
-            // 2. Insertar Calificación
+            // 2. Insertar
             _dal.Insert("INVGCCCALIFICACION_GRUPO", obj);
 
-            // 3. Actualizar Categoría en la tabla de Grupos (Sincronización)
+            // 3. Actualizar Categoría del Grupo (Sincronización)
             string sqlUpdateGrupo = $@"
                 UPDATE INVGCCGRUPO_INVESTIGACION 
                 SET strCategoria_gru = '{obj.strCategoria_valo}' 
@@ -65,12 +54,12 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sqlUpdateGrupo);
         }
 
-        public void EliminarCalificacion(int id)
+        public void EliminarCalificacion(string id)
         {
-            _dal.Delete("INVGCCCALIFICACION_GRUPO", $"strId_valo = {id}");
+            _dal.Delete("INVGCCCALIFICACION_GRUPO", $"strId_valo = '{id}'");
         }
 
-        // ======================= MÉTRICAS Y LÓGICA =======================
+        // ======================= MÉTRICAS =======================
 
         public int ObtenerMinimoConsolidado(int anio)
         {
@@ -79,18 +68,17 @@ namespace SistemaGestionCGI.BLL
 
             if (res != null)
             {
-                try { return (int)res.minConsolidado; } catch { return 70; } // Default 70
+                try { return (int)((dynamic)res).minConsolidado; } catch { return 70; }
             }
-            return 70; // Default si no existe config
+            return 70;
         }
 
         public void GuardarMetrica(InvgccMetricas metrica)
         {
-            // UPSERT (Update si existe, Insert si no)
             string check = $"SELECT COUNT(*) as conteo FROM INVGCC_METRICAS WHERE anio = {metrica.anio}";
-            var res = _dal.SelectSql<dynamic>(check).First();
+            var res = _dal.SelectSql<dynamic>(check).FirstOrDefault();
             int count = 0;
-            try { count = (int)res.conteo; } catch { }
+            if (res != null) { try { count = (int)((dynamic)res).conteo; } catch { } }
 
             if (count > 0)
             {
@@ -105,13 +93,16 @@ namespace SistemaGestionCGI.BLL
 
         // ======================= UTILIDADES =======================
 
-        public List<InvgccGrupoInvestigacion> ObtenerGruposParaCombo()
+        public List<InvgccGrupoInvestigacion> ObtenerGruposParaCombo(int anio)
         {
-
-            string sql = @"
+            string sql = $@"
                 SELECT strId_gru, strNombre_gru 
                 FROM INVGCCGRUPO_INVESTIGACION 
-                WHERE strId_gru NOT IN (SELECT DISTINCT fkId_gru FROM INVGCCCALIFICACION_GRUPO)
+                WHERE strId_gru NOT IN (
+                    SELECT DISTINCT fkId_gru 
+                    FROM INVGCCCALIFICACION_GRUPO 
+                    WHERE intAnioMetrica = {anio}
+                )
                 ORDER BY strNombre_gru";
 
             return _dal.SelectSql<InvgccGrupoInvestigacion>(sql);
@@ -127,7 +118,7 @@ namespace SistemaGestionCGI.BLL
             {
                 foreach (var item in lista)
                 {
-                    try { anios.Add((int)item.Anio); } catch { }
+                    try { anios.Add((int)((dynamic)item).Anio); } catch { }
                 }
             }
             return anios;
@@ -138,16 +129,52 @@ namespace SistemaGestionCGI.BLL
             string sql = "SELECT DISTINCT anio FROM INVGCC_METRICAS ORDER BY anio DESC";
             var lista = _dal.SelectSql<dynamic>(sql);
             List<int> anios = new List<int>();
-
             if (lista != null)
             {
                 foreach (var item in lista)
                 {
-                    // Manejo seguro de JObject/Dynamic
-                    try { anios.Add((int)item.anio); } catch { }
+                    try { anios.Add((int)((dynamic)item).anio); } catch { }
                 }
             }
             return anios;
+        }
+
+        // GENERADOR DE CÓDIGOS PARA VARCHAR (VAL-1, VAL-2...)
+        private string GenerarCodigoAlfanumerico(string tabla, string campoId, string prefijo)
+        {
+            try
+            {
+                string sql = $"SELECT {campoId} FROM {tabla}";
+                var lista = _dal.SelectSql<dynamic>(sql);
+
+                if (lista == null || lista.Count == 0) return prefijo + "-1";
+
+                int max = 0;
+                foreach (var item in lista)
+                {
+                    string val = "";
+                    if (item is JObject jobj) val = jobj[campoId]?.ToString();
+                    else
+                    {
+                        try { val = ((dynamic)item)[campoId].ToString(); } catch { continue; }
+                    }
+
+                    if (!string.IsNullOrEmpty(val) && val.StartsWith(prefijo))
+                    {
+                        // Extraemos el número después del prefijo (Ej: VAL-5 -> 5)
+                        string numStr = val.Substring(prefijo.Length).Replace("-", "");
+                        if (int.TryParse(numStr, out int n))
+                        {
+                            if (n > max) max = n;
+                        }
+                    }
+                }
+                return prefijo + "-" + (max + 1);
+            }
+            catch
+            {
+                return prefijo + "-" + DateTime.Now.Ticks.ToString().Substring(10);
+            }
         }
     }
 }

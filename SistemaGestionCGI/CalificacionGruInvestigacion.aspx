@@ -90,7 +90,8 @@
                                 <td><%# Eval("intAnioMetrica") %></td>
                                 <td><%# Convert.ToDateTime(Eval("dtFecha_valo")).ToString("dd/MM/yyyy") %></td>
                                 <td>
-                                    <asp:LinkButton ID="btnVer" runat="server" CommandName="Ver" CommandArgument='<%# Eval("strInforme_valo") %>'
+                                    <asp:LinkButton ID="btnVer" runat="server" CommandName="Ver" 
+                                        CommandArgument='<%# Eval("strId_valo") %>' 
                                         CssClass="btn btn-ver btn-sm rounded-circle me-1" ToolTip="Ver Informe">
                                         <i class="fa-solid fa-eye"></i>
                                     </asp:LinkButton>
@@ -277,17 +278,29 @@
             if(el) { var modal = bootstrap.Modal.getOrCreateInstance(el); modal.show(); }
         }
 
-        function VerPDF(url) {
-            document.getElementById('framePdf').src = url;
-            var el = document.getElementById('modalVistaPrevia');
-            if(el) { var modal = bootstrap.Modal.getOrCreateInstance(el); modal.show(); }
+        function VerPDF(idCalificacion) {
+            // El iframe apunta al handler pasándole el ID
+            var url = 'VerArchivo.ashx?id=' + idCalificacion;
+
+            var frame = document.getElementById('framePdf');
+            if (frame) {
+                frame.src = url;
+
+                // Abrimos el modal
+                var el = document.getElementById('modalVistaPrevia');
+                if (el) {
+                    var modal = bootstrap.Modal.getOrCreateInstance(el);
+                    modal.show();
+                }
+            }
         }
 
         function CerrarVistaPrevia() {
             var el = document.getElementById('modalVistaPrevia');
             var modal = bootstrap.Modal.getInstance(el);
-            if(modal) modal.hide();
-            document.getElementById('framePdf').src = '';
+            if (modal) modal.hide();
+            // Limpiamos el iframe para que no se quede cargado
+            document.getElementById('framePdf').src = 'about:blank';
         }
     </script>
 
