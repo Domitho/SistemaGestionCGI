@@ -89,9 +89,14 @@ namespace SistemaGestionCGI.BLL
 
         public void ActualizarIntegrante(InvgccGrupoIntegrantes integrante)
         {
-            string fechaFin = integrante.dtFechafin_int.HasValue
-                ? $"'{integrante.dtFechafin_int.Value:yyyy-MM-dd}'"
-                : "NULL";
+            string fechaFin = "NULL";
+            if (integrante.dtFechafin_int.HasValue && integrante.dtFechafin_int.Value.Year > 1900)
+            {
+                fechaFin = $"'{integrante.dtFechafin_int.Value:yyyyMMdd}'";
+            }
+
+            int activo = integrante.bitActivo_int ? 1 : 0;
+            string fechaIni = $"'{integrante.dtFechaini_int:yyyyMMdd}'";
 
             string sql = $@"
                 UPDATE INVGCCGRUPO_INTEGRANTES SET 
@@ -101,9 +106,10 @@ namespace SistemaGestionCGI.BLL
                     strCorreo_int = '{integrante.strCorreo_int}',
                     strCarrera_int = '{integrante.strCarrera_int}',
                     strFuncion_int = '{integrante.strFuncion_int}',
-                    dtFechaini_int = '{integrante.dtFechaini_int:yyyy-MM-dd}',
+                    dtFechaini_int = {fechaIni}, 
                     dtFechafin_int = {fechaFin},
-                    strObservacion_int = '{integrante.strObservacion_int}' 
+                    strObservacion_int = '{integrante.strObservacion_int}',
+                    bitActivo_int = {activo}
                 WHERE strId_int = '{integrante.strId_int}'";
 
             _dal.UpdateSql(sql);
@@ -112,7 +118,8 @@ namespace SistemaGestionCGI.BLL
         public void CambiarEstadoIntegrante(string id, bool estado, string motivo, string usuario)
         {
             int bit = estado ? 1 : 0;
-            string fechaFin = estado ? "NULL" : $"'{DateTime.Now:yyyy-MM-dd}'";
+
+            string fechaFin = estado ? "NULL" : $"'{DateTime.Now:yyyyMMdd}'";
 
             string sql = $@"
                 UPDATE INVGCCGRUPO_INTEGRANTES 

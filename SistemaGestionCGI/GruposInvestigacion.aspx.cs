@@ -411,11 +411,16 @@ namespace SistemaGestionCGI
             try
             {
                 string idInt = hfIdIntegranteEstado.Value;
-                string motivo = hfMotivoEstado.Value; 
-                string usuario = Session["UserName"].ToString();
+                string motivo = hfMotivoEstado.Value;
+
+                string usuario = "Usuario Desconocido";
+                if (Session["UsuarioLogueado"] != null)
+                {
+                    usuario = Session["UsuarioLogueado"].ToString();
+                }
 
                 var obj = _manejador.ObtenerIntegrantePorId(idInt);
-                bool nuevoEstado = !obj.bitActivo_int; 
+                bool nuevoEstado = !obj.bitActivo_int;
 
                 _manejador.CambiarEstadoIntegrante(idInt, nuevoEstado, motivo, usuario);
 
@@ -554,7 +559,14 @@ namespace SistemaGestionCGI
 
         private void Msg(string msg, string type)
         {
+            if (string.IsNullOrEmpty(msg)) return;
+
             string cleanMsg = msg.Replace("'", "\\'");
+
+            cleanMsg = cleanMsg.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
+
+            cleanMsg = cleanMsg.Replace("\\", "\\\\");
+
             string script = $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema'); }});";
             ScriptManager.RegisterStartupScript(this, GetType(), "alert", script, true);
         }
