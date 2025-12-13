@@ -20,7 +20,6 @@
     <link href="https://cdn.datatables.net/buttons/2.4.3/css/buttons.bootstrap5.min.css" rel="stylesheet" />
 
     <link href="~/DesignersUTC/Styles/utc-full-design.css" rel="stylesheet" />
-    <link href="~/Styles/Site.css" rel="stylesheet" type="text/css" />
 
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     

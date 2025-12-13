@@ -171,13 +171,16 @@ namespace SistemaGestionCGI
                 if (ddlEditCategoria.Items.FindByValue(g.strCategoria_gru) != null)
                     ddlEditCategoria.SelectedValue = g.strCategoria_gru;
 
+                if (txtEditLineaIGru1.Items.FindByValue(g.strLineasinv_gru) != null)
+                    txtEditLineaIGru1.SelectedValue = g.strLineasinv_gru;
+
+                if (txtEditSLineaIGru1.Items.FindByValue(g.strSublineasinv_gru) != null)
+                    txtEditSLineaIGru1.SelectedValue = g.strSublineasinv_gru;
+
                 hfFotoActual.Value = g.strFoto_gru;
                 hfArchivoActual.Value = g.strArchivo_gru;
 
-                if (!string.IsNullOrEmpty(g.strFoto_gru))
-                    imgFotoGruEdit.ImageUrl = g.strFoto_gru;
-                else
-                    imgFotoGruEdit.ImageUrl = "~/img/default-user.png";
+                imgFotoGruEdit.ImageUrl = ObtenerImagenBase64(g.strFoto_gru);
 
                 pnlGrilla.Visible = false;
                 headerGrupos.Visible = false;
@@ -445,9 +448,10 @@ namespace SistemaGestionCGI
             return rutaCompleta;
         }
 
-        private void DescargarArchivo(string rutaVirtual)
+        private void DescargarArchivo(string rutaDesdeBd)
         {
-            string rutaFisica = Server.MapPath(rutaVirtual);
+            string rutaFisica = rutaDesdeBd;
+
             if (File.Exists(rutaFisica))
             {
                 string nombreArchivo = Path.GetFileName(rutaFisica);
@@ -455,13 +459,15 @@ namespace SistemaGestionCGI
 
                 Response.Clear();
                 Response.ContentType = extension == ".pdf" ? "application/pdf" : "application/octet-stream";
+
                 Response.AppendHeader("Content-Disposition", "inline; filename=" + nombreArchivo);
+
                 Response.TransmitFile(rutaFisica);
                 Response.End();
             }
             else
             {
-                Msg("El archivo solicitado no existe en el servidor.", "ww");
+                Msg("El archivo físico no existe en la ruta especificada.", "ww");
             }
         }
 
@@ -569,6 +575,29 @@ namespace SistemaGestionCGI
 
             string script = $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema'); }});";
             ScriptManager.RegisterStartupScript(this, GetType(), "alert", script, true);
+        }
+
+        protected string ObtenerImagenBase64(object rutaObj)
+        {
+            string rutaFisica = rutaObj as string;
+
+            if (string.IsNullOrEmpty(rutaFisica) || !File.Exists(rutaFisica))
+            {
+                return "img/default-user.png"; 
+            }
+
+            try
+            {
+                byte[] bytes = File.ReadAllBytes(rutaFisica);
+
+                string base64 = Convert.ToBase64String(bytes);
+
+                return "data:image/jpeg;base64," + base64;
+            }
+            catch
+            {
+                return "img/default-user.png";
+            }
         }
     }
 }

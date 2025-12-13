@@ -66,8 +66,7 @@
                             <tr>
                                 <td><%# Eval("strId_gru") %></td>
                                 <td>
-                                    <img src='<%# string.IsNullOrEmpty(Eval("strFoto_gru")?.ToString()) ? "img/default-user.png" : ResolveUrl(Eval("strFoto_gru").ToString()) %>'
-                                         class="img-avatar-table" alt="Foto" />
+                                    <img src='<%# ObtenerImagenBase64(Eval("strFoto_gru")) %>' class="img-avatar-table" alt="Foto" />
                                 </td>
                                 <td class="text-start fw-semibold text-primary"><%# Eval("strNombre_gru") %></td>
                                 <td class="text-start"><%# Eval("strCoordinador_gru") %></td>
