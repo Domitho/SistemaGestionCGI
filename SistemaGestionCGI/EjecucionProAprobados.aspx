@@ -404,7 +404,7 @@
                         <asp:Repeater ID="rptInformes" runat="server" OnItemCommand="rptInformes_ItemCommand">
                             <ItemTemplate>
                                 <div class="col-md-4 col-sm-6">
-                                    <div class="file-card" onclick="VerPDF('<%# ResolveUrl(Eval("strArchivo_path").ToString()) %>', '<%# Eval("strNombrePeriodo") %>')">
+                                    <div class="file-card" onclick="VerPDF('<%# Eval("strId_informe") %>', 'INFORME')">
                                         <asp:LinkButton ID="btnEliminarInf" runat="server" 
                                             CommandName="EliminarInforme" CommandArgument='<%# Eval("strId_informe") %>'
                                             CssClass="btn-card-delete"
@@ -581,10 +581,14 @@
             if (modal) modal.hide();
         }
 
-        function VerPDF(url, titulo) {
+        /* ASÍ DEBE QUEDAR (Versión nueva con Handler) */
+        function VerPDF(id, tipo) {
+            var url = 'VerArchivo.ashx?id=' + id + '&tipo=' + tipo; // Construye la URL segura
+
             document.getElementById('framePdf').src = url;
-            document.getElementById('lblTituloPreview').innerText = titulo;
+            document.getElementById('lblTituloPreview').innerText = "Visualización de Documento";
             document.getElementById('btnDescargarDirecto').href = url;
+
             var el = document.getElementById('modalVistaPrevia');
             var modal = bootstrap.Modal.getOrCreateInstance(el);
             modal.show();

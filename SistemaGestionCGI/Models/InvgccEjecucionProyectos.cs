@@ -6,10 +6,10 @@ namespace SistemaGestionCGI.Models
     public class InvgccEjecucionProyectos
     {
         [JsonProperty("strId_ejec")]
-        public string strId_ejec { get; set; }
+        public int strId_ejec { get; set; } // CAMBIO: int
 
         [JsonProperty("fkId_pro")]
-        public string fkId_pro { get; set; }
+        public string fkId_pro { get; set; } // string (Varchar en BD)
 
         [JsonProperty("TituloProyecto")]
         public string TituloProyecto { get; set; }

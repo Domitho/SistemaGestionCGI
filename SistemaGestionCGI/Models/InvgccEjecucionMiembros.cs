@@ -1,14 +1,15 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 
 namespace SistemaGestionCGI.Models
 {
     public class InvgccEjecucionMiembros
     {
         [JsonProperty("strId_miembro")]
-        public string strId_miembro { get; set; }
+        public int strId_miembro { get; set; } // CAMBIO: int
 
         [JsonProperty("fkId_ejec")]
-        public string fkId_ejec { get; set; }
+        public int fkId_ejec { get; set; } // CAMBIO: int
 
         [JsonProperty("strCedula_miembro")]
         public string strCedula_miembro { get; set; }
