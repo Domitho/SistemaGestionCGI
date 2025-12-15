@@ -118,12 +118,49 @@
             </h4>
             <div class="row g-3">
                 <div class="col-12">
-                    <label class="form-label">Titulo del Proyecto</label>
-                    <asp:TextBox ID="txtTema" runat="server" CssClass="form-control" />
+                    <label class="form-label">Grupo de Investigación</label>
+                    <asp:DropDownList ID="ddlGrupo" runat="server" CssClass="form-select"
+                        AutoPostBack="true" OnSelectedIndexChanged="ddlGrupo_SelectedIndexChanged">
+                    </asp:DropDownList>
                 </div>
+
+                <asp:Panel ID="pnlInfoGrupo" runat="server" Visible="false" CssClass="col-12 animate__animated animate__fadeIn">
+                    <div class="alert alert-primary shadow-sm border-0 d-flex align-items-center" role="alert">
+                        <div class="me-3 display-6">
+                            <i class="fa-solid fa-users-viewfinder"></i>
+                        </div>
+                        <div>
+                            <h6 class="alert-heading fw-bold mb-1"><asp:Label ID="lblNombreGrupoInfo" runat="server"></asp:Label></h6>
+                            <p class="mb-0 small opacity-75">
+                                <i class="fa-solid fa-list-check me-1"></i> Líneas: <asp:Label ID="lblLineasInfo" runat="server"></asp:Label>
+                            </p>
+                            <hr class="my-2 opacity-25">
+                            <p class="mb-0 small">
+                                <i class="fa-solid fa-circle-info me-1"></i> Seleccione un integrante de la lista inferior. 
+                                Si es un <strong>colaborador externo</strong>, regístrelo con el botón (+).
+                            </p>
+                        </div>
+                    </div>
+                </asp:Panel>
+
                 <div class="col-12">
                     <label class="form-label">Coordinador del Proyecto</label>
-                    <asp:TextBox ID="txtCoordinador" runat="server" CssClass="form-control" />
+    
+                    <div class="d-flex gap-2">
+                        <asp:DropDownList ID="ddlCoordinador" runat="server" CssClass="form-select w-100">
+                            <asp:ListItem Text="-- Seleccione Grupo Primero --" Value="" />
+                        </asp:DropDownList>
+        
+                        <button type="button" class="btn btn-outline-primary text-nowrap" onclick="AbrirModalNuevoIntegrante()">
+                            <i class="fa-solid fa-plus"></i> Nuevo
+                        </button>
+                    </div>
+                    <div class="form-text small text-muted">Si el coordinador no aparece en la lista, agréguelo aquí.</div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Titulo del Proyecto</label>
+                    <asp:TextBox ID="txtTema" runat="server" CssClass="form-control" />
                 </div>
                 <div class="col-12">
                     <label class="form-label">Facultad o Extensión</label>
@@ -145,10 +182,6 @@
                 <div class="col-12">
                     <label class="form-label">Fecha de Inicio</label>
                     <asp:TextBox ID="txtFecha" runat="server" TextMode="Date" CssClass="form-control" />
-                </div>
-                <div class="col-12">
-                    <label class="form-label">Grupo de Investigación</label>
-                    <asp:DropDownList ID="ddlGrupo" runat="server" CssClass="form-select"></asp:DropDownList>
                 </div>
                 <div class="col-12">
                     <label class="form-label">Convocatoria</label>
@@ -199,13 +232,22 @@
             <asp:HiddenField ID="hfArchivoActual" runat="server" />
             
             <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Grupo</label>
+                    <asp:DropDownList ID="ddlGrupoEdit" runat="server" CssClass="form-select"
+                        AutoPostBack="true" OnSelectedIndexChanged="ddlGrupoEdit_SelectedIndexChanged">
+                    </asp:DropDownList>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Coordinador</label>
+                    <asp:DropDownList ID="ddlCoordinadorEdit" runat="server" CssClass="form-select">
+                        <asp:ListItem Text="-- Seleccione Grupo Primero --" Value="" />
+                    </asp:DropDownList>
+                </div>
                 <div class="col-12">
                     <label class="form-label">Titulo del Proyecto</label>
                     <asp:TextBox ID="txtTemaEdit" runat="server" CssClass="form-control" />
-                </div>
-                <div class="col-12">
-                    <label class="form-label">Coordinador del Proyecto</label>
-                    <asp:TextBox ID="txtCoordinadorEdit" runat="server" CssClass="form-control" />
                 </div>
                 <div class="col-12">
                     <label class="form-label">Facultad o Extensión</label>
@@ -219,7 +261,7 @@
                         <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
                         <asp:ListItem>EXTENSION LA MANÁ</asp:ListItem>
                     </asp:DropDownList>
-                </div>
+                </div>  
                 <div class="col-12">
                     <label class="form-label">Duración</label>
                     <asp:TextBox ID="txtDuracionEdit" runat="server" CssClass="form-control" />
@@ -227,10 +269,6 @@
                 <div class="col-12">
                     <label class="form-label">Fecha de Inicio</label>
                     <asp:TextBox ID="txtFechaEdit" runat="server" TextMode="Date" CssClass="form-control" />
-                </div>
-                <div class="col-12">
-                    <label class="form-label">Grupo de Investigación</label>
-                    <asp:DropDownList ID="ddlGrupoEdit" runat="server" CssClass="form-select"></asp:DropDownList>
                 </div>
                 <div class="col-12">
                     <label class="form-label">Convocatoria</label>
@@ -308,6 +346,90 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="modalNuevoIntegrante" tabindex="-1" aria-hidden="true" ClientIDMode="Static">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content shadow-utc border-0 rounded-4">
+            
+                <div class="modal-header bg-utc text-white">
+                    <h5 class="modal-title"><i class="fa-solid fa-user-plus me-2"></i> Registrar Nuevo Integrante</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <div class="alert alert-light border-start border-primary border-4 shadow-sm small text-muted mb-4">
+                        <i class="fa-solid fa-circle-info text-primary me-2"></i> 
+                        Se vinculará al grupo: <strong class="text-dark" id="lblGrupoModalJS">...</strong>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12"><h6 class="text-primary fw-bold border-bottom pb-2">Datos Personales</h6></div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Cédula <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtCedulaInt" runat="server" CssClass="form-control" placeholder="Ej: 050..." MaxLength="15"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtNombresInt" runat="server" CssClass="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtApellidosInt" runat="server" CssClass="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Correo Electrónico <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtCorreoInt" runat="server" CssClass="form-control" TextMode="Email" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo de Integrante</label>
+                            <asp:DropDownList ID="ddlTipoInt" runat="server" CssClass="form-select">
+                                <asp:ListItem Text="Interno (UTC)" Value="Interno" />
+                                <asp:ListItem Text="Externo (Colaborador)" Value="Externo" Selected="True" />
+                            </asp:DropDownList>
+                        </div>
+
+                        <div class="col-12 mt-4"><h6 class="text-primary fw-bold border-bottom pb-2">Datos Académicos / Función</h6></div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Carrera / Departamento <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtCarreraInt" runat="server" CssClass="form-control" placeholder="Ej: Sistemas, Agroindustrial..." />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Función en el Grupo <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtFuncionInt" runat="server" CssClass="form-control" placeholder="Ej: Investigador Principal, Técnico..." />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Observación (Opcional)</label>
+                            <asp:TextBox ID="txtObservacionInt" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="2" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0 bg-light justify-content-center">
+                    <asp:LinkButton ID="btnGuardarIntegrante" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow-sm" OnClick="btnGuardarIntegrante_Click">
+                        <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Integrante
+                    </asp:LinkButton>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function AbrirModalNuevoIntegrante() {
+            // Obtenemos el texto del grupo seleccionado para mostrarlo en el modal
+            var grupoText = $("#<%= ddlGrupo.ClientID %> option:selected").text();
+            if (grupoText == "" || grupoText.includes("--")) {
+                alert("Primero seleccione un Grupo de Investigación.");
+                return;
+            }
+            document.getElementById('lblGrupoModalJS').innerText = grupoText;
+
+            var el = document.getElementById('modalNuevoIntegrante');
+            var modal = new bootstrap.Modal(el);
+            modal.show();
+        }
+    </script>
 
     <script type="text/javascript">
         Sys.Application.add_load(function () {

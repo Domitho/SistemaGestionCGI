@@ -164,43 +164,39 @@ namespace SistemaGestionCGI.BLL
         // =============================================================
         // 4. UTILIDADES (Generador G# / I#) - CORREGIDO
         // =============================================================
-
         private string GenerarCodigoAlfanumerico(string tabla, string campoId, string prefijo)
         {
-            string sql = $"SELECT {campoId} FROM {tabla}";
+            string sql = $"SELECT TOP 1 {campoId} FROM {tabla} ORDER BY Len({campoId}) DESC, {campoId} DESC";
+
             var lista = _dal.SelectSql<dynamic>(sql);
 
-            if (lista == null || lista.Count == 0) return prefijo + "1";
+            int siguienteNumero = 1;
 
-            int max = 0;
-            foreach (var item in lista)
+            if (lista != null && lista.Count > 0)
             {
-                string val = "";
+                string ultimoId = "";
+                var item = lista[0];
 
                 if (item is JObject jobj)
                 {
-                    val = jobj[campoId]?.ToString();
+                    ultimoId = jobj[campoId]?.ToString();
                 }
                 else
                 {
-                    try
-                    {
-                        val = ((dynamic)item)[campoId].ToString();
-                    }
-                    catch { continue; }
+                    try { ultimoId = ((dynamic)item)[campoId].ToString(); } catch { }
                 }
 
-                if (!string.IsNullOrEmpty(val) && val.StartsWith(prefijo))
+                if (!string.IsNullOrEmpty(ultimoId) && ultimoId.StartsWith(prefijo))
                 {
-                    string numStr = val.Substring(prefijo.Length);
-                    if (int.TryParse(numStr, out int n))
+                    string numeroStr = ultimoId.Substring(prefijo.Length);
+                    if (int.TryParse(numeroStr, out int numeroActual))
                     {
-                        if (n > max) max = n;
+                        siguienteNumero = numeroActual + 1;
                     }
                 }
             }
 
-            return prefijo + (max + 1);
+            return prefijo + siguienteNumero;
         }
     }
 }

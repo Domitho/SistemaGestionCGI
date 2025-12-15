@@ -9,7 +9,7 @@ namespace SistemaGestionCGI.BLL
     {
         private readonly ConnectionSqlServer _dal = ConnectionSqlServer.Instance;
 
-        public List<InvgccInsPro> ObtenerTodos()
+        public List<InvgccInscripcionProyectos> ObtenerTodos()
         {
             string sql = @"
                 SELECT P.strId_pro, P.strTema_pro, P.strCoordinador_pro, P.strFacultad_pro, 
@@ -21,13 +21,13 @@ namespace SistemaGestionCGI.BLL
                 INNER JOIN INVGCCCONVOCATORI C ON P.fkId_conv = C.strId_conv
                 ORDER BY P.dtFehains_pro DESC";
 
-            return _dal.SelectSql<InvgccInsPro>(sql);
+            return _dal.SelectSql<InvgccInscripcionProyectos>(sql);
         }
 
-        public InvgccInsPro ObtenerPorId(string id)
+        public InvgccInscripcionProyectos ObtenerPorId(string id)
         {
             string sql = $"SELECT * FROM INVGCCPROYECTO WHERE strId_pro = '{id}'";
-            var lista = _dal.SelectSql<InvgccInsPro>(sql);
+            var lista = _dal.SelectSql<InvgccInscripcionProyectos>(sql);
 
             if (lista != null && lista.Count > 0)
                 return lista[0];
@@ -35,7 +35,7 @@ namespace SistemaGestionCGI.BLL
                 return null;
         }
 
-        public void Guardar(InvgccInsPro pro)
+        public void Guardar(InvgccInscripcionProyectos pro)
         {
             string nuevoId = GenerarNuevoId();
             pro.strId_pro = nuevoId;
@@ -44,7 +44,7 @@ namespace SistemaGestionCGI.BLL
             _dal.Insert("INVGCCPROYECTO", pro);
         }
 
-        public void Actualizar(InvgccInsPro pro)
+        public void Actualizar(InvgccInscripcionProyectos pro)
         {
             string sql = $@"
                 UPDATE INVGCCPROYECTO SET 
@@ -91,10 +91,51 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<InvgccConvocatoria>(sql);
         }
 
+        public List<InvgccGrupoIntegrantes> ObtenerIntegrantesPorGrupo(string idGrupo)
+        {
+            // Concatenamos Apellidos y Nombres para mostrar en el Combo
+            // Filtramos por el Grupo y que estén Activos (bitActivo_int = 1)
+            string sql = $@"
+                SELECT strId_int, (strApellidos_int + ' ' + strNombres_int) as NombreCompleto 
+                FROM INVGCCGRUPO_INTEGRANTES 
+                WHERE fkId_gru = '{idGrupo}' AND bitActivo_int = 1
+                ORDER BY strApellidos_int";
+
+            return _dal.SelectSql<InvgccGrupoIntegrantes>(sql);
+        }
+
+        // 1. Obtener Info Detallada del Grupo (Para el recuadro informativo)
+        public InvgccGrupoInvestigacion ObtenerInfoGrupo(string idGrupo)
+        {
+            // Asumiendo que la tabla tiene strLineasinv_gru o similar
+            string sql = $"SELECT * FROM INVGCCGRUPO_INVESTIGACION WHERE strId_gru = '{idGrupo}'";
+            var lista = _dal.SelectSql<InvgccGrupoInvestigacion>(sql);
+            return (lista != null && lista.Count > 0) ? lista[0] : null;
+        }
+
+        // 2. Guardar Nuevo Integrante Express
+        public void GuardarIntegranteExpress(InvgccGrupoIntegrantes intg)
+        {
+            string nuevoId = GenerarNuevoIdIntegrante();
+
+            // Insertamos TODOS los campos necesarios
+            string sql = $@"
+                INSERT INTO INVGCCGRUPO_INTEGRANTES 
+                (strId_int, strCedula_int, strApellidos_int, strNombres_int, strCorreo_int, 
+                 strCarrera_int, strFuncion_int, strObservacion_int, strTipo_int, 
+                 fkId_gru, bitActivo_int, dtFechaini_int, bitPertenece_int)
+                VALUES 
+                ('{nuevoId}', '{intg.strCedula_int}', '{intg.strApellidos_int}', '{intg.strNombres_int}', '{intg.strCorreo_int}',
+                 '{intg.strCarrera_int}', '{intg.strFuncion_int}', '{intg.strObservacion_int}', '{intg.strTipo_int}',
+                 '{intg.fkId_gru}', 1, GETDATE(), 1)";
+
+            _dal.UpdateSql(sql);
+        }
+
         private string GenerarNuevoId()
         {
             string sql = "SELECT TOP 1 strId_pro FROM INVGCCPROYECTO ORDER BY Len(strId_pro) DESC, strId_pro DESC";
-            var lista = _dal.SelectSql<InvgccInsPro>(sql);
+            var lista = _dal.SelectSql<InvgccInscripcionProyectos>(sql);
 
             int n = 1;
             if (lista != null && lista.Count > 0)
@@ -108,5 +149,31 @@ namespace SistemaGestionCGI.BLL
             }
             return "P" + n;
         }
+
+        private string GenerarNuevoIdIntegrante()
+        {
+            string sql = "SELECT TOP 1 strId_int FROM INVGCCGRUPO_INTEGRANTES ORDER BY Len(strId_int) DESC, strId_int DESC";
+
+            var lista = _dal.SelectSql<InvgccGrupoIntegrantes>(sql);
+
+            int siguienteNumero = 1; 
+
+            if (lista != null && lista.Count > 0)
+            {
+                string ultimoId = lista[0].strId_int;
+
+                if (!string.IsNullOrEmpty(ultimoId) && ultimoId.ToUpper().StartsWith("I"))
+                {
+                    string numeroStr = ultimoId.Substring(1);
+                    if (int.TryParse(numeroStr, out int numeroActual))
+                    {
+                        siguienteNumero = numeroActual + 1;
+                    }
+                }
+            }
+
+            return "I" + siguienteNumero;
+        }
+
     }
 }

@@ -46,5 +46,11 @@ namespace SistemaGestionCGI.Models
 
         [JsonProperty("bitActivo_int")]
         public bool bitActivo_int { get; set; }
+
+        [JsonProperty("strTipo_int")]
+        public string strTipo_int { get; set; }
+
+        [JsonProperty("NombreCompleto")]
+        public string NombreCompleto { get; set; }
     }
 }

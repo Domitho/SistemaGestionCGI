@@ -402,66 +402,112 @@ namespace SistemaGestionCGI
             rptInformes.DataBind();
         }
 
+        protected void rptInformes_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            int idInforme = int.Parse(e.CommandArgument.ToString());
+
+            if (e.CommandName == "EliminarInforme")
+            {
+                try
+                {
+                    _manejador.EliminarInforme(idInforme);
+                    SetFlashMessage("Documento eliminado correctamente.", "ss");
+                    Response.Redirect("EjecucionProAprobados.aspx", false);
+                }
+                catch (Exception ex) { Msg("Error al eliminar: " + ex.Message, "ee"); }
+            }
+            else if (e.CommandName == "EditarInforme")
+            {
+                // Cargamos datos para editar
+                var informe = _manejador.ObtenerInformePorId(idInforme);
+                if (informe != null)
+                {
+                    // Llenamos el modal
+                    hfIdInformeEdit.Value = informe.strId_informe.ToString(); // Necesitamos crear este HiddenField en el Front
+                    txtNombrePeriodoInf.Text = informe.strNombrePeriodo;
+
+                    // Cambiamos título del modal visualmente
+                    lblTituloModalInforme.InnerText = "Editar / Corregir Informe"; // Necesitamos ponerle ID al título h5
+
+                    // Abrimos modal
+                    ScriptManager.RegisterStartupScript(this, GetType(), "OpenModal", "AbrirSubModalUpload();", true);
+                }
+            }
+        }
+
+        // 2. BOTÓN GUARDAR (Ahora maneja Insertar y Actualizar + Validación Word)
         protected void btnGuardarInforme_Click(object sender, EventArgs e)
         {
             try
             {
-                if (!flpArchivoInf.HasFile)
+                // A. VALIDACIÓN DE EXTENSIÓN (Solo Word)
+                if (flpArchivoInf.HasFile)
                 {
-                    Msg("Seleccione un archivo.", "ww");
-                    ScriptManager.RegisterStartupScript(this, GetType(), "Reopen", "AbrirSubModalUpload();", true);
-                    return;
+                    string ext = Path.GetExtension(flpArchivoInf.FileName).ToLower();
+                    if (ext != ".doc" && ext != ".docx")
+                    {
+                        Msg("Solo se permiten archivos Word (.doc, .docx).", "ww");
+                        ScriptManager.RegisterStartupScript(this, GetType(), "Reopen", "AbrirSubModalUpload();", true);
+                        return;
+                    }
                 }
 
-                // Parsear ID Padre
-                if (!int.TryParse(hfIdEjecucionInforme.Value, out int idEjec))
-                {
-                    Msg("Error identificando el proyecto. Recargue.", "ee");
-                    return;
-                }
-
-                string nombrePeriodo = txtNombrePeriodoInf.Text.Trim();
-                if (string.IsNullOrEmpty(nombrePeriodo)) nombrePeriodo = "Informe de Avance";
-
-                string fileName = "INF_" + DateTime.Now.Ticks + Path.GetExtension(flpArchivoInf.FileName);
-                string ruta = GuardarArchivo(flpArchivoInf, fileName);
+                // B. PREPARAR DATOS
+                if (!int.TryParse(hfIdEjecucionInforme.Value, out int idEjec)) return;
 
                 InvgccEjecucionInformes inf = new InvgccEjecucionInformes();
                 inf.fkId_ejec = idEjec;
-                inf.strNombrePeriodo = nombrePeriodo;
-                inf.strArchivo_path = ruta;
+                inf.strNombrePeriodo = txtNombrePeriodoInf.Text.Trim();
+                if (string.IsNullOrEmpty(inf.strNombrePeriodo)) inf.strNombrePeriodo = "Informe de Avance";
 
-                _manejador.GuardarInforme(inf);
+                // Guardar físico si hay archivo
+                if (flpArchivoInf.HasFile)
+                {
+                    string fileName = $"INF_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivoInf.FileName)}";
+                    inf.strArchivo_path = GuardarArchivo(flpArchivoInf, fileName);
+                }
+                else
+                {
+                    inf.strArchivo_path = ""; // Indica que no hay cambio de archivo
+                }
 
-                Msg("Informe subido correctamente.", "ss");
+                // C. DECIDIR SI ES INSERT O UPDATE
+                if (string.IsNullOrEmpty(hfIdInformeEdit.Value))
+                {
+                    // === INSERTAR ===
+                    if (!flpArchivoInf.HasFile)
+                    {
+                        Msg("Debe seleccionar un archivo Word.", "ww");
+                        ScriptManager.RegisterStartupScript(this, GetType(), "Reopen", "AbrirSubModalUpload();", true);
+                        return;
+                    }
+                    _manejador.GuardarInforme(inf);
+                    SetFlashMessage("Informe subido correctamente.", "ss");
+                }
+                else
+                {
+                    // === ACTUALIZAR ===
+                    inf.strId_informe = int.Parse(hfIdInformeEdit.Value);
+                    _manejador.ActualizarInforme(inf);
+                    SetFlashMessage("Informe corregido correctamente.", "ss");
+                }
 
+                // D. LIMPIEZA
                 txtNombrePeriodoInf.Text = "";
-                CargarInformes(idEjec);
+                hfIdInformeEdit.Value = ""; // Limpiar ID de edición
+                lblTituloModalInforme.InnerText = "Subir Informe"; // Resetear título
 
-                ScriptManager.RegisterStartupScript(this, GetType(), "CloseSubModal", "CerrarSubModalUpload();", true);
+                Response.Redirect("EjecucionProAprobados.aspx", false);
             }
-            catch (Exception ex)
-            {
-                Msg("Error al subir informe: " + ex.Message, "ee");
-            }
+            catch (Exception ex) { Msg("Error: " + ex.Message, "ee"); }
         }
 
-        protected void rptInformes_ItemCommand(object source, RepeaterCommandEventArgs e)
+        protected void btnInformes_Click(object sender, EventArgs e)
         {
-            if (e.CommandName == "EliminarInforme")
-            {
-                int idInforme = int.Parse(e.CommandArgument.ToString());
-                try
-                {
-                    _manejador.EliminarInforme(idInforme);
-                    SetFlashMessage("Informe eliminado correctamente.", "ss");
-                    Response.Redirect("EjecucionProAprobados.aspx", false);
-                }
-                catch (Exception ex)
-                {
-                    Msg("Error al eliminar informe: " + ex.Message, "ee");
-                }
-            }
+            // ... lógica existente ...
+            hfIdInformeEdit.Value = ""; // Asegurarnos de que empiece en modo "Nuevo"
+            txtNombrePeriodoInf.Text = "";
+            lblTituloModalInforme.InnerText = "Subir Informe";
         }
 
         // =======================================================

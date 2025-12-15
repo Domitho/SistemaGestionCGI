@@ -384,6 +384,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.HiddenField hfIdEjecucionInforme;
 
         /// <summary>
+        /// Control hfIdInformeEdit.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfIdInformeEdit;
+
+        /// <summary>
         /// Control rptInformes.
         /// </summary>
         /// <remarks>
@@ -400,6 +409,15 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl modalSubirInforme;
+
+        /// <summary>
+        /// Control lblTituloModalInforme.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl lblTituloModalInforme;
 
         /// <summary>
         /// Control txtNombrePeriodoInf.

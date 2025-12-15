@@ -133,6 +133,7 @@
     <Content Include="Content\bootstrap.css.map" />
     <Content Include="Content\bootstrap-theme.min.css.map" />
     <Content Include="Content\bootstrap-theme.css.map" />
+    <Content Include="img\default-user.png" />
     <Content Include="public\captcha.ashx" />
     <Content Include="public\Web.config" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
@@ -258,7 +259,7 @@
     <Compile Include="Models\InvgccEjecucionProyectos.cs" />
     <Compile Include="Models\InvgccGrupoIntegrantes.cs" />
     <Compile Include="Models\InvgccGrupoInvestigacion.cs" />
-    <Compile Include="Models\InvgccInsPro.cs" />
+    <Compile Include="Models\InvgccInscripcionProyectos.cs" />
     <Compile Include="Models\InvgccIntegrantesHistorial.cs" />
     <Compile Include="Models\InvgccMetricas.cs" />
     <Compile Include="Models\InvgccUsuario.cs" />

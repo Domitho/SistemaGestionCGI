@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace SistemaGestionCGI.Models
 {
-    public class InvgccInsPro
+    public class InvgccInscripcionProyectos
     {
         [JsonProperty("strId_pro")]
         public string strId_pro { get; set; }

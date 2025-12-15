@@ -11,8 +11,7 @@ namespace SistemaGestionCGI.BLL
         private readonly ConnectionSqlServer _dal = ConnectionSqlServer.Instance;
 
         // =============================================================
-        // 1. GESTIÓN DE EJECUCIÓN (Tabla: INVGCCEJECUCION_PROYECTO)
-        // ID: strId_ejec (INT IDENTITY) | FK_PRO: fkId_pro (VARCHAR)
+        // 1. GESTIÓN DE EJECUCIÓN
         // =============================================================
 
         public List<InvgccEjecucionProyectos> ObtenerEjecuciones()
@@ -163,6 +162,37 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sql);
         }
 
+
+        public void ActualizarInforme(InvgccEjecucionInformes inf)
+        {
+            // Usamos SQL Manual para no tocar el ID
+            string fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            string nombreLimpio = inf.strNombrePeriodo.Replace("'", "''");
+            string rutaSegura = inf.strArchivo_path.Replace("'", "''");
+
+            // Si la ruta viene vacía (no subió archivo nuevo), NO la actualizamos
+            string sql;
+
+            if (!string.IsNullOrEmpty(inf.strArchivo_path))
+            {
+                // Actualiza Nombre y Archivo
+                sql = $@"UPDATE INVGCCEJECUCION_INFORMES SET 
+                        strNombrePeriodo = '{nombreLimpio}', 
+                        strArchivo_path = '{rutaSegura}', 
+                        dtFechaSubida = '{fecha}'
+                        WHERE strId_informe = {inf.strId_informe}";
+            }
+            else
+            {
+                // Actualiza solo Nombre (mantiene archivo viejo)
+                sql = $@"UPDATE INVGCCEJECUCION_INFORMES SET 
+                        strNombrePeriodo = '{nombreLimpio}'
+                        WHERE strId_informe = {inf.strId_informe}";
+            }
+
+            _dal.UpdateSql(sql);
+        }
+
         public void EliminarInforme(int idInforme)
         {
             _dal.Delete("INVGCCEJECUCION_INFORMES", $"strId_informe = {idInforme}");
@@ -172,7 +202,7 @@ namespace SistemaGestionCGI.BLL
         // 4. UTILIDADES
         // =============================================================
 
-        public List<InvgccInsPro> ObtenerProyectosAprobadosSinEjecucion()
+        public List<InvgccInscripcionProyectos> ObtenerProyectosAprobadosSinEjecucion()
         {
             string sql = @"
                 SELECT strId_pro, strTema_pro, strCoordinador_pro 
@@ -180,7 +210,7 @@ namespace SistemaGestionCGI.BLL
                 WHERE strEstado_pro = 'Aprobado' 
                 AND strId_pro NOT IN (SELECT fkId_pro FROM INVGCCEJECUCION_PROYECTO)";
 
-            return _dal.SelectSql<InvgccInsPro>(sql);
+            return _dal.SelectSql<InvgccInscripcionProyectos>(sql);
         }
     }
 }

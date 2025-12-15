@@ -374,7 +374,7 @@
     <div class="modal fade" id="modalInformes" tabindex="-1" aria-hidden="true" ClientIDMode="Static" runat="server">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-utc rounded-4">
-            
+                
                 <div class="modal-header bg-utc text-white position-relative d-flex justify-content-center align-items-center py-3">
                     <h5 class="modal-title fw-bold m-0">
                         <i class="fa-solid fa-folder-open me-2"></i> Archivos del Proyecto
@@ -384,6 +384,7 @@
 
                 <div class="modal-body bg-light p-4">
                     <asp:HiddenField ID="hfIdEjecucionInforme" runat="server" ClientIDMode="Static" />
+                    <asp:HiddenField ID="hfIdInformeEdit" runat="server" ClientIDMode="Static" />
 
                     <div class="utc-toolbar">
                         <div class="d-flex align-items-center gap-3">
@@ -395,7 +396,8 @@
                                 <small>Gestione los informes de avance del proyecto</small>
                             </div>
                         </div>
-                        <button type="button" class="btn-upload-modern" onclick="AbrirSubModalUpload()">
+                        
+                        <button type="button" class="btn-upload-modern" onclick="LimpiarYSubir()">
                             <i class="fa-solid fa-cloud-arrow-up me-2"></i> Subir Nuevo
                         </button>
                     </div>
@@ -404,29 +406,49 @@
                         <asp:Repeater ID="rptInformes" runat="server" OnItemCommand="rptInformes_ItemCommand">
                             <ItemTemplate>
                                 <div class="col-md-4 col-sm-6">
-                                    <div class="file-card" onclick="VerPDF('<%# Eval("strId_informe") %>', 'INFORME')">
-                                        <asp:LinkButton ID="btnEliminarInf" runat="server" 
-                                            CommandName="EliminarInforme" CommandArgument='<%# Eval("strId_informe") %>'
-                                            CssClass="btn-card-delete"
-                                            OnClientClick="event.stopPropagation(); return confirm('¿Eliminar este archivo permanentemente?');"
-                                            ToolTip="Eliminar">
-                                            <i class="fa-solid fa-trash-can"></i>
-                                        </asp:LinkButton>
-                                        <div class="file-card-preview">
-                                            <i class="fa-regular fa-file-pdf"></i>
+                                    
+                                    <div class="file-card" onclick="DescargarWord('<%# Eval("strId_informe") %>')">
+                                        
+                                        <div class="position-absolute top-0 end-0 p-2 d-flex gap-1" style="z-index: 10;">
+                                            
+                                            <asp:LinkButton ID="btnEditarInf" runat="server" 
+                                                CommandName="EditarInforme" CommandArgument='<%# Eval("strId_informe") %>'
+                                                CssClass="btn btn-sm btn-light rounded-circle shadow-sm text-primary"
+                                                OnClientClick="event.stopPropagation();"
+                                                ToolTip="Corregir archivo">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </asp:LinkButton>
+
+                                            <asp:LinkButton ID="btnEliminarInf" runat="server" 
+                                                CommandName="EliminarInforme" CommandArgument='<%# Eval("strId_informe") %>'
+                                                CssClass="btn btn-sm btn-light rounded-circle shadow-sm text-danger"
+                                                OnClientClick="event.stopPropagation(); return confirm('¿CONFIRMACIÓN:\n\nVa a eliminar este documento permanentemente.\n¿Continuar?');"
+                                                ToolTip="Eliminar">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </asp:LinkButton>
                                         </div>
+
+                                        <div class="file-card-preview">
+                                            <i class="fa-solid fa-file-word text-primary"></i>
+                                        </div>
+
                                         <div class="file-card-body">
                                             <div class="file-card-title" title='<%# Eval("strNombrePeriodo") %>'>
                                                 <%# Eval("strNombrePeriodo") %>
                                             </div>
                                             <div class="file-card-meta">
-                                                <span><i class="fa-solid fa-calendar-days me-1"></i> <%# Convert.ToDateTime(Eval("dtFechaSubida")).ToString("dd MMM") %></span>
-                                                <span><i class="fa-solid fa-eye text-primary"></i></span>
+                                                <span>
+                                                    <i class="fa-solid fa-calendar-days me-1"></i> 
+                                                    <%# Convert.ToDateTime(Eval("dtFechaSubida")).ToString("dd MMM") %>
+                                                </span>
+                                                <span><i class="fa-solid fa-download text-muted"></i></span>
                                             </div>
                                         </div>
+
                                     </div>
                                 </div>
                             </ItemTemplate>
+                            
                             <FooterTemplate>
                                 <asp:Panel ID="pnlNoData" runat="server" Visible='<%# rptInformes.Items.Count == 0 %>'>
                                     <div class="text-center py-5 text-muted opacity-50">
@@ -450,22 +472,28 @@
     <div class="modal fade" id="modalSubirInforme" tabindex="-1" aria-hidden="true" style="z-index: 1060;" ClientIDMode="Static" runat="server">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow-lg border-0 rounded-4">
+                
                 <div class="modal-header border-bottom-0 pb-0">
-                    <h5 class="modal-title fw-bold text-primary">
+                    <h5 class="modal-title fw-bold text-primary" id="lblTituloModalInforme" runat="server">
                         <i class="fa-solid fa-cloud-arrow-up"></i> Subir Informe
                     </h5>
                     <button type="button" class="btn-close" onclick="CerrarSubModalUpload()"></button>
                 </div>
+
                 <div class="modal-body pt-3 px-4 pb-4">
                     <p class="text-muted small mb-3">El archivo se vinculará al proyecto actual.</p>
+
                     <div class="form-floating mb-3">
                         <asp:TextBox ID="txtNombrePeriodoInf" runat="server" CssClass="form-control" placeholder="Nombre" />
                         <label>Nombre del Periodo / Informe</label>
                     </div>
-                    <label class="form-label fw-bold small text-secondary">Archivo PDF</label>
+
+                    <label class="form-label fw-bold small text-secondary">Archivo Word (.doc, .docx)</label>
+                    
                     <div class="utc-fileinput-wrapper" id="wrapperArchivoInf">
+                        
                         <div class="utc-fileinput-header">
-                            <div class="utc-fileinput-icon"><i class="fa-solid fa-paperclip"></i></div>
+                            <div class="utc-fileinput-icon"><i class="fa-solid fa-file-word"></i></div>
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="utc-fileinput-name">Sin archivo seleccionado</span>
                                 <div class="utc-fileinput-buttons d-flex gap-2">
@@ -474,22 +502,35 @@
                                 </div>
                             </div>
                         </div>
-                        <input type="text" class="form-control form-control-sm utc-edit-name-field" placeholder="Nuevo nombre..." />
+
+                        <input type="text" class="form-control form-control-sm utc-edit-name-field" placeholder="Nuevo nombre del archivo..." />
+
                         <div class="utc-fileinput-preview" id="previewArchivoInf"></div>
-                        <div class="utc-fileinput-loader" id="loaderArchivoInf"><i class="fa-solid fa-spinner fa-spin me-2"></i> Procesando...</div>
-                        <div class="utc-dropzone" id="dropzoneArchivoInf">
-                            <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-primary"></i><br />
-                            Arrastra el PDF aquí o haz clic
+
+                        <div class="utc-fileinput-loader" id="loaderArchivoInf">
+                            <i class="fa-solid fa-spinner fa-spin me-2"></i> Procesando...
                         </div>
-                        <asp:FileUpload ID="flpArchivoInf" runat="server" CssClass="utc-fileinput-input" />
+
+                        <div class="utc-dropzone" id="dropzoneArchivoInf">
+                            <i class="fa-solid fa-file-word fa-2x mb-2 text-primary"></i><br />
+                            Arrastra documento Word aquí o haz clic
+                        </div>
+
+                        <asp:FileUpload ID="flpArchivoInf" runat="server" CssClass="utc-fileinput-input" 
+                            accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"/>
                     </div>
-                    <div class="form-text small text-muted mb-3">Solo archivos PDF o Excel (Máx 10MB).</div>
+
+                    <div class="form-text small text-muted mb-3">
+                        <i class="fa-solid fa-circle-info me-1"></i> Si está editando, suba un archivo solo si desea reemplazar el actual.
+                    </div>
+
                     <div class="d-grid gap-2">
                         <asp:LinkButton ID="btnGuardarInforme" runat="server" CssClass="btn btn-primary btn-lg shadow-sm"
                             OnClick="btnGuardarInforme_Click">
-                            <i class="fa-solid fa-upload me-2"></i> Subir Archivo
+                            <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Informe
                         </asp:LinkButton>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -579,6 +620,21 @@
             var el = document.getElementById('modalSubirInforme');
             var modal = bootstrap.Modal.getInstance(el);
             if (modal) modal.hide();
+        }
+
+        function LimpiarYSubir() {
+            // Limpia el HiddenField de edición para indicar que es nuevo
+            document.getElementById('<%= hfIdInformeEdit.ClientID %>').value = "";
+            document.getElementById('<%= lblTituloModalInforme.ClientID %>').innerText = "Subir Informe";
+            document.getElementById('<%= txtNombrePeriodoInf.ClientID %>').value = "";
+            AbrirSubModalUpload(); 
+        }
+
+        // Nueva función para WORD (Descarga directa)
+        function DescargarWord(id) {
+            // Usamos el Handler con tipo INFORME. Al ser Word, el navegador lo descargará.
+            var url = 'VerArchivo.ashx?id=' + id + '&tipo=INFORME';
+            window.location.href = url;
         }
 
         /* ASÍ DEBE QUEDAR (Versión nueva con Handler) */
