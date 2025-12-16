@@ -19,7 +19,7 @@ namespace SistemaGestionCGI.BLL
             string sql = @"
                 SELECT E.*, P.strTema_pro as TituloProyecto 
                 FROM INVGCCEJECUCION_PROYECTO E
-                INNER JOIN INVGCCPROYECTO P ON E.fkId_pro = P.strId_pro
+                INNER JOIN INVGCCINSCRIPCION_PROYECTOS P ON E.fkId_pro = P.strId_pro
                 ORDER BY E.strId_ejec DESC";
             return _dal.SelectSql<InvgccEjecucionProyectos>(sql);
         }
@@ -29,7 +29,7 @@ namespace SistemaGestionCGI.BLL
             string sql = $@"
                 SELECT E.*, P.strTema_pro as TituloProyecto 
                 FROM INVGCCEJECUCION_PROYECTO E
-                INNER JOIN INVGCCPROYECTO P ON E.fkId_pro = P.strId_pro
+                INNER JOIN INVGCCINSCRIPCION_PROYECTOS P ON E.fkId_pro = P.strId_pro
                 WHERE E.strId_ejec = {id}";
 
             var lista = _dal.SelectSql<InvgccEjecucionProyectos>(sql);
@@ -93,9 +93,9 @@ namespace SistemaGestionCGI.BLL
 
             string sql = $@"
                 INSERT INTO INVGCCEJECUCION_MIEMBROS 
-                (fkId_ejec, strCedula_miembro, strNombres_miembro, strApellidos_miembro, strRol_miembro, bitActivo_miembro)
+                (fkId_ejec, strCedula_miembro, strNombres_miembro, strApellidos_miembro, strRol_miembro, strFacultad_miembro, bitActivo_miembro)
                 VALUES 
-                ({m.fkId_ejec}, '{m.strCedula_miembro}', '{m.strNombres_miembro}', '{m.strApellidos_miembro}', '{m.strRol_miembro}', 1)";
+                ({m.fkId_ejec}, '{m.strCedula_miembro}', '{m.strNombres_miembro}', '{m.strApellidos_miembro}', '{m.strRol_miembro}', '{m.strFacultad_miembro}', 1)";
 
             _dal.UpdateSql(sql);
         }
@@ -120,7 +120,8 @@ namespace SistemaGestionCGI.BLL
                     strCedula_miembro = '{obj.strCedula_miembro}',
                     strNombres_miembro = '{obj.strNombres_miembro}',
                     strApellidos_miembro = '{obj.strApellidos_miembro}',
-                    strRol_miembro = '{obj.strRol_miembro}'
+                    strRol_miembro = '{obj.strRol_miembro}',
+                    strFacultad_miembro = '{obj.strFacultad_miembro}'
                 WHERE strId_miembro = {obj.strId_miembro}";
 
             _dal.UpdateSql(sql);
@@ -206,7 +207,7 @@ namespace SistemaGestionCGI.BLL
         {
             string sql = @"
                 SELECT strId_pro, strTema_pro, strCoordinador_pro 
-                FROM INVGCCPROYECTO 
+                FROM INVGCCINSCRIPCION_PROYECTOS 
                 WHERE strEstado_pro = 'Aprobado' 
                 AND strId_pro NOT IN (SELECT fkId_pro FROM INVGCCEJECUCION_PROYECTO)";
 

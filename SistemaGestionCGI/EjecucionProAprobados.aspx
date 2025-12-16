@@ -271,6 +271,7 @@
                         <th>CÉDULA</th>
                         <th>NOMBRES</th>
                         <th>APELLIDOS</th>
+                        <th>FACULTAD</th>
                         <th>ROL</th>
                         <th>ACCIONES</th>
                     </tr>
@@ -283,6 +284,7 @@
                                 <td><%# Eval("strCedula_miembro") %></td>
                                 <td class="text-start"><%# Eval("strNombres_miembro") %></td>
                                 <td class="text-start"><%# Eval("strApellidos_miembro") %></td>
+                                <td><%# Eval("strFacultad_miembro") %></td>
                                 <td><%# Eval("strRol_miembro") %></td>
                                 <td>
                                     <asp:LinkButton ID="btnEditarM" runat="server" 
@@ -344,6 +346,19 @@
                         <asp:ListItem>Técnico de Apoyo</asp:ListItem>
                         <asp:ListItem>Externo</asp:ListItem>
                         <asp:ListItem>Director</asp:ListItem>
+                    </asp:DropDownList>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">Facultad / Extensión</label>
+                    <asp:DropDownList ID="ddlFacultadMiembro" runat="server" CssClass="form-select">
+                        <asp:ListItem Text="-- Seleccione --" Value="" />
+                        <asp:ListItem>FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
+                        <asp:ListItem>FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
+                        <asp:ListItem>FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
+                        <asp:ListItem>FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
+                        <asp:ListItem>FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
+                        <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
+                        <asp:ListItem>EXTENSION LA MANÁ</asp:ListItem>
                     </asp:DropDownList>
                 </div>
                 <div class="col-md-6">

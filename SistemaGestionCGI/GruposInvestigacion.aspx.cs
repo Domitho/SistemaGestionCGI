@@ -271,40 +271,81 @@ namespace SistemaGestionCGI
             txtApellidosInt.Text = "";
             txtCorreoInt.Text = "";
             txtCarreraInt.Text = "";
+            txtEntidadInt.Text = ""; // NUEVO
+            ddlTipoInt.SelectedIndex = 0; // NUEVO
+            ddlFacultadInt.SelectedIndex = 0; // NUEVO
             dtFechaIniInt.Text = DateTime.Now.ToString("yyyy-MM-dd");
             txtObservacionInt.Text = "";
+
+            // Forzar visualización correcta en el frontend
+            ScriptManager.RegisterStartupScript(this, GetType(), "initForm", "InitFormulario();", true);
         }
 
         protected void btnGuardarInt_Click(object sender, EventArgs e)
         {
             try
             {
+                // Validación básica
+                if (string.IsNullOrWhiteSpace(txtCedulaInt.Text) || string.IsNullOrWhiteSpace(txtNombresInt.Text))
+                {
+                    Msg("Complete los campos obligatorios.", "ww");
+                    return;
+                }
+
                 InvgccGrupoIntegrantes i = new InvgccGrupoIntegrantes();
                 i.fkId_gru = hfGrupoIdActual.Value;
+
+                // Datos generales
                 i.strCedula_int = txtCedulaInt.Text.Trim();
                 i.strNombres_int = txtNombresInt.Text.Trim();
                 i.strApellidos_int = txtApellidosInt.Text.Trim();
                 i.strCorreo_int = txtCorreoInt.Text.Trim();
-                i.strCarrera_int = txtCarreraInt.Text.Trim();
                 i.strFuncion_int = ddlFuncionInt.SelectedValue;
                 i.dtFechaini_int = DateTime.Parse(dtFechaIniInt.Text);
-                i.strObservacion_int = txtObservacionInt.Text.Trim(); 
+                i.strObservacion_int = txtObservacionInt.Text.Trim();
+
+                // NUEVO: Tipo de Integrante
+                i.strTipo_int = ddlTipoInt.SelectedValue;
+
+                // LÓGICA CONDICIONAL
+                if (i.strTipo_int == "Externo")
+                {
+                    if (string.IsNullOrWhiteSpace(txtEntidadInt.Text))
+                    {
+                        Msg("Debe especificar la Institución de Origen.", "ww");
+                        return;
+                    }
+                    i.strEntidad_int = txtEntidadInt.Text.Trim();
+                    i.strCarrera_int = null;
+                    i.strFacultad_int = null;
+                }
+                else // Interno
+                {
+                    i.strEntidad_int = null;
+                    i.strCarrera_int = txtCarreraInt.Text.Trim();
+                    i.strFacultad_int = ddlFacultadInt.SelectedValue;
+                }
 
                 if (string.IsNullOrEmpty(hfIdIntEdit.Value))
                 {
+                    // NUEVO REGISTRO
+                    // Asegúrate de usar el método que recibe TODOS los campos en tu BLL
+                    // O si usas el método genérico, asegúrate de que el objeto 'i' tenga todo
                     _manejador.GuardarIntegrante(i);
                     SetFlashMessage("Integrante agregado.", "ss");
                 }
                 else
                 {
+                    // EDICIÓN
                     i.strId_int = hfIdIntEdit.Value;
 
+                    // Recuperamos datos que no se editan aquí (como fecha fin o estado)
                     var integranteOriginal = _manejador.ObtenerIntegrantePorId(i.strId_int);
-
                     if (integranteOriginal != null)
                     {
                         i.dtFechafin_int = integranteOriginal.dtFechafin_int;
                         i.bitActivo_int = integranteOriginal.bitActivo_int;
+                        i.bitPertenece_int = integranteOriginal.bitPertenece_int;
                     }
 
                     _manejador.ActualizarIntegrante(i);
@@ -350,16 +391,38 @@ namespace SistemaGestionCGI
                     txtNombresInt.Text = obj.strNombres_int;
                     txtApellidosInt.Text = obj.strApellidos_int;
                     txtCorreoInt.Text = obj.strCorreo_int;
-                    txtCarreraInt.Text = obj.strCarrera_int;
                     dtFechaIniInt.Text = obj.dtFechaini_int.ToString("yyyy-MM-dd");
                     txtObservacionInt.Text = obj.strObservacion_int;
 
                     if (ddlFuncionInt.Items.FindByValue(obj.strFuncion_int) != null)
                         ddlFuncionInt.SelectedValue = obj.strFuncion_int;
 
+                    // CARGAR TIPO Y CAMPOS ESPECÍFICOS
+                    if (ddlTipoInt.Items.FindByValue(obj.strTipo_int) != null)
+                        ddlTipoInt.SelectedValue = obj.strTipo_int;
+                    else
+                        ddlTipoInt.SelectedIndex = 0;
+
+                    if (obj.strTipo_int == "Externo")
+                    {
+                        txtEntidadInt.Text = obj.strEntidad_int;
+                        txtCarreraInt.Text = "";
+                        ddlFacultadInt.SelectedIndex = 0;
+                    }
+                    else
+                    {
+                        txtEntidadInt.Text = "";
+                        txtCarreraInt.Text = obj.strCarrera_int;
+                        if (ddlFacultadInt.Items.FindByValue(obj.strFacultad_int) != null)
+                            ddlFacultadInt.SelectedValue = obj.strFacultad_int;
+                    }
+
                     lblTituloFormInt.Text = "Editar Integrante";
                     pnlIntegrantes.Visible = false;
                     pnlFormularioIntegrante.Visible = true;
+
+                    // IMPORTANTE: Disparar JS para mostrar/ocultar divs
+                    ScriptManager.RegisterStartupScript(this, GetType(), "initForm", "InitFormulario();", true);
                 }
             }
             else if (e.CommandName == "CambiarEstado")

@@ -11,7 +11,7 @@ namespace SistemaGestionCGI
     public partial class EjecucionProAprobados : System.Web.UI.Page
     {
         private readonly ManejadorEjecucionProyectos _manejador = new ManejadorEjecucionProyectos();
-        private readonly ManejadorProyectos _manejadorProyectos = new ManejadorProyectos();
+        private readonly ManejadorInscripcionProyectos _manejadorProyectos = new ManejadorInscripcionProyectos();
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -293,6 +293,7 @@ namespace SistemaGestionCGI
             txtNombresMiembro.Text = "";
             txtApellidosMiembro.Text = "";
             ddlRolMiembro.SelectedIndex = 0;
+            ddlFacultadMiembro.SelectedIndex = 0;
         }
 
         protected void btnGuardarMiembro_Click(object sender, EventArgs e)
@@ -311,6 +312,7 @@ namespace SistemaGestionCGI
                 m.strNombres_miembro = txtNombresMiembro.Text.Trim();
                 m.strApellidos_miembro = txtApellidosMiembro.Text.Trim();
                 m.strRol_miembro = ddlRolMiembro.SelectedValue;
+                m.strFacultad_miembro = ddlFacultadMiembro.SelectedValue;
 
                 if (string.IsNullOrEmpty(hfIdMiembroEdit.Value))
                 {
@@ -373,6 +375,9 @@ namespace SistemaGestionCGI
 
                         if (ddlRolMiembro.Items.FindByValue(miembro.strRol_miembro) != null)
                             ddlRolMiembro.SelectedValue = miembro.strRol_miembro;
+
+                        if (ddlFacultadMiembro.Items.FindByValue(miembro.strFacultad_miembro) != null)
+                            ddlFacultadMiembro.SelectedValue = miembro.strFacultad_miembro;
 
                         lblTituloFormMiembro.Text = "Editar Integrante";
                         pnlEquipoListado.Visible = false;

@@ -23,6 +23,9 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("strRol_miembro")]
         public string strRol_miembro { get; set; }
 
+        [JsonProperty("strFacultad_miembro")]
+        public string strFacultad_miembro { get; set; }
+
         [JsonProperty("bitActivo_miembro")]
         public bool bitActivo_miembro { get; set; }
     }

@@ -114,15 +114,6 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtTema;
 
         /// <summary>
-        /// Control ddlFacultad.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlFacultad;
-
-        /// <summary>
         /// Control txtDuracion.
         /// </summary>
         /// <remarks>
@@ -130,6 +121,15 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtDuracion;
+
+        /// <summary>
+        /// Control txtPuntaje.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtPuntaje;
 
         /// <summary>
         /// Control txtFecha.
@@ -231,15 +231,6 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtTemaEdit;
 
         /// <summary>
-        /// Control ddlFacultadEdit.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlFacultadEdit;
-
-        /// <summary>
         /// Control txtDuracionEdit.
         /// </summary>
         /// <remarks>
@@ -247,6 +238,15 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtDuracionEdit;
+
+        /// <summary>
+        /// Control txtPuntajeEdit.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtPuntajeEdit;
 
         /// <summary>
         /// Control txtFechaEdit.
@@ -375,6 +375,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.DropDownList ddlTipoInt;
 
         /// <summary>
+        /// Control divInterno.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divInterno;
+
+        /// <summary>
         /// Control txtCarreraInt.
         /// </summary>
         /// <remarks>
@@ -382,6 +391,33 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtCarreraInt;
+
+        /// <summary>
+        /// Control ddlFacultadInt.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlFacultadInt;
+
+        /// <summary>
+        /// Control divExterno.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divExterno;
+
+        /// <summary>
+        /// Control txtEntidadInt.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtEntidadInt;
 
         /// <summary>
         /// Control txtFuncionInt.

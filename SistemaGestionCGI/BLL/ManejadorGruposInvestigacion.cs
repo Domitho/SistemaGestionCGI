@@ -31,7 +31,6 @@ namespace SistemaGestionCGI.BLL
         public void GuardarGrupo(InvgccGrupoInvestigacion grupo)
         {
             grupo.strId_gru = GenerarCodigoAlfanumerico("INVGCCGRUPO_INVESTIGACION", "strId_gru", "G");
-
             _dal.Insert("INVGCCGRUPO_INVESTIGACION", grupo);
         }
 
@@ -54,6 +53,7 @@ namespace SistemaGestionCGI.BLL
 
         public void EliminarGrupo(string id)
         {
+            // Borrado en cascada manual (Historial -> Integrantes -> Grupo)
             string sqlDelHistorial = $"DELETE FROM INVGCCINTEGRANTES_HISTORIAL WHERE strId_int IN (SELECT strId_int FROM INVGCCGRUPO_INTEGRANTES WHERE fkId_gru = '{id}')";
             _dal.DeleteSql(sqlDelHistorial);
 
@@ -84,7 +84,22 @@ namespace SistemaGestionCGI.BLL
             integrante.bitActivo_int = true;
             integrante.bitPertenece_int = true;
 
-            _dal.Insert("INVGCCGRUPO_INTEGRANTES", integrante);
+            // IMPORTANTE: Aquí NO usamos _dal.Insert porque necesitamos control total sobre los campos NULL
+            // Construimos el SQL manual para asegurar que Tipo, Facultad y Entidad se guarden.
+
+            string sql = $@"
+                INSERT INTO INVGCCGRUPO_INTEGRANTES 
+                (strId_int, fkId_gru, strCedula_int, strNombres_int, strApellidos_int, strCorreo_int, 
+                 strCarrera_int, strFuncion_int, dtFechaini_int, strObservacion_int, bitActivo_int, bitPertenece_int,
+                 strTipo_int, strFacultad_int, strEntidad_int) 
+                VALUES 
+                ('{integrante.strId_int}', '{integrante.fkId_gru}', '{integrante.strCedula_int}', '{integrante.strNombres_int}', 
+                 '{integrante.strApellidos_int}', '{integrante.strCorreo_int}', 
+                 '{integrante.strCarrera_int}', '{integrante.strFuncion_int}', '{integrante.dtFechaini_int:yyyy-MM-dd}', 
+                 '{integrante.strObservacion_int}', 1, 1,
+                 '{integrante.strTipo_int}', '{integrante.strFacultad_int}', '{integrante.strEntidad_int}')"; // <--- Campos Nuevos
+
+            _dal.UpdateSql(sql);
         }
 
         public void ActualizarIntegrante(InvgccGrupoIntegrantes integrante)
@@ -98,6 +113,7 @@ namespace SistemaGestionCGI.BLL
             int activo = integrante.bitActivo_int ? 1 : 0;
             string fechaIni = $"'{integrante.dtFechaini_int:yyyyMMdd}'";
 
+            // CORRECCIÓN: Agregar strTipo_int, strFacultad_int, strEntidad_int al UPDATE
             string sql = $@"
                 UPDATE INVGCCGRUPO_INTEGRANTES SET 
                     strCedula_int = '{integrante.strCedula_int}',
@@ -109,7 +125,10 @@ namespace SistemaGestionCGI.BLL
                     dtFechaini_int = {fechaIni}, 
                     dtFechafin_int = {fechaFin},
                     strObservacion_int = '{integrante.strObservacion_int}',
-                    bitActivo_int = {activo}
+                    bitActivo_int = {activo},
+                    strTipo_int = '{integrante.strTipo_int}',         -- Nuevo
+                    strFacultad_int = '{integrante.strFacultad_int}', -- Nuevo
+                    strEntidad_int = '{integrante.strEntidad_int}'    -- Nuevo
                 WHERE strId_int = '{integrante.strId_int}'";
 
             _dal.UpdateSql(sql);
@@ -118,7 +137,6 @@ namespace SistemaGestionCGI.BLL
         public void CambiarEstadoIntegrante(string id, bool estado, string motivo, string usuario)
         {
             int bit = estado ? 1 : 0;
-
             string fechaFin = estado ? "NULL" : $"'{DateTime.Now:yyyyMMdd}'";
 
             string sql = $@"
@@ -162,14 +180,14 @@ namespace SistemaGestionCGI.BLL
         }
 
         // =============================================================
-        // 4. UTILIDADES (Generador G# / I#) - CORREGIDO
+        // 4. UTILIDADES (Generador G# / I#)
         // =============================================================
         private string GenerarCodigoAlfanumerico(string tabla, string campoId, string prefijo)
         {
+            // Busca el último ID ordenando primero por longitud y luego alfabéticamente para evitar que I10 quede antes de I2
             string sql = $"SELECT TOP 1 {campoId} FROM {tabla} ORDER BY Len({campoId}) DESC, {campoId} DESC";
 
             var lista = _dal.SelectSql<dynamic>(sql);
-
             int siguienteNumero = 1;
 
             if (lista != null && lista.Count > 0)
@@ -177,6 +195,7 @@ namespace SistemaGestionCGI.BLL
                 string ultimoId = "";
                 var item = lista[0];
 
+                // Manejo seguro del dynamic/JObject dependiendo del driver
                 if (item is JObject jobj)
                 {
                     ultimoId = jobj[campoId]?.ToString();

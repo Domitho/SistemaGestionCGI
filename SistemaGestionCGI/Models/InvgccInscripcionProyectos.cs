@@ -29,16 +29,16 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("fkId_gru")]
         public string fkId_gru { get; set; }
 
+        [JsonProperty("strCoordinador_pro")]
+        public string strCoordinador_pro { get; set; } 
+
+        [JsonProperty("intPuntaje_pro")]
+        public int? intPuntaje_pro { get; set; }
+
         [JsonProperty("strNombre_gru")]
         public string strNombre_gru { get; set; }
 
         [JsonProperty("strNombre_conv")]
         public string strNombre_conv { get; set; }
-
-        [JsonProperty("strCoordinador_pro")]
-        public string strCoordinador_pro { get; set; }
-
-        [JsonProperty("strFacultad_pro")]
-        public string strFacultad_pro { get; set; }
     }
 }

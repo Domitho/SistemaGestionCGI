@@ -56,7 +56,7 @@ namespace SistemaGestionCGI.BLL
 
         public List<InvgccDashboardChart> ObtenerProyectosPorEstado()
         {
-            string sql = "SELECT strEstado_pro FROM INVGCCPROYECTO";
+            string sql = "SELECT strEstado_pro FROM INVGCCINSCRIPCION_PROYECTOS";
             var lista = _dal.SelectSql<InvgccProyectoMap>(sql);
 
             if (lista == null) return new List<InvgccDashboardChart>();

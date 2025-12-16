@@ -10,7 +10,7 @@ namespace SistemaGestionCGI
 {
     public partial class InscripcionProyectos : System.Web.UI.Page
     {
-        private readonly ManejadorProyectos _manejador = new ManejadorProyectos();
+        private readonly ManejadorInscripcionProyectos _manejador = new ManejadorInscripcionProyectos();
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -129,11 +129,31 @@ namespace SistemaGestionCGI
                 nuevo.strCedula_int = txtCedulaInt.Text.Trim();
                 nuevo.strNombres_int = txtNombresInt.Text.Trim();
                 nuevo.strApellidos_int = txtApellidosInt.Text.Trim();
-                nuevo.strCorreo_int = txtCorreoInt.Text.Trim();
-                nuevo.strCarrera_int = txtCarreraInt.Text.Trim();
+                nuevo.strCorreo_int = txtCorreoInt.Text.Trim(); 
                 nuevo.strFuncion_int = txtFuncionInt.Text.Trim();
                 nuevo.strObservacion_int = txtObservacionInt.Text.Trim();
                 nuevo.strTipo_int = ddlTipoInt.SelectedValue;
+
+                if (nuevo.strTipo_int == "Externo")
+                {
+                    // Si es Externo: Guardamos Entidad, Limpiamos datos académicos UTC
+                    nuevo.strEntidad_int = txtEntidadInt.Text.Trim();
+                    nuevo.strCarrera_int = null;
+                    nuevo.strFacultad_int = null;
+
+                    if (string.IsNullOrEmpty(nuevo.strEntidad_int))
+                    {
+                        Msg("Debe especificar la Institución de Origen para externos.", "ww");
+                        ScriptManager.RegisterStartupScript(this, GetType(), "reopen", "AbrirModalNuevoIntegrante(); ToggleTipoIntegrante();", true);
+                        return;
+                    }
+                }
+                else
+                {
+                    nuevo.strEntidad_int = null;
+                    nuevo.strCarrera_int = txtCarreraInt.Text.Trim();
+                    nuevo.strFacultad_int = ddlFacultadInt.SelectedValue;
+                }
 
                 // 3. Guardar
                 _manejador.GuardarIntegranteExpress(nuevo);
@@ -149,6 +169,7 @@ namespace SistemaGestionCGI
                 // 6. Limpiar campos
                 txtCedulaInt.Text = ""; txtNombresInt.Text = ""; txtApellidosInt.Text = "";
                 txtCorreoInt.Text = ""; txtCarreraInt.Text = ""; txtFuncionInt.Text = ""; txtObservacionInt.Text = "";
+                ddlFacultadInt.SelectedIndex = 0;
 
                 Msg("Integrante registrado y seleccionado.", "ss");
             }
@@ -194,7 +215,6 @@ namespace SistemaGestionCGI
             txtFecha.Text = DateTime.Now.ToString("yyyy-MM-dd");
             txtTema.Text = "";
             txtDuracion.Text = "";
-            ddlFacultad.SelectedIndex = 0;
             ddlGrupo.SelectedIndex = 0;
             ddlConv.SelectedIndex = 0;
 
@@ -212,7 +232,7 @@ namespace SistemaGestionCGI
             try
             {
                 // Validamos que haya seleccionado coordinador
-                if (string.IsNullOrWhiteSpace(txtTema.Text) || ddlFacultad.SelectedIndex == 0 || ddlCoordinador.SelectedIndex <= 0)
+                if (string.IsNullOrWhiteSpace(txtTema.Text) || ddlCoordinador.SelectedIndex <= 0)
                 {
                     Msg("Complete los campos obligatorios (Tema, Facultad, Coordinador).", "ww");
                     return;
@@ -224,7 +244,6 @@ namespace SistemaGestionCGI
                 // AHORA TOMAMOS EL VALOR DEL DROPDOWNLIST
                 nuevo.strCoordinador_pro = ddlCoordinador.SelectedValue;
 
-                nuevo.strFacultad_pro = ddlFacultad.SelectedValue;
                 nuevo.strDuracion_pro = txtDuracion.Text.Trim();
                 nuevo.dtFehains_pro = DateTime.Parse(txtFecha.Text);
                 nuevo.fkId_gru = ddlGrupo.SelectedValue;
@@ -237,6 +256,18 @@ namespace SistemaGestionCGI
                     if (ext != ".pdf" && ext != ".xls" && ext != ".xlsx") { Msg("Formato no permitido.", "ww"); return; }
                     string nombre = "PROY_" + DateTime.Now.Ticks + ext;
                     nuevo.strArchivo_pro = GuardarArchivo(flpArchivo, nombre);
+                }
+
+                // LÓGICA PUNTAJE OPCIONAL
+                if (!string.IsNullOrEmpty(txtPuntaje.Text))
+                {
+                    if (int.TryParse(txtPuntaje.Text, out int puntos))
+                        nuevo.intPuntaje_pro = puntos;
+                    
+                }
+                else
+                {
+                    nuevo.intPuntaje_pro = null;
                 }
 
                 _manejador.Guardar(nuevo);
@@ -329,8 +360,10 @@ namespace SistemaGestionCGI
                     hfIdEdit.Value = pro.strId_pro;
                     txtTemaEdit.Text = pro.strTema_pro;
 
-                    if (ddlFacultadEdit.Items.FindByValue(pro.strFacultad_pro) != null)
-                        ddlFacultadEdit.SelectedValue = pro.strFacultad_pro;
+                    if (pro.intPuntaje_pro.HasValue)
+                        txtPuntajeEdit.Text = pro.intPuntaje_pro.Value.ToString();
+                    else
+                        txtPuntajeEdit.Text = "";
 
                     txtDuracionEdit.Text = pro.strDuracion_pro;
                     txtFechaEdit.Text = pro.dtFehains_pro.ToString("yyyy-MM-dd");
@@ -390,7 +423,6 @@ namespace SistemaGestionCGI
                 // AHORA TOMAMOS EL COORDINADOR DEL COMBO EDIT
                 edit.strCoordinador_pro = ddlCoordinadorEdit.SelectedValue;
 
-                edit.strFacultad_pro = ddlFacultadEdit.SelectedValue;
                 edit.strDuracion_pro = txtDuracionEdit.Text.Trim();
                 edit.dtFehains_pro = DateTime.Parse(txtFechaEdit.Text);
                 edit.fkId_gru = ddlGrupoEdit.SelectedValue;
@@ -399,9 +431,20 @@ namespace SistemaGestionCGI
 
                 if (flpArchivoEdit.HasFile)
                 {
-                    // ... (Lógica archivo igual) ...
                     string nombre = "PROY_" + DateTime.Now.Ticks + Path.GetExtension(flpArchivoEdit.FileName);
                     edit.strArchivo_pro = GuardarArchivo(flpArchivoEdit, nombre);
+                }
+
+                if (!string.IsNullOrEmpty(txtPuntajeEdit.Text))
+                {
+                    if (int.TryParse(txtPuntajeEdit.Text, out int puntos))
+                        edit.intPuntaje_pro = puntos;
+                    
+
+                }
+                else
+                {
+                    edit.intPuntaje_pro = null;
                 }
 
                 _manejador.Actualizar(edit);
@@ -429,7 +472,17 @@ namespace SistemaGestionCGI
 
         private void Msg(string msg, string type)
         {
-            string cleanMsg = msg.Replace("'", "\\'");
+            if (string.IsNullOrEmpty(msg)) return;
+
+            // 1. PRIMERO reemplaza las barras invertidas (para no dañar los escapes posteriores)
+            string cleanMsg = msg.Replace("\\", "\\\\");
+
+            // 2. LUEGO reemplaza las comillas simples
+            cleanMsg = cleanMsg.Replace("'", "\\'");
+
+            // 3. FINALMENTE elimina todos los tipos de saltos de línea
+            cleanMsg = cleanMsg.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
+
             string script = $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema'); }});";
             ScriptManager.RegisterStartupScript(this, GetType(), "alert", script, true);
         }

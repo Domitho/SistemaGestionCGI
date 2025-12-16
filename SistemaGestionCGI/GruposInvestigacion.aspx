@@ -325,22 +325,17 @@
             <asp:HiddenField ID="hfIdIntEdit" runat="server" />
 
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-12"><h6 class="text-primary fw-bold border-bottom pb-2">Datos Personales</h6></div>
+
+                <div class="col-md-4">
                     <label class="form-label">Cédula</label>
-                    <asp:TextBox ID="txtCedulaInt" runat="server" CssClass="form-control" />
+                    <asp:TextBox ID="txtCedulaInt" runat="server" CssClass="form-control" MaxLength="15"/>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Función</label>
-                    <asp:DropDownList ID="ddlFuncionInt" runat="server" CssClass="form-select">
-                        <asp:ListItem Value="Investigador Principal">Investigador Principal</asp:ListItem>
-                        <asp:ListItem Value="Miembro Investigador">Miembro Investigador</asp:ListItem>
-                    </asp:DropDownList>
-                </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label">Nombres</label>
                     <asp:TextBox ID="txtNombresInt" runat="server" CssClass="form-control" />
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label">Apellidos</label>
                     <asp:TextBox ID="txtApellidosInt" runat="server" CssClass="form-control" />
                 </div>
@@ -348,9 +343,51 @@
                     <label class="form-label">Correo</label>
                     <asp:TextBox ID="txtCorreoInt" runat="server" CssClass="form-control" TextMode="Email" />
                 </div>
+
                 <div class="col-md-6">
-                    <label class="form-label">Carrera</label>
-                    <asp:TextBox ID="txtCarreraInt" runat="server" CssClass="form-control" />
+                    <label class="form-label">Tipo de Integrante</label>
+                    <asp:DropDownList ID="ddlTipoInt" runat="server" CssClass="form-select" onchange="ToggleTipoIntegrante(this)">
+                        <asp:ListItem Text="Interno (UTC)" Value="Interno" Selected="True"/>
+                        <asp:ListItem Text="Externo (Colaborador)" Value="Externo" />
+                    </asp:DropDownList>
+                </div>
+
+                <div class="col-12 mt-3"><h6 class="text-primary fw-bold border-bottom pb-2">Afiliación</h6></div>
+
+                <div id="divInterno" class="col-12 row g-3 m-0 p-0" runat="server" ClientIDMode="Static">
+                    <div class="col-md-6">
+                        <label class="form-label">Carrera / Departamento</label>
+                        <asp:TextBox ID="txtCarreraInt" runat="server" CssClass="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Facultad / Extensión</label>
+                        <asp:DropDownList ID="ddlFacultadInt" runat="server" CssClass="form-select">
+                            <asp:ListItem Text="-- Seleccione --" Value="" />
+                            <asp:ListItem>FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
+                            <asp:ListItem>FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
+                            <asp:ListItem>FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
+                            <asp:ListItem>FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
+                            <asp:ListItem>FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
+                            <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
+                            <asp:ListItem>EXTENSION LA MANÁ</asp:ListItem>
+                        </asp:DropDownList>
+                    </div>
+                </div>
+
+                <div id="divExterno" class="col-12" style="display:none;" runat="server" ClientIDMode="Static">
+                    <label class="form-label">Institución / Entidad de Origen</label>
+                    <asp:TextBox ID="txtEntidadInt" runat="server" CssClass="form-control" placeholder="Ej: Universidad Central..." />
+                </div>
+
+                <div class="col-12 mt-3"><h6 class="text-primary fw-bold border-bottom pb-2">Datos del Grupo</h6></div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Función</label>
+                    <asp:DropDownList ID="ddlFuncionInt" runat="server" CssClass="form-select">
+                        <asp:ListItem Value="Investigador Principal">Investigador Principal</asp:ListItem>
+                        <asp:ListItem Value="Miembro Investigador">Miembro Investigador</asp:ListItem>
+                        <asp:ListItem Value="Coordinador">Coordinador</asp:ListItem>
+                    </asp:DropDownList>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Fecha Inicio</label>
@@ -598,6 +635,28 @@
             }, 500); 
         }
 
+    </script>
+
+    <script>
+        function ToggleTipoIntegrante(el) {
+            var tipo = el.value;
+            var divInterno = document.getElementById('divInterno');
+            var divExterno = document.getElementById('divExterno');
+
+            if (tipo === "Externo") {
+                divInterno.style.display = 'none';
+                divExterno.style.display = 'block';
+            } else {
+                divInterno.style.display = 'flex';
+                divExterno.style.display = 'none';
+            }
+        }
+
+        // Llamar al cargar para establecer estado inicial (Útil al editar)
+        function InitFormulario() {
+            var ddl = document.getElementById('<%= ddlTipoInt.ClientID %>');
+            if (ddl) ToggleTipoIntegrante(ddl);
+        }
     </script>
 
 </asp:Content>

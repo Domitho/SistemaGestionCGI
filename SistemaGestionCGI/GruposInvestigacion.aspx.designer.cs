@@ -402,15 +402,6 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtCedulaInt;
 
         /// <summary>
-        /// Control ddlFuncionInt.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlFuncionInt;
-
-        /// <summary>
         /// Control txtNombresInt.
         /// </summary>
         /// <remarks>
@@ -438,6 +429,24 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtCorreoInt;
 
         /// <summary>
+        /// Control ddlTipoInt.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlTipoInt;
+
+        /// <summary>
+        /// Control divInterno.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divInterno;
+
+        /// <summary>
         /// Control txtCarreraInt.
         /// </summary>
         /// <remarks>
@@ -445,6 +454,42 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtCarreraInt;
+
+        /// <summary>
+        /// Control ddlFacultadInt.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlFacultadInt;
+
+        /// <summary>
+        /// Control divExterno.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divExterno;
+
+        /// <summary>
+        /// Control txtEntidadInt.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtEntidadInt;
+
+        /// <summary>
+        /// Control ddlFuncionInt.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlFuncionInt;
 
         /// <summary>
         /// Control dtFechaIniInt.

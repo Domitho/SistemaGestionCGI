@@ -47,10 +47,10 @@
                         <th>ID</th>
                         <th>TEMA</th>
                         <th>COORDINADOR</th>
-                        <th>FACULTAD</th>
                         <th>DURACIÓN</th>
-                        <th>FECHA</th>
+                        <th>FECHA REGISTRO</th>
                         <th>GRUPO</th>
+                        <th>CALIFICACIÓN</th>
                         <th>ESTADO</th>
                         <th>ACCIONES</th>
                     </tr>
@@ -62,10 +62,19 @@
                                 <td><%# Eval("strId_pro") %></td>
                                 <td class="text-start"><%# Eval("strTema_pro") %></td>
                                 <td class="text-start"><%# Eval("strCoordinador_pro") %></td>
-                                <td class="text-start"><%# Eval("strFacultad_pro") %></td>
                                 <td><%# Eval("strDuracion_pro") %></td>
                                 <td><%# Convert.ToDateTime(Eval("dtFehains_pro")).ToString("dd/MM/yyyy") %></td>
                                 <td class="text-start"><%# Eval("strNombre_gru") %></td>
+                                <td class="text-center align-middle">
+                                    <%# Eval("intPuntaje_pro") == null || Eval("intPuntaje_pro") == DBNull.Value
+                                        ? 
+                                        "<span class='badge rounded-pill bg-secondary bg-opacity-25 text-secondary border border-secondary fw-normal'>" +
+                                            "<i class='fa-solid fa-hourglass-start me-1'></i> Por Calificar" +
+                                        "</span>" 
+                                        : 
+                                        "<span class='fw-bold fs-5 text-dark'>" + Eval("intPuntaje_pro") + " <small class='text-muted fs-6'>pts</small></span>" 
+                                    %>
+                                </td>
                                 <td>
                                     <span class='<%# Eval("strEstado_pro").ToString() == "Pendiente" 
                                                     ? "badge bg-warning" 
@@ -162,22 +171,16 @@
                     <label class="form-label">Titulo del Proyecto</label>
                     <asp:TextBox ID="txtTema" runat="server" CssClass="form-control" />
                 </div>
-                <div class="col-12">
-                    <label class="form-label">Facultad o Extensión</label>
-                    <asp:DropDownList ID="ddlFacultad" runat="server" CssClass="form-select">
-                        <asp:ListItem Text="-- Seleccione una opción --" Value="" />
-                        <asp:ListItem>FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
-                        <asp:ListItem>FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
-                        <asp:ListItem>FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
-                        <asp:ListItem>FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
-                        <asp:ListItem>FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
-                        <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
-                        <asp:ListItem>EXTENSION LA MANÁ</asp:ListItem>
-                    </asp:DropDownList>
-                </div>
-                <div class="col-12">
+                <div class="col-md-6">
                     <label class="form-label">Duración</label>
                     <asp:TextBox ID="txtDuracion" runat="server" CssClass="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Puntuación Obtenida (Opcional)</label>
+                    <div class="input-group">
+                        <asp:TextBox ID="txtPuntaje" runat="server" CssClass="form-control" TextMode="Number" placeholder="Ej: 95" />
+                    </div>
+                    <div class="form-text small">Dejar vacío si aún no ha sido calificado.</div>
                 </div>
                 <div class="col-12">
                     <label class="form-label">Fecha de Inicio</label>
@@ -249,22 +252,13 @@
                     <label class="form-label">Titulo del Proyecto</label>
                     <asp:TextBox ID="txtTemaEdit" runat="server" CssClass="form-control" />
                 </div>
-                <div class="col-12">
-                    <label class="form-label">Facultad o Extensión</label>
-                    <asp:DropDownList ID="ddlFacultadEdit" runat="server" CssClass="form-select">
-                        <asp:ListItem Text="-- Seleccione una opción --" Value="" />
-                        <asp:ListItem>FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
-                        <asp:ListItem>FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
-                        <asp:ListItem>FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
-                        <asp:ListItem>FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
-                        <asp:ListItem>FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
-                        <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
-                        <asp:ListItem>EXTENSION LA MANÁ</asp:ListItem>
-                    </asp:DropDownList>
-                </div>  
-                <div class="col-12">
+                <div class="col-md-6">
                     <label class="form-label">Duración</label>
                     <asp:TextBox ID="txtDuracionEdit" runat="server" CssClass="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold text-primary">Puntaje Asignado</label>
+                    <asp:TextBox ID="txtPuntajeEdit" runat="server" CssClass="form-control" TextMode="Number" />
                 </div>
                 <div class="col-12">
                     <label class="form-label">Fecha de Inicio</label>
@@ -378,29 +372,51 @@
                             <asp:TextBox ID="txtApellidosInt" runat="server" CssClass="form-control" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Correo Electrónico <span class="text-danger">*</span></label>
+                            <label class="form-label">Correo Electrónico</label>
                             <asp:TextBox ID="txtCorreoInt" runat="server" CssClass="form-control" TextMode="Email" />
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label">Tipo de Integrante</label>
-                            <asp:DropDownList ID="ddlTipoInt" runat="server" CssClass="form-select">
-                                <asp:ListItem Text="Interno (UTC)" Value="Interno" />
-                                <asp:ListItem Text="Externo (Colaborador)" Value="Externo" Selected="True" />
+                            <asp:DropDownList ID="ddlTipoInt" runat="server" CssClass="form-select" onchange="ToggleTipoIntegrante(this)">
+                                <asp:ListItem Text="Interno (UTC)" Value="Interno" Selected="True" />
+                                <asp:ListItem Text="Externo (Colaborador)" Value="Externo" />
                             </asp:DropDownList>
                         </div>
 
                         <div class="col-12 mt-4"><h6 class="text-primary fw-bold border-bottom pb-2">Datos Académicos / Función</h6></div>
 
-                        <div class="col-md-6">
-                            <label class="form-label">Carrera / Departamento <span class="text-danger">*</span></label>
-                            <asp:TextBox ID="txtCarreraInt" runat="server" CssClass="form-control" placeholder="Ej: Sistemas, Agroindustrial..." />
+                        <div id="divInterno" class="col-12 row g-3 m-0 p-0" runat="server" ClientIDMode="Static">
+                            <div class="col-md-6">
+                                <label class="form-label">Carrera / Departamento</label>
+                                <asp:TextBox ID="txtCarreraInt" runat="server" CssClass="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Facultad / Extensión</label>
+                                <asp:DropDownList ID="ddlFacultadInt" runat="server" CssClass="form-select">
+                                    <asp:ListItem Text="-- Seleccione --" Value="" />
+                                    <asp:ListItem>FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
+                                    <asp:ListItem>FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
+                                    <asp:ListItem>FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
+                                    <asp:ListItem>FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
+                                    <asp:ListItem>FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
+                                    <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
+                                    <asp:ListItem>EXTENSION LA MANÁ</asp:ListItem>
+                                </asp:DropDownList>
+                            </div>
                         </div>
+
+                        <div id="divExterno" class="col-12" style="display:none;" runat="server" ClientIDMode="Static">
+                            <label class="form-label">Institución / Entidad de Origen <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtEntidadInt" runat="server" CssClass="form-control" placeholder="Ej: Universidad Central, Empresa Eléctrica..." />
+                        </div>
+
                         <div class="col-md-6">
-                            <label class="form-label">Función en el Grupo <span class="text-danger">*</span></label>
-                            <asp:TextBox ID="txtFuncionInt" runat="server" CssClass="form-control" placeholder="Ej: Investigador Principal, Técnico..." />
+                            <label class="form-label">Función en el Grupo</label>
+                            <asp:TextBox ID="txtFuncionInt" runat="server" CssClass="form-control" placeholder="Ej: Investigador Principal..." />
                         </div>
                         <div class="col-12">
-                            <label class="form-label">Observación (Opcional)</label>
+                            <label class="form-label">Observación</label>
                             <asp:TextBox ID="txtObservacionInt" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="2" />
                         </div>
                     </div>
@@ -428,6 +444,11 @@
             var el = document.getElementById('modalNuevoIntegrante');
             var modal = new bootstrap.Modal(el);
             modal.show();
+
+            if (typeof ResetFormularioIntegrante === "function") {
+                ResetFormularioIntegrante();
+            }
+
         }
     </script>
 
@@ -441,6 +462,7 @@
                 responsive: true,
                 autoWidth: false,
                 ordering: true,
+                order: [],
                 pageLength: 10,
                 language: { url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json" },
                 dom: "<'row align-items-center mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-end'f>><'row mb-3'<'col-sm-12 text-center'B>><'row'<'col-sm-12'tr>><'row mt-3 align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
@@ -475,6 +497,34 @@
                 modal = new bootstrap.Modal(el);
             }
             modal.show();
+        }
+    </script>
+
+    <script>
+        function ToggleTipoIntegrante(el) {
+            // 'el' es el DropDownList que disparó el evento. No necesitamos buscarlo por ID.
+            var tipo = el.value;
+
+            // Como usamos ClientIDMode="Static", podemos usar los IDs directos
+            var divInterno = document.getElementById('divInterno');
+            var divExterno = document.getElementById('divExterno');
+
+            if (tipo === "Externo") {
+                divInterno.style.display = 'none';
+                divExterno.style.display = 'block';
+            } else {
+                divInterno.style.display = 'flex'; // 'flex' porque es un row
+                divExterno.style.display = 'none';
+            }
+        }
+
+        // Esta función extra asegura que al abrir el modal (si hubo error) se vea bien
+        function ResetFormularioIntegrante() {
+            var ddl = document.getElementById('<%= ddlTipoInt.ClientID %>');
+            if (ddl) {
+                // Forzamos la ejecución para acomodar los divs según lo que esté seleccionado
+                ToggleTipoIntegrante(ddl);
+            }
         }
     </script>
 

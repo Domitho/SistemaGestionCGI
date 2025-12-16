@@ -190,7 +190,7 @@
     <Compile Include="BLL\ManejadorDashboard.cs" />
     <Compile Include="BLL\ManejadorEjecucionProyectos.cs" />
     <Compile Include="BLL\ManejadorGruposInvestigacion.cs" />
-    <Compile Include="BLL\ManejadorProyectos.cs" />
+    <Compile Include="BLL\ManejadorInscripcionProyectos.cs" />
     <Compile Include="BLL\ManejadorUsuarios.cs" />
     <Compile Include="CalificacionGruInvestigacion.aspx.cs">
       <DependentUpon>CalificacionGruInvestigacion.aspx</DependentUpon>

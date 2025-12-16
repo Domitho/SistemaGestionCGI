@@ -38,9 +38,6 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("fkId_gru")]
         public string fkId_gru { get; set; }
 
-        [JsonProperty("fkId_doc")]
-        public string fkId_doc { get; set; }
-
         [JsonProperty("strCorreo_int")]
         public string strCorreo_int { get; set; }
 
@@ -49,6 +46,12 @@ namespace SistemaGestionCGI.Models
 
         [JsonProperty("strTipo_int")]
         public string strTipo_int { get; set; }
+
+        [JsonProperty("strFacultad_int")]
+        public string strFacultad_int { get; set; }
+
+        [JsonProperty("strEntidad_int")]
+        public string strEntidad_int { get; set; }
 
         [JsonProperty("NombreCompleto")]
         public string NombreCompleto { get; set; }
