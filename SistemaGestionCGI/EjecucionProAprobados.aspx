@@ -273,19 +273,27 @@
                         <th>APELLIDOS</th>
                         <th>FACULTAD</th>
                         <th>ROL</th>
-                        <th>ACCIONES</th>
+                        <th>ESTADO</th> <th>ACCIONES</th>
                     </tr>
                 </thead>
                 <tbody>
                     <asp:Repeater ID="rptMiembros" runat="server" OnItemCommand="rptMiembros_ItemCommand">
                         <ItemTemplate>
-                            <tr>
+                            <tr class='<%# Convert.ToBoolean(Eval("bitActivo_miembro")) ? "" : "table-secondary text-muted" %>'>
                                 <td><%# Eval("strId_miembro") %></td>
                                 <td><%# Eval("strCedula_miembro") %></td>
                                 <td class="text-start"><%# Eval("strNombres_miembro") %></td>
                                 <td class="text-start"><%# Eval("strApellidos_miembro") %></td>
                                 <td><%# Eval("strFacultad_miembro") %></td>
                                 <td><%# Eval("strRol_miembro") %></td>
+                        
+                                <td>
+                                    <%# Convert.ToBoolean(Eval("bitActivo_miembro")) 
+                                        ? "<span class='badge bg-success'><i class='fa-solid fa-check me-1'></i>Activo</span>" 
+                                        : "<span class='badge bg-danger'><i class='fa-solid fa-ban me-1'></i>Inactivo</span>" 
+                                    %>
+                                </td>
+
                                 <td>
                                     <asp:LinkButton ID="btnEditarM" runat="server" 
                                         CommandName="EditarMiembro" CommandArgument='<%# Eval("strId_miembro") %>'
@@ -293,12 +301,17 @@
                                         <i class="fa-solid fa-pen"></i>
                                     </asp:LinkButton>
 
-                                    <asp:LinkButton ID="btnEliminarM" runat="server" 
-                                        CommandName="EliminarMiembro" CommandArgument='<%# Eval("strId_miembro") %>'
-                                        CssClass="btn btn-eliminar btn-sm rounded-circle"
-                                        OnClientClick="return confirm('¿Quitar a este integrante del equipo?');"
-                                        ToolTip="Quitar">
-                                        <i class="fa-solid fa-trash"></i>
+                                    <asp:LinkButton ID="btnToggleEstado" runat="server" 
+                                        CommandName="CambiarEstado" CommandArgument='<%# Eval("strId_miembro") %>'
+                                        CssClass='<%# Convert.ToBoolean(Eval("bitActivo_miembro")) ? "btn btn-outline-danger btn-sm rounded-circle me-1" : "btn btn-outline-success btn-sm rounded-circle me-1" %>' 
+                                        ToolTip='<%# Convert.ToBoolean(Eval("bitActivo_miembro")) ? "Dar de Baja" : "Reactivar" %>'>
+                                        <i class="fa-solid fa-power-off"></i>
+                                    </asp:LinkButton>
+
+                                    <asp:LinkButton ID="btnHistorial" runat="server" 
+                                        CommandName="VerHistorial" CommandArgument='<%# Eval("strId_miembro") %>'
+                                        CssClass="btn btn-info btn-sm rounded-circle text-white" ToolTip="Ver Historial">
+                                        <i class="fa-solid fa-clock-rotate-left"></i>
                                     </asp:LinkButton>
                                 </td>
                             </tr>
@@ -540,7 +553,9 @@
                     </div>
 
                     <div class="d-grid gap-2">
-                        <asp:LinkButton ID="btnGuardarInforme" runat="server" CssClass="btn btn-primary btn-lg shadow-sm"
+                        <asp:LinkButton ID="btnGuardarInforme" runat="server" 
+                            CssClass="btn btn-primary btn-lg shadow-sm"
+                            OnClientClick="return validarPesoArchivo();" 
                             OnClick="btnGuardarInforme_Click">
                             <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Informe
                         </asp:LinkButton>
@@ -552,23 +567,131 @@
     </div>
 
     <div class="modal fade" id="modalVistaPrevia" tabindex="-1" aria-hidden="true" style="z-index: 1070;" ClientIDMode="Static" runat="server">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content border-0 rounded-4 shadow-lg" style="background: #333;">
-                <div class="modal-header border-bottom-0 py-2 px-3">
-                    <h6 class="modal-title text-white" id="lblTituloPreview">Vista Previa</h6>
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 rounded-4 shadow-lg">
+                <div class="modal-header border-bottom-0 py-2 px-3 bg-dark text-white">
+                    <h6 class="modal-title" id="lblTituloPreview" runat="server">Vista Previa</h6>
                     <div>
+                        <button type="button" id="btnImprimirReporte" class="btn btn-sm btn-light me-2" onclick="imprimirReporteJS()" style="display:none;" runat="server">
+                            <i class="fa-solid fa-print"></i> Imprimir
+                        </button>
+                    
                         <a id="btnDescargarDirecto" href="#" target="_blank" class="btn btn-sm btn-outline-light me-2">
                             <i class="fa-solid fa-download"></i> Descargar
                         </a>
+
                         <button type="button" class="btn-close btn-close-white" onclick="CerrarVistaPrevia()"></button>
                     </div>
                 </div>
-                <div class="modal-body p-0" style="height: 80vh;">
-                    <iframe id="framePdf" class="pdf-viewer-frame"></iframe>
+            
+                <div class="modal-body p-0" style="height: 80vh; background:white;">
+                    <iframe id="framePdf" class="pdf-viewer-frame" style="width:100%; height:100%; border:none;"></iframe>
+
+                    <asp:Panel ID="pnlReporteHtml" runat="server" Visible="false" CssClass="p-5 overflow-auto h-100">
+                        <div id="areaImpresion">
+                            <asp:Literal ID="litReporteGenerado" runat="server"></asp:Literal>
+                        </div>
+                    </asp:Panel>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="modalEstadoMiembro" tabindex="-1" aria-hidden="true" ClientIDMode="Static" runat="server">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-utc border-0">
+                <div class="modal-header bg-utc text-white text-center">
+                    <h5 class="modal-title w-100"><i class="fa-solid fa-shield-halved me-2"></i> Auditoría de Estado</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-center fs-5">¿Confirmar cambio de estado?</p>
+                
+                    <div class="alert alert-light border text-center small">
+                        <strong id="lblNombreMiembroEstado">...</strong><br />
+                        <span id="lblRolMiembroEstado" class="text-muted">...</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Motivo del cambio (Obligatorio)</label>
+                        <textarea id="txtMotivoCambio" class="form-control" rows="3" placeholder="Especifique la razón..."></textarea>
+                    
+                        <asp:HiddenField ID="hfMotivoHidden" runat="server" ClientIDMode="Static" />
+                        <asp:HiddenField ID="hfIdMiembroEstado" runat="server" ClientIDMode="Static" />
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <asp:LinkButton ID="btnConfirmarEstado" runat="server" 
+                        CssClass="btn btn-primary btn-pill px-4"
+                        OnClientClick="return guardarMotivoJS();" 
+                        OnClick="btnConfirmarEstado_Click">
+                        <i class="fa-solid fa-check me-2"></i> Confirmar
+                    </asp:LinkButton>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalHistorialMiembro" tabindex="-1" aria-hidden="true" ClientIDMode="Static" runat="server">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content shadow-utc border-0 rounded-4">
+                <div class="modal-header bg-utc text-white">
+                    <h5 class="modal-title"><i class="fa-solid fa-list-ul me-2"></i> Historial de Movimientos</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <h6 class="text-primary fw-bold text-center mb-3">
+                        <asp:Label ID="lblNombreHistorial" runat="server" Text="..." />
+                    </h6>
+
+                    <div class="d-flex justify-content-end mb-3">
+                        <asp:LinkButton ID="btnGenerarReporteHistorial" runat="server" 
+                            CssClass="btn btn-danger btn-pill px-4" 
+                            OnClick="btnGenerarReporteHistorial_Click">
+                            <i class="fa-solid fa-file-pdf me-2"></i> Generar Reporte Oficial
+                        </asp:LinkButton>
+                    </div>
+                
+                    <div class="table-responsive bg-white p-3 rounded shadow-sm">
+                        <table class="table table-sm table-bordered text-center align-middle">
+                            <thead class="table-light">
+                                <tr><th>Fecha</th><th>Acción</th><th>Motivo</th><th>Usuario</th></tr>
+                            </thead>
+                            <tbody>
+                                <asp:Repeater ID="rptHistorialMiembro" runat="server">
+                                    <ItemTemplate>
+                                        <tr>
+                                            <td><%# Convert.ToDateTime(Eval("dtFecha")).ToString("dd/MM/yyyy HH:mm") %></td>
+                                            <td>
+                                                <span class='badge <%# Eval("strAccion").ToString() == "BAJA" ? "bg-danger" : "bg-success" %>'>
+                                                    <%# Eval("strAccion") %>
+                                                </span>
+                                            </td>
+                                            <td class="text-start small"><%# Eval("strMotivo") %></td>
+                                            <td class="small text-muted"><%# Eval("strUsuario") %></td>
+                                        </tr>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function guardarMotivoJS() {
+            var txt = document.getElementById('txtMotivoCambio');
+            var hf = document.getElementById('hfMotivoHidden');
+            if (txt.value.trim() === "") {
+                alert("Debe ingresar un motivo.");
+                return false;
+            }
+            hf.value = txt.value;
+            return true;
+        }
+    </script>
 
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
 
@@ -638,23 +761,19 @@
         }
 
         function LimpiarYSubir() {
-            // Limpia el HiddenField de edición para indicar que es nuevo
             document.getElementById('<%= hfIdInformeEdit.ClientID %>').value = "";
             document.getElementById('<%= lblTituloModalInforme.ClientID %>').innerText = "Subir Informe";
             document.getElementById('<%= txtNombrePeriodoInf.ClientID %>').value = "";
             AbrirSubModalUpload(); 
         }
 
-        // Nueva función para WORD (Descarga directa)
         function DescargarWord(id) {
-            // Usamos el Handler con tipo INFORME. Al ser Word, el navegador lo descargará.
             var url = 'VerArchivo.ashx?id=' + id + '&tipo=INFORME';
             window.location.href = url;
         }
 
-        /* ASÍ DEBE QUEDAR (Versión nueva con Handler) */
         function VerPDF(id, tipo) {
-            var url = 'VerArchivo.ashx?id=' + id + '&tipo=' + tipo; // Construye la URL segura
+            var url = 'VerArchivo.ashx?id=' + id + '&tipo=' + tipo; 
 
             document.getElementById('framePdf').src = url;
             document.getElementById('lblTituloPreview').innerText = "Visualización de Documento";
@@ -672,6 +791,75 @@
             document.getElementById('framePdf').src = '';
         }
 
+    </script>
+
+    <script>
+        function imprimirReporteJS() {
+            var contenido = document.getElementById("areaImpresion").innerHTML;
+            var ventana = window.open('', 'PRINT', 'height=800,width=1000');
+
+            ventana.document.write('<html><head><title>Reporte de Historial</title>');
+            ventana.document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">');
+            ventana.document.write('</head><body>');
+            ventana.document.write(contenido);
+            ventana.document.write('</body></html>');
+
+            ventana.document.close();
+            ventana.focus();
+
+            setTimeout(function () {
+                ventana.print();
+                ventana.close();
+            }, 500);
+        }
+    </script>
+
+    <script>
+        function validarPesoArchivo() {
+
+            var inputId = '<%= flpArchivoInf.ClientID %>';
+            var input = document.getElementById(inputId);
+
+            if (!input) {
+                console.error("ERROR: No se encontró el input con ID: " + inputId);
+                return true;
+            }
+
+            if (input.files && input.files[0]) {
+                var archivo = input.files[0];
+                var pesoBytes = archivo.size;
+                var pesoMB = (pesoBytes / (1024 * 1024)).toFixed(2);
+                var limiteBytes = 8 * 1024 * 1024; 
+
+                console.log("Archivo seleccionado: " + archivo.name);
+                console.log("Peso actual: " + pesoMB + " MB");
+
+                if (pesoBytes > limiteBytes) {
+                    console.warn("VALIDACIÓN FALLIDA: Excede los 8MB");
+
+                    try {
+                        toastify('error', 'El archivo pesa ' + pesoMB + ' MB. El límite es 8 MB.', 'Error de Peso');
+                    } catch (e) {
+                        console.error("Toastify falló, usando alert nativo. Error: " + e);
+                        alert('El archivo pesa ' + pesoMB + ' MB. El límite es 8 MB.');
+                    }
+
+                    input.value = "";
+                    var preview = document.getElementById('previewArchivoInf');
+                    if (preview) preview.innerHTML = "";
+
+                    var dropzone = document.getElementById('dropzoneArchivoInf');
+                    if (dropzone) dropzone.style.display = 'block';
+
+                    return false;
+                }
+            } else {
+                console.log("No se ha seleccionado ningún archivo.");
+            }
+
+            console.log("Validación exitosa o sin archivo. Continuando...");
+            return true; 
+        }
     </script>
 
 </asp:Content>

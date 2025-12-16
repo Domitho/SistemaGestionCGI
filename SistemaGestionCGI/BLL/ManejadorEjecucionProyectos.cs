@@ -82,7 +82,11 @@ namespace SistemaGestionCGI.BLL
 
         public List<InvgccEjecucionMiembros> ObtenerMiembros(int idEjecucion)
         {
-            string sql = $"SELECT * FROM INVGCCEJECUCION_MIEMBROS WHERE fkId_ejec = {idEjecucion} AND bitActivo_miembro = 1";
+            string sql = $@"
+                SELECT * FROM INVGCCEJECUCION_MIEMBROS 
+                WHERE fkId_ejec = {idEjecucion} 
+                ORDER BY bitActivo_miembro DESC, strApellidos_miembro ASC";
+
             return _dal.SelectSql<InvgccEjecucionMiembros>(sql);
         }
 
@@ -200,7 +204,44 @@ namespace SistemaGestionCGI.BLL
         }
 
         // =============================================================
-        // 4. UTILIDADES
+        // 4. GESTIÓN DE AUDITORÍA Y ESTADOS (NUEVO)
+        // =============================================================
+
+        public void CambiarEstadoMiembro(int idMiembro, bool nuevoEstado, string motivo, string usuario)
+        {
+            // 1. Actualizar el estado en la tabla de miembros (1 = Activo, 0 = Inactivo)
+            int bit = nuevoEstado ? 1 : 0;
+            string sqlUpdate = $"UPDATE INVGCCEJECUCION_MIEMBROS SET bitActivo_miembro = {bit} WHERE strId_miembro = {idMiembro}";
+            _dal.UpdateSql(sqlUpdate);
+
+            // 2. Registrar en la tabla de historial
+            string accion = nuevoEstado ? "REACTIVACIÓN" : "BAJA";
+            RegistrarHistorialMiembro(idMiembro, accion, motivo, usuario);
+        }
+
+        public void RegistrarHistorialMiembro(int idMiembro, string accion, string motivo, string usuario)
+        {
+            string fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            // Sanitizar motivo para evitar error SQL con comillas
+            string motivoLimpio = motivo.Replace("'", "");
+
+            string sql = $@"
+        INSERT INTO INVGCCEJECUCION_MIEMBROS_HISTORIAL 
+        (fkId_miembro, dtFecha, strAccion, strMotivo, strUsuario)
+        VALUES 
+        ({idMiembro}, '{fecha}', '{accion}', '{motivoLimpio}', '{usuario}')";
+
+            _dal.UpdateSql(sql);
+        }
+
+        public List<InvgccEjecucionMiembrosHistorial> ObtenerHistorialMiembro(int idMiembro)
+        {
+            string sql = $"SELECT * FROM INVGCCEJECUCION_MIEMBROS_HISTORIAL WHERE fkId_miembro = {idMiembro} ORDER BY dtFecha DESC";
+            return _dal.SelectSql<InvgccEjecucionMiembrosHistorial>(sql);
+        }
+
+        // =============================================================
+        // 5. UTILIDADES
         // =============================================================
 
         public List<InvgccInscripcionProyectos> ObtenerProyectosAprobadosSinEjecucion()

@@ -256,6 +256,7 @@
       <DependentUpon>Login.aspx</DependentUpon>
     </Compile>
     <Compile Include="Models\InvgccEjecucionInformes.cs" />
+    <Compile Include="Models\InvgccEjecucionMiembrosHistorial.cs" />
     <Compile Include="Models\InvgccEjecucionProyectos.cs" />
     <Compile Include="Models\InvgccGrupoIntegrantes.cs" />
     <Compile Include="Models\InvgccGrupoInvestigacion.cs" />
