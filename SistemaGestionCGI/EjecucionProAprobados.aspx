@@ -13,30 +13,29 @@
             border-top-left-radius: 10px !important;
             border-top-right-radius: 10px !important;
         }
+
         .modal-header.bg-utc .modal-title {
             color: #fff !important;
             font-weight: 600 !important;
         }
+
+        /* Corrección para que el formulario no se desborde */
+        .form-stack {
+            max-width: 100% !important;
+        }
     </style>
 
-    <div id="headerEjecucion" runat="server" 
-         class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
-        
+    <div id="headerEjecucion" runat="server" class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
         <h3 class="utc-title mb-0">
             <i class="fa-solid fa-person-digging me-2"></i> PROYECTOS EN EJECUCIÓN
         </h3>
 
         <div class="d-flex gap-2 mt-2 mt-md-0">
-            <asp:LinkButton runat="server" ID="btnNuevoEjecucion"
-                CssClass="btn btn-primary btn-pill d-flex align-items-center"
-                OnClick="btnNuevoEjecucion_Click">
+            <asp:LinkButton runat="server" ID="btnNuevoEjecucion" CssClass="btn btn-primary btn-pill d-flex align-items-center" OnClick="btnNuevoEjecucion_Click">
                 <i class="fa-solid fa-plus me-2"></i> INICIAR EJECUCIÓN
             </asp:LinkButton>
 
-            <asp:LinkButton runat="server" ID="btnRegresar"
-                CssClass="btn btn-outline-primary btn-pill px-4"
-                OnClick="btnRegresar_Click"
-                Visible="false" CausesValidation="false">
+            <asp:LinkButton runat="server" ID="btnRegresar" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="btnRegresar_Click" Visible="false" CausesValidation="false">
                 <i class="fa-solid fa-chevron-left me-2"></i> REGRESAR
             </asp:LinkButton>
         </div>
@@ -80,11 +79,9 @@
                                         CssClass="btn btn-primary btn-sm rounded-circle me-1" ToolTip="Gestionar Integrantes">
                                         <i class="fa-solid fa-users-gear"></i>
                                     </asp:LinkButton>
-                                            
-                                    <asp:LinkButton ID="btnInformes" runat="server" 
-                                        CommandName="Informes" CommandArgument='<%# Eval("strId_ejec") %>'
-                                        CssClass="btn btn-success btn-sm rounded-circle me-1" 
-                                        ToolTip="Subir Informes/Avances">
+
+                                    <asp:LinkButton ID="btnInformes" runat="server" CommandName="Informes" CommandArgument='<%# Eval("strId_ejec") %>'
+                                        CssClass="btn btn-success btn-sm rounded-circle me-1" ToolTip="Subir Informes/Avances">
                                         <i class="fa-solid fa-folder-open"></i>
                                     </asp:LinkButton>
 
@@ -103,18 +100,17 @@
     </asp:Panel>
 
     <asp:Panel ID="pnlAgregar" runat="server" Visible="false">
-        <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4" style="max-width: 100%;">
+        <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4">
             
             <h4 class="utc-subtitle mb-4 text-center">
                 <i class="fa-solid fa-file-circle-plus me-2"></i> Iniciar Nueva Ejecución
             </h4>
-            
+
             <div class="row g-3">
                 <div class="col-12">
                     <label class="form-label fw-bold">Proyecto Aprobado</label>
                     <asp:DropDownList ID="ddlProyectosAprobados" runat="server" CssClass="form-select"
-                        AutoPostBack="true" 
-                        OnSelectedIndexChanged="ddlProyectosAprobados_SelectedIndexChanged">
+                        AutoPostBack="true" OnSelectedIndexChanged="ddlProyectosAprobados_SelectedIndexChanged">
                     </asp:DropDownList>
                     <div class="form-text text-primary">
                         <i class="fa-solid fa-circle-info"></i> Solo se muestran proyectos aprobados pendientes de iniciar ejecución.
@@ -135,7 +131,7 @@
                     <label class="form-label">Periodo / Ciclo</label>
                     <asp:TextBox ID="txtPeriodoAdd" runat="server" CssClass="form-control" placeholder="Ej: Octubre 2025 - Marzo 2026" />
                 </div>
-                
+
                 <div class="col-12">
                     <label class="form-label fw-semibold">Informe Inicial / Planificación (Opcional)</label>
                     
@@ -171,12 +167,12 @@
     </asp:Panel>
 
     <asp:Panel ID="pnlEditar" runat="server" Visible="false">
-        <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4" style="max-width: 100%;">
+        <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4">
             
             <h4 class="utc-subtitle mb-4 text-center">
                 <i class="fa-solid fa-pen-to-square me-2"></i> Editar Ejecución
             </h4>
-            
+
             <asp:HiddenField ID="hfIdEjecEdit" runat="server" />
             <asp:HiddenField ID="hfArchivoActual" runat="server" />
 
@@ -205,7 +201,7 @@
                     <label class="form-label">Periodo / Ciclo</label>
                     <asp:TextBox ID="txtPeriodoEdit" runat="server" CssClass="form-control" />
                 </div>
-                
+
                 <div class="col-12">
                     <label class="form-label fw-semibold">Reemplazar Archivo (Opcional)</label>
                     <div class="utc-fileinput-wrapper" id="wrapperArchivoEdit">
@@ -240,23 +236,22 @@
     </asp:Panel>
 
     <asp:Panel ID="pnlEquipoListado" runat="server" Visible="false">
-        
         <asp:HiddenField ID="hfIdEjecucionEquipo" runat="server" />
 
         <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
             <h3 class="utc-title mb-0">
                 <i class="fa-solid fa-users me-2"></i> EQUIPO DE TRABAJO
             </h3>
-            
+
             <div class="d-flex gap-2">
-                <asp:LinkButton runat="server" ID="btnAbrirFormMiembro" 
-                    CssClass="btn btn-primary btn-pill d-flex align-items-center" 
+                <asp:LinkButton runat="server" ID="btnAbrirFormMiembro"
+                    CssClass="btn btn-primary btn-pill d-flex align-items-center"
                     OnClick="btnAbrirFormMiembro_Click">
                     <i class="fa-solid fa-user-plus me-2"></i> NUEVO INTEGRANTE
                 </asp:LinkButton>
 
-                <asp:LinkButton runat="server" ID="btnVolverDeEquipo" 
-                    CssClass="btn btn-outline-primary btn-pill px-4" 
+                <asp:LinkButton runat="server" ID="btnVolverDeEquipo"
+                    CssClass="btn btn-outline-primary btn-pill px-4"
                     OnClick="btnVolverDeEquipo_Click">
                     <i class="fa-solid fa-chevron-left me-2"></i> VOLVER A PROYECTOS
                 </asp:LinkButton>
@@ -273,7 +268,8 @@
                         <th>APELLIDOS</th>
                         <th>FACULTAD</th>
                         <th>ROL</th>
-                        <th>ESTADO</th> <th>ACCIONES</th>
+                        <th>ESTADO</th>
+                        <th>ACCIONES</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -286,7 +282,7 @@
                                 <td class="text-start"><%# Eval("strApellidos_miembro") %></td>
                                 <td><%# Eval("strFacultad_miembro") %></td>
                                 <td><%# Eval("strRol_miembro") %></td>
-                        
+
                                 <td>
                                     <%# Convert.ToBoolean(Eval("bitActivo_miembro")) 
                                         ? "<span class='badge bg-success'><i class='fa-solid fa-check me-1'></i>Activo</span>" 
@@ -295,20 +291,20 @@
                                 </td>
 
                                 <td>
-                                    <asp:LinkButton ID="btnEditarM" runat="server" 
+                                    <asp:LinkButton ID="btnEditarM" runat="server"
                                         CommandName="EditarMiembro" CommandArgument='<%# Eval("strId_miembro") %>'
                                         CssClass="btn btn-warning btn-sm rounded-circle me-1" ToolTip="Editar">
                                         <i class="fa-solid fa-pen"></i>
                                     </asp:LinkButton>
 
-                                    <asp:LinkButton ID="btnToggleEstado" runat="server" 
+                                    <asp:LinkButton ID="btnToggleEstado" runat="server"
                                         CommandName="CambiarEstado" CommandArgument='<%# Eval("strId_miembro") %>'
-                                        CssClass='<%# Convert.ToBoolean(Eval("bitActivo_miembro")) ? "btn btn-outline-danger btn-sm rounded-circle me-1" : "btn btn-outline-success btn-sm rounded-circle me-1" %>' 
+                                        CssClass='<%# Convert.ToBoolean(Eval("bitActivo_miembro")) ? "btn btn-outline-danger btn-sm rounded-circle me-1" : "btn btn-outline-success btn-sm rounded-circle me-1" %>'
                                         ToolTip='<%# Convert.ToBoolean(Eval("bitActivo_miembro")) ? "Dar de Baja" : "Reactivar" %>'>
                                         <i class="fa-solid fa-power-off"></i>
                                     </asp:LinkButton>
 
-                                    <asp:LinkButton ID="btnHistorial" runat="server" 
+                                    <asp:LinkButton ID="btnHistorial" runat="server"
                                         CommandName="VerHistorial" CommandArgument='<%# Eval("strId_miembro") %>'
                                         CssClass="btn btn-info btn-sm rounded-circle text-white" ToolTip="Ver Historial">
                                         <i class="fa-solid fa-clock-rotate-left"></i>
@@ -323,26 +319,25 @@
     </asp:Panel>
 
     <asp:Panel ID="pnlFormularioMiembro" runat="server" Visible="false">
-        
         <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-4 rounded shadow-utc border header-utc-line">
             <h3 class="utc-title mb-0">
                 <i class="fa-solid fa-users-gear me-2"></i> EQUIPO DE TRABAJO
             </h3>
-            
-            <asp:LinkButton ID="btnVolverFormMiembro" runat="server" 
-                CssClass="btn btn-outline-primary btn-pill px-4" 
+
+            <asp:LinkButton ID="btnVolverFormMiembro" runat="server"
+                CssClass="btn btn-outline-primary btn-pill px-4"
                 OnClick="btnCancelarMiembro_Click" CausesValidation="false">
                 <i class="fa-solid fa-chevron-left me-2"></i> REGRESAR
             </asp:LinkButton>
         </div>
 
-        <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4" style="max-width: 100%;">
+        <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4">
             
             <h4 class="utc-subtitle mb-4 text-center">
                 <i class="fa-solid fa-user-plus me-2"></i>
                 <asp:Label runat="server" ID="lblTituloFormMiembro" Text="Nuevo Integrante" />
             </h4>
-            
+
             <asp:HiddenField ID="hfIdMiembroEdit" runat="server" />
 
             <div class="row g-3">
@@ -395,14 +390,13 @@
                     <i class="fa-solid fa-ban me-2"></i> Cancelar
                 </asp:LinkButton>
             </div>
-
         </div>
     </asp:Panel>
 
     <div class="modal fade" id="modalInformes" tabindex="-1" aria-hidden="true" ClientIDMode="Static" runat="server">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-utc rounded-4">
-                
+
                 <div class="modal-header bg-utc text-white position-relative d-flex justify-content-center align-items-center py-3">
                     <h5 class="modal-title fw-bold m-0">
                         <i class="fa-solid fa-folder-open me-2"></i> Archivos del Proyecto
@@ -416,7 +410,7 @@
 
                     <div class="utc-toolbar">
                         <div class="d-flex align-items-center gap-3">
-                            <div class="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center" style="width:45px; height:45px;">
+                            <div class="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
                                 <i class="fa-solid fa-folder-tree text-primary fs-5"></i>
                             </div>
                             <div class="utc-toolbar-text">
@@ -424,7 +418,7 @@
                                 <small>Gestione los informes de avance del proyecto</small>
                             </div>
                         </div>
-                        
+
                         <button type="button" class="btn-upload-modern" onclick="LimpiarYSubir()">
                             <i class="fa-solid fa-cloud-arrow-up me-2"></i> Subir Nuevo
                         </button>
@@ -434,12 +428,12 @@
                         <asp:Repeater ID="rptInformes" runat="server" OnItemCommand="rptInformes_ItemCommand">
                             <ItemTemplate>
                                 <div class="col-md-4 col-sm-6">
-                                    
+
                                     <div class="file-card" onclick="DescargarWord('<%# Eval("strId_informe") %>')">
-                                        
+
                                         <div class="position-absolute top-0 end-0 p-2 d-flex gap-1" style="z-index: 10;">
-                                            
-                                            <asp:LinkButton ID="btnEditarInf" runat="server" 
+
+                                            <asp:LinkButton ID="btnEditarInf" runat="server"
                                                 CommandName="EditarInforme" CommandArgument='<%# Eval("strId_informe") %>'
                                                 CssClass="btn btn-sm btn-light rounded-circle shadow-sm text-primary"
                                                 OnClientClick="event.stopPropagation();"
@@ -447,7 +441,7 @@
                                                 <i class="fa-solid fa-pen"></i>
                                             </asp:LinkButton>
 
-                                            <asp:LinkButton ID="btnEliminarInf" runat="server" 
+                                            <asp:LinkButton ID="btnEliminarInf" runat="server"
                                                 CommandName="EliminarInforme" CommandArgument='<%# Eval("strId_informe") %>'
                                                 CssClass="btn btn-sm btn-light rounded-circle shadow-sm text-danger"
                                                 OnClientClick="event.stopPropagation(); return confirm('¿CONFIRMACIÓN:\n\nVa a eliminar este documento permanentemente.\n¿Continuar?');"
@@ -466,7 +460,7 @@
                                             </div>
                                             <div class="file-card-meta">
                                                 <span>
-                                                    <i class="fa-solid fa-calendar-days me-1"></i> 
+                                                    <i class="fa-solid fa-calendar-days me-1"></i>
                                                     <%# Convert.ToDateTime(Eval("dtFechaSubida")).ToString("dd MMM") %>
                                                 </span>
                                                 <span><i class="fa-solid fa-download text-muted"></i></span>
@@ -476,7 +470,7 @@
                                     </div>
                                 </div>
                             </ItemTemplate>
-                            
+
                             <FooterTemplate>
                                 <asp:Panel ID="pnlNoData" runat="server" Visible='<%# rptInformes.Items.Count == 0 %>'>
                                     <div class="text-center py-5 text-muted opacity-50">
@@ -489,7 +483,7 @@
                         </asp:Repeater>
                     </div>
                 </div>
-            
+
                 <div class="modal-footer bg-light border-top-0 justify-content-center">
                     <button type="button" class="btn btn-secondary btn-pill px-5" data-bs-dismiss="modal">Cerrar</button>
                 </div>
@@ -500,7 +494,7 @@
     <div class="modal fade" id="modalSubirInforme" tabindex="-1" aria-hidden="true" style="z-index: 1060;" ClientIDMode="Static" runat="server">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow-lg border-0 rounded-4">
-                
+
                 <div class="modal-header border-bottom-0 pb-0">
                     <h5 class="modal-title fw-bold text-primary" id="lblTituloModalInforme" runat="server">
                         <i class="fa-solid fa-cloud-arrow-up"></i> Subir Informe
@@ -517,9 +511,9 @@
                     </div>
 
                     <label class="form-label fw-bold small text-secondary">Archivo Word (.doc, .docx)</label>
-                    
+
                     <div class="utc-fileinput-wrapper" id="wrapperArchivoInf">
-                        
+
                         <div class="utc-fileinput-header">
                             <div class="utc-fileinput-icon"><i class="fa-solid fa-file-word"></i></div>
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -544,8 +538,8 @@
                             Arrastra documento Word aquí o haz clic
                         </div>
 
-                        <asp:FileUpload ID="flpArchivoInf" runat="server" CssClass="utc-fileinput-input" 
-                            accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"/>
+                        <asp:FileUpload ID="flpArchivoInf" runat="server" CssClass="utc-fileinput-input"
+                            accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
                     </div>
 
                     <div class="form-text small text-muted mb-3">
@@ -553,9 +547,9 @@
                     </div>
 
                     <div class="d-grid gap-2">
-                        <asp:LinkButton ID="btnGuardarInforme" runat="server" 
+                        <asp:LinkButton ID="btnGuardarInforme" runat="server"
                             CssClass="btn btn-primary btn-lg shadow-sm"
-                            OnClientClick="return validarPesoArchivo();" 
+                            OnClientClick="return validarPesoArchivo();"
                             OnClick="btnGuardarInforme_Click">
                             <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Informe
                         </asp:LinkButton>
@@ -572,10 +566,10 @@
                 <div class="modal-header border-bottom-0 py-2 px-3 bg-dark text-white">
                     <h6 class="modal-title" id="lblTituloPreview" runat="server">Vista Previa</h6>
                     <div>
-                        <button type="button" id="btnImprimirReporte" class="btn btn-sm btn-light me-2" onclick="imprimirReporteJS()" style="display:none;" runat="server">
+                        <button type="button" id="btnImprimirReporte" class="btn btn-sm btn-light me-2" onclick="imprimirReporteJS()" style="display: none;" runat="server">
                             <i class="fa-solid fa-print"></i> Imprimir
                         </button>
-                    
+
                         <a id="btnDescargarDirecto" href="#" target="_blank" class="btn btn-sm btn-outline-light me-2">
                             <i class="fa-solid fa-download"></i> Descargar
                         </a>
@@ -583,9 +577,9 @@
                         <button type="button" class="btn-close btn-close-white" onclick="CerrarVistaPrevia()"></button>
                     </div>
                 </div>
-            
-                <div class="modal-body p-0" style="height: 80vh; background:white;">
-                    <iframe id="framePdf" class="pdf-viewer-frame" style="width:100%; height:100%; border:none;"></iframe>
+
+                <div class="modal-body p-0" style="height: 80vh; background: white;">
+                    <iframe id="framePdf" class="pdf-viewer-frame" style="width: 100%; height: 100%; border: none;"></iframe>
 
                     <asp:Panel ID="pnlReporteHtml" runat="server" Visible="false" CssClass="p-5 overflow-auto h-100">
                         <div id="areaImpresion">
@@ -606,7 +600,7 @@
                 </div>
                 <div class="modal-body">
                     <p class="text-center fs-5">¿Confirmar cambio de estado?</p>
-                
+
                     <div class="alert alert-light border text-center small">
                         <strong id="lblNombreMiembroEstado">...</strong><br />
                         <span id="lblRolMiembroEstado" class="text-muted">...</span>
@@ -615,15 +609,15 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold">Motivo del cambio (Obligatorio)</label>
                         <textarea id="txtMotivoCambio" class="form-control" rows="3" placeholder="Especifique la razón..."></textarea>
-                    
+
                         <asp:HiddenField ID="hfMotivoHidden" runat="server" ClientIDMode="Static" />
                         <asp:HiddenField ID="hfIdMiembroEstado" runat="server" ClientIDMode="Static" />
                     </div>
                 </div>
                 <div class="modal-footer justify-content-center">
-                    <asp:LinkButton ID="btnConfirmarEstado" runat="server" 
+                    <asp:LinkButton ID="btnConfirmarEstado" runat="server"
                         CssClass="btn btn-primary btn-pill px-4"
-                        OnClientClick="return guardarMotivoJS();" 
+                        OnClientClick="return guardarMotivoJS();"
                         OnClick="btnConfirmarEstado_Click">
                         <i class="fa-solid fa-check me-2"></i> Confirmar
                     </asp:LinkButton>
@@ -645,17 +639,22 @@
                     </h6>
 
                     <div class="d-flex justify-content-end mb-3">
-                        <asp:LinkButton ID="btnGenerarReporteHistorial" runat="server" 
-                            CssClass="btn btn-danger btn-pill px-4" 
+                        <asp:LinkButton ID="btnGenerarReporteHistorial" runat="server"
+                            CssClass="btn btn-danger btn-pill px-4"
                             OnClick="btnGenerarReporteHistorial_Click">
                             <i class="fa-solid fa-file-pdf me-2"></i> Generar Reporte Oficial
                         </asp:LinkButton>
                     </div>
-                
+
                     <div class="table-responsive bg-white p-3 rounded shadow-sm">
                         <table class="table table-sm table-bordered text-center align-middle">
                             <thead class="table-light">
-                                <tr><th>Fecha</th><th>Acción</th><th>Motivo</th><th>Usuario</th></tr>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Acción</th>
+                                    <th>Motivo</th>
+                                    <th>Usuario</th>
+                                </tr>
                             </thead>
                             <tbody>
                                 <asp:Repeater ID="rptHistorialMiembro" runat="server">
@@ -696,9 +695,9 @@
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
 
     <script type="text/javascript">
-        
+
         Sys.Application.add_load(function () {
-            
+
             initTable('#tablaEjecucion');
             initTable('#tablaMiembros');
 
@@ -764,7 +763,7 @@
             document.getElementById('<%= hfIdInformeEdit.ClientID %>').value = "";
             document.getElementById('<%= lblTituloModalInforme.ClientID %>').innerText = "Subir Informe";
             document.getElementById('<%= txtNombrePeriodoInf.ClientID %>').value = "";
-            AbrirSubModalUpload(); 
+            AbrirSubModalUpload();
         }
 
         function DescargarWord(id) {
@@ -773,7 +772,7 @@
         }
 
         function VerPDF(id, tipo) {
-            var url = 'VerArchivo.ashx?id=' + id + '&tipo=' + tipo; 
+            var url = 'VerArchivo.ashx?id=' + id + '&tipo=' + tipo;
 
             document.getElementById('framePdf').src = url;
             document.getElementById('lblTituloPreview').innerText = "Visualización de Documento";
@@ -829,7 +828,7 @@
                 var archivo = input.files[0];
                 var pesoBytes = archivo.size;
                 var pesoMB = (pesoBytes / (1024 * 1024)).toFixed(2);
-                var limiteBytes = 8 * 1024 * 1024; 
+                var limiteBytes = 8 * 1024 * 1024;
 
                 console.log("Archivo seleccionado: " + archivo.name);
                 console.log("Peso actual: " + pesoMB + " MB");
@@ -858,7 +857,7 @@
             }
 
             console.log("Validación exitosa o sin archivo. Continuando...");
-            return true; 
+            return true;
         }
     </script>
 

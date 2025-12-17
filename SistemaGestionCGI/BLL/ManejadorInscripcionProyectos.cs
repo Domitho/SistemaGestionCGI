@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SistemaGestionCGI.Models;
 using SistemaGestionCGI.Settings;
 
@@ -33,11 +34,7 @@ namespace SistemaGestionCGI.BLL
         {
             string sql = $"SELECT * FROM INVGCCINSCRIPCION_PROYECTOS WHERE strId_pro = '{id}'";
             var lista = _dal.SelectSql<InvgccInscripcionProyectos>(sql);
-
-            if (lista != null && lista.Count > 0)
-                return lista[0];
-            else
-                return null;
+            return lista?.FirstOrDefault(); // Optimización con LINQ
         }
 
         // =============================================================
@@ -46,10 +43,9 @@ namespace SistemaGestionCGI.BLL
 
         public void Guardar(InvgccInscripcionProyectos pro)
         {
+            // Lógica de Negocio: Generar ID Institucional
             int anioBase = ObtenerAnioDeConvocatoria(pro.fkId_conv);
-            string nuevoId = GenerarNuevoIdProyecto(anioBase);
-
-            pro.strId_pro = nuevoId;
+            pro.strId_pro = GenerarNuevoIdProyecto(anioBase);
             pro.strEstado_pro = "Pendiente";
 
             string puntajeSql = pro.intPuntaje_pro.HasValue ? pro.intPuntaje_pro.Value.ToString() : "NULL";
@@ -85,10 +81,8 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sql);
         }
 
-        public void Eliminar(string id)
-        {
+        public void Eliminar(string id) =>
             _dal.Delete("INVGCCINSCRIPCION_PROYECTOS", $"strId_pro = '{id}'");
-        }
 
         public void AlternarEstado(string id)
         {
@@ -104,7 +98,7 @@ namespace SistemaGestionCGI.BLL
         }
 
         // =============================================================
-        // MÉTODOS AUXILIARES (COMBOS, INFO GRUPO, INTEGRANTES)
+        // MÉTODOS AUXILIARES
         // =============================================================
 
         public List<InvgccGrupoInvestigacion> ObtenerGruposCombo()
@@ -122,8 +116,7 @@ namespace SistemaGestionCGI.BLL
         public InvgccGrupoInvestigacion ObtenerInfoGrupo(string idGrupo)
         {
             string sql = $"SELECT * FROM INVGCCGRUPO_INVESTIGACION WHERE strId_gru = '{idGrupo}'";
-            var lista = _dal.SelectSql<InvgccGrupoInvestigacion>(sql);
-            return (lista != null && lista.Count > 0) ? lista[0] : null;
+            return _dal.SelectSql<InvgccGrupoInvestigacion>(sql)?.FirstOrDefault();
         }
 
         public List<InvgccGrupoIntegrantes> ObtenerIntegrantesPorGrupo(string idGrupo)
@@ -155,59 +148,43 @@ namespace SistemaGestionCGI.BLL
         }
 
         // =============================================================
-        // NUEVO: OBTENER AÑO DE CONVOCATORIA
+        // LÓGICA DE NEGOCIO PRIVADA (IDS Y FECHAS)
         // =============================================================
+
         private int ObtenerAnioDeConvocatoria(string idConvocatoria)
         {
-            // IMPORTANTE: Verifica que 'dtFechaInicio_conv' sea el nombre correcto en tu BD
             string sql = $"SELECT dtFechaini_conv FROM INVGCCCONVOCATORI WHERE strId_conv = '{idConvocatoria}'";
-
             var lista = _dal.SelectSql<dynamic>(sql);
 
             if (lista != null && lista.Count > 0)
             {
                 try
                 {
-                    // Intentamos leer la fecha dinámicamente
-                    dynamic item = lista[0];
-                    // Si tu driver devuelve string o DateTime, Parse lo manejará
-                    DateTime fecha = DateTime.Parse(item.dtFechaini_conv.ToString());
+                    // Manejo dinámico para asegurar la conversión
+                    DateTime fecha = Convert.ToDateTime(lista[0].dtFechaini_conv);
                     return fecha.Year;
                 }
-                catch
-                {
-                    return DateTime.Now.Year; // Fallback por seguridad
-                }
+                catch { return DateTime.Now.Year; }
             }
             return DateTime.Now.Year;
         }
 
-        // =============================================================
-        // GENERADORES DE ID (ACTUALIZADOS)
-        // =============================================================
-
-        // Generador INSTITUCIONAL (DIRGI-CP[Año]-001)
         private string GenerarNuevoIdProyecto(int anio)
         {
-            // Prefijo basado en el año recibido (de la convocatoria)
+            // Formato institucional: DIRGI-CP[Año]-XXX
             string prefijo = $"DIRGI-CP{anio}-";
-
-            // Buscamos el último ID que coincida con ese año
             string sql = $"SELECT TOP 1 strId_pro FROM INVGCCINSCRIPCION_PROYECTOS WHERE strId_pro LIKE '{prefijo}%' ORDER BY strId_pro DESC";
 
             var lista = _dal.SelectSql<InvgccInscripcionProyectos>(sql);
-
-            int siguienteNumero = 1; // Default: 001
+            int siguienteNumero = 1;
 
             if (lista != null && lista.Count > 0)
             {
-                string ultimoId = lista[0].strId_pro; // Ej: DIRGI-CP2021-003
-
+                string ultimoId = lista[0].strId_pro;
+                // Extraer el número después del último guion
                 if (!string.IsNullOrEmpty(ultimoId) && ultimoId.Contains("-"))
                 {
-                    // Extraemos lo que está después del último guion
                     string numeroStr = ultimoId.Substring(ultimoId.LastIndexOf('-') + 1);
-
                     if (int.TryParse(numeroStr, out int numeroActual))
                     {
                         siguienteNumero = numeroActual + 1;
@@ -215,33 +192,34 @@ namespace SistemaGestionCGI.BLL
                 }
             }
 
-            // Retorna ej: DIRGI-CP2021-004
-            return prefijo + siguienteNumero.ToString("D3");
+            return $"{prefijo}{siguienteNumero:D3}";
         }
 
-        // Generador para INTEGRANTES (Mantenemos la lógica blindada que ya tenías)
         private string GenerarNuevoIdIntegrante()
         {
+            // Lógica existente: Buscar el máximo "I..."
             string sql = "SELECT strId_int FROM INVGCCGRUPO_INTEGRANTES WHERE strId_int LIKE 'I%'";
             var lista = _dal.SelectSql<InvgccGrupoIntegrantes>(sql);
 
             int max = 0;
-            if (lista != null && lista.Count > 0)
+            if (lista != null)
             {
                 foreach (var item in lista)
                 {
                     string id = item.strId_int;
-                    if (!string.IsNullOrEmpty(id) && id.ToUpper().StartsWith("I") && !id.ToUpper().StartsWith("INT"))
+                    // Filtro robusto para asegurar que es formato 'I'+Numero
+                    if (!string.IsNullOrEmpty(id) &&
+                        id.StartsWith("I", StringComparison.OrdinalIgnoreCase) &&
+                        !id.StartsWith("INT", StringComparison.OrdinalIgnoreCase))
                     {
-                        string numeroStr = id.Substring(1);
-                        if (int.TryParse(numeroStr, out int num))
+                        if (int.TryParse(id.Substring(1), out int num))
                         {
                             if (num > max) max = num;
                         }
                     }
                 }
             }
-            return "I" + (max + 1);
+            return $"I{max + 1}";
         }
     }
 }
