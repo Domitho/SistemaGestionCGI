@@ -11,7 +11,7 @@ namespace SistemaGestionCGI
         {
             // 1. RECIBIR PARÁMETROS
             string idStr = context.Request.QueryString["id"];
-            string tipo = context.Request.QueryString["tipo"]; // GRUPO, CALIFICACION, EJECUCION, INFORME
+            string tipo = context.Request.QueryString["tipo"]; // GRUPO, CALIFICACION, EJECUCION, INFORME, CONVOCATORIA
 
             // Validación básica
             if (string.IsNullOrEmpty(idStr) || string.IsNullOrEmpty(tipo))
@@ -31,14 +31,14 @@ namespace SistemaGestionCGI
                     // === CASO 1: Calificaciones (ID String) ===
                     case "CALIFICACION":
                         ManejadorCalificacionGrupo mCalif = new ManejadorCalificacionGrupo();
-                        var calif = mCalif.ObtenerPorId(idStr); // ID es string (VAL-1)
+                        var calif = mCalif.ObtenerPorId(idStr);
                         if (calif != null) rutaFisica = calif.strInforme_valo;
                         break;
 
                     // === CASO 2: Grupos (ID String) ===
                     case "GRUPO":
                         ManejadorGruposInvestigacion mGrupo = new ManejadorGruposInvestigacion();
-                        var grupo = mGrupo.ObtenerGrupoPorId(idStr); // ID es string (G-1)
+                        var grupo = mGrupo.ObtenerGrupoPorId(idStr);
                         if (grupo != null) rutaFisica = grupo.strArchivo_gru;
                         break;
 
@@ -52,7 +52,7 @@ namespace SistemaGestionCGI
                         }
                         else
                         {
-                            context.Response.Write("Error: ID de Ejecución inválido (debe ser numérico).");
+                            context.Response.Write("Error: ID de Ejecución inválido.");
                             return;
                         }
                         break;
@@ -67,8 +67,23 @@ namespace SistemaGestionCGI
                         }
                         else
                         {
-                            context.Response.Write("Error: ID de Informe inválido (debe ser numérico).");
+                            context.Response.Write("Error: ID de Informe inválido.");
                             return;
+                        }
+                        break;
+
+                    // === CASO 5: CONVOCATORIAS (NUEVO) ===
+                    case "CONVOCATORIA":
+                        // Instanciamos la BLL de Convocatorias
+                        ManejadorConvocatorias bllConv = new ManejadorConvocatorias();
+
+                        // CORRECCIÓN 1: Usamos 'idStr' en vez de 'id'
+                        var conv = bllConv.ObtenerConvocatoriaPorId(idStr);
+
+                        if (conv != null)
+                        {
+                            // CORRECCIÓN 2: Asignamos a 'rutaFisica' (la variable global)
+                            rutaFisica = conv.strArchivo_conv;
                         }
                         break;
 
@@ -88,6 +103,7 @@ namespace SistemaGestionCGI
                     else if (extension == ".jpg" || extension == ".jpeg") context.Response.ContentType = "image/jpeg";
                     else if (extension == ".png") context.Response.ContentType = "image/png";
                     else if (extension == ".xlsx") context.Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                    else if (extension == ".doc" || extension == ".docx") context.Response.ContentType = "application/msword";
                     else context.Response.ContentType = "application/octet-stream";
 
                     // inline = ver en navegador
@@ -100,7 +116,8 @@ namespace SistemaGestionCGI
                     // Error visual si no existe en disco
                     context.Response.ContentType = "text/plain";
                     context.Response.Write("ERROR: El archivo físico no existe en el servidor.\n");
-                    context.Response.Write($"Ruta buscada: {rutaFisica}");
+                    // Opcional: Mostrar ruta solo en desarrollo (quitar en producción por seguridad)
+                    // context.Response.Write($"Ruta buscada: {rutaFisica}");
                 }
             }
             catch (Exception ex)

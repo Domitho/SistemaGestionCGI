@@ -16,7 +16,7 @@
     <AssemblyName>SistemaGestionCGI</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
-    <Use64BitIISExpress />
+    <Use64BitIISExpress>false</Use64BitIISExpress>
     <IISExpressSSLPort>44303</IISExpressSSLPort>
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
@@ -113,6 +113,7 @@
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\Site.css" />
+    <Content Include="ConvocatoriaGruInvestigacion.aspx" />
     <Content Include="Dashboard.aspx" />
     <Content Include="Default.aspx" />
     <Content Include="DesignersUTC\Scripts\utc-fileinput.js" />
@@ -187,6 +188,7 @@
     </Compile>
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="BLL\ManejadorCalificacionGrupo.cs" />
+    <Compile Include="BLL\ManejadorConvocatorias.cs" />
     <Compile Include="BLL\ManejadorDashboard.cs" />
     <Compile Include="BLL\ManejadorEjecucionProyectos.cs" />
     <Compile Include="BLL\ManejadorGruposInvestigacion.cs" />
@@ -205,6 +207,13 @@
     </Compile>
     <Compile Include="Contact.aspx.designer.cs">
       <DependentUpon>Contact.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ConvocatoriaGruInvestigacion.aspx.cs">
+      <DependentUpon>ConvocatoriaGruInvestigacion.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ConvocatoriaGruInvestigacion.aspx.designer.cs">
+      <DependentUpon>ConvocatoriaGruInvestigacion.aspx</DependentUpon>
     </Compile>
     <Compile Include="Dashboard.aspx.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>
@@ -246,6 +255,7 @@
     </Compile>
     <Compile Include="Models\InvgccCalificacionGrupo.cs" />
     <Compile Include="Models\InvgccConvocatoria.cs" />
+    <Compile Include="Models\InvgccConvocatoriaGruInvestigacion.cs" />
     <Compile Include="Models\InvgccDashboard.cs" />
     <Compile Include="Models\InvgccEjecucionMiembros.cs" />
     <Compile Include="Login.aspx.cs">

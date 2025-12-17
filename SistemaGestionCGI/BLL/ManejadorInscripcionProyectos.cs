@@ -24,7 +24,7 @@ namespace SistemaGestionCGI.BLL
                        G.strNombre_gru, C.strNombre_conv 
                 FROM INVGCCINSCRIPCION_PROYECTOS P 
                 INNER JOIN INVGCCGRUPO_INVESTIGACION G ON P.fkId_gru = G.strId_gru
-                INNER JOIN INVGCCCONVOCATORI C ON P.fkId_conv = C.strId_conv
+                INNER JOIN INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION C ON P.fkId_conv = C.strId_conv
                 ORDER BY ISNULL(P.intPuntaje_pro, -1) DESC, P.dtFehains_pro DESC";
 
             return _dal.SelectSql<InvgccInscripcionProyectos>(sql);
@@ -109,7 +109,7 @@ namespace SistemaGestionCGI.BLL
 
         public List<InvgccConvocatoria> ObtenerConvocatoriasCombo()
         {
-            string sql = "SELECT strId_conv, strNombre_conv FROM INVGCCCONVOCATORI ORDER BY strNombre_conv";
+            string sql = "SELECT strId_conv, strNombre_conv FROM INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION ORDER BY strNombre_conv";
             return _dal.SelectSql<InvgccConvocatoria>(sql);
         }
 
@@ -153,7 +153,7 @@ namespace SistemaGestionCGI.BLL
 
         private int ObtenerAnioDeConvocatoria(string idConvocatoria)
         {
-            string sql = $"SELECT dtFechaini_conv FROM INVGCCCONVOCATORI WHERE strId_conv = '{idConvocatoria}'";
+            string sql = $"SELECT dtFechaini_conv FROM INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION WHERE strId_conv = '{idConvocatoria}'";
             var lista = _dal.SelectSql<dynamic>(sql);
 
             if (lista != null && lista.Count > 0)

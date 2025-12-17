@@ -15,7 +15,7 @@ namespace SistemaGestionCGI
             {
                 if (Session["UsuarioLogueado"] != null)
                 {
-                    Response.Redirect("Default.aspx");
+                    Response.Redirect("Dashboard.aspx");
                 }
 
                 if (Request.QueryString["error"] == "1")
@@ -43,7 +43,7 @@ namespace SistemaGestionCGI
                     Session["UserName"] = usuarioLogueado.strNombre_usu;
                     Session["UserRole"] = usuarioLogueado.strRol_usu;
 
-                    Response.Redirect("InscripcionProyectos.aspx", false);
+                    Response.Redirect("Dashboard.aspx", false);
                 }
                 else
                 {

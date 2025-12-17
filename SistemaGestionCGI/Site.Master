@@ -85,7 +85,7 @@
                         <div class="collapse navbar-collapse" id="mainNavbar">
                             <ul class="navbar-nav ms-auto mb-2 mb-lg-0 fw-semibold">
                                 <li class="nav-item"><a class="nav-link" href="Dashboard.aspx">Dashboard</a></li>
-                                <li class="nav-item"><a class="nav-link" href="Convocatoria.aspx">Convocatorias</a></li>
+                                <li class="nav-item"><a class="nav-link" href="ConvocatoriaGruInvestigacion.aspx">Convocatorias</a></li>
                                 <li class="nav-item"><a class="nav-link" href="InscripcionProyectos.aspx">Proyectos</a></li>
                                 <li class="nav-item"><a class="nav-link" href="GruposInvestigacion.aspx">Grupos Inv.</a></li>
                                 <li class="nav-item"><a class="nav-link" href="CentInv.aspx">Centros Inv.</a></li>
