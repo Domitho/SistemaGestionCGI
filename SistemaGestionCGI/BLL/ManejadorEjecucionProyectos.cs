@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Linq; // Necesario para .FirstOrDefault()
 using SistemaGestionCGI.Models;
 using SistemaGestionCGI.Settings;
 
@@ -33,15 +33,11 @@ namespace SistemaGestionCGI.BLL
                 WHERE E.strId_ejec = {id}";
 
             var lista = _dal.SelectSql<InvgccEjecucionProyectos>(sql);
-            return (lista != null && lista.Count > 0) ? lista[0] : null;
+            return lista?.FirstOrDefault();
         }
 
         public void GuardarEjecucion(InvgccEjecucionProyectos obj)
         {
-            // IDENTITY: SI -> NO enviamos strId_ejec
-            // FK_PRO: VARCHAR -> Lleva comillas simples '{obj.fkId_pro}'
-            // FECHAS: Tipo DATE -> yyyy-MM-dd
-
             string sql = $@"
                 INSERT INTO INVGCCEJECUCION_PROYECTO 
                 (fkId_pro, strCoordinador_ejec, strPeriodo_ejec, dtFechaini_ejec, dtFechafin_ejec, strInforme_ejec, strEstado_ejec)
@@ -76,8 +72,7 @@ namespace SistemaGestionCGI.BLL
         }
 
         // =============================================================
-        // 2. GESTIÓN DE MIEMBROS (Tabla: INVGCCEJECUCION_MIEMBROS)
-        // ID: strId_miembro (INT IDENTITY) | FK_EJEC: fkId_ejec (INT)
+        // 2. GESTIÓN DE MIEMBROS
         // =============================================================
 
         public List<InvgccEjecucionMiembros> ObtenerMiembros(int idEjecucion)
@@ -92,9 +87,6 @@ namespace SistemaGestionCGI.BLL
 
         public void GuardarMiembro(InvgccEjecucionMiembros m)
         {
-            // IDENTITY: SI -> NO enviamos strId_miembro
-            // FK_EJEC: INT -> NO lleva comillas {m.fkId_ejec}
-
             string sql = $@"
                 INSERT INTO INVGCCEJECUCION_MIEMBROS 
                 (fkId_ejec, strCedula_miembro, strNombres_miembro, strApellidos_miembro, strRol_miembro, strFacultad_miembro, bitActivo_miembro)
@@ -104,17 +96,13 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sql);
         }
 
-        public void EliminarMiembro(int idMiembro)
-        {
-            string sql = $"UPDATE INVGCCEJECUCION_MIEMBROS SET bitActivo_miembro = 0 WHERE strId_miembro = {idMiembro}";
-            _dal.UpdateSql(sql);
-        }
+        public void EliminarMiembro(int idMiembro) =>
+            _dal.UpdateSql($"UPDATE INVGCCEJECUCION_MIEMBROS SET bitActivo_miembro = 0 WHERE strId_miembro = {idMiembro}");
 
         public InvgccEjecucionMiembros ObtenerMiembroPorId(int id)
         {
             string sql = $"SELECT * FROM INVGCCEJECUCION_MIEMBROS WHERE strId_miembro = {id}";
-            var lista = _dal.SelectSql<InvgccEjecucionMiembros>(sql);
-            return (lista != null && lista.Count > 0) ? lista[0] : null;
+            return _dal.SelectSql<InvgccEjecucionMiembros>(sql)?.FirstOrDefault();
         }
 
         public void ActualizarMiembro(InvgccEjecucionMiembros obj)
@@ -132,8 +120,7 @@ namespace SistemaGestionCGI.BLL
         }
 
         // =============================================================
-        // 3. GESTIÓN DE INFORMES (Tabla: INVGCCEJECUCION_INFORMES)
-        // ID: strId_informe (INT IDENTITY) | FK_EJEC: fkId_ejec (INT)
+        // 3. GESTIÓN DE INFORMES
         // =============================================================
 
         public List<InvgccEjecucionInformes> ObtenerInformes(int idEjecucion)
@@ -145,16 +132,11 @@ namespace SistemaGestionCGI.BLL
         public InvgccEjecucionInformes ObtenerInformePorId(int id)
         {
             string sql = $"SELECT * FROM INVGCCEJECUCION_INFORMES WHERE strId_informe = {id}";
-            var lista = _dal.SelectSql<InvgccEjecucionInformes>(sql);
-            return (lista != null && lista.Count > 0) ? lista[0] : null;
+            return _dal.SelectSql<InvgccEjecucionInformes>(sql)?.FirstOrDefault();
         }
 
         public void GuardarInforme(InvgccEjecucionInformes inf)
         {
-            // IDENTITY: SI -> NO enviamos strId_informe
-            // FK_EJEC: INT -> NO lleva comillas {inf.fkId_ejec}
-            // FECHA: DATETIME -> yyyy-MM-dd HH:mm:ss
-
             string fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             string rutaSegura = inf.strArchivo_path.Replace("'", "''");
 
@@ -167,20 +149,16 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sql);
         }
 
-
         public void ActualizarInforme(InvgccEjecucionInformes inf)
         {
-            // Usamos SQL Manual para no tocar el ID
-            string fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             string nombreLimpio = inf.strNombrePeriodo.Replace("'", "''");
-            string rutaSegura = inf.strArchivo_path.Replace("'", "''");
-
-            // Si la ruta viene vacía (no subió archivo nuevo), NO la actualizamos
             string sql;
 
             if (!string.IsNullOrEmpty(inf.strArchivo_path))
             {
-                // Actualiza Nombre y Archivo
+                string fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                string rutaSegura = inf.strArchivo_path.Replace("'", "''");
+
                 sql = $@"UPDATE INVGCCEJECUCION_INFORMES SET 
                         strNombrePeriodo = '{nombreLimpio}', 
                         strArchivo_path = '{rutaSegura}', 
@@ -189,7 +167,6 @@ namespace SistemaGestionCGI.BLL
             }
             else
             {
-                // Actualiza solo Nombre (mantiene archivo viejo)
                 sql = $@"UPDATE INVGCCEJECUCION_INFORMES SET 
                         strNombrePeriodo = '{nombreLimpio}'
                         WHERE strId_informe = {inf.strId_informe}";
@@ -198,23 +175,19 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sql);
         }
 
-        public void EliminarInforme(int idInforme)
-        {
+        public void EliminarInforme(int idInforme) =>
             _dal.Delete("INVGCCEJECUCION_INFORMES", $"strId_informe = {idInforme}");
-        }
 
         // =============================================================
-        // 4. GESTIÓN DE AUDITORÍA Y ESTADOS (NUEVO)
+        // 4. GESTIÓN DE AUDITORÍA Y ESTADOS
         // =============================================================
 
         public void CambiarEstadoMiembro(int idMiembro, bool nuevoEstado, string motivo, string usuario)
         {
-            // 1. Actualizar el estado en la tabla de miembros (1 = Activo, 0 = Inactivo)
             int bit = nuevoEstado ? 1 : 0;
             string sqlUpdate = $"UPDATE INVGCCEJECUCION_MIEMBROS SET bitActivo_miembro = {bit} WHERE strId_miembro = {idMiembro}";
             _dal.UpdateSql(sqlUpdate);
 
-            // 2. Registrar en la tabla de historial
             string accion = nuevoEstado ? "REACTIVACIÓN" : "BAJA";
             RegistrarHistorialMiembro(idMiembro, accion, motivo, usuario);
         }
@@ -222,14 +195,13 @@ namespace SistemaGestionCGI.BLL
         public void RegistrarHistorialMiembro(int idMiembro, string accion, string motivo, string usuario)
         {
             string fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            // Sanitizar motivo para evitar error SQL con comillas
             string motivoLimpio = motivo.Replace("'", "");
 
             string sql = $@"
-        INSERT INTO INVGCCEJECUCION_MIEMBROS_HISTORIAL 
-        (fkId_miembro, dtFecha, strAccion, strMotivo, strUsuario)
-        VALUES 
-        ({idMiembro}, '{fecha}', '{accion}', '{motivoLimpio}', '{usuario}')";
+                INSERT INTO INVGCCEJECUCION_MIEMBROS_HISTORIAL 
+                (fkId_miembro, dtFecha, strAccion, strMotivo, strUsuario)
+                VALUES 
+                ({idMiembro}, '{fecha}', '{accion}', '{motivoLimpio}', '{usuario}')";
 
             _dal.UpdateSql(sql);
         }

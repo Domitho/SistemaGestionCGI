@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq; // Necesario para JObject
+using Newtonsoft.Json.Linq;
 using SistemaGestionCGI.Models;
 using SistemaGestionCGI.Settings;
 
@@ -21,9 +21,7 @@ namespace SistemaGestionCGI.BLL
                 INNER JOIN INVGCCGRUPO_INVESTIGACION g ON c.fkId_gru = g.strId_gru";
 
             if (anioFiltro > 0)
-            {
                 sql += $" WHERE YEAR(c.dtFecha_valo) = {anioFiltro}";
-            }
 
             sql += " ORDER BY c.dtFecha_valo DESC";
 
@@ -34,18 +32,15 @@ namespace SistemaGestionCGI.BLL
         {
             string sql = $"SELECT * FROM INVGCCCALIFICACION_GRUPO WHERE strId_valo = '{id}'";
             var lista = _dal.SelectSql<InvgccCalificacionGrupo>(sql);
-            return (lista != null && lista.Count > 0) ? lista[0] : null;
+            return lista?.FirstOrDefault();
         }
 
         public void GuardarCalificacion(InvgccCalificacionGrupo obj)
         {
-            // 1. Generamos ID Manual "VAL-1"
             obj.strId_valo = GenerarCodigoAlfanumerico("INVGCCCALIFICACION_GRUPO", "strId_valo", "VAL");
-
-            // 2. Insertar
             _dal.Insert("INVGCCCALIFICACION_GRUPO", obj);
 
-            // 3. Actualizar Categoría del Grupo (Sincronización)
+            // Sincronización de Categoría
             string sqlUpdateGrupo = $@"
                 UPDATE INVGCCGRUPO_INVESTIGACION 
                 SET strCategoria_gru = '{obj.strCategoria_valo}' 
@@ -54,21 +49,19 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sqlUpdateGrupo);
         }
 
-        public void EliminarCalificacion(string id)
-        {
+        public void EliminarCalificacion(string id) =>
             _dal.Delete("INVGCCCALIFICACION_GRUPO", $"strId_valo = '{id}'");
-        }
 
         // ======================= MÉTRICAS =======================
 
         public int ObtenerMinimoConsolidado(int anio)
         {
             string sql = $"SELECT minConsolidado FROM INVGCC_METRICAS WHERE anio = {anio}";
-            var res = _dal.SelectSql<dynamic>(sql).FirstOrDefault();
+            var res = _dal.SelectSql<dynamic>(sql)?.FirstOrDefault();
 
             if (res != null)
             {
-                try { return (int)((dynamic)res).minConsolidado; } catch { return 70; }
+                try { return (int)((dynamic)res).minConsolidado; } catch { }
             }
             return 70;
         }
@@ -76,7 +69,8 @@ namespace SistemaGestionCGI.BLL
         public void GuardarMetrica(InvgccMetricas metrica)
         {
             string check = $"SELECT COUNT(*) as conteo FROM INVGCC_METRICAS WHERE anio = {metrica.anio}";
-            var res = _dal.SelectSql<dynamic>(check).FirstOrDefault();
+            var res = _dal.SelectSql<dynamic>(check)?.FirstOrDefault();
+
             int count = 0;
             if (res != null) { try { count = (int)((dynamic)res).conteo; } catch { } }
 
@@ -112,8 +106,8 @@ namespace SistemaGestionCGI.BLL
         {
             string sql = "SELECT DISTINCT YEAR(dtFecha_valo) as Anio FROM INVGCCCALIFICACION_GRUPO ORDER BY Anio DESC";
             var lista = _dal.SelectSql<dynamic>(sql);
-            List<int> anios = new List<int>();
 
+            var anios = new List<int>();
             if (lista != null)
             {
                 foreach (var item in lista)
@@ -128,7 +122,8 @@ namespace SistemaGestionCGI.BLL
         {
             string sql = "SELECT DISTINCT anio FROM INVGCC_METRICAS ORDER BY anio DESC";
             var lista = _dal.SelectSql<dynamic>(sql);
-            List<int> anios = new List<int>();
+
+            var anios = new List<int>();
             if (lista != null)
             {
                 foreach (var item in lista)
@@ -139,7 +134,6 @@ namespace SistemaGestionCGI.BLL
             return anios;
         }
 
-        // GENERADOR DE CÓDIGOS PARA VARCHAR (VAL-1, VAL-2...)
         private string GenerarCodigoAlfanumerico(string tabla, string campoId, string prefijo)
         {
             try
@@ -147,21 +141,17 @@ namespace SistemaGestionCGI.BLL
                 string sql = $"SELECT {campoId} FROM {tabla}";
                 var lista = _dal.SelectSql<dynamic>(sql);
 
-                if (lista == null || lista.Count == 0) return prefijo + "-1";
+                if (lista == null || lista.Count == 0) return $"{prefijo}-1";
 
                 int max = 0;
                 foreach (var item in lista)
                 {
                     string val = "";
                     if (item is JObject jobj) val = jobj[campoId]?.ToString();
-                    else
-                    {
-                        try { val = ((dynamic)item)[campoId].ToString(); } catch { continue; }
-                    }
+                    else try { val = ((dynamic)item)[campoId].ToString(); } catch { continue; }
 
                     if (!string.IsNullOrEmpty(val) && val.StartsWith(prefijo))
                     {
-                        // Extraemos el número después del prefijo (Ej: VAL-5 -> 5)
                         string numStr = val.Substring(prefijo.Length).Replace("-", "");
                         if (int.TryParse(numStr, out int n))
                         {
@@ -169,11 +159,11 @@ namespace SistemaGestionCGI.BLL
                         }
                     }
                 }
-                return prefijo + "-" + (max + 1);
+                return $"{prefijo}-{max + 1}";
             }
             catch
             {
-                return prefijo + "-" + DateTime.Now.Ticks.ToString().Substring(10);
+                return $"{prefijo}-{DateTime.Now.Ticks.ToString().Substring(10)}";
             }
         }
     }

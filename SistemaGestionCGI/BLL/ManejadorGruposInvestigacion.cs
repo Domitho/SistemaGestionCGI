@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Linq; // Necesario para .FirstOrDefault()
 using Newtonsoft.Json.Linq;
 using SistemaGestionCGI.Models;
 using SistemaGestionCGI.Settings;
@@ -12,7 +12,7 @@ namespace SistemaGestionCGI.BLL
         private readonly ConnectionSqlServer _dal = ConnectionSqlServer.Instance;
 
         // =============================================================
-        // 1. GESTIÓN DE GRUPOS (INVGCCGRUPO_INVESTIGACION)
+        // 1. GESTIÓN DE GRUPOS
         // =============================================================
 
         public List<InvgccGrupoInvestigacion> ObtenerGrupos()
@@ -25,7 +25,7 @@ namespace SistemaGestionCGI.BLL
         {
             string sql = $"SELECT * FROM INVGCCGRUPO_INVESTIGACION WHERE strId_gru = '{id}'";
             var lista = _dal.SelectSql<InvgccGrupoInvestigacion>(sql);
-            return (lista != null && lista.Count > 0) ? lista[0] : null;
+            return lista?.FirstOrDefault();
         }
 
         public void GuardarGrupo(InvgccGrupoInvestigacion grupo)
@@ -53,7 +53,7 @@ namespace SistemaGestionCGI.BLL
 
         public void EliminarGrupo(string id)
         {
-            // Borrado en cascada manual (Historial -> Integrantes -> Grupo)
+            // Borrado en cascada manual
             string sqlDelHistorial = $"DELETE FROM INVGCCINTEGRANTES_HISTORIAL WHERE strId_int IN (SELECT strId_int FROM INVGCCGRUPO_INTEGRANTES WHERE fkId_gru = '{id}')";
             _dal.DeleteSql(sqlDelHistorial);
 
@@ -62,7 +62,7 @@ namespace SistemaGestionCGI.BLL
         }
 
         // =============================================================
-        // 2. GESTIÓN DE INTEGRANTES (INVGCCGRUPO_INTEGRANTES)
+        // 2. GESTIÓN DE INTEGRANTES
         // =============================================================
 
         public List<InvgccGrupoIntegrantes> ObtenerIntegrantes(string idGrupo)
@@ -74,18 +74,12 @@ namespace SistemaGestionCGI.BLL
         public InvgccGrupoIntegrantes ObtenerIntegrantePorId(string id)
         {
             string sql = $"SELECT * FROM INVGCCGRUPO_INTEGRANTES WHERE strId_int = '{id}'";
-            var lista = _dal.SelectSql<InvgccGrupoIntegrantes>(sql);
-            return (lista != null && lista.Count > 0) ? lista[0] : null;
+            return _dal.SelectSql<InvgccGrupoIntegrantes>(sql)?.FirstOrDefault();
         }
 
         public void GuardarIntegrante(InvgccGrupoIntegrantes integrante)
         {
             integrante.strId_int = GenerarCodigoAlfanumerico("INVGCCGRUPO_INTEGRANTES", "strId_int", "I");
-            integrante.bitActivo_int = true;
-            integrante.bitPertenece_int = true;
-
-            // IMPORTANTE: Aquí NO usamos _dal.Insert porque necesitamos control total sobre los campos NULL
-            // Construimos el SQL manual para asegurar que Tipo, Facultad y Entidad se guarden.
 
             string sql = $@"
                 INSERT INTO INVGCCGRUPO_INTEGRANTES 
@@ -97,23 +91,19 @@ namespace SistemaGestionCGI.BLL
                  '{integrante.strApellidos_int}', '{integrante.strCorreo_int}', 
                  '{integrante.strCarrera_int}', '{integrante.strFuncion_int}', '{integrante.dtFechaini_int:yyyy-MM-dd}', 
                  '{integrante.strObservacion_int}', 1, 1,
-                 '{integrante.strTipo_int}', '{integrante.strFacultad_int}', '{integrante.strEntidad_int}')"; // <--- Campos Nuevos
+                 '{integrante.strTipo_int}', '{integrante.strFacultad_int}', '{integrante.strEntidad_int}')";
 
             _dal.UpdateSql(sql);
         }
 
         public void ActualizarIntegrante(InvgccGrupoIntegrantes integrante)
         {
-            string fechaFin = "NULL";
-            if (integrante.dtFechafin_int.HasValue && integrante.dtFechafin_int.Value.Year > 1900)
-            {
-                fechaFin = $"'{integrante.dtFechafin_int.Value:yyyyMMdd}'";
-            }
+            string fechaFin = (integrante.dtFechafin_int.HasValue && integrante.dtFechafin_int.Value.Year > 1900)
+                ? $"'{integrante.dtFechafin_int.Value:yyyyMMdd}'"
+                : "NULL";
 
             int activo = integrante.bitActivo_int ? 1 : 0;
-            string fechaIni = $"'{integrante.dtFechaini_int:yyyyMMdd}'";
 
-            // CORRECCIÓN: Agregar strTipo_int, strFacultad_int, strEntidad_int al UPDATE
             string sql = $@"
                 UPDATE INVGCCGRUPO_INTEGRANTES SET 
                     strCedula_int = '{integrante.strCedula_int}',
@@ -122,17 +112,21 @@ namespace SistemaGestionCGI.BLL
                     strCorreo_int = '{integrante.strCorreo_int}',
                     strCarrera_int = '{integrante.strCarrera_int}',
                     strFuncion_int = '{integrante.strFuncion_int}',
-                    dtFechaini_int = {fechaIni}, 
+                    dtFechaini_int = '{integrante.dtFechaini_int:yyyyMMdd}', 
                     dtFechafin_int = {fechaFin},
                     strObservacion_int = '{integrante.strObservacion_int}',
                     bitActivo_int = {activo},
-                    strTipo_int = '{integrante.strTipo_int}',         -- Nuevo
-                    strFacultad_int = '{integrante.strFacultad_int}', -- Nuevo
-                    strEntidad_int = '{integrante.strEntidad_int}'    -- Nuevo
+                    strTipo_int = '{integrante.strTipo_int}',
+                    strFacultad_int = '{integrante.strFacultad_int}',
+                    strEntidad_int = '{integrante.strEntidad_int}'
                 WHERE strId_int = '{integrante.strId_int}'";
 
             _dal.UpdateSql(sql);
         }
+
+        // =============================================================
+        // 3. GESTIÓN DE AUDITORÍA Y ESTADOS
+        // =============================================================
 
         public void CambiarEstadoIntegrante(string id, bool estado, string motivo, string usuario)
         {
@@ -141,8 +135,7 @@ namespace SistemaGestionCGI.BLL
 
             string sql = $@"
                 UPDATE INVGCCGRUPO_INTEGRANTES 
-                SET bitActivo_int = {bit}, 
-                    dtFechafin_int = {fechaFin}
+                SET bitActivo_int = {bit}, dtFechafin_int = {fechaFin}
                 WHERE strId_int = '{id}'";
 
             _dal.UpdateSql(sql);
@@ -157,11 +150,7 @@ namespace SistemaGestionCGI.BLL
             _dal.Delete("INVGCCGRUPO_INTEGRANTES", $"strId_int = '{id}'");
         }
 
-        // =============================================================
-        // 3. GESTIÓN DE HISTORIAL (INVGCCINTEGRANTES_HISTORIAL)
-        // =============================================================
-
-        public void RegistrarHistorial(string idIntegrante, string accion, string motivo, string usuario)
+        private void RegistrarHistorial(string idIntegrante, string accion, string motivo, string usuario)
         {
             string fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             string sql = $@"
@@ -180,13 +169,12 @@ namespace SistemaGestionCGI.BLL
         }
 
         // =============================================================
-        // 4. UTILIDADES (Generador G# / I#)
+        // 4. UTILIDADES (Generador de IDs)
         // =============================================================
+
         private string GenerarCodigoAlfanumerico(string tabla, string campoId, string prefijo)
         {
-            // Busca el último ID ordenando primero por longitud y luego alfabéticamente para evitar que I10 quede antes de I2
             string sql = $"SELECT TOP 1 {campoId} FROM {tabla} ORDER BY Len({campoId}) DESC, {campoId} DESC";
-
             var lista = _dal.SelectSql<dynamic>(sql);
             int siguienteNumero = 1;
 
@@ -195,15 +183,11 @@ namespace SistemaGestionCGI.BLL
                 string ultimoId = "";
                 var item = lista[0];
 
-                // Manejo seguro del dynamic/JObject dependiendo del driver
+                // Manejo robusto de dynamic
                 if (item is JObject jobj)
-                {
                     ultimoId = jobj[campoId]?.ToString();
-                }
                 else
-                {
-                    try { ultimoId = ((dynamic)item)[campoId].ToString(); } catch { }
-                }
+                    try { ultimoId = ((dynamic)item).GetType().GetProperty(campoId).GetValue(item, null).ToString(); } catch { }
 
                 if (!string.IsNullOrEmpty(ultimoId) && ultimoId.StartsWith(prefijo))
                 {
