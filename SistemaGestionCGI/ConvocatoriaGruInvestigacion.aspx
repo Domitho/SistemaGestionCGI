@@ -9,8 +9,9 @@
     <%-- ESTILOS LOCALES --%>
     <style>
         .form-stack { max-width: 100% !important; }
-        /* Ajuste para que el textarea se vea bien */
         textarea.form-control { resize: vertical; min-height: 100px; }
+        .col-desc { width: 40%; }
+        .modal-header.bg-dark { border-bottom: 0; }
     </style>
 
     <%-- HEADER PRINCIPAL --%>
@@ -38,7 +39,7 @@
                     <tr>
                         <th>ID</th>
                         <th>NOMBRE</th>
-                        <th style="width: 40%;">DESCRIPCIÓN</th>
+                        <th class="col-desc">DESCRIPCIÓN</th>
                         <th>FECHA PUBLICACIÓN</th>
                         <th>ACCIONES</th>
                     </tr>
@@ -51,16 +52,21 @@
                                 <td class="text-start fw-bold text-primary"><%# Eval("strNombre_conv") %></td>
                                 <td class="text-start small text-muted"><%# HttpUtility.HtmlDecode(Eval("strDescripcion_conv").ToString()) %></td>
                                 <td><%# Convert.ToDateTime(Eval("dtFechaini_conv")).ToString("dd/MM/yyyy") %></td>
-                                
                                 <td>
-                                    <asp:LinkButton ID="btnVerArchivo" runat="server" 
-                                        CommandName="VerArchivo" CommandArgument='<%# Eval("strId_conv") %>'
+                                    <asp:LinkButton ID="btnVerArchivo" runat="server" CommandName="VerArchivo" CommandArgument='<%# Eval("strId_conv") %>'
                                         CssClass="btn btn-info btn-sm rounded-circle me-1 text-white" ToolTip="Ver Documento">
                                         <i class="fa-solid fa-eye"></i>
                                     </asp:LinkButton>
 
-                                    <asp:LinkButton ID="btnEditar" runat="server" CommandName="Editar" CommandArgument='<%# Eval("strId_conv") %>' CssClass="btn btn-warning btn-sm rounded-circle me-1" ToolTip="Editar"><i class="fa-solid fa-pen"></i></asp:LinkButton>
-                                    <asp:LinkButton ID="btnEliminar" runat="server" CommandName="Eliminar" CommandArgument='<%# Eval("strId_conv") %>' CssClass="btn btn-eliminar btn-sm rounded-circle" OnClientClick="return confirm('¿Está seguro de eliminar esta convocatoria?');" ToolTip="Eliminar"><i class="fa-solid fa-trash"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="btnEditar" runat="server" CommandName="Editar" CommandArgument='<%# Eval("strId_conv") %>' 
+                                        CssClass="btn btn-warning btn-sm rounded-circle me-1" ToolTip="Editar">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </asp:LinkButton>
+
+                                    <asp:LinkButton ID="btnEliminar" runat="server" CommandName="Eliminar" CommandArgument='<%# Eval("strId_conv") %>' 
+                                        CssClass="btn btn-eliminar btn-sm rounded-circle" OnClientClick="return confirm('¿Está seguro de eliminar esta convocatoria?');" ToolTip="Eliminar">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </asp:LinkButton>
                                 </td>
                             </tr>
                         </ItemTemplate>
@@ -73,7 +79,9 @@
     <%-- PANEL 2: AGREGAR --%>
     <asp:Panel ID="pnlAgregar" runat="server" Visible="false">
         <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4">
-            <h4 class="utc-subtitle mb-4 text-center"><i class="fa-solid fa-file-circle-plus me-2"></i> Formulario de Registro</h4>
+            <h4 class="utc-subtitle mb-4 text-center">
+                <i class="fa-solid fa-file-circle-plus me-2"></i> Formulario de Registro
+            </h4>
             
             <div class="row g-3">
                 <div class="col-12">
@@ -96,7 +104,7 @@
                 <div class="col-12">
                     <label class="form-label fw-semibold">Archivo de Bases (PDF/Excel)</label>
                     
-                    <%-- FILE INPUT ADD --%>
+                    <%-- UTC FILE INPUT ADD --%>
                     <div class="utc-fileinput-wrapper" id="wrapperArchivoAdd">
                         <div class="utc-fileinput-header">
                             <div class="utc-fileinput-icon"><i class="fa-solid fa-file-pdf"></i></div>
@@ -108,17 +116,17 @@
                                 </div>
                             </div>
                         </div>
-    
+   
                         <input type="text" class="form-control form-control-sm utc-edit-name-field" placeholder="Renombrar archivo..." />
-
                         <div class="utc-fileinput-preview" id="previewArchivoAdd"></div>
                         <div class="utc-fileinput-loader" id="loaderArchivoAdd"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
+                        
                         <div class="utc-dropzone" id="dropzoneArchivoAdd">
                             <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-primary"></i><br />Arrastra archivo aquí
                         </div>
+                        
                         <asp:FileUpload ID="flpArchivoAdd" runat="server" CssClass="utc-fileinput-input" accept=".pdf,.doc,.docx,.xls,.xlsx" />
                     </div>
-
                 </div>
             </div>
 
@@ -126,6 +134,7 @@
                 <asp:LinkButton ID="lbtGuardar" runat="server" CssClass="btn btn-primary btn-pill px-4" OnClick="lbtGuardar_Click" ValidationGroup="Guardar" OnClientClick="return validarPesoArchivo('Add');">
                     <i class="fa-solid fa-floppy-disk me-2"></i> Guardar
                 </asp:LinkButton>
+                
                 <asp:LinkButton ID="lbtCancelar" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="lbtCancelar_Click" CausesValidation="false">
                     <i class="fa-solid fa-ban me-2"></i> Cancelar
                 </asp:LinkButton>
@@ -136,7 +145,9 @@
     <%-- PANEL 3: EDITAR --%>
     <asp:Panel ID="pnlEditar" runat="server" Visible="false">
         <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4">
-            <h4 class="utc-subtitle mb-4 text-center"><i class="fa-solid fa-pen-to-square me-2"></i> Edición de Datos</h4>
+            <h4 class="utc-subtitle mb-4 text-center">
+                <i class="fa-solid fa-pen-to-square me-2"></i> Edición de Datos
+            </h4>
             
             <asp:HiddenField ID="hfIdConvEdit" runat="server" />
             <asp:HiddenField ID="hfArchivoActual" runat="server" />
@@ -160,6 +171,7 @@
                 <div class="col-12">
                     <label class="form-label fw-semibold">Reemplazar Archivo (Opcional)</label>
                     
+                    <%-- UTC FILE INPUT EDIT --%>
                     <div class="utc-fileinput-wrapper" id="wrapperArchivoEdit">
                         <div class="utc-fileinput-header">
                             <div class="utc-fileinput-icon"><i class="fa-solid fa-file-pdf"></i></div>
@@ -173,15 +185,15 @@
                         </div>
 
                         <input type="text" class="form-control form-control-sm utc-edit-name-field" placeholder="Renombrar archivo..." />
-
                         <div class="utc-fileinput-preview" id="previewArchivoEdit"></div>
                         <div class="utc-fileinput-loader" id="loaderArchivoEdit"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
+                        
                         <div class="utc-dropzone" id="dropzoneArchivoEdit">
                             <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-primary"></i><br />Arrastra para reemplazar
                         </div>
+                        
                         <asp:FileUpload ID="flpArchivoEdit" runat="server" CssClass="utc-fileinput-input" accept=".pdf,.doc,.docx,.xls,.xlsx" />
                     </div>
-
                 </div>
             </div>
 
@@ -189,6 +201,7 @@
                 <asp:LinkButton ID="lbtActualizar" runat="server" CssClass="btn btn-primary btn-pill px-4" OnClick="lbtActualizar_Click" ValidationGroup="Editar" OnClientClick="return validarPesoArchivo('Edit');">
                     <i class="fa-solid fa-floppy-disk me-2"></i> Actualizar
                 </asp:LinkButton>
+                
                 <asp:LinkButton ID="lbtCancelarEdit" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="lbtCancelarEdit_Click" CausesValidation="false">
                     <i class="fa-solid fa-ban me-2"></i> Cancelar
                 </asp:LinkButton>
@@ -206,7 +219,7 @@
                         <a id="btnDescargarDirecto" href="#" target="_blank" class="btn btn-sm btn-outline-light me-2">
                             <i class="fa-solid fa-download"></i> Descargar
                         </a>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        <button type="button" class="btn-close btn-close-white" onclick="CerrarVistaPrevia()"></button>
                     </div>
                 </div>
                 <div class="modal-body p-0" style="height: 80vh; background:white;">
@@ -216,11 +229,12 @@
         </div>
     </div>
 
-    <%-- SCRIPTS --%>
+    <%-- SCRIPTS OPTIMIZADOS --%>
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
 
     <script type="text/javascript">
-        // Configuración DataTables
+        
+        // Configuración centralizada
         const dtConfig = {
             responsive: true,
             autoWidth: false,
@@ -230,42 +244,37 @@
             dom: "<'row align-items-center mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-end'f>><'row'<'col-sm-12'tr>><'row mt-3 align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
         };
 
-        // COPIADO EXACTO DE TU EJEMPLO DE ÉXITO
+        // Función segura para UpdatePanels
         Sys.Application.add_load(function () {
             
             // Inicializar DataTables
-            initTable('#tablaConvocatorias');
+            const $table = $('#tablaConvocatorias');
+            if ($table.length) {
+                if ($.fn.DataTable.isDataTable('#tablaConvocatorias')) $table.DataTable().destroy();
+                $table.DataTable(dtConfig);
+            }
 
-            // Inicializar FileInputs (IGUAL QUE EN EJECUCIÓN)
+            // Inicializar FileInputs si existe la librería
             if (typeof UTC_FileInput === 'function') {
                 initInput("wrapperArchivoAdd", "<%= flpArchivoAdd.ClientID %>");
                 initInput("wrapperArchivoEdit", "<%= flpArchivoEdit.ClientID %>");
             }
         });
 
-        // Helper para inicializar tablas
-        function initTable(id) {
-            const $table = $(id);
-            if ($table.length) {
-                if ($.fn.DataTable.isDataTable(id)) $table.DataTable().destroy();
-                $table.DataTable(dtConfig);
-            }
-        }
-
-        // Helper para FileInputs (EL QUE HACE LA MAGIA)
+        // Helper reutilizable
         function initInput(wrapperId, inputId) {
             if (document.getElementById(wrapperId)) {
                 UTC_FileInput({
                     wrapper: wrapperId,
                     dropzone: wrapperId.replace("wrapper", "dropzone"),
                     preview: wrapperId.replace("wrapper", "preview"),
-                    loader: wrapperId.replace("wrapper", "loader"), // Importante: Coincide con tu HTML
+                    loader: wrapperId.replace("wrapper", "loader"),
                     input: inputId
                 });
             }
         }
 
-        // Validación de Peso
+        // Validación de Peso (8MB)
         function validarPesoArchivo(tipo) {
             var inputId = tipo === 'Add' ? '<%= flpArchivoAdd.ClientID %>' : '<%= flpArchivoEdit.ClientID %>';
             var input = document.getElementById(inputId);
@@ -275,19 +284,26 @@
                 var limite = 8 * 1024 * 1024; // 8MB
                 if (peso > limite) {
                     alert('El archivo supera los 8MB permitidos.');
-                    input.value = "";
+                    input.value = ""; // Limpiar
                     return false;
                 }
             }
             return true;
         }
 
-        // Modal Vista Previa
+        // Funciones Modal
         function VerPDF(url) {
             document.getElementById('framePdf').src = url;
             document.getElementById('btnDescargarDirecto').href = url;
             var myModal = new bootstrap.Modal(document.getElementById('modalVistaPrevia'));
             myModal.show();
+        }
+
+        function CerrarVistaPrevia() {
+            var el = document.getElementById('modalVistaPrevia');
+            var modal = bootstrap.Modal.getInstance(el);
+            if (modal) modal.hide();
+            document.getElementById('framePdf').src = 'about:blank';
         }
     </script>
 

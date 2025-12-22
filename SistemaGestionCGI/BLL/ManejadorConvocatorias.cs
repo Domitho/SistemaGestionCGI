@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq; // Necesario para .FirstOrDefault()
+using System.Linq;
 using Newtonsoft.Json.Linq;
 using SistemaGestionCGI.Models;
 using SistemaGestionCGI.Settings;
@@ -24,21 +24,17 @@ namespace SistemaGestionCGI.BLL
         public InvgccConvocatoriaGruInvestigacion ObtenerConvocatoriaPorId(string id)
         {
             string sql = $"SELECT * FROM INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION WHERE strId_conv = '{id}'";
-            var lista = _dal.SelectSql<InvgccConvocatoriaGruInvestigacion>(sql);
-            return lista?.FirstOrDefault();
+            return _dal.SelectSql<InvgccConvocatoriaGruInvestigacion>(sql)?.FirstOrDefault();
         }
 
         public void GuardarConvocatoria(InvgccConvocatoriaGruInvestigacion conv)
         {
-            // 1. Generar ID
             conv.strId_conv = GenerarCodigoAlfanumerico("INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION", "strId_conv", "CONV");
 
-            // 2. Sanitizar textos (evitar error por comillas simples)
             string nombre = conv.strNombre_conv.Replace("'", "''");
             string desc = conv.strDescripcion_conv.Replace("'", "''");
             string archivo = conv.strArchivo_conv.Replace("'", "''");
 
-            // 3. SQL Manual (Copiando el estilo de GuardarIntegrante del ejemplo)
             string sql = $@"
                 INSERT INTO INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION 
                 (strId_conv, strNombre_conv, strDescripcion_conv, strArchivo_conv, dtFechaini_conv, dtFechafin_conv)
@@ -46,12 +42,11 @@ namespace SistemaGestionCGI.BLL
                 ('{conv.strId_conv}', '{nombre}', '{desc}', '{archivo}', 
                  '{conv.dtFechaini_conv:yyyy-MM-dd HH:mm:ss}', '{conv.dtFechafin_conv:yyyy-MM-dd HH:mm:ss}')";
 
-            _dal.UpdateSql(sql); // Usamos UpdateSql que ejecuta cualquier comando SQL
+            _dal.UpdateSql(sql);
         }
 
         public void ActualizarConvocatoria(InvgccConvocatoriaGruInvestigacion conv)
         {
-            // Sanitizar textos
             string nombre = conv.strNombre_conv.Replace("'", "''");
             string desc = conv.strDescripcion_conv.Replace("'", "''");
             string archivo = conv.strArchivo_conv.Replace("'", "''");
@@ -68,43 +63,47 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sql);
         }
 
-        public void EliminarConvocatoria(string id)
-        {
+        public void EliminarConvocatoria(string id) =>
             _dal.Delete("INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION", $"strId_conv = '{id}'");
-        }
 
         // =============================================================
-        // 2. UTILIDADES (Generador de IDs - Patrón Idéntico)
+        // 2. UTILIDADES (Generador de IDs)
         // =============================================================
 
         private string GenerarCodigoAlfanumerico(string tabla, string campoId, string prefijo)
         {
-            string sql = $"SELECT TOP 1 {campoId} FROM {tabla} ORDER BY Len({campoId}) DESC, {campoId} DESC";
-            var lista = _dal.SelectSql<dynamic>(sql);
-            int siguienteNumero = 1;
-
-            if (lista != null && lista.Count > 0)
+            try
             {
-                string ultimoId = "";
-                var item = lista[0];
+                string sql = $"SELECT TOP 1 {campoId} FROM {tabla} ORDER BY Len({campoId}) DESC, {campoId} DESC";
+                var lista = _dal.SelectSql<dynamic>(sql);
+                int siguienteNumero = 1;
 
-                // Manejo robusto de dynamic (Copiado de tu ejemplo)
-                if (item is JObject jobj)
-                    ultimoId = jobj[campoId]?.ToString();
-                else
-                    try { ultimoId = ((dynamic)item).GetType().GetProperty(campoId).GetValue(item, null).ToString(); } catch { }
-
-                if (!string.IsNullOrEmpty(ultimoId) && ultimoId.StartsWith(prefijo))
+                if (lista != null && lista.Count > 0)
                 {
-                    string numeroStr = ultimoId.Substring(prefijo.Length);
-                    if (int.TryParse(numeroStr, out int numeroActual))
+                    string ultimoId = "";
+                    var item = lista[0];
+
+                    if (item is JObject jobj)
+                        ultimoId = jobj[campoId]?.ToString();
+                    else
+                        try { ultimoId = ((dynamic)item).GetType().GetProperty(campoId).GetValue(item, null).ToString(); } catch { }
+
+                    if (!string.IsNullOrEmpty(ultimoId) && ultimoId.StartsWith(prefijo))
                     {
-                        siguienteNumero = numeroActual + 1;
+                        string numeroStr = ultimoId.Substring(prefijo.Length);
+                        if (int.TryParse(numeroStr, out int numeroActual))
+                        {
+                            siguienteNumero = numeroActual + 1;
+                        }
                     }
                 }
+                return prefijo + siguienteNumero;
             }
-
-            return prefijo + siguienteNumero;
+            catch
+            {
+                // Fallback seguro
+                return prefijo + DateTime.Now.Ticks.ToString().Substring(12);
+            }
         }
     }
 }

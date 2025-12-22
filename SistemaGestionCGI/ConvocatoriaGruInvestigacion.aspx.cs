@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using SistemaGestionCGI.BLL;
@@ -10,95 +11,54 @@ namespace SistemaGestionCGI
 {
     public partial class ConvocatoriaGruInvestigacion : System.Web.UI.Page
     {
-        // Instancia de la Capa de Negocio
+        // 1. Instancias
         private readonly ManejadorConvocatorias _manejador = new ManejadorConvocatorias();
+        private const string RUTA_CONVOCATORIAS = @"C:\UTC\CONVOCATORIAS\";
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!IsPostBack)
+            if (IsPostBack) return;
+
+            // Seguridad
+            if (Session["UsuarioLogueado"] == null)
             {
-                // 1. Validar Sesión
-                if (Session["UsuarioLogueado"] == null)
-                {
-                    Response.Redirect("Login.aspx");
-                    return;
-                }
+                Response.Redirect("Login.aspx");
+                return;
+            }
 
-                // 2. Cargar Grilla Inicial
-                CargarGrilla();
+            // Carga Inicial
+            CargarGrilla();
 
-                // 3. Mostrar Mensajes Flash (si viene de una redirección)
-                if (Session["TempMsg"] != null)
-                {
-                    Msg(Session["TempMsg"].ToString(), Session["TempTipo"].ToString());
-                    Session["TempMsg"] = null;
-                    Session["TempTipo"] = null;
-                }
+            // Mensajes Flash
+            if (Session["TempMsg"] != null)
+            {
+                Msg(Session["TempMsg"].ToString(), Session["TempTipo"].ToString());
+                Session["TempMsg"] = null;
+                Session["TempTipo"] = null;
             }
         }
 
-        // =======================================================
-        // 1. GESTIÓN DE PANELES Y NAVEGACIÓN
-        // =======================================================
+        // =============================================
+        // LECTURA DE DATOS
+        // =============================================
 
         private void CargarGrilla()
         {
             try
             {
-                List<InvgccConvocatoriaGruInvestigacion> lista = _manejador.ObtenerConvocatorias();
-                rptConvocatorias.DataSource = lista;
+                rptConvocatorias.DataSource = _manejador.ObtenerConvocatorias();
                 rptConvocatorias.DataBind();
             }
-            catch (Exception ex)
-            {
-                Msg("Error al cargar datos: " + ex.Message, "ee");
-            }
+            catch (Exception ex) { Msg("Error al cargar convocatorias: " + ex.Message, "ee"); }
         }
+
+        // =============================================
+        // CRUD CONVOCATORIAS
+        // =============================================
 
         protected void lbtNuevaConv_Click(object sender, EventArgs e)
         {
-            // Ocultar Principal -> Mostrar Agregar
-            pnlGrilla.Visible = false;
-            pnlAgregar.Visible = true;
-            pnlEditar.Visible = false;
-
-            // Ajustar Header
-            lbtNuevaConv.Visible = false;
-            btnRegresar.Visible = true;
-
-            // Limpiar Campos
-            LimpiarFormularioAdd();
-        }
-
-        protected void btnRegresar_Click(object sender, EventArgs e)
-        {
-            // Volver al inicio
-            pnlGrilla.Visible = true;
-            pnlAgregar.Visible = false;
-            pnlEditar.Visible = false;
-
-            lbtNuevaConv.Visible = true;
-            btnRegresar.Visible = false;
-
-            CargarGrilla(); // Refrescar por si acaso
-        }
-
-        protected void lbtCancelar_Click(object sender, EventArgs e)
-        {
-            btnRegresar_Click(null, null);
-        }
-
-        protected void lbtCancelarEdit_Click(object sender, EventArgs e)
-        {
-            btnRegresar_Click(null, null);
-        }
-
-        // =======================================================
-        // 2. CREAR (INSERT)
-        // =======================================================
-
-        private void LimpiarFormularioAdd()
-        {
+            CambiarVista(Vista.Agregar);
             txtNombreAdd.Text = "";
             txtDescAdd.Text = "";
             txtFechaIniAdd.Text = DateTime.Now.ToString("yyyy-MM-dd");
@@ -108,250 +68,193 @@ namespace SistemaGestionCGI
         {
             try
             {
-                // 1. Obtener Fecha de Publicación (Solo Inicio)
-                DateTime inicio = DateTime.Parse(txtFechaIniAdd.Text);
-
-                // 2. Validar Archivo Obligatorio (Al crear es mandatorio)
                 if (!flpArchivoAdd.HasFile)
                 {
-                    Msg("Debe adjuntar el archivo de bases (PDF/Excel).", "ww");
+                    Msg("Debe adjuntar el archivo de bases.", "ww");
                     return;
                 }
 
-                // 3. Guardar Archivo Físico
-                string rutaArchivo = GuardarArchivoFisico(flpArchivoAdd);
-                if (string.IsNullOrEmpty(rutaArchivo)) return; // Si falla la subida, detenemos
+                if (!ValidarArchivo(flpArchivoAdd.FileName)) return;
 
-                // 4. Construir Objeto
-                InvgccConvocatoriaGruInvestigacion obj = new InvgccConvocatoriaGruInvestigacion();
-
-                // NO asignamos ID aquí, la BLL lo genera automáticamente (igual que en Grupos)
-                // obj.strId_conv = ... (Se hace en el Manejador)
-
-                obj.strNombre_conv = txtNombreAdd.Text.Trim();
-                obj.strDescripcion_conv = txtDescAdd.Text;
-                obj.dtFechaini_conv = inicio;
-
-                // TRUCO SQL: Usamos 01/01/1900 para que sea una fecha válida en SQL Server
-                // pero que visualmente entendemos como "Sin Fecha Fin"
-                obj.dtFechafin_conv = new DateTime(1900, 1, 1);
-
-                obj.strArchivo_conv = rutaArchivo;
-
-                // 5. Llamar a la BLL (Método void)
-                _manejador.GuardarConvocatoria(obj);
-
-                // 6. Feedback y Redirección
-                SetFlashMessage("Convocatoria creada exitosamente.", "ss");
-                Response.Redirect("ConvocatoriaGruInvestigacion.aspx");
-            }
-            catch (Exception ex)
-            {
-                Msg("Error al guardar: " + ex.Message, "ee");
-            }
-        }
-
-        // =======================================================
-        // 3. EDITAR Y ELIMINAR (CRUD)
-        // =======================================================
-
-        protected void rptConvocatorias_ItemCommand(object source, RepeaterCommandEventArgs e)
-        {
-            string idConv = e.CommandArgument.ToString();
-
-            if (e.CommandName == "Editar")
-            {
-                CargarDatosEdicion(idConv);
-            }
-            else if (e.CommandName == "Eliminar")
-            {
-                EliminarRegistro(idConv);
-            }
-            else if (e.CommandName == "VerArchivo")
-            {
-                VerArchivoAdjunto(idConv);
-            }
-        }
-
-        private void CargarDatosEdicion(string id)
-        {
-            try
-            {
-                var obj = _manejador.ObtenerConvocatoriaPorId(id);
-                if (obj != null)
+                var conv = new InvgccConvocatoriaGruInvestigacion
                 {
-                    hfIdConvEdit.Value = obj.strId_conv;
-                    txtNombreEdit.Text = obj.strNombre_conv;
-                    txtDescEdit.Text = obj.strDescripcion_conv;
-                    txtFechaIniEdit.Text = obj.dtFechaini_conv.ToString("yyyy-MM-dd");
+                    strNombre_conv = txtNombreAdd.Text.Trim(),
+                    dtFechaini_conv = DateTime.Parse(txtFechaIniAdd.Text),
+                    strDescripcion_conv = HttpUtility.HtmlEncode(txtDescAdd.Text), // XSS Protection
+                    strArchivo_conv = GuardarArchivoFisico(flpArchivoAdd, $"CONV_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivoAdd.FileName)}")
+                };
 
-                    hfArchivoActual.Value = obj.strArchivo_conv;
+                // Asignamos una fecha "vacía" para cumplir con el modelo si es requerido
+                conv.dtFechafin_conv = new DateTime(1900, 1, 1);
 
-                    // Cambiar Vista
-                    pnlGrilla.Visible = false;
-                    pnlAgregar.Visible = false;
-                    pnlEditar.Visible = true;
-
-                    lbtNuevaConv.Visible = false;
-                    btnRegresar.Visible = true;
-                }
+                _manejador.GuardarConvocatoria(conv);
+                Redireccionar("Convocatoria creada exitosamente.", "ss");
             }
-            catch (Exception ex)
-            {
-                Msg("Error al cargar para editar: " + ex.Message, "ee");
-            }
+            catch (Exception ex) { Msg("Error al guardar: " + ex.Message, "ee"); }
         }
 
         protected void lbtActualizar_Click(object sender, EventArgs e)
         {
             try
             {
-                // 1. Obtener Fecha
-                DateTime inicio = DateTime.Parse(txtFechaIniEdit.Text);
+                var conv = new InvgccConvocatoriaGruInvestigacion
+                {
+                    strId_conv = hfIdConvEdit.Value,
+                    strNombre_conv = txtNombreEdit.Text.Trim(),
+                    dtFechaini_conv = DateTime.Parse(txtFechaIniEdit.Text),
+                    strDescripcion_conv = HttpUtility.HtmlEncode(txtDescEdit.Text),
+                    strArchivo_conv = hfArchivoActual.Value,
+                    dtFechafin_conv = new DateTime(1900, 1, 1) // Fecha dummy segura
+                };
 
-                // 2. Construir Objeto con el ID oculto
-                InvgccConvocatoriaGruInvestigacion obj = new InvgccConvocatoriaGruInvestigacion();
-                obj.strId_conv = hfIdConvEdit.Value; // ID que cargamos al dar click en Editar
-                obj.strNombre_conv = txtNombreEdit.Text.Trim();
-                obj.strDescripcion_conv = txtDescEdit.Text;
-
-                obj.dtFechaini_conv = inicio;
-                obj.dtFechafin_conv = new DateTime(1900, 1, 1); // Fecha "dummy" segura
-
-                // 3. Lógica de Archivo (Reemplazo opcional)
                 if (flpArchivoEdit.HasFile)
                 {
-                    // A) Si sube uno nuevo -> Borramos el viejo y guardamos el nuevo
-                    if (File.Exists(hfArchivoActual.Value))
-                    {
-                        try { File.Delete(hfArchivoActual.Value); } catch { /* Ignorar si está bloqueado */ }
-                    }
-                    obj.strArchivo_conv = GuardarArchivoFisico(flpArchivoEdit);
-                }
-                else
-                {
-                    // B) Si no sube nada -> Mantenemos el que ya tenía
-                    obj.strArchivo_conv = hfArchivoActual.Value;
+                    if (!ValidarArchivo(flpArchivoEdit.FileName)) return;
+                    conv.strArchivo_conv = GuardarArchivoFisico(flpArchivoEdit, $"CONV_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivoEdit.FileName)}");
                 }
 
-                // 4. Llamar a la BLL (Método void)
-                _manejador.ActualizarConvocatoria(obj);
-
-                // 5. Feedback y Redirección
-                SetFlashMessage("Registro actualizado correctamente.", "ss");
-                Response.Redirect("ConvocatoriaGruInvestigacion.aspx");
+                _manejador.ActualizarConvocatoria(conv);
+                Redireccionar("Convocatoria actualizada.", "ss");
             }
-            catch (Exception ex)
-            {
-                Msg("Error al actualizar: " + ex.Message, "ee");
-            }
+            catch (Exception ex) { Msg("Error al actualizar: " + ex.Message, "ee"); }
         }
 
-        private void EliminarRegistro(string id)
+        protected void rptConvocatorias_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
-            try
-            {
-                // 1. Obtener datos para borrar archivo físico primero (limpieza)
-                var obj = _manejador.ObtenerConvocatoriaPorId(id);
+            string id = e.CommandArgument.ToString();
 
-                if (obj != null && !string.IsNullOrEmpty(obj.strArchivo_conv) && File.Exists(obj.strArchivo_conv))
-                {
+            switch (e.CommandName)
+            {
+                case "Editar":
+                    CargarEdicion(id);
+                    break;
+
+                case "Eliminar":
                     try
                     {
-                        File.SetAttributes(obj.strArchivo_conv, FileAttributes.Normal);
-                        File.Delete(obj.strArchivo_conv);
+                        var obj = _manejador.ObtenerConvocatoriaPorId(id);
+                        if (obj != null && File.Exists(obj.strArchivo_conv))
+                        {
+                            try { File.Delete(obj.strArchivo_conv); } catch { }
+                        }
+
+                        _manejador.EliminarConvocatoria(id);
+                        Redireccionar("Convocatoria eliminada.", "ss");
                     }
-                    catch { /* Ignoramos si el archivo está en uso, no es crítico */ }
-                }
+                    catch (Exception ex) { Msg("Error al eliminar: " + ex.Message, "ee"); }
+                    break;
 
-                // 2. Llamada a la BLL (Método VOID)
-                // Ya no va dentro de un 'if', porque si falla lanzará una excepción
-                _manejador.EliminarConvocatoria(id);
-
-                // 3. Si llegamos aquí, es éxito
-                Msg("Convocatoria eliminada correctamente.", "ss");
-                CargarGrilla();
-            }
-            catch (Exception ex)
-            {
-                // 4. Si hubo error SQL (ej: llave foránea), cae aquí
-                Msg("No se pudo eliminar. Es posible que tenga registros asociados.", "ee");
+                case "VerArchivo":
+                    var conv = _manejador.ObtenerConvocatoriaPorId(id);
+                    if (conv != null && !string.IsNullOrEmpty(conv.strArchivo_conv))
+                    {
+                        DescargarArchivo(conv.strArchivo_conv);
+                    }
+                    else
+                    {
+                        Msg("No hay archivo adjunto.", "ww");
+                    }
+                    break;
             }
         }
 
-        // =======================================================
-        // 4. UTILIDADES (Archivos y Mensajes)
-        // =======================================================
-
-        private string GuardarArchivoFisico(FileUpload control)
+        private void CargarEdicion(string id)
         {
-            try
+            var conv = _manejador.ObtenerConvocatoriaPorId(id);
+            if (conv != null)
             {
-                string extension = Path.GetExtension(control.FileName).ToLower();
+                hfIdConvEdit.Value = conv.strId_conv;
+                txtNombreEdit.Text = conv.strNombre_conv;
+                txtFechaIniEdit.Text = conv.dtFechaini_conv.ToString("yyyy-MM-dd");
+                txtDescEdit.Text = HttpUtility.HtmlDecode(conv.strDescripcion_conv);
+                hfArchivoActual.Value = conv.strArchivo_conv;
 
-                // Validación Servidor
-                if (extension != ".pdf" && extension != ".xls" && extension != ".xlsx" && extension != ".doc" && extension != ".docx")
-                {
-                    Msg("Formato de archivo no permitido. Solo PDF, Excel o Word.", "ww");
-                    return "";
-                }
-
-                // Definir Ruta
-                string carpetaBase = @"C:\UTC\CONVOCATORIAS\";
-                if (!Directory.Exists(carpetaBase)) Directory.CreateDirectory(carpetaBase);
-
-                // Nombre único: Convocatoria-FECHA-HORA.ext
-                string nombreArchivo = $"Convocatoria-{DateTime.Now:yyyyMMdd-HHmmss}{extension}";
-                string rutaCompleta = Path.Combine(carpetaBase, nombreArchivo);
-
-                control.SaveAs(rutaCompleta);
-                return rutaCompleta;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error al subir archivo físico: " + ex.Message);
+                CambiarVista(Vista.Editar);
             }
         }
 
-        private void VerArchivoAdjunto(string id)
+        // =============================================
+        // NAVEGACIÓN Y CANCELAR
+        // =============================================
+
+        protected void btnRegresar_Click(object sender, EventArgs e) => Response.Redirect("ConvocatoriaGruInvestigacion.aspx");
+        protected void lbtCancelar_Click(object sender, EventArgs e) => Response.Redirect("ConvocatoriaGruInvestigacion.aspx");
+        protected void lbtCancelarEdit_Click(object sender, EventArgs e) => Response.Redirect("ConvocatoriaGruInvestigacion.aspx");
+
+        // =============================================
+        // UTILIDADES
+        // =============================================
+
+        private enum Vista { Lista, Agregar, Editar }
+
+        private void CambiarVista(Vista vista)
         {
-            try
-            {
-                var obj = _manejador.ObtenerConvocatoriaPorId(id);
-                if (obj != null && File.Exists(obj.strArchivo_conv))
-                {
-                    string url = $"VerArchivo.ashx?id={id}&tipo=CONVOCATORIA";
+            pnlGrilla.Visible = vista == Vista.Lista;
+            headerConvocatoria.Visible = vista == Vista.Lista;
 
-                    // Llamamos a la función JS que abre el Modal
-                    string script = $"VerPDF('{url}');";
-                    ClientScript.RegisterStartupScript(this.GetType(), "OpenVisor", script, true);
-                }
-                else
-                {
-                    Msg("El archivo físico no existe en el servidor.", "ww");
-                }
-            }
-            catch (Exception ex)
-            {
-                Msg("Error al intentar visualizar: " + ex.Message, "ee");
-            }
+            pnlAgregar.Visible = vista == Vista.Agregar;
+            pnlEditar.Visible = vista == Vista.Editar;
         }
 
-        // Helpers para Toastify
-        private void Msg(string msg, string type)
+        private bool ValidarArchivo(string fileName)
         {
-            // Limpia caracteres que rompen JS
-            string cleanMsg = msg.Replace("'", "").Replace("\n", " ").Replace("\r", "");
-            string script = $"<script>toastify('{type}', '{cleanMsg}', 'Sistema');</script>";
-
-            // Inyecta el script al final de la carga de la página
-            ClientScript.RegisterStartupScript(this.GetType(), "ToastMessage", script);
+            string ext = Path.GetExtension(fileName).ToLower();
+            if (ext != ".pdf" && ext != ".xls" && ext != ".xlsx" && ext != ".doc" && ext != ".docx")
+            {
+                Msg("Formato no permitido (Solo PDF, Excel, Word).", "ww");
+                return false;
+            }
+            return true;
         }
 
-        private void SetFlashMessage(string msg, string type)
+        private string GuardarArchivoFisico(FileUpload ctl, string nombre)
+        {
+            if (!Directory.Exists(RUTA_CONVOCATORIAS)) Directory.CreateDirectory(RUTA_CONVOCATORIAS);
+            string ruta = Path.Combine(RUTA_CONVOCATORIAS, nombre);
+            ctl.SaveAs(ruta);
+            return ruta;
+        }
+
+        private void DescargarArchivo(string rutaFisica)
+        {
+            if (File.Exists(rutaFisica))
+            {
+                string nombre = Path.GetFileName(rutaFisica);
+                string ext = Path.GetExtension(rutaFisica).ToLower();
+                Response.Clear();
+
+                switch (ext)
+                {
+                    case ".pdf": Response.ContentType = "application/pdf"; break;
+                    case ".xls": Response.ContentType = "application/vnd.ms-excel"; break;
+                    case ".xlsx": Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"; break;
+                    case ".doc": Response.ContentType = "application/msword"; break;
+                    case ".docx": Response.ContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"; break;
+                    default: Response.ContentType = "application/octet-stream"; break;
+                }
+
+                Response.AppendHeader("Content-Disposition", "inline; filename=" + nombre);
+                Response.TransmitFile(rutaFisica);
+                Response.End();
+            }
+            else
+            {
+                Msg("El archivo físico no existe.", "ww");
+            }
+        }
+
+        private void Redireccionar(string msg, string type)
         {
             Session["TempMsg"] = msg;
             Session["TempTipo"] = type;
+            Response.Redirect("ConvocatoriaGruInvestigacion.aspx", false);
+        }
+
+        private void Msg(string msg, string type)
+        {
+            if (string.IsNullOrEmpty(msg)) return;
+            string cleanMsg = msg.Replace("'", "\\'").Replace("\r\n", " ").Replace("\n", " ");
+            ScriptManager.RegisterStartupScript(this, GetType(), "alert", $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema'); }});", true);
         }
     }
 }
