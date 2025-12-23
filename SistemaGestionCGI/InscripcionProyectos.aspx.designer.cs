@@ -114,13 +114,49 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtTema;
 
         /// <summary>
-        /// Control txtDuracion.
+        /// Control txtDuracionDisplay.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtDuracion;
+        protected global::System.Web.UI.WebControls.TextBox txtDuracionDisplay;
+
+        /// <summary>
+        /// Control hfAnios.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfAnios;
+
+        /// <summary>
+        /// Control hfMeses.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfMeses;
+
+        /// <summary>
+        /// Control hfSemanas.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfSemanas;
+
+        /// <summary>
+        /// Control hfDias.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfDias;
 
         /// <summary>
         /// Control txtPuntaje.
@@ -231,13 +267,49 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtTemaEdit;
 
         /// <summary>
-        /// Control txtDuracionEdit.
+        /// Control txtDuracionDisplayEdit.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtDuracionEdit;
+        protected global::System.Web.UI.WebControls.TextBox txtDuracionDisplayEdit;
+
+        /// <summary>
+        /// Control hfAniosEdit.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfAniosEdit;
+
+        /// <summary>
+        /// Control hfMesesEdit.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfMesesEdit;
+
+        /// <summary>
+        /// Control hfSemanasEdit.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfSemanasEdit;
+
+        /// <summary>
+        /// Control hfDiasEdit.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfDiasEdit;
 
         /// <summary>
         /// Control txtPuntajeEdit.
@@ -312,13 +384,31 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl modalEstadoPro;
 
         /// <summary>
-        /// Control hfIdProyectoEstado.
+        /// Control hfldProyectoEstado.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hfIdProyectoEstado;
+        protected global::System.Web.UI.WebControls.HiddenField hfldProyectoEstado;
+
+        /// <summary>
+        /// Control ddlNuevoEstado.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlNuevoEstado;
+
+        /// <summary>
+        /// Control txtObservacionEstado.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtObservacionEstado;
 
         /// <summary>
         /// Control btnConfirmarEstadoPro.

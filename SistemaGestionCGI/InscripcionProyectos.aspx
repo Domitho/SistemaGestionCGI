@@ -82,7 +82,10 @@
                                     %>
                                 </td>
                                 <td>
-                                    <span class='<%# Eval("strEstado_pro").ToString() == "Pendiente" ? "badge bg-warning" : "badge bg-success" %>'>
+                                    <span class='<%# 
+                                        Eval("strEstado_pro").ToString() == "Aprobado" ? "badge bg-success" : 
+                                        Eval("strEstado_pro").ToString() == "Rechazado" ? "badge bg-danger" : 
+                                        "badge bg-warning text-dark" %>'>
                                         <%# Eval("strEstado_pro") %>
                                     </span>
                                 </td>
@@ -92,9 +95,21 @@
                                         <i class="fa-solid fa-eye"></i>
                                     </asp:LinkButton>
 
-                                    <asp:LinkButton ID="btnEstado" runat="server" CommandName="estado" CommandArgument='<%# Eval("strId_pro") %>'
-                                        CssClass="btn btn-warning btn-sm rounded-circle me-1" ToolTip="Cambiar estado">
-                                        <i class="fa-solid fa-arrows-rotate"></i>
+                                    <asp:LinkButton ID="btnCambiarEstado" runat="server"
+                                        CommandName="CambiarEstado" 
+                                        CommandArgument='<%# Eval("strId_pro") %>'
+    
+                                        Enabled='<%# Eval("strEstado_pro").ToString() != "Aprobado" %>'
+    
+                                        CssClass='<%# Eval("strEstado_pro").ToString() == "Aprobado" ? 
+                                                     "btn btn-secondary btn-sm rounded-circle me-1" : 
+                                                     "btn btn-warning btn-sm rounded-circle me-1" %>'
+    
+                                        ToolTip='<%# Eval("strEstado_pro").ToString() == "Aprobado" ? 
+                                                     "Proyecto Aprobado" : 
+                                                     "Gestionar Estado" %>'>
+    
+                                        <i class="fa-solid fa-power-off"></i>
                                     </asp:LinkButton>
 
                                     <asp:LinkButton ID="btnEditar" runat="server" CommandName="editar" CommandArgument='<%# Eval("strId_pro") %>'
@@ -162,8 +177,21 @@
                     <asp:TextBox ID="txtTema" runat="server" CssClass="form-control" autocomplete="off" />
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Duración</label>
-                    <asp:TextBox ID="txtDuracion" runat="server" CssClass="form-control" autocomplete="off" />
+                    <label class="form-label fw-semibold">Duración Estimada</label>
+                    <div class="input-group">
+                        <asp:TextBox ID="txtDuracionDisplay" runat="server" CssClass="form-control bg-white fw-bold text-primary" 
+                            placeholder="Defina el tiempo" ReadOnly="true" ClientIDMode="Static" />
+        
+                        <button type="button" class="btn btn-outline-primary" onclick="AbrirModalDuracion(false)">
+                            <i class="fa-solid fa-stopwatch me-2"></i> Definir
+                        </button>
+                    </div>
+
+                    <%-- 2. CAMPOS OCULTOS (Para que C# lea los valores) --%>
+                    <asp:HiddenField ID="hfAnios" runat="server" ClientIDMode="Static" Value="0" />
+                    <asp:HiddenField ID="hfMeses" runat="server" ClientIDMode="Static" Value="0" />
+                    <asp:HiddenField ID="hfSemanas" runat="server" ClientIDMode="Static" Value="0" />
+                    <asp:HiddenField ID="hfDias" runat="server" ClientIDMode="Static" Value="0" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Puntuación (Opcional)</label>
@@ -239,8 +267,21 @@
                     <asp:TextBox ID="txtTemaEdit" runat="server" CssClass="form-control" autocomplete="off" />
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Duración</label>
-                    <asp:TextBox ID="txtDuracionEdit" runat="server" CssClass="form-control" autocomplete="off" />
+                    <label class="form-label fw-semibold">Duración Estimada</label>
+    
+                    <div class="input-group">
+                        <asp:TextBox ID="txtDuracionDisplayEdit" runat="server" CssClass="form-control bg-white fw-bold text-primary" 
+                            placeholder="Click en Definir..." ReadOnly="true" ClientIDMode="Static" />
+        
+                        <button type="button" class="btn btn-outline-primary" onclick="AbrirModalDuracion(true)">
+                            <i class="fa-solid fa-stopwatch me-2"></i> Definir
+                        </button>
+                    </div>
+
+                    <asp:HiddenField ID="hfAniosEdit" runat="server" ClientIDMode="Static" Value="0" />
+                    <asp:HiddenField ID="hfMesesEdit" runat="server" ClientIDMode="Static" Value="0" />
+                    <asp:HiddenField ID="hfSemanasEdit" runat="server" ClientIDMode="Static" Value="0" />
+                    <asp:HiddenField ID="hfDiasEdit" runat="server" ClientIDMode="Static" Value="0" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-bold text-primary">Puntaje Asignado</label>
@@ -299,25 +340,35 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow-utc border-0">
                 <div class="modal-header bg-utc text-white text-center">
-                    <h5 class="modal-title w-100"><i class="fa-solid fa-power-off me-2"></i> <span id="tituloEstadoPro">Cambio de Estado</span></h5>
+                    <h5 class="modal-title w-100"><i class="fa-solid fa-power-off me-2"></i> Gestionar Estado</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="mb-3">¿Estás seguro que deseas <strong id="accionEstadoTextoPro">cambiar</strong> el estado del proyecto?</p>
-                    <div class="bg-light p-3 rounded border">
-                        <asp:HiddenField ID="hfIdProyectoEstado" runat="server" ClientIDMode="Static" />
-                        <p class="mb-1"><strong>ID Proyecto:</strong> <span id="infoIdPro"></span></p>
-                        <p class="mb-1"><strong>Tema:</strong> <span id="infoTemaPro"></span></p>
-                        <p class="mb-1"><strong>Estado actual:</strong> <span id="infoEstadoPro" class="badge bg-warning text-dark px-2 py-1"></span></p>
+                    <div class="bg-light p-3 rounded border mb-3">
+                        <asp:HiddenField ID="hfldProyectoEstado" runat="server" ClientIDMode="Static" />
+                        <p class="mb-1"><strong>ID:</strong> <span id="infoldPro"></span></p>
+                        <p class="mb-1"><strong>Tema:</strong> <span id="infoTemaPro" class="text-primary fw-bold"></span></p>
+                        <p class="mb-0"><strong>Estado Actual:</strong> <span id="infoEstadoPro"></span></p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Seleccione el nuevo estado:</label>
+                        <asp:DropDownList ID="ddlNuevoEstado" runat="server" CssClass="form-select">
+                            <asp:ListItem Value="" Text="-- Seleccione una Acción --" Selected="True" />
+                            <asp:ListItem Value="Aprobado" Text="✅ APROBAR PROYECTO" class="text-success fw-bold" />
+                            <asp:ListItem Value="Rechazado" Text="❌ RECHAZAR PROYECTO" class="text-danger fw-bold" />
+                        </asp:DropDownList>
+                    </div>
+                
+                    <div class="mb-1">
+                         <label class="form-label small">Observación (Opcional)</label>
+                         <asp:TextBox ID="txtObservacionEstado" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="2" placeholder="Motivo del cambio..."></asp:TextBox>
                     </div>
                 </div>
                 <div class="modal-footer justify-content-center">
-                    <asp:LinkButton ID="btnConfirmarEstadoPro" runat="server" CssClass="btn btn-pill btn-success px-4" OnClick="btnConfirmarEstadoPro_Click">
-                        <i class="fa-solid fa-check me-2"></i> Confirmar
+                    <asp:LinkButton ID="btnConfirmarEstadoPro" runat="server" CssClass="btn btn-primary btn-pill px-4" OnClick="btnConfirmarEstadoPro_Click">
+                        <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Cambio
                     </asp:LinkButton>
-                    <button type="button" class="btn btn-outline-primary btn-pill px-4" data-bs-dismiss="modal">
-                        <i class="fa-solid fa-xmark me-2"></i> Cancelar
-                    </button>
                 </div>
             </div>
         </div>
@@ -403,6 +454,80 @@
                     <asp:LinkButton ID="btnGuardarIntegrante" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow-sm" OnClick="btnGuardarIntegrante_Click">
                         <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Integrante
                     </asp:LinkButton>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalDuracion" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-utc border-0 rounded-4">
+                <div class="modal-header bg-utc text-white border-0">
+                    <h5 class="modal-title"><i class="fa-solid fa-hourglass-half me-2"></i> Configurar Duración</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light">
+                
+                    <div class="text-center mb-4 pt-2">
+                        <h6 class="text-muted small text-uppercase mb-1">Tiempo Total</h6>
+                        <div class="h4 fw-bold text-primary" id="lblLivePreview">0 Meses</div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body text-center p-2">
+                                    <small class="text-muted d-block mb-2"><i class="fa-solid fa-calendar me-1"></i> Años</small>
+                                    <div class="d-flex justify-content-center align-items-center gap-2">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle" onclick="Step('anios', -1)"><i class="fa-solid fa-minus"></i></button>
+                                        <input type="number" id="tmpAnios" class="form-control text-center fw-bold border-0 p-0 bg-transparent" style="width: 40px" value="0" readonly>
+                                        <button type="button" class="btn btn-sm btn-outline-primary rounded-circle" onclick="Step('anios', 1)"><i class="fa-solid fa-plus"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body text-center p-2">
+                                    <small class="text-muted d-block mb-2"><i class="fa-solid fa-calendar-days me-1"></i> Meses</small>
+                                    <div class="d-flex justify-content-center align-items-center gap-2">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle" onclick="Step('meses', -1)"><i class="fa-solid fa-minus"></i></button>
+                                        <input type="number" id="tmpMeses" class="form-control text-center fw-bold border-0 p-0 bg-transparent" style="width: 40px" value="0" readonly>
+                                        <button type="button" class="btn btn-sm btn-outline-primary rounded-circle" onclick="Step('meses', 1)"><i class="fa-solid fa-plus"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body text-center p-2">
+                                    <small class="text-muted d-block mb-2"><i class="fa-solid fa-calendar-week me-1"></i> Semanas</small>
+                                    <div class="d-flex justify-content-center align-items-center gap-2">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle" onclick="Step('semanas', -1)"><i class="fa-solid fa-minus"></i></button>
+                                        <input type="number" id="tmpSemanas" class="form-control text-center fw-bold border-0 p-0 bg-transparent" style="width: 40px" value="0" readonly>
+                                        <button type="button" class="btn btn-sm btn-outline-primary rounded-circle" onclick="Step('semanas', 1)"><i class="fa-solid fa-plus"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body text-center p-2">
+                                    <small class="text-muted d-block mb-2"><i class="fa-solid fa-sun me-1"></i> Días</small>
+                                    <div class="d-flex justify-content-center align-items-center gap-2">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle" onclick="Step('dias', -1)"><i class="fa-solid fa-minus"></i></button>
+                                        <input type="number" id="tmpDias" class="form-control text-center fw-bold border-0 p-0 bg-transparent" style="width: 40px" value="0" readonly>
+                                        <button type="button" class="btn btn-sm btn-outline-primary rounded-circle" onclick="Step('dias', 1)"><i class="fa-solid fa-plus"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 justify-content-center pb-4">
+                    <button type="button" class="btn btn-primary btn-pill px-5" onclick="GuardarDuracion()">
+                        <i class="fa-solid fa-check me-2"></i> Aplicar Tiempo
+                    </button>
                 </div>
             </div>
         </div>
@@ -505,6 +630,86 @@
             if (ddl) {
                 ToggleTipoIntegrante(ddl);
             }
+        }
+
+    </script>
+
+    <script>
+        // Variable para saber si estamos editando (True) o creando nuevo (False)
+        let esEdicionDuracion = false;
+
+        function AbrirModalDuracion(esEdit) {
+            esEdicionDuracion = esEdit;
+            let sufijo = esEdit ? "Edit" : ""; // Detecta si usar los IDs de Edición
+
+            // 1. Cargar valores actuales de los HiddenFields al Modal
+            // Si están vacíos, pone 0
+            document.getElementById('tmpAnios').value = document.getElementById('hfAnios' + sufijo).value || 0;
+            document.getElementById('tmpMeses').value = document.getElementById('hfMeses' + sufijo).value || 0;
+            document.getElementById('tmpSemanas').value = document.getElementById('hfSemanas' + sufijo).value || 0;
+            document.getElementById('tmpDias').value = document.getElementById('hfDias' + sufijo).value || 0;
+
+            ActualizarPreview();
+
+            // 2. Abrir Modal Bootstrap
+            var el = document.getElementById('modalDuracion');
+            var modal = new bootstrap.Modal(el);
+            modal.show();
+        }
+
+        function Step(tipo, cantidad) {
+            // Identificar input temporal
+            let inputId = "";
+            if (tipo === 'anios') inputId = 'tmpAnios';
+            if (tipo === 'meses') inputId = 'tmpMeses';
+            if (tipo === 'semanas') inputId = 'tmpSemanas';
+            if (tipo === 'dias') inputId = 'tmpDias';
+
+            let input = document.getElementById(inputId);
+            let valor = parseInt(input.value) + cantidad;
+
+            // Validaciones lógicas
+            if (valor < 0) valor = 0;
+            if (tipo === 'meses' && valor > 11) valor = 11; // Máximo 11 meses (luego es un año)
+            if (tipo === 'semanas' && valor > 4) valor = 4;
+            if (tipo === 'dias' && valor > 30) valor = 30;
+
+            input.value = valor;
+            ActualizarPreview();
+        }
+
+        function ActualizarPreview() {
+            let a = parseInt(document.getElementById('tmpAnios').value);
+            let m = parseInt(document.getElementById('tmpMeses').value);
+            let s = parseInt(document.getElementById('tmpSemanas').value);
+            let d = parseInt(document.getElementById('tmpDias').value);
+
+            let texto = [];
+            if (a > 0) texto.push(a + (a === 1 ? " Año" : " Años"));
+            if (m > 0) texto.push(m + (m === 1 ? " Mes" : " Meses"));
+            if (s > 0) texto.push(s + (s === 1 ? " Semana" : " Semanas"));
+            if (d > 0) texto.push(d + (d === 1 ? " Día" : " Días"));
+
+            let resultado = texto.length > 0 ? texto.join(", ") : "Sin definir";
+            document.getElementById('lblLivePreview').innerText = resultado;
+        }
+
+        function GuardarDuracion() {
+            let sufijo = esEdicionDuracion ? "Edit" : "";
+
+            // 1. Guardar valores del Modal en los HiddenFields de ASP
+            document.getElementById('hfAnios' + sufijo).value = document.getElementById('tmpAnios').value;
+            document.getElementById('hfMeses' + sufijo).value = document.getElementById('tmpMeses').value;
+            document.getElementById('hfSemanas' + sufijo).value = document.getElementById('tmpSemanas').value;
+            document.getElementById('hfDias' + sufijo).value = document.getElementById('tmpDias').value;
+
+            // 2. Mostrar el texto bonito en el TextBox visible
+            document.getElementById('txtDuracionDisplay' + sufijo).value = document.getElementById('lblLivePreview').innerText;
+
+            // 3. Cerrar Modal
+            var el = document.getElementById('modalDuracion');
+            var modal = bootstrap.Modal.getInstance(el);
+            modal.hide();
         }
     </script>
 

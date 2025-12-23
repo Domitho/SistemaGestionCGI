@@ -84,14 +84,14 @@ namespace SistemaGestionCGI.BLL
         public void Eliminar(string id) =>
             _dal.Delete("INVGCCINSCRIPCION_PROYECTOS", $"strId_pro = '{id}'");
 
-        public void AlternarEstado(string id)
+        public void CambiarEstado(string id, string nuevoEstado, string observacion)
         {
+            string obsSanitizada = string.IsNullOrEmpty(observacion) ? "" : observacion.Replace("'", "");
+
             string sql = $@"
-                UPDATE INVGCCINSCRIPCION_PROYECTOS
-                SET strEstado_pro = CASE 
-                    WHEN strEstado_pro = 'Pendiente' THEN 'Aprobado' 
-                    ELSE 'Pendiente' 
-                END
+                UPDATE INVGCCINSCRIPCION_PROYECTOS 
+                SET strEstado_pro = '{nuevoEstado}',
+                    strObservacionEstado_pro = '{obsSanitizada}'
                 WHERE strId_pro = '{id}'";
 
             _dal.UpdateSql(sql);

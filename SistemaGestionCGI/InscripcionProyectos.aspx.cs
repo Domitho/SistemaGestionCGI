@@ -200,7 +200,6 @@ namespace SistemaGestionCGI
 
             txtFecha.Text = DateTime.Now.ToString("yyyy-MM-dd");
             txtTema.Text = "";
-            txtDuracion.Text = "";
             ddlGrupo.SelectedIndex = 0;
             ddlConv.SelectedIndex = 0;
             ddlCoordinador.Items.Clear();
@@ -218,11 +217,19 @@ namespace SistemaGestionCGI
                     return;
                 }
 
+                string duracionFinal = ConstruirDuracion(hfAnios.Value, hfMeses.Value, hfSemanas.Value, hfDias.Value);
+
+                if (string.IsNullOrWhiteSpace(txtTema.Text) || duracionFinal == "Indefinida")
+                {
+                    Msg("Complete el tema y defina una duración.", "ww");
+                    return;
+                }
+
                 var nuevo = new InvgccInscripcionProyectos
                 {
                     strTema_pro = txtTema.Text.Trim(),
                     strCoordinador_pro = ddlCoordinador.SelectedValue,
-                    strDuracion_pro = txtDuracion.Text.Trim(),
+                    strDuracion_pro = duracionFinal,
                     dtFehains_pro = DateTime.Parse(txtFecha.Text),
                     fkId_gru = ddlGrupo.SelectedValue,
                     fkId_conv = ddlConv.SelectedValue,
@@ -245,12 +252,14 @@ namespace SistemaGestionCGI
         {
             try
             {
+                string duracionFinal = ConstruirDuracion(hfAniosEdit.Value, hfMesesEdit.Value, hfSemanasEdit.Value, hfDiasEdit.Value);
+
                 var edit = new InvgccInscripcionProyectos
                 {
                     strId_pro = hfIdEdit.Value,
                     strTema_pro = txtTemaEdit.Text.Trim(),
                     strCoordinador_pro = ddlCoordinadorEdit.SelectedValue,
-                    strDuracion_pro = txtDuracionEdit.Text.Trim(),
+                    strDuracion_pro = duracionFinal,
                     dtFehains_pro = DateTime.Parse(txtFechaEdit.Text),
                     fkId_gru = ddlGrupoEdit.SelectedValue,
                     fkId_conv = ddlConvEdit.SelectedValue,
@@ -293,7 +302,7 @@ namespace SistemaGestionCGI
                     catch (Exception ex) { Msg("Error al eliminar: " + ex.Message, "ee"); }
                     break;
 
-                case "estado":
+                case "CambiarEstado":
                     CargarModalEstado(id);
                     break;
 
@@ -311,7 +320,15 @@ namespace SistemaGestionCGI
             hfIdEdit.Value = pro.strId_pro;
             txtTemaEdit.Text = pro.strTema_pro;
             txtPuntajeEdit.Text = pro.intPuntaje_pro?.ToString() ?? "";
-            txtDuracionEdit.Text = pro.strDuracion_pro;
+            // --- LÓGICA DE DURACIÓN (DECONSTRUCCIÓN) ---
+            // Llenamos los HiddenFields extrayendo los números del texto guardado
+            hfAniosEdit.Value = ExtraerNumeroDeTexto(pro.strDuracion_pro, "Año");
+            hfMesesEdit.Value = ExtraerNumeroDeTexto(pro.strDuracion_pro, "Mes");
+            hfSemanasEdit.Value = ExtraerNumeroDeTexto(pro.strDuracion_pro, "Semana");
+            hfDiasEdit.Value = ExtraerNumeroDeTexto(pro.strDuracion_pro, "Día"); // Ojo con la tilde, el helper busca match parcial
+
+            // Mostramos el texto completo en el input visible
+            txtDuracionDisplayEdit.Text = pro.strDuracion_pro;
             txtFechaEdit.Text = pro.dtFehains_pro.ToString("yyyy-MM-dd");
             hfArchivoActual.Value = pro.strArchivo_pro;
             lblArchivoActual.Text = string.IsNullOrEmpty(pro.strArchivo_pro) ? "Sin archivo" : Path.GetFileName(pro.strArchivo_pro);
@@ -339,13 +356,40 @@ namespace SistemaGestionCGI
             var pro = _manejador.ObtenerPorId(id);
             if (pro != null)
             {
-                hfIdProyectoEstado.Value = pro.strId_pro;
-                string script = $@"
-                    document.getElementById('infoIdPro').innerText = '{pro.strId_pro}';
-                    document.getElementById('infoTemaPro').innerText = '{pro.strTema_pro}';
-                    document.getElementById('infoEstadoPro').innerText = '{pro.strEstado_pro}';
-                    AbrirModalEstadoPro();";
-                ScriptManager.RegisterStartupScript(this, GetType(), "modalEstado", script, true);
+                hfldProyectoEstado.Value = pro.strId_pro;
+
+                string temaSeguro = (pro.strTema_pro ?? "").Replace("'", "").Replace("\r", "").Replace("\n", " ");
+                string scriptInfo = $@"
+            document.getElementById('infoldPro').innerText = '{pro.strId_pro}';
+            document.getElementById('infoTemaPro').innerText = '{temaSeguro}';
+            document.getElementById('infoEstadoPro').innerText = '{pro.strEstado_pro}';
+        ";
+
+                ddlNuevoEstado.Items.Clear();
+                ddlNuevoEstado.Enabled = true;
+                btnConfirmarEstadoPro.Visible = true;
+                txtObservacionEstado.Enabled = true;
+
+                if (pro.strEstado_pro == "Pendiente")
+                {
+                    ddlNuevoEstado.Items.Add(new ListItem("-- Seleccione Acción --", ""));
+                    ddlNuevoEstado.Items.Add(new ListItem("APROBAR PROYECTO", "Aprobado"));
+                    ddlNuevoEstado.Items.Add(new ListItem("RECHAZAR PROYECTO", "Rechazado"));
+                }
+                else if (pro.strEstado_pro == "Rechazado")
+                {
+                    ddlNuevoEstado.Items.Add(new ListItem("⏳ DEVOLVER A PENDIENTE", "Pendiente"));
+                    txtObservacionEstado.Attributes["placeholder"] = "Indique que se ha levantado la observación...";
+                }
+                else
+                {
+                    ddlNuevoEstado.Items.Add(new ListItem("PROYECTO CERRADO", ""));
+                    ddlNuevoEstado.Enabled = false;
+                    btnConfirmarEstadoPro.Visible = false;
+                }
+
+                string scriptFinal = scriptInfo + "AbrirModalEstadoPro();";
+                ScriptManager.RegisterStartupScript(this, GetType(), "modalEstado", scriptFinal, true);
             }
         }
 
@@ -353,10 +397,32 @@ namespace SistemaGestionCGI
         {
             try
             {
-                _manejador.AlternarEstado(hfIdProyectoEstado.Value);
-                Redireccionar("Estado actualizado correctamente.", "ss");
+                string id = hfldProyectoEstado.Value;
+                string nuevoEstado = ddlNuevoEstado.SelectedValue;
+                string observacion = txtObservacionEstado.Text;
+
+                if (string.IsNullOrEmpty(nuevoEstado))
+                {
+                    Msg("Debe seleccionar una acción válida.", "ww");
+                    return;
+                }
+
+                _manejador.CambiarEstado(id, nuevoEstado, observacion);
+
+                if (nuevoEstado == "Pendiente")
+                {
+                    Redireccionar("El proyecto ha vuelto a estado PENDIENTE para revisión.", "ss");
+                }
+                else
+                {
+                    string tipo = (nuevoEstado == "Rechazado") ? "ww" : "ss";
+                    Redireccionar($"El proyecto ha sido: {nuevoEstado}", tipo);
+                }
             }
-            catch (Exception ex) { Msg("Error al cambiar estado: " + ex.Message, "ee"); }
+            catch (Exception ex)
+            {
+                Msg("Error: " + ex.Message, "ee");
+            }
         }
 
         // =============================================
@@ -381,6 +447,74 @@ namespace SistemaGestionCGI
         // =============================================
         // UTILIDADES Y ARCHIVOS
         // =============================================
+
+        // Helper para construir el String final (Ej: "1 Año, 2 Meses")
+        private string ConstruirDuracion(string anios, string meses, string semanas, string dias)
+        {
+            List<string> partes = new List<string>();
+
+            int a = int.TryParse(anios, out int va) ? va : 0;
+            int m = int.TryParse(meses, out int vm) ? vm : 0;
+            int s = int.TryParse(semanas, out int vs) ? vs : 0;
+            int d = int.TryParse(dias, out int vd) ? vd : 0;
+
+            if (a > 0) partes.Add($"{a} {(a == 1 ? "Año" : "Años")}");
+            if (m > 0) partes.Add($"{m} {(m == 1 ? "Mes" : "Meses")}");
+            if (s > 0) partes.Add($"{s} {(s == 1 ? "Semana" : "Semanas")}");
+            if (d > 0) partes.Add($"{d} {(d == 1 ? "Día" : "Días")}");
+
+            if (partes.Count == 0) return "Indefinida";
+
+            return string.Join(", ", partes);
+        }
+
+        // Helper para extraer los números de un string existente (Ej: "2 Meses" -> saca el 2)
+        private string ExtraerNumeroDeTexto(string textoCompleto, string palabraClave)
+        {
+            if (string.IsNullOrEmpty(textoCompleto)) return "0";
+
+            // Divide por comas
+            var partes = textoCompleto.Split(',');
+            foreach (var parte in partes)
+            {
+                if (parte.Contains(palabraClave) || parte.Contains(palabraClave.ToLower())) // Busca "Año", "Mes", etc
+                {
+                    // Extrae solo los dígitos
+                    string numero = "";
+                    foreach (char c in parte) if (char.IsDigit(c)) numero += c;
+                    return numero;
+                }
+            }
+            return "0";
+        }
+
+        private void CargarDuracionEnControles(string duracionTexto, TextBox txtNum, DropDownList ddlUnidad)
+        {
+            if (string.IsNullOrEmpty(duracionTexto))
+            {
+                txtNum.Text = "";
+                ddlUnidad.SelectedIndex = 0;
+                return;
+            }
+
+            // Intentamos separar "6 Meses" por el espacio
+            string[] partes = duracionTexto.Split(' ');
+
+            if (partes.Length >= 2)
+            {
+                txtNum.Text = partes[0]; // El número (Ej: 6)
+
+                // Buscamos la unidad en el combo
+                string unidad = partes[1];
+                if (ddlUnidad.Items.FindByValue(unidad) != null)
+                    ddlUnidad.SelectedValue = unidad;
+            }
+            else
+            {
+                // Si el formato antiguo no coincide (ej: "Medio año"), lo ponemos todo en el número para no perder datos
+                txtNum.Text = duracionTexto;
+            }
+        }
 
         private bool ValidarExtension(string fileName)
         {
