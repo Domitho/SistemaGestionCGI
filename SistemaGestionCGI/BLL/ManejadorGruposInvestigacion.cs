@@ -21,6 +21,18 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<InvgccGrupoInvestigacion>(sql);
         }
 
+        public List<InvgccGrupoInvestigacion> ObtenerGruposConConteo()
+        {
+            string sql = @"
+                SELECT 
+                    G.*, 
+                    (SELECT COUNT(*) FROM INVGCCINSCRIPCION_PROYECTOS P WHERE P.fkId_gru = G.strId_gru) as TotalProyectos
+                FROM INVGCCGRUPO_INVESTIGACION G
+                ORDER BY TotalProyectos DESC, G.strNombre_gru ASC";
+
+            return _dal.SelectSql<InvgccGrupoInvestigacion>(sql);
+        }
+
         public InvgccGrupoInvestigacion ObtenerGrupoPorId(string id)
         {
             string sql = $"SELECT * FROM INVGCCGRUPO_INVESTIGACION WHERE strId_gru = '{id}'";
@@ -40,6 +52,7 @@ namespace SistemaGestionCGI.BLL
                 UPDATE INVGCCGRUPO_INVESTIGACION SET 
                     strNombre_gru = '{grupo.strNombre_gru}',
                     strCoordinador_gru = '{grupo.strCoordinador_gru}',
+                    strFacultad_gru = '{grupo.strFacultad_gru}',
                     dtFechacrea_gru = '{grupo.dtFechacrea_gru:yyyy-MM-dd HH:mm:ss}',
                     strCategoria_gru = '{grupo.strCategoria_gru}',
                     strLineasinv_gru = '{grupo.strLineasinv_gru}',
@@ -57,8 +70,14 @@ namespace SistemaGestionCGI.BLL
             string sqlDelHistorial = $"DELETE FROM INVGCCINTEGRANTES_HISTORIAL WHERE strId_int IN (SELECT strId_int FROM INVGCCGRUPO_INTEGRANTES WHERE fkId_gru = '{id}')";
             _dal.DeleteSql(sqlDelHistorial);
 
-            _dal.Delete("INVGCCGRUPO_INTEGRANTES", $"fkId_gru = '{id}'");
             _dal.Delete("INVGCCGRUPO_INVESTIGACION", $"strId_gru = '{id}'");
+        }
+
+        public List<InvgccInscripcionProyectos> ObtenerProyectosDeGrupo(string idGrupo)
+        {
+            // Traemos los proyectos filtrados por la llave foránea fkId_gru
+            string sql = $"SELECT * FROM INVGCCINSCRIPCION_PROYECTOS WHERE fkId_gru = '{idGrupo}' ORDER BY dtFehains_pro DESC";
+            return _dal.SelectSql<InvgccInscripcionProyectos>(sql);
         }
 
         // =============================================================
@@ -85,13 +104,13 @@ namespace SistemaGestionCGI.BLL
                 INSERT INTO INVGCCGRUPO_INTEGRANTES 
                 (strId_int, fkId_gru, strCedula_int, strNombres_int, strApellidos_int, strCorreo_int, 
                  strCarrera_int, strFuncion_int, dtFechaini_int, strObservacion_int, bitActivo_int, bitPertenece_int,
-                 strTipo_int, strFacultad_int, strEntidad_int) 
+                 strTipo_int, strFacultad_int, strEntidad_int, strCertificado_int) 
                 VALUES 
                 ('{integrante.strId_int}', '{integrante.fkId_gru}', '{integrante.strCedula_int}', '{integrante.strNombres_int}', 
                  '{integrante.strApellidos_int}', '{integrante.strCorreo_int}', 
                  '{integrante.strCarrera_int}', '{integrante.strFuncion_int}', '{integrante.dtFechaini_int:yyyy-MM-dd}', 
                  '{integrante.strObservacion_int}', 1, 1,
-                 '{integrante.strTipo_int}', '{integrante.strFacultad_int}', '{integrante.strEntidad_int}')";
+                 '{integrante.strTipo_int}', '{integrante.strFacultad_int}', '{integrante.strEntidad_int}', '{integrante.strCertificado_int}')";
 
             _dal.UpdateSql(sql);
         }
@@ -118,7 +137,8 @@ namespace SistemaGestionCGI.BLL
                     bitActivo_int = {activo},
                     strTipo_int = '{integrante.strTipo_int}',
                     strFacultad_int = '{integrante.strFacultad_int}',
-                    strEntidad_int = '{integrante.strEntidad_int}'
+                    strEntidad_int = '{integrante.strEntidad_int}',
+                    strCertificado_int = '{integrante.strCertificado_int}',
                 WHERE strId_int = '{integrante.strId_int}'";
 
             _dal.UpdateSql(sql);

@@ -28,7 +28,7 @@ namespace SistemaGestionCGI
 
             // Carga Inicial
             CargarGrillaGrupos();
-
+            
             // Verificar Redirección (Al volver de detalle integrantes)
             string idGrupoRedirect = Request.QueryString["idGrupo"];
             if (!string.IsNullOrEmpty(idGrupoRedirect))
@@ -53,7 +53,7 @@ namespace SistemaGestionCGI
         {
             try
             {
-                rptGrupoInv.DataSource = _manejador.ObtenerGrupos();
+                rptGrupoInv.DataSource = _manejador.ObtenerGruposConConteo();
                 rptGrupoInv.DataBind();
             }
             catch (Exception ex) { Msg("Error al cargar grupos: " + ex.Message, "ee"); }
@@ -88,6 +88,7 @@ namespace SistemaGestionCGI
                 {
                     strNombre_gru = strNombreGru.Text.Trim(),
                     strCoordinador_gru = strNombreCoorGru.Text.Trim(),
+                    strFacultad_gru = ddlFacultadGru.SelectedValue,
                     dtFechacrea_gru = DateTime.Parse(dtFechaCreaGru.Text),
                     strCategoria_gru = ddlCatGruInv.SelectedValue,
                     strLineasinv_gru = strLineaInvGru1.SelectedValue,
@@ -121,6 +122,7 @@ namespace SistemaGestionCGI
                     strId_gru = hfIdGrupoEdit.Value,
                     strNombre_gru = txtGrupoInvEdit.Text.Trim(),
                     strCoordinador_gru = txtNombreCoorGruInvEdit.Text.Trim(),
+                    strFacultad_gru = ddlFacultadGruEdit.SelectedValue,
                     dtFechacrea_gru = DateTime.Parse(dtEditFechaCreaEdit.Text),
                     strCategoria_gru = ddlEditCategoria.SelectedValue,
                     strLineasinv_gru = txtEditLineaIGru1.SelectedValue,
@@ -153,6 +155,10 @@ namespace SistemaGestionCGI
 
             switch (e.CommandName)
             {
+                case "VerProyectos":
+                    CargarProyectosDeGrupo(id);
+                    break;
+
                 case "Eliminar":
                     try
                     {
@@ -184,6 +190,41 @@ namespace SistemaGestionCGI
             }
         }
 
+        // MÉTODO NUEVO PARA EL MODAL DE DETALLE
+        private void CargarProyectosDeGrupo(string idGrupo)
+        {
+            try
+            {
+                // 1. Buscar los proyectos de ese grupo
+                var listaProyectos = _manejador.ObtenerProyectosDeGrupo(idGrupo);
+
+                // 2. Buscar info del grupo para poner el título bonito
+                var infoGrupo = _manejador.ObtenerGrupoPorId(idGrupo);
+
+                // 3. Llenar el GridView del Modal (gvProyectosDetalle)
+                // Nota: gvProyectosDetalle debe existir en tu .aspx (lo pusimos en el paso anterior)
+                if (gvProyectosDetalle != null)
+                {
+                    gvProyectosDetalle.DataSource = listaProyectos;
+                    gvProyectosDetalle.DataBind();
+                }
+
+                // 4. Actualizar título del modal
+                if (lblGrupoTitulo != null && infoGrupo != null)
+                {
+                    lblGrupoTitulo.InnerText = $"PORTAFOLIO: {infoGrupo.strNombre_gru}";
+                }
+
+                // 5. Abrir el Modal con JavaScript
+                string script = "var m = new bootstrap.Modal(document.getElementById('modalProyectosDetalle')); m.show();";
+                ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalProys", script, true);
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al cargar detalles: " + ex.Message, "ee");
+            }
+        }
+
         private void CargarEdicionGrupo(string id)
         {
             var g = _manejador.ObtenerGrupoPorId(id);
@@ -193,6 +234,11 @@ namespace SistemaGestionCGI
                 txtGrupoInvEdit.Text = g.strNombre_gru;
                 txtNombreCoorGruInvEdit.Text = g.strCoordinador_gru;
                 dtEditFechaCreaEdit.Text = g.dtFechacrea_gru.ToString("yyyy-MM-dd");
+
+                if (ddlFacultadGruEdit.Items.FindByValue(g.strFacultad_gru) != null)
+                    ddlFacultadGruEdit.SelectedValue = g.strFacultad_gru;
+                else
+                    ddlFacultadGruEdit.SelectedIndex = 0;
 
                 if (ddlEditCategoria.Items.FindByValue(g.strCategoria_gru) != null)
                     ddlEditCategoria.SelectedValue = g.strCategoria_gru;
@@ -261,10 +307,31 @@ namespace SistemaGestionCGI
                     strApellidos_int = txtApellidosInt.Text.Trim(),
                     strCorreo_int = txtCorreoInt.Text.Trim(),
                     strFuncion_int = ddlFuncionInt.SelectedValue,
+                    strCertificado_int = hfCertificadoIntActual.Value,
                     dtFechaini_int = DateTime.Parse(dtFechaIniInt.Text),
                     strObservacion_int = txtObservacionInt.Text.Trim(),
                     strTipo_int = ddlTipoInt.SelectedValue
                 };
+
+                if (i.strFuncion_int == "Investigador Principal")
+                {
+                    if (flpCertificadoInt.HasFile)
+                    {
+                        string nombre = $"CERT_{DateTime.Now.Ticks}{Path.GetExtension(flpCertificadoInt.FileName)}";
+                        // Guardar en carpeta "CERTIFICADOS" dentro de GRUPOS
+                        i.strCertificado_int = GuardarArchivoFisico(flpCertificadoInt, "CERTIFICADOS", nombre);
+                    }
+                    else if (string.IsNullOrEmpty(i.strId_int) && string.IsNullOrEmpty(i.strCertificado_int))
+                    {
+                        // Validación opcional: Si es NUEVO y es Principal, ¿es obligatorio subirlo ya?
+                        // Msg("Debe subir el certificado de categorización.", "ww"); return;
+                    }
+                }
+                else
+                {
+                    // Si cambió de función a otra cosa, borramos la referencia al certificado
+                    i.strCertificado_int = null;
+                }
 
                 if (i.strTipo_int == "Externo")
                 {
@@ -360,6 +427,8 @@ namespace SistemaGestionCGI
 
                 if (ddlFuncionInt.Items.FindByValue(obj.strFuncion_int) != null)
                     ddlFuncionInt.SelectedValue = obj.strFuncion_int;
+
+                hfCertificadoIntActual.Value = obj.strCertificado_int;
 
                 // Tipo y Campos Específicos
                 if (ddlTipoInt.Items.FindByValue(obj.strTipo_int) != null)
@@ -553,6 +622,7 @@ namespace SistemaGestionCGI
             strNombreGru.Text = "";
             strNombreCoorGru.Text = "";
             dtFechaCreaGru.Text = DateTime.Now.ToString("yyyy-MM-dd");
+            ddlFacultadGru.SelectedIndex = 0;
             ddlCatGruInv.SelectedIndex = 0;
             strLineaInvGru1.SelectedIndex = 0;
             strSLineaInvGru1.SelectedIndex = 0;
@@ -566,6 +636,8 @@ namespace SistemaGestionCGI
             txtCorreoInt.Text = ""; txtCarreraInt.Text = ""; txtEntidadInt.Text = "";
             ddlTipoInt.SelectedIndex = 0; ddlFacultadInt.SelectedIndex = 0;
             dtFechaIniInt.Text = DateTime.Now.ToString("yyyy-MM-dd");
+            ddlFuncionInt.SelectedIndex = 0; 
+            hfCertificadoIntActual.Value = "";
             txtObservacionInt.Text = "";
         }
 

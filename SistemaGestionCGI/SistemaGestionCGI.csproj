@@ -117,6 +117,7 @@
     <Content Include="Dashboard.aspx" />
     <Content Include="Default.aspx" />
     <Content Include="DesignersUTC\Scripts\utc-fileinput.js" />
+    <Content Include="DesignersUTC\Scripts\utc-selector-tiempo.js" />
     <Content Include="DesignersUTC\Styles\login-full.css" />
     <Content Include="DesignersUTC\Styles\modal-historial-reporte.css" />
     <Content Include="DesignersUTC\Styles\modal-informes.css" />

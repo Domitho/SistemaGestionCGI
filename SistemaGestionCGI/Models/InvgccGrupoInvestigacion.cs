@@ -31,5 +31,11 @@ namespace SistemaGestionCGI.Models
 
         [JsonProperty("strFoto_gru")]
         public string strFoto_gru { get; set; }
+
+        [JsonProperty("TotalProyectos")]
+        public int TotalProyectos { get; set; }
+
+        [JsonProperty("strFacultad_gru")]
+        public string strFacultad_gru { get; set; }
     }
 }

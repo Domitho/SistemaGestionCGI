@@ -114,6 +114,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.DropDownList ddlCatGruInv;
 
         /// <summary>
+        /// Control ddlFacultadGru.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlFacultadGru;
+
+        /// <summary>
         /// Control strLineaInvGru1.
         /// </summary>
         /// <remarks>
@@ -247,6 +256,15 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlEditCategoria;
+
+        /// <summary>
+        /// Control ddlFacultadGruEdit.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlFacultadGruEdit;
 
         /// <summary>
         /// Control txtEditLineaIGru1.
@@ -492,6 +510,24 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.DropDownList ddlFuncionInt;
 
         /// <summary>
+        /// Control flpCertificadoInt.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.FileUpload flpCertificadoInt;
+
+        /// <summary>
+        /// Control hfCertificadoIntActual.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfCertificadoIntActual;
+
+        /// <summary>
         /// Control dtFechaIniInt.
         /// </summary>
         /// <remarks>
@@ -526,6 +562,24 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnCancelarInt;
+
+        /// <summary>
+        /// Control lblGrupoTitulo.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl lblGrupoTitulo;
+
+        /// <summary>
+        /// Control gvProyectosDetalle.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.GridView gvProyectosDetalle;
 
         /// <summary>
         /// Control modalHistorial.

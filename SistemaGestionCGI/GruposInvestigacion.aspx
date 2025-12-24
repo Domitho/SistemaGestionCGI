@@ -49,7 +49,7 @@
                 <thead>
                     <tr>
                         <th>ID</th> <th>FOTO</th> <th>NOMBRE</th> <th>COORDINADOR</th> 
-                        <th>CATEGORÍA</th> <th>CREACIÓN</th> <th>LÍNEA</th> <th>ACCIONES</th>
+                        <th>CATEGORÍA</th> <th>CREACIÓN</th> <th class="text-center">PORTAFOLIO</th> <th>ACCIONES</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -62,7 +62,24 @@
                                 <td class="text-start"><%# Eval("strCoordinador_gru") %></td>
                                 <td><span class="badge bg-light text-dark border"><%# Eval("strCategoria_gru") %></span></td>
                                 <td><%# Convert.ToDateTime(Eval("dtFechacrea_gru")).ToString("dd/MM/yyyy") %></td>
-                                <td class="text-start small"><%# Eval("strLineasinv_gru") %></td>
+                                <td class="text-center">
+                                    <asp:LinkButton ID="btnVerProyectos" runat="server" 
+                                        CommandName="VerProyectos" 
+                                        CommandArgument='<%# Eval("strId_gru") %>'
+                                        
+                                        Enabled='<%# Convert.ToInt32(Eval("TotalProyectos")) > 0 %>'
+                                        
+                                        CssClass='<%# Convert.ToInt32(Eval("TotalProyectos")) > 0 ? 
+                                                     "btn btn-sm btn-outline-primary btn-pill fw-bold px-3 shadow-sm" : 
+                                                     "btn btn-sm btn-light text-muted btn-pill border-0" %>'>
+                                        
+                                        <i class='<%# Convert.ToInt32(Eval("TotalProyectos")) > 0 ? 
+                                                     "fa-solid fa-folder-open me-2" : 
+                                                     "fa-solid fa-folder me-2" %>'></i>
+                                        
+                                        <%# Eval("TotalProyectos") %> Proyectos
+                                    </asp:LinkButton>
+                                </td>
                                 <td>
                                     <asp:LinkButton ID="btnVerArchivo" runat="server" CommandName="Archivo" CommandArgument='<%# Eval("strId_gru") %>' CssClass="btn btn-ver btn-sm rounded-circle me-1" ToolTip="Ver archivo"><i class="fa-solid fa-paperclip"></i></asp:LinkButton>
                                     <asp:LinkButton ID="btnVerInt" runat="server" CommandName="VerIntegrantes" CommandArgument='<%# Eval("strId_gru") %>' CssClass="btn btn-info btn-sm rounded-circle me-1 text-white" ToolTip="Integrantes"><i class="fa-solid fa-users"></i></asp:LinkButton>
@@ -95,6 +112,19 @@
                     <label class="form-label">Categoría</label>
                     <asp:DropDownList ID="ddlCatGruInv" runat="server" CssClass="form-select">
                         <asp:ListItem Value="EMERGENTE">EMERGENTE</asp:ListItem><asp:ListItem Value="CONSOLIDADO">CONSOLIDADO</asp:ListItem>
+                    </asp:DropDownList>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Facultad / Extensión</label>
+                    <asp:DropDownList ID="ddlFacultadGru" runat="server" CssClass="form-select">
+                        <asp:ListItem Text="-- Seleccione --" Value="" />
+                        <asp:ListItem>FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
+                        <asp:ListItem>FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
+                        <asp:ListItem>FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
+                        <asp:ListItem>FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
+                        <asp:ListItem>FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
+                        <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
+                        <asp:ListItem>EXTENSION LA MANÁ</asp:ListItem>
                     </asp:DropDownList>
                 </div>
                 <div class="col-12">
@@ -168,6 +198,19 @@
                     <label class="form-label">Categoría</label>
                     <asp:DropDownList ID="ddlEditCategoria" runat="server" CssClass="form-select">
                         <asp:ListItem Value="EMERGENTE">EMERGENTE</asp:ListItem><asp:ListItem Value="CONSOLIDADO">CONSOLIDADO</asp:ListItem>
+                    </asp:DropDownList>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Facultad / Extensión</label>
+                    <asp:DropDownList ID="ddlFacultadGruEdit" runat="server" CssClass="form-select">
+                        <asp:ListItem Text="-- Seleccione --" Value="" />
+                        <asp:ListItem>FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
+                        <asp:ListItem>FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
+                        <asp:ListItem>FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
+                        <asp:ListItem>FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
+                        <asp:ListItem>FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
+                        <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
+                        <asp:ListItem>EXTENSION LA MANÁ</asp:ListItem>
                     </asp:DropDownList>
                 </div>
                 <div class="col-12"><label class="form-label">Línea</label><asp:DropDownList ID="txtEditLineaIGru1" runat="server" CssClass="form-select"><asp:ListItem Value="Tecnologias de la informacion y comunicacion (TICS)">Tecnologias de la informacion y comunicacion (TICS)</asp:ListItem></asp:DropDownList></div>
@@ -302,11 +345,37 @@
                 <div class="col-12 mt-3"><h6 class="text-primary fw-bold border-bottom pb-2">Datos del Grupo</h6></div>
                 <div class="col-md-6">
                     <label class="form-label">Función</label>
-                    <asp:DropDownList ID="ddlFuncionInt" runat="server" CssClass="form-select">
+                    <asp:DropDownList ID="ddlFuncionInt" runat="server" CssClass="form-select" onchange="ToggleFuncionIntegrante(this)">
                         <asp:ListItem Value="Investigador Principal">Investigador Principal</asp:ListItem>
-                        <asp:ListItem Value="Miembro Investigador">Miembro Investigador</asp:ListItem>
+                        <asp:ListItem Value="Miembro Investigador" Selected="True">Miembro Investigador</asp:ListItem>
                         <asp:ListItem Value="Coordinador">Coordinador</asp:ListItem>
                     </asp:DropDownList>
+                </div>
+                <div class="col-12 animate__animated animate__fadeIn" id="divCertificado" style="display:none;">
+                    <label class="form-label fw-semibold text-primary">
+                        <i class="fa-solid fa-certificate me-1"></i> Certificado de Categorización
+                    </label>
+    
+                    <div class="utc-fileinput-wrapper" id="wrapperCertificadoInt">
+                        <div class="utc-fileinput-header">
+                            <div class="utc-fileinput-icon"><i class="fa-solid fa-file-contract"></i></div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="utc-fileinput-name">Sin archivo seleccionado</span>
+                                <div class="utc-fileinput-buttons d-flex gap-2">
+                                    <button type="button" class="btn btn-outline-primary utc-btn-small rename-btn"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button type="button" class="btn btn-outline-danger utc-btn-small remove-btn"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="text" class="form-control form-control-sm utc-edit-name-field" placeholder="Nuevo nombre..." />
+                        <div class="utc-fileinput-preview" id="previewCertificadoInt"></div>
+                        <div class="utc-fileinput-loader" id="loaderCertificadoInt"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
+                        <div class="utc-dropzone" id="dropzoneCertificadoInt"><i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-primary"></i><br />Subir Certificado (PDF)</div>
+                        <asp:FileUpload ID="flpCertificadoInt" runat="server" CssClass="utc-fileinput-input" />
+                    </div>
+                    <div class="form-text small">Requerido únicamente para Investigadores Principales.</div>
+                    <%-- HiddenField para mantener la ruta al editar --%>
+                    <asp:HiddenField ID="hfCertificadoIntActual" runat="server" ClientIDMode="Static" />
                 </div>
                 <div class="col-md-6"><label class="form-label">Fecha Inicio</label><asp:TextBox ID="dtFechaIniInt" runat="server" CssClass="form-control" TextMode="Date" /></div>
                 <div class="col-12"><label class="form-label">Observaciones</label><asp:TextBox ID="txtObservacionInt" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="2" /></div>
@@ -321,6 +390,47 @@
             </div>
         </div>
     </asp:Panel>
+
+    <div class="modal fade" id="modalProyectosDetalle" tabindex="-1" aria-hidden="true" ClientIDMode="Static">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content shadow-utc border-0 rounded-4">
+                <div class="modal-header bg-utc text-white">
+                    <h5 class="modal-title w-100 text-center"><i class="fa-solid fa-list-check me-2"></i> Proyectos Asociados</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    
+                    <h6 class="text-primary fw-bold text-center mb-3 text-uppercase border-bottom pb-2" id="lblGrupoTitulo" runat="server">Grupo Seleccionado</h6>
+
+                    <div class="table-responsive bg-white rounded shadow-sm p-3 border">
+                        <asp:GridView ID="gvProyectosDetalle" runat="server" AutoGenerateColumns="false" 
+                            CssClass="table table-hover table-modal table-borderless align-middle mb-0 text-center"
+                            GridLines="Horizontal"
+                            EmptyDataText="<div class='text-center p-4 text-muted'><i class='fa-solid fa-folder-open fa-3x mb-3 text-secondary opacity-50'></i><br>Este grupo aún no tiene proyectos registrados.</div>">
+                            <Columns>
+                                <asp:BoundField DataField="strId_pro" HeaderText="ID" ItemStyle-CssClass="fw-bold small text-muted" />
+                                <asp:BoundField DataField="strTema_pro" HeaderText="Tema del Proyecto" ItemStyle-CssClass="text-start fw-semibold text-dark" />
+                                <asp:TemplateField HeaderText="Estado">
+                                    <ItemTemplate>
+                                        <span class='<%# 
+                                            Eval("strEstado_pro").ToString() == "Aprobado" ? "badge bg-success rounded-pill" : 
+                                            Eval("strEstado_pro").ToString() == "Rechazado" ? "badge bg-danger rounded-pill" : 
+                                            "badge bg-warning text-dark rounded-pill" %>'>
+                                            <%# Eval("strEstado_pro") %>
+                                        </span>
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                            </Columns>
+                        </asp:GridView>
+                    </div>
+
+                </div>
+                <div class="modal-footer border-0 justify-content-center pb-3">
+                    <button type="button" class="btn btn-outline-secondary btn-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <%-- MODAL: HISTORIAL --%>
     <div class="modal fade" id="modalHistorial" tabindex="-1" aria-hidden="true" ClientIDMode="Static" runat="server">
@@ -425,6 +535,7 @@
             autoWidth: false,
             pageLength: 10,
             language: { url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json" },
+            order: [],
             dom: "<'row align-items-center mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-end'f>><'row'<'col-sm-12'tr>><'row mt-3 align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
         };
 
@@ -439,6 +550,7 @@
             if (typeof UTC_FileInput === 'function') {
                 initFileInput('wrapperArchivoAdd', '<%= flpArchivoAdd.ClientID %>');
                 initFileInput('wrapperArchivoEdit', '<%= flpArchivoEdit.ClientID %>');
+                initFileInput('wrapperCertificadoInt', '<%= flpCertificadoInt.ClientID %>');
             }
         });
 
@@ -487,10 +599,26 @@
             }
         }
 
+        function ToggleFuncionIntegrante(el) {
+            var val = el.value;
+            var div = document.getElementById('divCertificado');
+
+            if (val === 'Investigador Principal') {
+                div.style.display = 'block';
+            } else {
+                div.style.display = 'none';
+                // Opcional: Limpiar el input si lo ocultan, 
+                // pero mejor dejarlo por si se equivocaron y vuelven a seleccionar.
+            }
+        }
+
         // Llamar para establecer estado inicial
         function InitFormulario() {
             var ddl = document.getElementById('<%= ddlTipoInt.ClientID %>');
             if (ddl) ToggleTipoIntegrante(ddl);
+
+            var ddlFunc = document.getElementById('<%= ddlFuncionInt.ClientID %>');
+            if (ddlFunc) ToggleFuncionIntegrante(ddlFunc);
         }
 
         // --- Funciones de Modals y Estado ---

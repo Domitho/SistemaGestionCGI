@@ -178,16 +178,18 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Duración Estimada</label>
+    
                     <div class="input-group">
-                        <asp:TextBox ID="txtDuracionDisplay" runat="server" CssClass="form-control bg-white fw-bold text-primary" 
-                            placeholder="Defina el tiempo" ReadOnly="true" ClientIDMode="Static" />
+       
+                        <asp:TextBox ID="txtDuracionDisplay" runat="server" 
+                            CssClass="form-control bg-white text-primary fw-bold border-start-0 border-end-0" 
+                            placeholder="Seleccione..." ReadOnly="true" ClientIDMode="Static" />
         
                         <button type="button" class="btn btn-outline-primary" onclick="AbrirModalDuracion(false)">
-                            <i class="fa-solid fa-stopwatch me-2"></i> Definir
+                            <i class="fa-solid fa-stopwatch me-2"></i> Definir Tiempo
                         </button>
                     </div>
 
-                    <%-- 2. CAMPOS OCULTOS (Para que C# lea los valores) --%>
                     <asp:HiddenField ID="hfAnios" runat="server" ClientIDMode="Static" Value="0" />
                     <asp:HiddenField ID="hfMeses" runat="server" ClientIDMode="Static" Value="0" />
                     <asp:HiddenField ID="hfSemanas" runat="server" ClientIDMode="Static" Value="0" />
@@ -270,11 +272,12 @@
                     <label class="form-label fw-semibold">Duración Estimada</label>
     
                     <div class="input-group">
-                        <asp:TextBox ID="txtDuracionDisplayEdit" runat="server" CssClass="form-control bg-white fw-bold text-primary" 
-                            placeholder="Click en Definir..." ReadOnly="true" ClientIDMode="Static" />
+                        <asp:TextBox ID="txtDuracionDisplayEdit" runat="server" 
+                            CssClass="form-control bg-white text-primary fw-bold border-start-0 border-end-0" 
+                            placeholder="Seleccione..." ReadOnly="true" ClientIDMode="Static" />
         
                         <button type="button" class="btn btn-outline-primary" onclick="AbrirModalDuracion(true)">
-                            <i class="fa-solid fa-stopwatch me-2"></i> Definir
+                            <i class="fa-solid fa-stopwatch me-2"></i> Definir Tiempo
                         </button>
                     </div>
 
@@ -463,7 +466,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow-utc border-0 rounded-4">
                 <div class="modal-header bg-utc text-white border-0">
-                    <h5 class="modal-title"><i class="fa-solid fa-hourglass-half me-2"></i> Configurar Duración</h5>
+                    <h5 class="modal-title w-100 text-center"><i class="fa-solid fa-hourglass-half me-2"></i> Configurar Duración</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body bg-light">
@@ -535,10 +538,10 @@
 
     <%-- SCRIPTS OPTIMIZADOS --%>
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
+    <script src="DesignersUTC/Scripts/utc-selector-tiempo.js"></script>
 
     <script type="text/javascript">
 
-        // Configuración centralizada de DataTables
         const dtConfigProyectos = {
             responsive: true,
             autoWidth: false,
@@ -555,10 +558,8 @@
             columnDefs: [{ targets: -1, orderable: false, searchable: false }]
         };
 
-        // Función que se ejecuta en carga inicial y postbacks (UpdatePanels)
         Sys.Application.add_load(function () {
             
-            // Inicializar DataTable
             const tabla = '#tablaProyectos';
             if ($.fn.DataTable && $.fn.DataTable.isDataTable(tabla)) {
                 $(tabla).DataTable().destroy();
@@ -567,16 +568,13 @@
                 $(tabla).DataTable(dtConfigProyectos);
             }
 
-            // Inicializar File Inputs (usando tu librería existente)
             if (typeof UTC_FileInput === 'function') {
-                // Nuevo
                 if (document.getElementById('wrapperArchivo')) {
                     UTC_FileInput({
                         wrapper: "wrapperArchivo", dropzone: "dropzoneArchivo", preview: "previewArchivo", loader: "loaderArchivo",
                         input: "<%= flpArchivo.ClientID %>", pdfjsLibUrl: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js"
                     });
                 }
-                // Edición
                 if (document.getElementById('wrapperArchivoEdit')) {
                     UTC_FileInput({
                         wrapper: "wrapperArchivoEdit", dropzone: "dropzoneArchivoEdit", preview: "previewArchivoEdit", loader: "loaderArchivoEdit",
@@ -586,7 +584,6 @@
             }
         });
 
-        // Funciones de Modals y Lógica Visual
         function AbrirModalEstadoPro() {
             var el = document.getElementById('modalEstadoPro');
             var modal = bootstrap.Modal.getOrCreateInstance(el);
@@ -594,7 +591,6 @@
         }
 
         function AbrirModalNuevoIntegrante() {
-            // Validar que se haya seleccionado un grupo
             var grupoSelect = document.getElementById('<%= ddlGrupo.ClientID %>');
             var grupoText = grupoSelect.options[grupoSelect.selectedIndex].text;
 
@@ -620,7 +616,7 @@
                 divInterno.style.display = 'none';
                 divExterno.style.display = 'block';
             } else {
-                divInterno.style.display = 'flex'; // Restore flex for grid
+                divInterno.style.display = 'flex';
                 divExterno.style.display = 'none';
             }
         }
@@ -632,85 +628,6 @@
             }
         }
 
-    </script>
-
-    <script>
-        // Variable para saber si estamos editando (True) o creando nuevo (False)
-        let esEdicionDuracion = false;
-
-        function AbrirModalDuracion(esEdit) {
-            esEdicionDuracion = esEdit;
-            let sufijo = esEdit ? "Edit" : ""; // Detecta si usar los IDs de Edición
-
-            // 1. Cargar valores actuales de los HiddenFields al Modal
-            // Si están vacíos, pone 0
-            document.getElementById('tmpAnios').value = document.getElementById('hfAnios' + sufijo).value || 0;
-            document.getElementById('tmpMeses').value = document.getElementById('hfMeses' + sufijo).value || 0;
-            document.getElementById('tmpSemanas').value = document.getElementById('hfSemanas' + sufijo).value || 0;
-            document.getElementById('tmpDias').value = document.getElementById('hfDias' + sufijo).value || 0;
-
-            ActualizarPreview();
-
-            // 2. Abrir Modal Bootstrap
-            var el = document.getElementById('modalDuracion');
-            var modal = new bootstrap.Modal(el);
-            modal.show();
-        }
-
-        function Step(tipo, cantidad) {
-            // Identificar input temporal
-            let inputId = "";
-            if (tipo === 'anios') inputId = 'tmpAnios';
-            if (tipo === 'meses') inputId = 'tmpMeses';
-            if (tipo === 'semanas') inputId = 'tmpSemanas';
-            if (tipo === 'dias') inputId = 'tmpDias';
-
-            let input = document.getElementById(inputId);
-            let valor = parseInt(input.value) + cantidad;
-
-            // Validaciones lógicas
-            if (valor < 0) valor = 0;
-            if (tipo === 'meses' && valor > 11) valor = 11; // Máximo 11 meses (luego es un año)
-            if (tipo === 'semanas' && valor > 4) valor = 4;
-            if (tipo === 'dias' && valor > 30) valor = 30;
-
-            input.value = valor;
-            ActualizarPreview();
-        }
-
-        function ActualizarPreview() {
-            let a = parseInt(document.getElementById('tmpAnios').value);
-            let m = parseInt(document.getElementById('tmpMeses').value);
-            let s = parseInt(document.getElementById('tmpSemanas').value);
-            let d = parseInt(document.getElementById('tmpDias').value);
-
-            let texto = [];
-            if (a > 0) texto.push(a + (a === 1 ? " Año" : " Años"));
-            if (m > 0) texto.push(m + (m === 1 ? " Mes" : " Meses"));
-            if (s > 0) texto.push(s + (s === 1 ? " Semana" : " Semanas"));
-            if (d > 0) texto.push(d + (d === 1 ? " Día" : " Días"));
-
-            let resultado = texto.length > 0 ? texto.join(", ") : "Sin definir";
-            document.getElementById('lblLivePreview').innerText = resultado;
-        }
-
-        function GuardarDuracion() {
-            let sufijo = esEdicionDuracion ? "Edit" : "";
-
-            // 1. Guardar valores del Modal en los HiddenFields de ASP
-            document.getElementById('hfAnios' + sufijo).value = document.getElementById('tmpAnios').value;
-            document.getElementById('hfMeses' + sufijo).value = document.getElementById('tmpMeses').value;
-            document.getElementById('hfSemanas' + sufijo).value = document.getElementById('tmpSemanas').value;
-            document.getElementById('hfDias' + sufijo).value = document.getElementById('tmpDias').value;
-
-            // 2. Mostrar el texto bonito en el TextBox visible
-            document.getElementById('txtDuracionDisplay' + sufijo).value = document.getElementById('lblLivePreview').innerText;
-
-            // 3. Cerrar Modal
-            var el = document.getElementById('modalDuracion');
-            var modal = bootstrap.Modal.getInstance(el);
-            modal.hide();
-        }
     </script>
 
 </asp:Content>
