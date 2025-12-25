@@ -510,13 +510,22 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtEntidadInt;
 
         /// <summary>
-        /// Control txtFuncionInt.
+        /// Control ddlFuncionIntModal.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtFuncionInt;
+        protected global::System.Web.UI.WebControls.DropDownList ddlFuncionIntModal;
+
+        /// <summary>
+        /// Control flpCertificadoModal.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.FileUpload flpCertificadoModal;
 
         /// <summary>
         /// Control txtObservacionInt.

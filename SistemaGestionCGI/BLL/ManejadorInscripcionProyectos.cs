@@ -136,13 +136,23 @@ namespace SistemaGestionCGI.BLL
 
             string sql = $@"
                 INSERT INTO INVGCCGRUPO_INTEGRANTES 
-                (strId_int, strCedula_int, strApellidos_int, strNombres_int, strCorreo_int, 
-                 strCarrera_int, strFuncion_int, strObservacion_int, strTipo_int, strFacultad_int,  
-                 strEntidad_int, fkId_gru, bitActivo_int, dtFechaini_int, bitPertenece_int)
+                (
+                    strId_int, strCedula_int, strApellidos_int, strNombres_int, 
+                    strCorreo_int, strCarrera_int, strFuncion_int, strObservacion_int, 
+                    strTipo_int, fkId_gru, bitActivo_int, dtFechaini_int, bitPertenece_int,
+                    strEntidad_int, 
+                    strFacultad_int,     -- FALTABA ESTA COLUMNA
+                    strCertificado_int   -- FALTABA ESTA COLUMNA
+                ) 
                 VALUES 
-                ('{nuevoId}', '{intg.strCedula_int}', '{intg.strApellidos_int}', '{intg.strNombres_int}', '{intg.strCorreo_int}',
-                 '{intg.strCarrera_int}', '{intg.strFuncion_int}', '{intg.strObservacion_int}', '{intg.strTipo_int}', '{intg.strFacultad_int}',
-                 '{intg.strEntidad_int}', '{intg.fkId_gru}', 1, GETDATE(), 1)";
+                (
+                    '{nuevoId}', '{intg.strCedula_int}', '{intg.strApellidos_int}', '{intg.strNombres_int}', 
+                    '{intg.strCorreo_int}', '{intg.strCarrera_int}', '{intg.strFuncion_int}', '{intg.strObservacion_int}', 
+                    '{intg.strTipo_int}', '{intg.fkId_gru}', 1, GETDATE(), 1,
+                    '{intg.strEntidad_int}', 
+                    '{intg.strFacultad_int}',    -- Ahora sí se guardará la Facultad
+                    '{intg.strCertificado_int}'  -- Ahora sí se guardará el Archivo
+                )";
 
             _dal.UpdateSql(sql);
         }

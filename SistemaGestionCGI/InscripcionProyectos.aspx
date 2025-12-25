@@ -443,9 +443,40 @@
                             <asp:TextBox ID="txtEntidadInt" runat="server" CssClass="form-control" placeholder="Ej: Universidad Central..." autocomplete="off" />
                         </div>
 
-                        <div class="col-md-6">
+                         <div class="col-md-6">
                             <label class="form-label">Función en el Grupo</label>
-                            <asp:TextBox ID="txtFuncionInt" runat="server" CssClass="form-control" placeholder="Ej: Investigador Principal..." autocomplete="off" />
+                            <asp:DropDownList ID="ddlFuncionIntModal" runat="server" CssClass="form-select" onchange="ToggleFuncionModal(this)">
+                                <asp:ListItem Value="Miembro Investigador" Selected="True">Miembro Investigador</asp:ListItem>
+                                <asp:ListItem Value="Investigador Principal">Investigador Principal</asp:ListItem>
+                                <asp:ListItem Value="Coordinador">Coordinador</asp:ListItem>
+                                <asp:ListItem Value="Estudiante">Estudiante</asp:ListItem>
+                            </asp:DropDownList>
+                        </div>
+
+                        <div class="col-12 animate__animated animate__fadeIn" id="divCertificadoModal" style="display:none;">
+                            <label class="form-label fw-semibold text-primary">
+                                <i class="fa-solid fa-certificate me-1"></i> Certificado de Categorización
+                            </label>
+    
+                            <div class="utc-fileinput-wrapper" id="wrapperCertificadoModal">
+                                <div class="utc-fileinput-header">
+                                    <div class="utc-fileinput-icon"><i class="fa-solid fa-file-contract"></i></div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="utc-fileinput-name">Sin archivo seleccionado</span>
+                                        <div class="utc-fileinput-buttons d-flex gap-2">
+                                            <button type="button" class="btn btn-outline-danger utc-btn-small remove-btn"><i class="fa-solid fa-xmark"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <%-- Input oculto para compatibilidad con el JS existente --%>
+                                <input type="text" class="form-control form-control-sm utc-edit-name-field d-none" />
+        
+                                <div class="utc-fileinput-preview" id="previewCertificadoModal"></div>
+                                <div class="utc-fileinput-loader" id="loaderCertificadoModal"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
+                                <div class="utc-dropzone" id="dropzoneCertificadoModal"><i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-primary"></i><br />Subir Certificado (PDF)</div>
+                                <asp:FileUpload ID="flpCertificadoModal" runat="server" CssClass="utc-fileinput-input" />
+                            </div>
+                            <div class="form-text small">Obligatorio para Investigadores Principales.</div>
                         </div>
                         <div class="col-12">
                             <label class="form-label">Observación</label>
@@ -582,6 +613,15 @@
                     });
                 }
             }
+
+            if (document.getElementById('wrapperCertificadoModal')) {
+                UTC_FileInput({
+                    wrapper: "wrapperCertificadoModal", dropzone: "dropzoneCertificadoModal",
+                    preview: "previewCertificadoModal", loader: "loaderCertificadoModal",
+                    input: "<%= flpCertificadoModal.ClientID %>"
+                });
+            }
+
         });
 
         function AbrirModalEstadoPro() {
@@ -625,6 +665,31 @@
             var ddl = document.getElementById('<%= ddlTipoInt.ClientID %>');
             if (ddl) {
                 ToggleTipoIntegrante(ddl);
+            }
+        }
+
+        function ToggleFuncionModal(el) {
+            var val = el.value;
+            var div = document.getElementById('divCertificadoModal');
+            if (div) {
+                if (val === 'Investigador Principal') {
+                    div.style.display = 'block';
+                } else {
+                    div.style.display = 'none';
+                }
+            }
+        }
+
+        // Actualiza tu función de Reset para que limpie también el dropdown nuevo
+        function ResetFormularioIntegrante() {
+            var ddl = document.getElementById('<%= ddlTipoInt.ClientID %>');
+            if (ddl) ToggleTipoIntegrante(ddl);
+    
+            // Reset del nuevo dropdown
+            var ddlFunc = document.getElementById('<%= ddlFuncionIntModal.ClientID %>');
+            if (ddlFunc) {
+                ddlFunc.selectedIndex = 0;
+                ToggleFuncionModal(ddlFunc); // Ocultar el archivo
             }
         }
 

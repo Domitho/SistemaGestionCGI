@@ -147,10 +147,25 @@ namespace SistemaGestionCGI
                     strNombres_int = txtNombresInt.Text.Trim(),
                     strApellidos_int = txtApellidosInt.Text.Trim(),
                     strCorreo_int = txtCorreoInt.Text.Trim(),
-                    strFuncion_int = txtFuncionInt.Text.Trim(),
+                    strFuncion_int = ddlFuncionIntModal.SelectedValue,
                     strObservacion_int = txtObservacionInt.Text.Trim(),
                     strTipo_int = ddlTipoInt.SelectedValue
                 };
+
+                if (nuevo.strFuncion_int == "Investigador Principal")
+                {
+                    if (flpCertificadoModal.HasFile)
+                    {
+                        string nombre = $"CERT_{DateTime.Now.Ticks}{Path.GetExtension(flpCertificadoModal.FileName)}";
+                        string rutaBase = @"C:\UTC\GRUPOS\CERTIFICADOS\";
+                        if (!Directory.Exists(rutaBase)) Directory.CreateDirectory(rutaBase);
+
+                        string rutaCompleta = Path.Combine(rutaBase, nombre);
+                        flpCertificadoModal.SaveAs(rutaCompleta);
+
+                        nuevo.strCertificado_int = rutaCompleta;
+                    }
+                }
 
                 if (nuevo.strTipo_int == "Externo")
                 {
@@ -169,16 +184,13 @@ namespace SistemaGestionCGI
                 }
 
                 _manejador.GuardarIntegranteExpress(nuevo);
-
-                // Refrescar y Seleccionar automáticamente
                 CargarCoordinadores(ddlCoordinador, ddlGrupo.SelectedValue);
                 string nombreCompleto = $"{nuevo.strApellidos_int} {nuevo.strNombres_int}";
                 var item = ddlCoordinador.Items.FindByText(nombreCompleto);
                 if (item != null) item.Selected = true;
 
-                // Limpiar Modal
                 txtCedulaInt.Text = ""; txtNombresInt.Text = ""; txtApellidosInt.Text = "";
-                txtCorreoInt.Text = ""; txtCarreraInt.Text = ""; txtFuncionInt.Text = ""; txtObservacionInt.Text = "";
+                txtCorreoInt.Text = ""; txtCarreraInt.Text = ""; ddlFuncionIntModal.SelectedIndex = 0; txtObservacionInt.Text = "";
                 ddlFacultadInt.SelectedIndex = 0;
 
                 Msg("Integrante registrado y seleccionado.", "ss");
