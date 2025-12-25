@@ -37,7 +37,7 @@ namespace SistemaGestionCGI
                 if (usuarioLogueado != null)
                 {
                     // === LOGIN EXITOSO ===
-                    Session["UsuarioLogueado"] = usuarioLogueado;
+                    Session["UsuarioLogueado"] = usuarioLogueado.strNombre_usu;
 
                     Session["UserId"] = usuarioLogueado.intId_usu;
                     Session["UserName"] = usuarioLogueado.strNombre_usu;

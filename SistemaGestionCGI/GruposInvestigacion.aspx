@@ -283,6 +283,16 @@
                                 <td><%# Eval("dtFechafin_int") == DBNull.Value ? "-" : Convert.ToDateTime(Eval("dtFechafin_int")).ToString("dd/MM/yyyy") %></td>
                                 <td><%# Convert.ToBoolean(Eval("bitActivo_int")) ? "<span class='badge bg-success'>Activo</span>" : "<span class='badge bg-danger'>Inactivo</span>" %></td>
                                 <td>
+                                    <asp:LinkButton ID="btnVerCertificado" runat="server" 
+                                        CommandName="VerCertificado" 
+                                        CommandArgument='<%# Eval("strCertificado_int") %>'
+                    
+                                        Visible='<%# Eval("strFuncion_int").ToString() == "Investigador Principal" && !string.IsNullOrEmpty(Eval("strCertificado_int") as string) %>'
+                    
+                                        CssClass="btn btn-success btn-sm rounded-circle me-1" 
+                                        ToolTip="Ver Certificado de Categorización">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </asp:LinkButton>
                                     <asp:LinkButton ID="btnEditarInt" runat="server" CommandName="EditarInt" CommandArgument='<%# Eval("strId_int") %>' CssClass="btn btn-warning btn-sm rounded-circle me-1" ToolTip="Editar"><i class="fa-solid fa-pen"></i></asp:LinkButton>
                                     <asp:LinkButton ID="btnToggleEstado" runat="server" CommandName="CambiarEstado" CommandArgument='<%# Eval("strId_int") %>' CssClass="btn btn-info btn-sm rounded-circle me-1 text-white" ToolTip="Cambiar estado"><i class="fa-solid fa-power-off"></i></asp:LinkButton>
                                     <asp:LinkButton ID="btnHistorial" runat="server" CommandName="Historial" CommandArgument='<%# Eval("strId_int") %>' CssClass="btn btn-primary btn-sm rounded-circle me-1" ToolTip="Historial"><i class="fa-solid fa-clock-rotate-left"></i></asp:LinkButton>

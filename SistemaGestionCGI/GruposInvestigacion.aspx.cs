@@ -285,7 +285,6 @@ namespace SistemaGestionCGI
             CambiarVista(Vista.FormularioIntegrante);
             LimpiarFormularioIntegrante();
 
-            // Forzar actualización visual JS
             ScriptManager.RegisterStartupScript(this, GetType(), "initForm", "InitFormulario();", true);
         }
 
@@ -318,18 +317,14 @@ namespace SistemaGestionCGI
                     if (flpCertificadoInt.HasFile)
                     {
                         string nombre = $"CERT_{DateTime.Now.Ticks}{Path.GetExtension(flpCertificadoInt.FileName)}";
-                        // Guardar en carpeta "CERTIFICADOS" dentro de GRUPOS
                         i.strCertificado_int = GuardarArchivoFisico(flpCertificadoInt, "CERTIFICADOS", nombre);
                     }
                     else if (string.IsNullOrEmpty(i.strId_int) && string.IsNullOrEmpty(i.strCertificado_int))
                     {
-                        // Validación opcional: Si es NUEVO y es Principal, ¿es obligatorio subirlo ya?
-                        // Msg("Debe subir el certificado de categorización.", "ww"); return;
                     }
                 }
                 else
                 {
-                    // Si cambió de función a otra cosa, borramos la referencia al certificado
                     i.strCertificado_int = null;
                 }
 
@@ -344,7 +339,7 @@ namespace SistemaGestionCGI
                     i.strCarrera_int = null;
                     i.strFacultad_int = null;
                 }
-                else // Interno
+                else 
                 {
                     i.strEntidad_int = null;
                     i.strCarrera_int = txtCarreraInt.Text.Trim();
@@ -353,13 +348,15 @@ namespace SistemaGestionCGI
 
                 if (string.IsNullOrEmpty(hfIdIntEdit.Value))
                 {
-                    _manejador.GuardarIntegrante(i);
-                    SetFlashMessage("Integrante agregado.", "ss");
+                    string usuarioLogueado = Session["UsuarioLogueado"]?.ToString() ?? "Sistema";
+
+                    _manejador.GuardarIntegrante(i, usuarioLogueado);
+
+                    SetFlashMessage("Integrante agregado e historial registrado.", "ss");
                 }
                 else
                 {
                     i.strId_int = hfIdIntEdit.Value;
-                    // Mantener datos no editables en este form
                     var original = _manejador.ObtenerIntegrantePorId(i.strId_int);
                     if (original != null)
                     {
@@ -385,9 +382,21 @@ namespace SistemaGestionCGI
         {
             string idInt = e.CommandArgument.ToString();
             string idGrupo = hfGrupoIdActual.Value;
+            string argumento = e.CommandArgument.ToString();
 
             switch (e.CommandName)
             {
+                case "VerCertificado":
+                    if (!string.IsNullOrEmpty(argumento))
+                    {
+                        DescargarArchivo(argumento);
+                    }
+                    else
+                    {
+                        Msg("El archivo no se encuentra disponible.", "ww");
+                    }
+                    break;
+
                 case "EliminarInt":
                     try
                     {
@@ -656,8 +665,19 @@ namespace SistemaGestionCGI
         private void Msg(string msg, string type)
         {
             if (string.IsNullOrEmpty(msg)) return;
-            string cleanMsg = msg.Replace("'", "\\'").Replace("\r\n", " ").Replace("\n", " ").Replace("\\", "\\\\");
-            ScriptManager.RegisterStartupScript(this, GetType(), "alert", $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema'); }});", true);
+
+            string cleanMsg = msg
+                .Replace("\\", "\\\\") 
+                .Replace("'", "\\'")   
+                .Replace("\"", "\\\"") 
+                .Replace("\r\n", " ")  
+                .Replace("\n", " "); 
+
+            string titulo = type == "ss" ? "Éxito" : (type == "ee" ? "Error" : "Atención");
+
+            string script = $"$(function() {{ toastify('{type}', '{cleanMsg}', '{titulo}'); }});";
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "alert", script, true);
         }
     }
 }
