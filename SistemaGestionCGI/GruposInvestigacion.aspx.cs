@@ -298,6 +298,19 @@ namespace SistemaGestionCGI
                     return;
                 }
 
+                if (string.IsNullOrEmpty(hfIdIntEdit.Value))
+                {
+                    string cedula = txtCedulaInt.Text.Trim();
+
+                    string nombreGrupoExistente = _manejador.VerificarIntegranteEnOtroGrupo(cedula);
+
+                    if (nombreGrupoExistente != null)
+                    {
+                        Msg($"La cédula {cedula} ya se encuentra activa en el grupo: {nombreGrupoExistente}.", "ee");
+                        return;
+                    }
+                }
+
                 var i = new InvgccGrupoIntegrantes
                 {
                     fkId_gru = hfGrupoIdActual.Value,

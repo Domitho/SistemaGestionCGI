@@ -320,7 +320,7 @@
             <asp:HiddenField ID="hfIdIntEdit" runat="server" />
             <div class="row g-3">
                 <div class="col-12"><h6 class="text-primary fw-bold border-bottom pb-2">Datos Personales</h6></div>
-                <div class="col-md-4"><label class="form-label">Cédula</label><asp:TextBox ID="txtCedulaInt" runat="server" CssClass="form-control" MaxLength="15" autocomplete="off" /></div>
+                <div class="col-md-4"><label class="form-label">Cédula</label><asp:TextBox ID="txtCedulaInt" runat="server" CssClass="form-control" MaxLength="15" autocomplete="off"/></div>
                 <div class="col-md-4"><label class="form-label">Nombres</label><asp:TextBox ID="txtNombresInt" runat="server" CssClass="form-control" autocomplete="off" /></div>
                 <div class="col-md-4"><label class="form-label">Apellidos</label><asp:TextBox ID="txtApellidosInt" runat="server" CssClass="form-control" autocomplete="off" /></div>
                 <div class="col-md-6"><label class="form-label">Correo</label><asp:TextBox ID="txtCorreoInt" runat="server" CssClass="form-control" TextMode="Email" autocomplete="off" /></div>
@@ -670,6 +670,7 @@
                 ventana.close();
             }, 500);
         }
+
     </script>
 
 </asp:Content>

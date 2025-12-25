@@ -146,6 +146,33 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sql);
         }
 
+        // Método para validar duplicidad de integrantes activos
+        public string VerificarIntegranteEnOtroGrupo(string cedula)
+        {
+            string sql = $@"
+                SELECT G.strNombre_gru 
+                FROM INVGCCGRUPO_INTEGRANTES I
+                INNER JOIN INVGCCGRUPO_INVESTIGACION G ON I.fkId_gru = G.strId_gru
+                WHERE I.strCedula_int = '{cedula}' 
+                AND I.bitActivo_int = 1";
+
+            var resultado = _dal.SelectSql<dynamic>(sql);
+
+            if (resultado != null && resultado.Count > 0)
+            {
+                try
+                {
+                    return ((dynamic)resultado[0]).strNombre_gru.ToString();
+                }
+                catch
+                {
+                    return "OTRO GRUPO";
+                }
+            }
+
+            return null; 
+        }
+
         // =============================================================
         // 3. GESTIÓN DE AUDITORÍA Y ESTADOS
         // =============================================================
