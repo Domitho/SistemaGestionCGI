@@ -107,6 +107,7 @@
   <ItemGroup>
     <Content Include="About.aspx" />
     <Content Include="CalificacionGruInvestigacion.aspx" />
+    <Content Include="CentrosInvestigacion.aspx" />
     <Content Include="Contact.aspx" />
     <Content Include="Content\bootstrap-theme.css" />
     <Content Include="Content\bootstrap-theme.min.css" />
@@ -116,11 +117,13 @@
     <Content Include="ConvocatoriaGruInvestigacion.aspx" />
     <Content Include="Dashboard.aspx" />
     <Content Include="Default.aspx" />
+    <Content Include="DesignersUTC\Images\default-group.png" />
     <Content Include="DesignersUTC\Scripts\utc-fileinput.js" />
     <Content Include="DesignersUTC\Scripts\utc-selector-tiempo.js" />
     <Content Include="DesignersUTC\Styles\login-full.css" />
     <Content Include="DesignersUTC\Styles\modal-historial-reporte.css" />
     <Content Include="DesignersUTC\Styles\modal-informes.css" />
+    <Content Include="DesignersUTC\Styles\modal-vista-integrantes.css" />
     <Content Include="DesignersUTC\Styles\utc-fileinput.css" />
     <Content Include="DesignersUTC\Styles\utc-full-design.css" />
     <Content Include="EjecucionProAprobados.aspx" />
@@ -189,6 +192,7 @@
     </Compile>
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="BLL\ManejadorCalificacionGrupo.cs" />
+    <Compile Include="BLL\ManejadorCentroInvestigacion.cs" />
     <Compile Include="BLL\ManejadorConvocatorias.cs" />
     <Compile Include="BLL\ManejadorDashboard.cs" />
     <Compile Include="BLL\ManejadorEjecucionProyectos.cs" />
@@ -201,6 +205,13 @@
     </Compile>
     <Compile Include="CalificacionGruInvestigacion.aspx.designer.cs">
       <DependentUpon>CalificacionGruInvestigacion.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="CentrosInvestigacion.aspx.cs">
+      <DependentUpon>CentrosInvestigacion.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CentrosInvestigacion.aspx.designer.cs">
+      <DependentUpon>CentrosInvestigacion.aspx</DependentUpon>
     </Compile>
     <Compile Include="Contact.aspx.cs">
       <DependentUpon>Contact.aspx</DependentUpon>
@@ -255,6 +266,7 @@
       <DependentUpon>InscripcionProyectos.aspx</DependentUpon>
     </Compile>
     <Compile Include="Models\InvgccCalificacionGrupo.cs" />
+    <Compile Include="Models\InvgccCentroInvestigacion.cs" />
     <Compile Include="Models\InvgccConvocatoria.cs" />
     <Compile Include="Models\InvgccConvocatoriaGruInvestigacion.cs" />
     <Compile Include="Models\InvgccDashboard.cs" />

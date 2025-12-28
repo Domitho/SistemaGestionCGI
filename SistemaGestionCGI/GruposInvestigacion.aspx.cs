@@ -11,32 +11,39 @@ namespace SistemaGestionCGI
 {
     public partial class GruposInvestigacion : System.Web.UI.Page
     {
-        // 1. Instancias y Constantes
+        // =============================================
+        // 1. CONFIGURACIÓN Y CARGA INICIAL
+        // =============================================
         private readonly ManejadorGruposInvestigacion _manejador = new ManejadorGruposInvestigacion();
         private const string RUTA_BASE_GRUPOS = @"C:\UTC\GRUPOS\";
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (IsPostBack) return;
-
-            // Validar Sesión
+            // CONTROL DE SESIÓN
             if (Session["UsuarioLogueado"] == null)
             {
                 Response.Redirect("Login.aspx");
                 return;
             }
 
-            // Carga Inicial
-            CargarGrillaGrupos();
-            
-            // Verificar Redirección (Al volver de detalle integrantes)
-            string idGrupoRedirect = Request.QueryString["idGrupo"];
-            if (!string.IsNullOrEmpty(idGrupoRedirect))
-            {
-                CargarIntegrantesPanel(idGrupoRedirect);
-            }
+            // SI ES POSTBACK (Clic en botón), NO recargamos nada para no perder datos del form
+            if (IsPostBack) return;
 
-            // Mensajes Flash
+            // CARGA INICIAL DE DATOS
+            try
+            {
+                CargarCombosGlobales();
+                CargarGrillaGrupos();
+
+                string idGrupoRedirect = Request.QueryString["idGrupo"];
+                if (!string.IsNullOrEmpty(idGrupoRedirect))
+                {
+                    CargarIntegrantesPanel(idGrupoRedirect);
+                }
+            }
+            catch (Exception ex) { Msg("Error al iniciar módulo: " + ex.Message, "ee"); }
+
+            // MOSTRAR MENSAJES FLASH (Toastify) DESPUÉS DE UN REDIRECT
             if (Session["TempMsg"] != null)
             {
                 Msg(Session["TempMsg"].ToString(), Session["TempTipo"].ToString());
@@ -45,108 +52,106 @@ namespace SistemaGestionCGI
             }
         }
 
-        // =============================================
-        // GESTIÓN DE GRUPOS (CRUD)
-        // =============================================
+        private void CargarCombosGlobales()
+        {
+            // 1. Cargar Centros de Investigación
+            var centros = _manejador.ObtenerCentrosCombo(); // Asegúrate de tener este método en tu BLL
+            ddlCentro.DataSource = centros;
+            ddlCentro.DataTextField = "strNombre_cen";
+            ddlCentro.DataValueField = "strId_cen";
+            ddlCentro.DataBind();
+            ddlCentro.Items.Insert(0, new ListItem("-- Seleccione Centro --", ""));
+        }
 
         private void CargarGrillaGrupos()
         {
-            try
-            {
-                rptGrupoInv.DataSource = _manejador.ObtenerGruposConConteo();
-                rptGrupoInv.DataBind();
-            }
-            catch (Exception ex) { Msg("Error al cargar grupos: " + ex.Message, "ee"); }
+            // Carga la tabla principal
+            rptGrupoInv.DataSource = _manejador.ObtenerGrupos();
+            rptGrupoInv.DataBind();
         }
 
-        protected void lbtNuevoGruInv_Click(object sender, EventArgs e)
+        // =============================================
+        // 2. GESTIÓN DE GRUPOS (CRUD UNIFICADO)
+        // =============================================
+
+        protected void btnNuevoGrupo_Click(object sender, EventArgs e)
         {
-            CambiarVista(Vista.NuevoGrupo);
             LimpiarFormularioGrupo();
+            lblTituloFormulario.Text = "Registrar Nuevo Grupo";
+            CambiarVista(Vista.FormularioGrupo);
         }
 
-        protected void btnRegresarGruInv_Click(object sender, EventArgs e)
-        {
-            Response.Redirect("GruposInvestigacion.aspx");
-        }
-
-        protected void lbtCancelarGruInv_Click(object sender, EventArgs e)
-        {
-            Response.Redirect("GruposInvestigacion.aspx");
-        }
-
-        protected void lbnCancellEditGruInv_Click(object sender, EventArgs e)
-        {
-            Response.Redirect("GruposInvestigacion.aspx");
-        }
-
-        protected void lbtADDGruInv_Click(object sender, EventArgs e)
+        protected void btnGuardarGrupo_Click(object sender, EventArgs e)
         {
             try
             {
-                var g = new InvgccGrupoInvestigacion
+                // VALIDACIONES
+                if (string.IsNullOrWhiteSpace(txtNombreGru.Text))
                 {
-                    strNombre_gru = strNombreGru.Text.Trim(),
-                    strCoordinador_gru = strNombreCoorGru.Text.Trim(),
-                    strFacultad_gru = ddlFacultadGru.SelectedValue,
-                    dtFechacrea_gru = DateTime.Parse(dtFechaCreaGru.Text),
-                    strCategoria_gru = ddlCatGruInv.SelectedValue,
-                    strLineasinv_gru = strLineaInvGru1.SelectedValue,
-                    strSublineasinv_gru = strSLineaInvGru1.SelectedValue
-                };
-
-                if (fuFotoGrupoAdd.HasFile)
+                    Msg("El nombre del grupo es obligatorio.", "ww");
+                    return;
+                }
+                if (ddlCentro.SelectedIndex <= 0)
                 {
-                    string nombre = $"FOTO_{DateTime.Now.Ticks}{Path.GetExtension(fuFotoGrupoAdd.FileName)}";
-                    g.strFoto_gru = GuardarArchivoFisico(fuFotoGrupoAdd, "FOTOS", nombre);
+                    Msg("Debe seleccionar un Centro de Investigación.", "ww");
+                    return;
                 }
 
-                if (flpArchivoAdd.HasFile)
-                {
-                    string nombre = $"DOC_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivoAdd.FileName)}";
-                    g.strArchivo_gru = GuardarArchivoFisico(flpArchivoAdd, "DOCUMENTOS", nombre);
-                }
-
-                _manejador.GuardarGrupo(g);
-                Redireccionar("Grupo creado correctamente.", "ss");
-            }
-            catch (Exception ex) { Msg("Error al guardar: " + ex.Message, "ee"); }
-        }
-
-        protected void lbnEditGruInv_Click(object sender, EventArgs e)
-        {
-            try
-            {
+                // MAPEO DE DATOS (UI -> MODELO)
                 var g = new InvgccGrupoInvestigacion
                 {
-                    strId_gru = hfIdGrupoEdit.Value,
-                    strNombre_gru = txtGrupoInvEdit.Text.Trim(),
-                    strCoordinador_gru = txtNombreCoorGruInvEdit.Text.Trim(),
-                    strFacultad_gru = ddlFacultadGruEdit.SelectedValue,
-                    dtFechacrea_gru = DateTime.Parse(dtEditFechaCreaEdit.Text),
-                    strCategoria_gru = ddlEditCategoria.SelectedValue,
-                    strLineasinv_gru = txtEditLineaIGru1.SelectedValue,
-                    strSublineasinv_gru = txtEditSLineaIGru1.SelectedValue,
+                    strNombre_gru = txtNombreGru.Text.Trim(),
+                    fkId_cen = ddlCentro.SelectedValue, // Relación con Centro
+                    strCoordinador_gru = txtCoordinadorGru.Text.Trim(),
+                    strCategoria_gru = ddlCategoriaGru.SelectedValue,
+                    strLineasinv_gru = ddlLineaInv.SelectedValue,
+                    strSublineasinv_gru = ddlSublineaInv.SelectedValue,
+
+                    // Parseo seguro de fecha
+                    dtFechacrea_gru = !string.IsNullOrEmpty(txtFechaCreaGru.Text)
+                                      ? DateTime.Parse(txtFechaCreaGru.Text)
+                                      : DateTime.Now,
+
+                    // Mantener valores actuales por defecto
                     strFoto_gru = hfFotoActual.Value,
                     strArchivo_gru = hfArchivoActual.Value
                 };
 
-                if (fuFotoGrupoEdit.HasFile)
+                // GESTIÓN DE ARCHIVOS (FOTO)
+                if (flpFotoGrupo.HasFile)
                 {
-                    string nombre = $"FOTO_{DateTime.Now.Ticks}{Path.GetExtension(fuFotoGrupoEdit.FileName)}";
-                    g.strFoto_gru = GuardarArchivoFisico(fuFotoGrupoEdit, "FOTOS", nombre);
+                    string nombre = $"FOTO_{DateTime.Now.Ticks}{Path.GetExtension(flpFotoGrupo.FileName)}";
+                    g.strFoto_gru = GuardarArchivoFisico(flpFotoGrupo, "FOTOS", nombre);
                 }
 
-                if (flpArchivoEdit.HasFile)
+                // GESTIÓN DE ARCHIVOS (DOCUMENTO RESOLUCIÓN)
+                if (flpArchivoGrupo.HasFile)
                 {
-                    string nombre = $"DOC_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivoEdit.FileName)}";
-                    g.strArchivo_gru = GuardarArchivoFisico(flpArchivoEdit, "DOCUMENTOS", nombre);
+                    string nombre = $"DOC_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivoGrupo.FileName)}";
+                    g.strArchivo_gru = GuardarArchivoFisico(flpArchivoGrupo, "DOCUMENTOS", nombre);
                 }
 
-                _manejador.ActualizarGrupo(g);
-                Redireccionar("Grupo actualizado.", "ss");
+                // DECISIÓN: ¿INSERTAR O ACTUALIZAR?
+                if (string.IsNullOrEmpty(hfIdGrupo.Value))
+                {
+                    // INSERTAR
+                    _manejador.GuardarGrupo(g);
+                    Redireccionar("Grupo creado exitosamente.", "ss");
+                }
+                else
+                {
+                    // ACTUALIZAR
+                    g.strId_gru = hfIdGrupo.Value;
+                    _manejador.ActualizarGrupo(g);
+                    Redireccionar("Grupo actualizado exitosamente.", "ss");
+                }
             }
-            catch (Exception ex) { Msg("Error al actualizar: " + ex.Message, "ee"); }
+            catch (Exception ex) { Msg("Error al guardar: " + ex.Message, "ee"); }
+        }
+
+        protected void btnRegresar_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("GruposInvestigacion.aspx");
         }
 
         protected void rptGrupoInv_ItemCommand(object source, RepeaterCommandEventArgs e)
@@ -155,8 +160,8 @@ namespace SistemaGestionCGI
 
             switch (e.CommandName)
             {
-                case "VerProyectos":
-                    CargarProyectosDeGrupo(id);
+                case "Editar":
+                    CargarEdicionGrupo(id);
                     break;
 
                 case "Eliminar":
@@ -165,100 +170,68 @@ namespace SistemaGestionCGI
                         _manejador.EliminarGrupo(id);
                         Redireccionar("Grupo eliminado.", "ss");
                     }
-                    catch (Exception ex) { Msg("Error: " + ex.Message, "ee"); }
-                    break;
-
-                case "Editar":
-                    CargarEdicionGrupo(id);
+                    catch (Exception ex) { Msg("No se puede eliminar: " + ex.Message, "ee"); }
                     break;
 
                 case "VerIntegrantes":
+                    // Redirección limpia para cambiar de contexto a Integrantes
                     Response.Redirect($"GruposInvestigacion.aspx?idGrupo={id}", false);
+                    break;
+
+                case "VerProyectos":
+                    CargarModalProyectos(id);
                     break;
 
                 case "Archivo":
                     var grupo = _manejador.ObtenerGrupoPorId(id);
                     if (grupo != null && !string.IsNullOrEmpty(grupo.strArchivo_gru))
-                    {
                         DescargarArchivo(grupo.strArchivo_gru);
-                    }
                     else
-                    {
                         Msg("No hay archivo adjunto.", "ww");
-                    }
                     break;
-            }
-        }
-
-        // MÉTODO NUEVO PARA EL MODAL DE DETALLE
-        private void CargarProyectosDeGrupo(string idGrupo)
-        {
-            try
-            {
-                // 1. Buscar los proyectos de ese grupo
-                var listaProyectos = _manejador.ObtenerProyectosDeGrupo(idGrupo);
-
-                // 2. Buscar info del grupo para poner el título bonito
-                var infoGrupo = _manejador.ObtenerGrupoPorId(idGrupo);
-
-                // 3. Llenar el GridView del Modal (gvProyectosDetalle)
-                // Nota: gvProyectosDetalle debe existir en tu .aspx (lo pusimos en el paso anterior)
-                if (gvProyectosDetalle != null)
-                {
-                    gvProyectosDetalle.DataSource = listaProyectos;
-                    gvProyectosDetalle.DataBind();
-                }
-
-                // 4. Actualizar título del modal
-                if (lblGrupoTitulo != null && infoGrupo != null)
-                {
-                    lblGrupoTitulo.InnerText = $"PORTAFOLIO: {infoGrupo.strNombre_gru}";
-                }
-
-                // 5. Abrir el Modal con JavaScript
-                string script = "var m = new bootstrap.Modal(document.getElementById('modalProyectosDetalle')); m.show();";
-                ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalProys", script, true);
-            }
-            catch (Exception ex)
-            {
-                Msg("Error al cargar detalles: " + ex.Message, "ee");
             }
         }
 
         private void CargarEdicionGrupo(string id)
         {
             var g = _manejador.ObtenerGrupoPorId(id);
-            if (g != null)
+            if (g == null) return;
+
+            // Configurar UI para Edición
+            lblTituloFormulario.Text = $"Editar Grupo: {g.strId_gru}";
+            hfIdGrupo.Value = g.strId_gru;
+
+            txtNombreGru.Text = g.strNombre_gru;
+            txtCoordinadorGru.Text = g.strCoordinador_gru;
+            txtFechaCreaGru.Text = g.dtFechacrea_gru.ToString("yyyy-MM-dd");
+
+            // Seleccionar Combos
+            if (ddlCentro.Items.FindByValue(g.fkId_cen) != null)
+                ddlCentro.SelectedValue = g.fkId_cen;
+
+            if (ddlCategoriaGru.Items.FindByValue(g.strCategoria_gru) != null)
+                ddlCategoriaGru.SelectedValue = g.strCategoria_gru;
+
+            // Archivos actuales
+            hfFotoActual.Value = g.strFoto_gru;
+            hfArchivoActual.Value = g.strArchivo_gru;
+
+            // Mostrar preview foto si existe
+            if (!string.IsNullOrEmpty(g.strFoto_gru))
             {
-                hfIdGrupoEdit.Value = g.strId_gru;
-                txtGrupoInvEdit.Text = g.strNombre_gru;
-                txtNombreCoorGruInvEdit.Text = g.strCoordinador_gru;
-                dtEditFechaCreaEdit.Text = g.dtFechacrea_gru.ToString("yyyy-MM-dd");
-
-                if (ddlFacultadGruEdit.Items.FindByValue(g.strFacultad_gru) != null)
-                    ddlFacultadGruEdit.SelectedValue = g.strFacultad_gru;
-                else
-                    ddlFacultadGruEdit.SelectedIndex = 0;
-
-                if (ddlEditCategoria.Items.FindByValue(g.strCategoria_gru) != null)
-                    ddlEditCategoria.SelectedValue = g.strCategoria_gru;
-
-                if (txtEditLineaIGru1.Items.FindByValue(g.strLineasinv_gru) != null)
-                    txtEditLineaIGru1.SelectedValue = g.strLineasinv_gru;
-
-                if (txtEditSLineaIGru1.Items.FindByValue(g.strSublineasinv_gru) != null)
-                    txtEditSLineaIGru1.SelectedValue = g.strSublineasinv_gru;
-
-                hfFotoActual.Value = g.strFoto_gru;
-                hfArchivoActual.Value = g.strArchivo_gru;
-                imgFotoGruEdit.ImageUrl = ObtenerImagenBase64(g.strFoto_gru);
-
-                CambiarVista(Vista.EditarGrupo);
+                imgFotoActual.ImageUrl = ObtenerImagenBase64(g.strFoto_gru);
+                imgFotoActual.Visible = true;
             }
+            else
+            {
+                imgFotoActual.Visible = false;
+            }
+
+            CambiarVista(Vista.FormularioGrupo);
         }
 
         // =============================================
-        // GESTIÓN DE INTEGRANTES
+        // 3. GESTIÓN DE INTEGRANTES
         // =============================================
 
         private void CargarIntegrantesPanel(string idGrupo)
@@ -275,16 +248,11 @@ namespace SistemaGestionCGI
             rptIntegrantes.DataBind();
         }
 
-        protected void btnVolverGrupos_Click(object sender, EventArgs e)
-        {
-            Response.Redirect("GruposInvestigacion.aspx");
-        }
-
         protected void btnNuevoIntegrante_Click(object sender, EventArgs e)
         {
             CambiarVista(Vista.FormularioIntegrante);
             LimpiarFormularioIntegrante();
-
+            // Ejecutar script para inicializar la lógica visual (ocultar campos externos, etc.)
             ScriptManager.RegisterStartupScript(this, GetType(), "initForm", "InitFormulario();", true);
         }
 
@@ -292,21 +260,20 @@ namespace SistemaGestionCGI
         {
             try
             {
+                // Validaciones
                 if (string.IsNullOrWhiteSpace(txtCedulaInt.Text) || string.IsNullOrWhiteSpace(txtNombresInt.Text))
                 {
-                    Msg("Complete los campos obligatorios.", "ww");
+                    Msg("Cédula y Nombres son obligatorios.", "ww");
                     return;
                 }
 
+                // Validar duplicidad SOLO si es nuevo
                 if (string.IsNullOrEmpty(hfIdIntEdit.Value))
                 {
-                    string cedula = txtCedulaInt.Text.Trim();
-
-                    string nombreGrupoExistente = _manejador.VerificarIntegranteEnOtroGrupo(cedula);
-
-                    if (nombreGrupoExistente != null)
+                    string grupoExistente = _manejador.VerificarIntegranteEnOtroGrupo(txtCedulaInt.Text.Trim());
+                    if (grupoExistente != null)
                     {
-                        Msg($"La cédula {cedula} ya se encuentra activa en el grupo: {nombreGrupoExistente}.", "ee");
+                        Msg($"La cédula ya pertenece al grupo: {grupoExistente}.", "ee");
                         return;
                     }
                 }
@@ -319,107 +286,72 @@ namespace SistemaGestionCGI
                     strApellidos_int = txtApellidosInt.Text.Trim(),
                     strCorreo_int = txtCorreoInt.Text.Trim(),
                     strFuncion_int = ddlFuncionInt.SelectedValue,
-                    strCertificado_int = hfCertificadoIntActual.Value,
-                    dtFechaini_int = DateTime.Parse(dtFechaIniInt.Text),
+                    strTipo_int = ddlTipoInt.SelectedValue,
+                    dtFechaini_int = !string.IsNullOrEmpty(dtFechaIniInt.Text) ? DateTime.Parse(dtFechaIniInt.Text) : DateTime.Now,
                     strObservacion_int = txtObservacionInt.Text.Trim(),
-                    strTipo_int = ddlTipoInt.SelectedValue
+                    strCertificado_int = hfCertificadoIntActual.Value
                 };
 
-                if (i.strFuncion_int == "Investigador Principal")
-                {
-                    if (flpCertificadoInt.HasFile)
-                    {
-                        string nombre = $"CERT_{DateTime.Now.Ticks}{Path.GetExtension(flpCertificadoInt.FileName)}";
-                        i.strCertificado_int = GuardarArchivoFisico(flpCertificadoInt, "CERTIFICADOS", nombre);
-                    }
-                    else if (string.IsNullOrEmpty(i.strId_int) && string.IsNullOrEmpty(i.strCertificado_int))
-                    {
-                    }
-                }
-                else
-                {
-                    i.strCertificado_int = null;
-                }
-
+                // Lógica Condicional (Interno vs Externo)
                 if (i.strTipo_int == "Externo")
                 {
                     if (string.IsNullOrWhiteSpace(txtEntidadInt.Text))
                     {
-                        Msg("Debe especificar la Institución de Origen.", "ww");
+                        Msg("Debe indicar la Entidad de Origen.", "ww");
                         return;
                     }
                     i.strEntidad_int = txtEntidadInt.Text.Trim();
                     i.strCarrera_int = null;
                     i.strFacultad_int = null;
                 }
-                else 
+                else // Interno
                 {
                     i.strEntidad_int = null;
                     i.strCarrera_int = txtCarreraInt.Text.Trim();
                     i.strFacultad_int = ddlFacultadInt.SelectedValue;
                 }
 
+                // Archivo Certificado (Solo Invest. Principal)
+                if (flpCertificadoInt.HasFile)
+                {
+                    string nombre = $"CERT_{DateTime.Now.Ticks}{Path.GetExtension(flpCertificadoInt.FileName)}";
+                    i.strCertificado_int = GuardarArchivoFisico(flpCertificadoInt, "CERTIFICADOS", nombre);
+                }
+
+                // Guardar o Actualizar
                 if (string.IsNullOrEmpty(hfIdIntEdit.Value))
                 {
-                    string usuarioLogueado = Session["UsuarioLogueado"]?.ToString() ?? "Sistema";
-
-                    _manejador.GuardarIntegrante(i, usuarioLogueado);
-
-                    SetFlashMessage("Integrante agregado e historial registrado.", "ss");
+                    string usuario = Session["UsuarioLogueado"]?.ToString() ?? "Sistema";
+                    _manejador.GuardarIntegrante(i, usuario);
+                    SetFlashMessage("Integrante agregado correctamente.", "ss");
                 }
                 else
                 {
                     i.strId_int = hfIdIntEdit.Value;
+                    // Preservar datos no editables en form
                     var original = _manejador.ObtenerIntegrantePorId(i.strId_int);
                     if (original != null)
                     {
                         i.dtFechafin_int = original.dtFechafin_int;
                         i.bitActivo_int = original.bitActivo_int;
-                        i.bitPertenece_int = original.bitPertenece_int;
                     }
+
                     _manejador.ActualizarIntegrante(i);
-                    SetFlashMessage("Integrante actualizado.", "ss");
+                    SetFlashMessage("Datos del integrante actualizados.", "ss");
                 }
 
+                // Redireccionar al mismo grupo para refrescar
                 Response.Redirect($"GruposInvestigacion.aspx?idGrupo={hfGrupoIdActual.Value}", false);
             }
-            catch (Exception ex) { Msg("Error al guardar integrante: " + ex.Message, "ee"); }
-        }
-
-        protected void btnCancelarInt_Click(object sender, EventArgs e)
-        {
-            CambiarVista(Vista.ListaIntegrantes);
+            catch (Exception ex) { Msg("Error integrante: " + ex.Message, "ee"); }
         }
 
         protected void rptIntegrantes_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             string idInt = e.CommandArgument.ToString();
-            string idGrupo = hfGrupoIdActual.Value;
-            string argumento = e.CommandArgument.ToString();
 
             switch (e.CommandName)
             {
-                case "VerCertificado":
-                    if (!string.IsNullOrEmpty(argumento))
-                    {
-                        DescargarArchivo(argumento);
-                    }
-                    else
-                    {
-                        Msg("El archivo no se encuentra disponible.", "ww");
-                    }
-                    break;
-
-                case "EliminarInt":
-                    try
-                    {
-                        _manejador.EliminarIntegranteFisico(idInt);
-                        SetFlashMessage("Integrante eliminado permanentemente.", "ss");
-                        Response.Redirect($"GruposInvestigacion.aspx?idGrupo={idGrupo}", false);
-                    }
-                    catch (Exception ex) { Msg(ex.Message, "ee"); }
-                    break;
-
                 case "EditarInt":
                     CargarEdicionIntegrante(idInt);
                     break;
@@ -429,74 +361,108 @@ namespace SistemaGestionCGI
                     break;
 
                 case "Historial":
-                    CargarHistorial(idInt);
+                    CargarModalHistorial(idInt);
+                    break;
+
+                case "VerCertificado":
+                    if (!string.IsNullOrEmpty(idInt)) DescargarArchivo(idInt); // idInt trae la ruta en el argumento
+                    else Msg("No hay certificado cargado.", "ww");
                     break;
             }
         }
 
-        private void CargarEdicionIntegrante(string idInt)
+        private void CargarEdicionIntegrante(string id)
         {
-            var obj = _manejador.ObtenerIntegrantePorId(idInt);
-            if (obj != null)
+            var i = _manejador.ObtenerIntegrantePorId(id);
+            if (i == null) return;
+
+            hfIdIntEdit.Value = i.strId_int;
+            lblTituloFormInt.Text = "Editar Integrante";
+
+            txtCedulaInt.Text = i.strCedula_int;
+            txtNombresInt.Text = i.strNombres_int;
+            txtApellidosInt.Text = i.strApellidos_int;
+            txtCorreoInt.Text = i.strCorreo_int;
+            dtFechaIniInt.Text = i.dtFechaini_int.ToString("yyyy-MM-dd");
+            txtObservacionInt.Text = i.strObservacion_int;
+
+            if (ddlFuncionInt.Items.FindByValue(i.strFuncion_int) != null)
+                ddlFuncionInt.SelectedValue = i.strFuncion_int;
+
+            hfCertificadoIntActual.Value = i.strCertificado_int;
+
+            // Manejo Interno/Externo
+            if (ddlTipoInt.Items.FindByValue(i.strTipo_int) != null)
+                ddlTipoInt.SelectedValue = i.strTipo_int;
+
+            if (i.strTipo_int == "Externo")
             {
-                hfIdIntEdit.Value = obj.strId_int;
-                txtCedulaInt.Text = obj.strCedula_int;
-                txtNombresInt.Text = obj.strNombres_int;
-                txtApellidosInt.Text = obj.strApellidos_int;
-                txtCorreoInt.Text = obj.strCorreo_int;
-                dtFechaIniInt.Text = obj.dtFechaini_int.ToString("yyyy-MM-dd");
-                txtObservacionInt.Text = obj.strObservacion_int;
-
-                if (ddlFuncionInt.Items.FindByValue(obj.strFuncion_int) != null)
-                    ddlFuncionInt.SelectedValue = obj.strFuncion_int;
-
-                hfCertificadoIntActual.Value = obj.strCertificado_int;
-
-                // Tipo y Campos Específicos
-                if (ddlTipoInt.Items.FindByValue(obj.strTipo_int) != null)
-                    ddlTipoInt.SelectedValue = obj.strTipo_int;
-                else
-                    ddlTipoInt.SelectedIndex = 0;
-
-                if (obj.strTipo_int == "Externo")
-                {
-                    txtEntidadInt.Text = obj.strEntidad_int;
-                    txtCarreraInt.Text = "";
-                    ddlFacultadInt.SelectedIndex = 0;
-                }
-                else
-                {
-                    txtEntidadInt.Text = "";
-                    txtCarreraInt.Text = obj.strCarrera_int;
-                    if (ddlFacultadInt.Items.FindByValue(obj.strFacultad_int) != null)
-                        ddlFacultadInt.SelectedValue = obj.strFacultad_int;
-                }
-
-                lblTituloFormInt.Text = "Editar Integrante";
-                CambiarVista(Vista.FormularioIntegrante);
-                ScriptManager.RegisterStartupScript(this, GetType(), "initForm", "InitFormulario();", true);
+                txtEntidadInt.Text = i.strEntidad_int;
             }
+            else
+            {
+                txtCarreraInt.Text = i.strCarrera_int;
+                if (ddlFacultadInt.Items.FindByValue(i.strFacultad_int) != null)
+                    ddlFacultadInt.SelectedValue = i.strFacultad_int;
+            }
+
+            CambiarVista(Vista.FormularioIntegrante);
+            ScriptManager.RegisterStartupScript(this, GetType(), "initForm", "InitFormulario();", true);
+        }
+
+        protected void btnCancelarInt_Click(object sender, EventArgs e)
+        {
+            CambiarVista(Vista.ListaIntegrantes);
+        }
+
+        protected void btnVolverGrupos_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("GruposInvestigacion.aspx");
+        }
+
+        // =============================================
+        // 4. MODALS (PROYECTOS, ESTADO, HISTORIAL)
+        // =============================================
+
+        private void CargarModalProyectos(string idGrupo)
+        {
+            try
+            {
+                var lista = _manejador.ObtenerProyectosDeGrupo(idGrupo);
+                var grupo = _manejador.ObtenerGrupoPorId(idGrupo);
+
+                gvProyectosDetalle.DataSource = lista;
+                gvProyectosDetalle.DataBind();
+
+                if (grupo != null) lblGrupoTitulo.InnerText = $"PORTAFOLIO: {grupo.strNombre_gru}";
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalProy",
+                    "var m = new bootstrap.Modal(document.getElementById('modalProyectosDetalle')); m.show();", true);
+            }
+            catch (Exception ex) { Msg("Error al cargar proyectos: " + ex.Message, "ee"); }
         }
 
         private void CargarModalEstado(string idInt)
         {
             hfIdIntegranteEstado.Value = idInt;
-            var obj = _manejador.ObtenerIntegrantePorId(idInt);
-            if (obj != null)
+            var i = _manejador.ObtenerIntegrantePorId(idInt);
+
+            if (i != null)
             {
-                string estadoStr = obj.bitActivo_int ? "Activo" : "Inactivo";
-                string accion = obj.bitActivo_int ? "dar de baja" : "reactivar";
+                // Script para llenar datos del modal usando JS
+                string estado = i.bitActivo_int ? "Activo" : "Inactivo";
+                string accion = i.bitActivo_int ? "dar de baja" : "reactivar";
 
                 string script = $@"
                     document.getElementById('txtMotivoEstado').value = '';
-                    document.getElementById('infoNombre').innerText = '{obj.strNombres_int} {obj.strApellidos_int}';
-                    document.getElementById('infoCedula').innerText = '{obj.strCedula_int}';
-                    document.getElementById('infoFuncion').innerText = '{obj.strFuncion_int}';
-                    document.getElementById('infoEstado').innerText = '{estadoStr}';
+                    document.getElementById('infoNombre').innerText = '{i.strNombres_int} {i.strApellidos_int}';
+                    document.getElementById('infoCedula').innerText = '{i.strCedula_int}';
+                    document.getElementById('infoFuncion').innerText = '{i.strFuncion_int}';
+                    document.getElementById('infoEstado').innerText = '{estado}';
                     document.getElementById('accionEstadoTexto').innerText = '{accion}';
                     AbrirModalEstado();";
 
-                ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalEstado", script, true);
+                ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalEst", script, true);
             }
         }
 
@@ -506,87 +472,169 @@ namespace SistemaGestionCGI
             {
                 string idInt = hfIdIntegranteEstado.Value;
                 string motivo = hfMotivoEstado.Value;
-                string usuario = Session["UsuarioLogueado"]?.ToString() ?? "Usuario Desconocido";
+                string usuario = Session["UsuarioLogueado"]?.ToString() ?? "Sistema";
 
-                var obj = _manejador.ObtenerIntegrantePorId(idInt);
-                _manejador.CambiarEstadoIntegrante(idInt, !obj.bitActivo_int, motivo, usuario);
+                var i = _manejador.ObtenerIntegrantePorId(idInt);
+                // Invertimos el estado actual
+                _manejador.CambiarEstadoIntegrante(idInt, !i.bitActivo_int, motivo, usuario);
 
-                SetFlashMessage("Estado del integrante actualizado.", "ss");
+                SetFlashMessage("Estado actualizado correctamente.", "ss");
                 Response.Redirect($"GruposInvestigacion.aspx?idGrupo={hfGrupoIdActual.Value}", false);
             }
-            catch (Exception ex) { Msg("Error al cambiar estado: " + ex.Message, "ee"); }
+            catch (Exception ex) { Msg("Error cambio estado: " + ex.Message, "ee"); }
         }
 
-        private void CargarHistorial(string idInt)
+        private void CargarModalHistorial(string idInt)
         {
-            try
+            var i = _manejador.ObtenerIntegrantePorId(idInt);
+            if (i != null)
             {
-                var integrante = _manejador.ObtenerIntegrantePorId(idInt);
-                if (integrante != null)
-                {
-                    lblNombreHistorial.Text = $"{integrante.strNombres_int} {integrante.strApellidos_int}";
-                    hfIdIntegranteHistorial.Value = idInt;
-                    rptHistorial.DataSource = _manejador.ObtenerHistorial(idInt);
-                    rptHistorial.DataBind();
+                lblNombreHistorial.Text = $"{i.strNombres_int} {i.strApellidos_int}";
+                hfIdIntegranteHistorial.Value = idInt;
 
-                    ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalHist", "new bootstrap.Modal(document.getElementById('modalHistorial')).show();", true);
-                }
+                rptHistorial.DataSource = _manejador.ObtenerHistorial(idInt);
+                rptHistorial.DataBind();
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalHist",
+                    "new bootstrap.Modal(document.getElementById('modalHistorial')).show();", true);
             }
-            catch (Exception ex) { Msg("Error al cargar historial: " + ex.Message, "ee"); }
         }
-
-        // =============================================
-        // REPORTES Y ARCHIVOS
-        // =============================================
 
         protected void btnGenerarReporte_Click(object sender, EventArgs e)
         {
-            string idInt = hfIdIntegranteHistorial.Value;
-            if (!string.IsNullOrEmpty(idInt))
+            try
             {
-                litReporteGenerado.Text = ConstruirHtmlReporte(idInt);
-                string script = @"
-                    var m1 = bootstrap.Modal.getInstance(document.getElementById('modalHistorial'));
-                    if(m1) m1.hide();
-                    var m2 = new bootstrap.Modal(document.getElementById('modalVistaPrevia'));
-                    m2.show();";
-                ScriptManager.RegisterStartupScript(this, GetType(), "SwapModals", script, true);
+                string idInt = hfIdIntegranteHistorial.Value;
+                if (string.IsNullOrEmpty(idInt)) return;
+
+                var integrante = _manejador.ObtenerIntegrantePorId(idInt);
+                var historial = _manejador.ObtenerHistorial(idInt);
+
+                // -- ASIGNACIÓN DE DATOS AL DISEÑO NUEVO --
+                lblRefId.Text = integrante.strId_int;
+                lblReporteNombre.Text = $"{integrante.strApellidos_int} {integrante.strNombres_int}";
+                lblReporteCedula.Text = integrante.strCedula_int;
+                lblReporteFuncion.Text = integrante.strFuncion_int;
+
+                lblReporteEstado.Text = integrante.bitActivo_int ? "ACTIVO" : "INACTIVO";
+                // Cambio de color dinámico para el estado
+                lblReporteEstado.ForeColor = integrante.bitActivo_int ?
+                    System.Drawing.ColorTranslator.FromHtml("#1b9e4b") :
+                    System.Drawing.ColorTranslator.FromHtml("#d9534f");
+
+                // Llenar el Timeline
+                rptReporteHistorial.DataSource = historial;
+                rptReporteHistorial.DataBind();
+
+                // Abrir Modal
+                string script = "var m = new bootstrap.Modal(document.getElementById('modalVistaPrevia')); m.show();";
+                ScriptManager.RegisterStartupScript(this, GetType(), "OpenPreview", script, true);
+            }
+            catch (Exception ex)
+            {
+                Msg("Error: " + ex.Message, "ee");
             }
         }
 
-        private string ConstruirHtmlReporte(string idInt)
+        private string ConstruirHtmlReporte(InvgccGrupoIntegrantes integrante, List<InvgccIntegrantesHistorial> historial)
         {
-            var integrante = _manejador.ObtenerIntegrantePorId(idInt);
-            var historial = _manejador.ObtenerHistorial(idInt);
-            var grupo = _manejador.ObtenerGrupoPorId(integrante?.fkId_gru);
+            StringBuilder sb = new StringBuilder();
 
-            if (integrante == null) return "<h4 class='text-danger'>Datos no encontrados</h4>";
+            // --- ENCABEZADO DEL REPORTE ---
+            sb.Append("<div class='text-center mb-4'>");
+            sb.Append("<h4 class='text-uppercase fw-bold'>Reporte de Movimientos</h4>");
+            sb.Append($"<p class='text-muted small'>Generado el: {DateTime.Now:dd/MM/yyyy HH:mm}</p>");
+            sb.Append("</div>");
 
-            StringBuilder html = new StringBuilder();
-            html.Append("<div class='report-header'><img src='https://aplicaciones.utc.edu.ec/sigutc/img/bnUTC.png' width='150' class='mb-3'><br><h4 class='text-primary fw-bold'>REPORTE DE HISTORIAL DE MOVIMIENTOS</h4><small class='text-muted'>Sistema Integrado de Gestión - Dirección de Investigación</small></div>");
+            // --- DATOS DEL INTEGRANTE ---
+            sb.Append("<div class='card mb-4 border-0 shadow-sm'>");
+            sb.Append("<div class='card-body bg-light rounded'>");
+            sb.Append("<div class='row'>");
+            sb.Append($"<div class='col-6'><strong>Cédula:</strong> {integrante.strCedula_int}</div>");
+            sb.Append($"<div class='col-6'><strong>Nombre:</strong> {integrante.strApellidos_int} {integrante.strNombres_int}</div>");
+            sb.Append($"<div class='col-6'><strong>Función:</strong> {integrante.strFuncion_int}</div>");
+            sb.Append($"<div class='col-6'><strong>Estado Actual:</strong> {(integrante.bitActivo_int ? "ACTIVO" : "INACTIVO")}</div>");
+            sb.Append("</div>");
+            sb.Append("</div></div>");
 
-            html.Append($@"<div class='info-card'><div class='row'>
-                <div class='col-md-6'><strong>INTEGRANTE:</strong> {integrante.strNombres_int} {integrante.strApellidos_int}</div>
-                <div class='col-md-6'><strong>CÉDULA:</strong> {integrante.strCedula_int}</div>
-                <div class='col-md-12 mt-2'><strong>GRUPO:</strong> {(grupo != null ? grupo.strNombre_gru : "Sin Grupo")}</div>
-                <div class='col-md-12 mt-2'><strong>FECHA REPORTE:</strong> {DateTime.Now:dd/MM/yyyy HH:mm}</div>
-                </div></div>");
+            // --- TABLA DE HISTORIAL ---
+            sb.Append("<table class='table table-bordered table-striped text-center small'>");
+            sb.Append("<thead class='table-dark text-white'><tr>");
+            sb.Append("<th>FECHA</th><th>ACCIÓN</th><th>MOTIVO</th><th>USUARIO</th>");
+            sb.Append("</tr></thead>");
+            sb.Append("<tbody>");
 
-            html.Append("<div class='timeline-report'>");
-            foreach (var h in historial)
+            if (historial != null && historial.Count > 0)
             {
-                string color = h.strAccion == "BAJA" ? "#dc3545" : "#198754";
-                html.Append($@"<div class='timeline-item'>
-                    <div class='timeline-dot' style='background:{color}; box-shadow:0 0 0 2px {color};'></div>
-                    <div class='timeline-date'>{h.dtFecha:dd MMM yyyy - HH:mm}</div>
-                    <div class='timeline-content'>
-                        <div class='d-flex justify-content-between'><span class='timeline-title' style='color:{color}'>{h.strAccion}</span><span class='timeline-user small text-muted'><i class='fa-solid fa-user me-1'></i> {h.strUsuario}</span></div>
-                        <p class='mb-0 mt-2 text-secondary'>{h.strMotivo}</p>
-                    </div></div>");
-            }
-            html.Append("</div><div class='text-center mt-5 pt-3 border-top text-muted small'>Documento generado automáticamente por SIG-UTC.</div>");
+                foreach (var item in historial)
+                {
+                    sb.Append("<tr>");
+                    sb.Append($"<td>{item.dtFecha:dd/MM/yyyy HH:mm}</td>");
 
-            return html.ToString();
+                    // Estilo condicional según la acción (Baja en rojo, Reactivación en verde)
+                    string colorBadge = item.strAccion == "BAJA" ? "bg-danger" : "bg-success";
+                    sb.Append($"<td><span class='badge {colorBadge}'>{item.strAccion}</span></td>");
+
+                    sb.Append($"<td class='text-start'>{item.strMotivo}</td>");
+                    sb.Append($"<td>{item.strUsuario}</td>");
+                    sb.Append("</tr>");
+                }
+            }
+            else
+            {
+                sb.Append("<tr><td colspan='4' class='text-muted py-3'>No existen movimientos registrados.</td></tr>");
+            }
+
+            sb.Append("</tbody></table>");
+
+            // --- PIE DE PÁGINA (FIRMAS) ---
+            sb.Append("<br/><br/><div class='row mt-5 text-center'>");
+            sb.Append("<div class='col-6'><hr class='w-50 mx-auto'/>Firma Responsable</div>");
+            sb.Append("<div class='col-6'><hr class='w-50 mx-auto'/>Recibido Conforme</div>");
+            sb.Append("</div>");
+
+            return sb.ToString();
+        }
+
+        // =============================================
+        // 5. UTILIDADES Y AYUDAS
+        // =============================================
+
+        private enum Vista { ListaGrupos, FormularioGrupo, ListaIntegrantes, FormularioIntegrante }
+
+        private void CambiarVista(Vista vista)
+        {
+            pnlGrilla.Visible = vista == Vista.ListaGrupos;
+            headerGrupos.Visible = vista == Vista.ListaGrupos;
+            pnlFormularioGrupo.Visible = vista == Vista.FormularioGrupo;
+            pnlIntegrantes.Visible = vista == Vista.ListaIntegrantes;
+            pnlFormularioIntegrante.Visible = vista == Vista.FormularioIntegrante;
+        }
+
+        private void LimpiarFormularioGrupo()
+        {
+            hfIdGrupo.Value = "";
+            txtNombreGru.Text = "";
+            txtCoordinadorGru.Text = "";
+            txtFechaCreaGru.Text = DateTime.Now.ToString("yyyy-MM-dd");
+            ddlCentro.SelectedIndex = 0;
+            ddlCategoriaGru.SelectedIndex = 0;
+            hfFotoActual.Value = "";
+            hfArchivoActual.Value = "";
+            imgFotoActual.Visible = false;
+        }
+
+        private void LimpiarFormularioIntegrante()
+        {
+            hfIdIntEdit.Value = "";
+            lblTituloFormInt.Text = "Nuevo Integrante";
+            txtCedulaInt.Text = ""; txtNombresInt.Text = ""; txtApellidosInt.Text = "";
+            txtCorreoInt.Text = ""; txtEntidadInt.Text = ""; txtCarreraInt.Text = "";
+            ddlTipoInt.SelectedIndex = 0;
+            ddlFacultadInt.SelectedIndex = 0;
+            dtFechaIniInt.Text = DateTime.Now.ToString("yyyy-MM-dd");
+            txtObservacionInt.Text = "";
+            hfCertificadoIntActual.Value = "";
         }
 
         private string GuardarArchivoFisico(FileUpload control, string subCarpeta, string nombre)
@@ -598,69 +646,26 @@ namespace SistemaGestionCGI
             return ruta;
         }
 
-        private void DescargarArchivo(string rutaDesdeBd)
+        private void DescargarArchivo(string ruta)
         {
-            if (File.Exists(rutaDesdeBd))
+            if (File.Exists(ruta))
             {
-                string nombre = Path.GetFileName(rutaDesdeBd);
-                string ext = Path.GetExtension(rutaDesdeBd).ToLower();
+                string nombre = Path.GetFileName(ruta);
                 Response.Clear();
-                Response.ContentType = ext == ".pdf" ? "application/pdf" : "application/octet-stream";
-                Response.AppendHeader("Content-Disposition", "inline; filename=" + nombre);
-                Response.TransmitFile(rutaDesdeBd);
+                Response.ContentType = "application/octet-stream";
+                Response.AppendHeader("Content-Disposition", "attachment; filename=" + nombre);
+                Response.TransmitFile(ruta);
                 Response.End();
             }
-            else { Msg("El archivo físico no existe en la ruta especificada.", "ww"); }
+            else Msg("El archivo no existe en el servidor.", "ww");
         }
 
         protected string ObtenerImagenBase64(object rutaObj)
         {
             string ruta = rutaObj as string;
-            if (string.IsNullOrEmpty(ruta) || !File.Exists(ruta)) return "img/default-user.png";
+            if (string.IsNullOrEmpty(ruta) || !File.Exists(ruta)) return "DesignersUTC/Images/default-group.png";
             try { return "data:image/jpeg;base64," + Convert.ToBase64String(File.ReadAllBytes(ruta)); }
-            catch { return "img/default-user.png"; }
-        }
-
-        // =============================================
-        // UTILIDADES Y AYUDAS VISUALES
-        // =============================================
-
-        private enum Vista { ListaGrupos, NuevoGrupo, EditarGrupo, ListaIntegrantes, FormularioIntegrante }
-
-        private void CambiarVista(Vista vista)
-        {
-            pnlGrilla.Visible = vista == Vista.ListaGrupos;
-            headerGrupos.Visible = vista == Vista.ListaGrupos;
-
-            pnlAgregarGruInv.Visible = vista == Vista.NuevoGrupo;
-            pnlEditarGrupoInv.Visible = vista == Vista.EditarGrupo;
-
-            pnlIntegrantes.Visible = vista == Vista.ListaIntegrantes;
-            pnlFormularioIntegrante.Visible = vista == Vista.FormularioIntegrante;
-        }
-
-        private void LimpiarFormularioGrupo()
-        {
-            strNombreGru.Text = "";
-            strNombreCoorGru.Text = "";
-            dtFechaCreaGru.Text = DateTime.Now.ToString("yyyy-MM-dd");
-            ddlFacultadGru.SelectedIndex = 0;
-            ddlCatGruInv.SelectedIndex = 0;
-            strLineaInvGru1.SelectedIndex = 0;
-            strSLineaInvGru1.SelectedIndex = 0;
-        }
-
-        private void LimpiarFormularioIntegrante()
-        {
-            hfIdIntEdit.Value = "";
-            lblTituloFormInt.Text = "Nuevo Integrante";
-            txtCedulaInt.Text = ""; txtNombresInt.Text = ""; txtApellidosInt.Text = "";
-            txtCorreoInt.Text = ""; txtCarreraInt.Text = ""; txtEntidadInt.Text = "";
-            ddlTipoInt.SelectedIndex = 0; ddlFacultadInt.SelectedIndex = 0;
-            dtFechaIniInt.Text = DateTime.Now.ToString("yyyy-MM-dd");
-            ddlFuncionInt.SelectedIndex = 0; 
-            hfCertificadoIntActual.Value = "";
-            txtObservacionInt.Text = "";
+            catch { return ""; }
         }
 
         private void Redireccionar(string msg, string type)
@@ -677,20 +682,9 @@ namespace SistemaGestionCGI
 
         private void Msg(string msg, string type)
         {
-            if (string.IsNullOrEmpty(msg)) return;
-
-            string cleanMsg = msg
-                .Replace("\\", "\\\\") 
-                .Replace("'", "\\'")   
-                .Replace("\"", "\\\"") 
-                .Replace("\r\n", " ")  
-                .Replace("\n", " "); 
-
-            string titulo = type == "ss" ? "Éxito" : (type == "ee" ? "Error" : "Atención");
-
-            string script = $"$(function() {{ toastify('{type}', '{cleanMsg}', '{titulo}'); }});";
-
-            ScriptManager.RegisterStartupScript(this, GetType(), "alert", script, true);
+            string cleanMsg = msg.Replace("'", "").Replace("\r\n", " ");
+            string script = $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema'); }});";
+            ScriptManager.RegisterStartupScript(this, GetType(), "toast", script, true);
         }
     }
 }

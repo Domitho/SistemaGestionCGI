@@ -88,9 +88,8 @@
                                 <li class="nav-item"><a class="nav-link" href="ConvocatoriaGruInvestigacion.aspx">Convocatorias</a></li>
                                 <li class="nav-item"><a class="nav-link" href="InscripcionProyectos.aspx">Proyectos</a></li>
                                 <li class="nav-item"><a class="nav-link" href="GruposInvestigacion.aspx">Grupos Inv.</a></li>
-                                <li class="nav-item"><a class="nav-link" href="CentInv.aspx">Centros Inv.</a></li>
+                                <li class="nav-item"><a class="nav-link" href="CentrosInvestigacion.aspx">Centros Inv.</a></li>
                                 <li class="nav-item"><a class="nav-link" href="Categorizacion.aspx">Categorización</a></li>
-                                <li class="nav-item"><a class="nav-link" href="Publicaciones.aspx">Publicaciones</a></li>
                                 <li class="nav-item"><a class="nav-link" href="CalificacionGruInvestigacion.aspx">Calificación</a></li>
                                 <li class="nav-item"><a class="nav-link" href="EjecucionProAprobados.aspx">Aprobados</a></li>
                             </ul>

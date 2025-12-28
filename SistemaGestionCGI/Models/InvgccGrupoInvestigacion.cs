@@ -32,10 +32,15 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("strFoto_gru")]
         public string strFoto_gru { get; set; }
 
+        // --- NUEVOS CAMPOS ---
+        [JsonProperty("fkId_cen")]
+        public string fkId_cen { get; set; }
+
+        // Propiedad extendida (para mostrar el nombre del centro en grillas/reportes)
+        [JsonProperty("strNombre_cen")]
+        public string strNombre_cen { get; set; }
+
         [JsonProperty("TotalProyectos")]
         public int TotalProyectos { get; set; }
-
-        [JsonProperty("strFacultad_gru")]
-        public string strFacultad_gru { get; set; }
     }
 }

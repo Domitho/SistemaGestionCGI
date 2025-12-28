@@ -239,6 +239,7 @@
             responsive: true,
             autoWidth: false,
             ordering: true,
+            order: [],
             pageLength: 10,
             language: { url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json" },
             dom: "<'row align-items-center mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-end'f>><'row'<'col-sm-12'tr>><'row mt-3 align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"

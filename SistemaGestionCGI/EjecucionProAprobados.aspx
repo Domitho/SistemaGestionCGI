@@ -19,7 +19,6 @@
             font-weight: 600 !important;
         }
 
-        /* Corrección para que el formulario no se desborde */
         .form-stack {
             max-width: 100% !important;
         }

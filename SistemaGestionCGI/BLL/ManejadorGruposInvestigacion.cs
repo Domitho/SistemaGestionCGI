@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq; // Necesario para .FirstOrDefault()
+using System.Linq; 
 using Newtonsoft.Json.Linq;
 using SistemaGestionCGI.Models;
 using SistemaGestionCGI.Settings;
@@ -15,9 +15,25 @@ namespace SistemaGestionCGI.BLL
         // 1. GESTIÓN DE GRUPOS
         // =============================================================
 
+        public List<InvgccCentroInvestigacion> ObtenerCentrosCombo()
+        {
+            // Reutilizamos el modelo de Centro que creamos anteriormente
+            string sql = "SELECT strId_cen, strNombre_cen FROM INVGCCCENTRO_INVESTIGACION WHERE bitActivo_cen = 1 ORDER BY strNombre_cen";
+            return _dal.SelectSql<InvgccCentroInvestigacion>(sql);
+        }
+
         public List<InvgccGrupoInvestigacion> ObtenerGrupos()
         {
-            string sql = "SELECT * FROM INVGCCGRUPO_INVESTIGACION ORDER BY dtFechacrea_gru DESC";
+            // Hemos agregado una subconsulta (SELECT COUNT...) para llenar 'TotalProyectos'
+            string sql = @"
+                SELECT 
+                    G.*, 
+                    C.strNombre_cen,
+                    (SELECT COUNT(*) FROM INVGCCINSCRIPCION_PROYECTOS P WHERE P.fkId_gru = G.strId_gru) as TotalProyectos
+                FROM INVGCCGRUPO_INVESTIGACION G
+                LEFT JOIN INVGCCCENTRO_INVESTIGACION C ON G.fkId_cen = C.strId_cen
+                ORDER BY G.dtFechacrea_gru DESC";
+
             return _dal.SelectSql<InvgccGrupoInvestigacion>(sql);
         }
 
@@ -43,22 +59,34 @@ namespace SistemaGestionCGI.BLL
         public void GuardarGrupo(InvgccGrupoInvestigacion grupo)
         {
             grupo.strId_gru = GenerarCodigoAlfanumerico("INVGCCGRUPO_INVESTIGACION", "strId_gru", "G");
-            _dal.Insert("INVGCCGRUPO_INVESTIGACION", grupo);
+
+            string sql = $@"
+                INSERT INTO INVGCCGRUPO_INVESTIGACION
+                (strId_gru, strNombre_gru, strCoordinador_gru, dtFechacrea_gru, 
+                 strCategoria_gru, strLineasinv_gru, strSublineasinv_gru, 
+                 strArchivo_gru, strFoto_gru, fkId_cen) -- Agregamos fkId_cen
+                VALUES
+                ('{grupo.strId_gru}', '{grupo.strNombre_gru}', '{grupo.strCoordinador_gru}', 
+                 '{grupo.dtFechacrea_gru:yyyy-MM-dd HH:mm:ss}', '{grupo.strCategoria_gru}', 
+                 '{grupo.strLineasinv_gru}', '{grupo.strSublineasinv_gru}', 
+                 '{grupo.strArchivo_gru}', '{grupo.strFoto_gru}', '{grupo.fkId_cen}')";
+
+            _dal.InsertSql(sql);
         }
 
         public void ActualizarGrupo(InvgccGrupoInvestigacion grupo)
         {
             string sql = $@"
-                UPDATE INVGCCGRUPO_INVESTIGACION SET 
+                UPDATE INVGCCGRUPO_INVESTIGACION SET
                     strNombre_gru = '{grupo.strNombre_gru}',
                     strCoordinador_gru = '{grupo.strCoordinador_gru}',
-                    strFacultad_gru = '{grupo.strFacultad_gru}',
                     dtFechacrea_gru = '{grupo.dtFechacrea_gru:yyyy-MM-dd HH:mm:ss}',
                     strCategoria_gru = '{grupo.strCategoria_gru}',
                     strLineasinv_gru = '{grupo.strLineasinv_gru}',
                     strSublineasinv_gru = '{grupo.strSublineasinv_gru}',
                     strArchivo_gru = '{grupo.strArchivo_gru}',
-                    strFoto_gru = '{grupo.strFoto_gru}'
+                    strFoto_gru = '{grupo.strFoto_gru}',
+                    fkId_cen = '{grupo.fkId_cen}' -- Agregamos fkId_cen
                 WHERE strId_gru = '{grupo.strId_gru}'";
 
             _dal.UpdateSql(sql);

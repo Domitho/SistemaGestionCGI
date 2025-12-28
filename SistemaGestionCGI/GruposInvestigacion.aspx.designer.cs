@@ -24,22 +24,13 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl headerGrupos;
 
         /// <summary>
-        /// Control lbtNuevoGruInv.
+        /// Control btnNuevoGrupo.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbtNuevoGruInv;
-
-        /// <summary>
-        /// Control btnRegresarGruInv.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnRegresarGruInv;
+        protected global::System.Web.UI.WebControls.LinkButton btnNuevoGrupo;
 
         /// <summary>
         /// Control pnlGrilla.
@@ -60,148 +51,40 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.Repeater rptGrupoInv;
 
         /// <summary>
-        /// Control pnlAgregarGruInv.
+        /// Control pnlFormularioGrupo.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlAgregarGruInv;
+        protected global::System.Web.UI.WebControls.Panel pnlFormularioGrupo;
 
         /// <summary>
-        /// Control lbtCancelarGruInvTop.
+        /// Control lblTituloFormulario.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbtCancelarGruInvTop;
+        protected global::System.Web.UI.WebControls.Label lblTituloFormulario;
 
         /// <summary>
-        /// Control strNombreGru.
+        /// Control btnRegresarTop.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox strNombreGru;
+        protected global::System.Web.UI.WebControls.LinkButton btnRegresarTop;
 
         /// <summary>
-        /// Control strNombreCoorGru.
+        /// Control hfIdGrupo.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox strNombreCoorGru;
-
-        /// <summary>
-        /// Control dtFechaCreaGru.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox dtFechaCreaGru;
-
-        /// <summary>
-        /// Control ddlCatGruInv.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlCatGruInv;
-
-        /// <summary>
-        /// Control ddlFacultadGru.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlFacultadGru;
-
-        /// <summary>
-        /// Control strLineaInvGru1.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList strLineaInvGru1;
-
-        /// <summary>
-        /// Control strSLineaInvGru1.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList strSLineaInvGru1;
-
-        /// <summary>
-        /// Control fuFotoGrupoAdd.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.FileUpload fuFotoGrupoAdd;
-
-        /// <summary>
-        /// Control flpArchivoAdd.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.FileUpload flpArchivoAdd;
-
-        /// <summary>
-        /// Control lbtADDGruInv.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbtADDGruInv;
-
-        /// <summary>
-        /// Control lbtCancelarGruInv.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbtCancelarGruInv;
-
-        /// <summary>
-        /// Control pnlEditarGrupoInv.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlEditarGrupoInv;
-
-        /// <summary>
-        /// Control lbnCancellEditGruInvTop.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbnCancellEditGruInvTop;
-
-        /// <summary>
-        /// Control hfIdGrupoEdit.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hfIdGrupoEdit;
+        protected global::System.Web.UI.WebControls.HiddenField hfIdGrupo;
 
         /// <summary>
         /// Control hfFotoActual.
@@ -222,112 +105,112 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.HiddenField hfArchivoActual;
 
         /// <summary>
-        /// Control txtGrupoInvEdit.
+        /// Control ddlCentro.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtGrupoInvEdit;
+        protected global::System.Web.UI.WebControls.DropDownList ddlCentro;
 
         /// <summary>
-        /// Control txtNombreCoorGruInvEdit.
+        /// Control txtNombreGru.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtNombreCoorGruInvEdit;
+        protected global::System.Web.UI.WebControls.TextBox txtNombreGru;
 
         /// <summary>
-        /// Control dtEditFechaCreaEdit.
+        /// Control txtCoordinadorGru.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox dtEditFechaCreaEdit;
+        protected global::System.Web.UI.WebControls.TextBox txtCoordinadorGru;
 
         /// <summary>
-        /// Control ddlEditCategoria.
+        /// Control txtFechaCreaGru.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlEditCategoria;
+        protected global::System.Web.UI.WebControls.TextBox txtFechaCreaGru;
 
         /// <summary>
-        /// Control ddlFacultadGruEdit.
+        /// Control ddlCategoriaGru.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlFacultadGruEdit;
+        protected global::System.Web.UI.WebControls.DropDownList ddlCategoriaGru;
 
         /// <summary>
-        /// Control txtEditLineaIGru1.
+        /// Control ddlLineaInv.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList txtEditLineaIGru1;
+        protected global::System.Web.UI.WebControls.DropDownList ddlLineaInv;
 
         /// <summary>
-        /// Control txtEditSLineaIGru1.
+        /// Control ddlSublineaInv.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList txtEditSLineaIGru1;
+        protected global::System.Web.UI.WebControls.DropDownList ddlSublineaInv;
 
         /// <summary>
-        /// Control imgFotoGruEdit.
+        /// Control imgFotoActual.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Image imgFotoGruEdit;
+        protected global::System.Web.UI.WebControls.Image imgFotoActual;
 
         /// <summary>
-        /// Control fuFotoGrupoEdit.
+        /// Control flpFotoGrupo.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.FileUpload fuFotoGrupoEdit;
+        protected global::System.Web.UI.WebControls.FileUpload flpFotoGrupo;
 
         /// <summary>
-        /// Control flpArchivoEdit.
+        /// Control flpArchivoGrupo.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.FileUpload flpArchivoEdit;
+        protected global::System.Web.UI.WebControls.FileUpload flpArchivoGrupo;
 
         /// <summary>
-        /// Control lbnEditGruInv.
+        /// Control btnGuardarGrupo.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbnEditGruInv;
+        protected global::System.Web.UI.WebControls.LinkButton btnGuardarGrupo;
 
         /// <summary>
-        /// Control lbnCancellEditGruInv.
+        /// Control btnCancelarGrupo.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbnCancellEditGruInv;
+        protected global::System.Web.UI.WebControls.LinkButton btnCancelarGrupo;
 
         /// <summary>
         /// Control pnlIntegrantes.
@@ -636,13 +519,58 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl modalVistaPrevia;
 
         /// <summary>
-        /// Control litReporteGenerado.
+        /// Control lblRefId.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litReporteGenerado;
+        protected global::System.Web.UI.WebControls.Label lblRefId;
+
+        /// <summary>
+        /// Control lblReporteNombre.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblReporteNombre;
+
+        /// <summary>
+        /// Control lblReporteCedula.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblReporteCedula;
+
+        /// <summary>
+        /// Control lblReporteFuncion.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblReporteFuncion;
+
+        /// <summary>
+        /// Control lblReporteEstado.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblReporteEstado;
+
+        /// <summary>
+        /// Control rptReporteHistorial.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptReporteHistorial;
 
         /// <summary>
         /// Control modalEstadoInt.

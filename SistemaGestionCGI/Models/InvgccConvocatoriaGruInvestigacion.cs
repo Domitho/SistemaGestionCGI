@@ -5,7 +5,6 @@ namespace SistemaGestionCGI.Models
 {
     public class InvgccConvocatoriaGruInvestigacion
     {
-        // Mapeo a la tabla INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION
 
         [JsonProperty("strId_conv")]
         public string strId_conv { get; set; }

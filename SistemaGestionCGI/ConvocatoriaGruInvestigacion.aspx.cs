@@ -190,10 +190,10 @@ namespace SistemaGestionCGI
         private void CambiarVista(Vista vista)
         {
             pnlGrilla.Visible = vista == Vista.Lista;
-            headerConvocatoria.Visible = vista == Vista.Lista;
-
             pnlAgregar.Visible = vista == Vista.Agregar;
             pnlEditar.Visible = vista == Vista.Editar;
+            lbtNuevaConv.Visible = (vista == Vista.Lista);
+            btnRegresar.Visible = (vista != Vista.Lista);
         }
 
         private bool ValidarArchivo(string fileName)
@@ -253,8 +253,18 @@ namespace SistemaGestionCGI
         private void Msg(string msg, string type)
         {
             if (string.IsNullOrEmpty(msg)) return;
-            string cleanMsg = msg.Replace("'", "\\'").Replace("\r\n", " ").Replace("\n", " ");
-            ScriptManager.RegisterStartupScript(this, GetType(), "alert", $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema'); }});", true);
+
+            string cleanMsg = msg
+                .Replace("\\", "\\\\")
+                .Replace("'", "\\'")
+                .Replace("\"", "\\\"")
+                .Replace("\r\n", " ") 
+                .Replace("\n", " ");
+
+            string titulo = type == "ss" ? "Éxito" : (type == "ee" ? "Error" : "Atención");
+            string script = $"$(function() {{ toastify('{type}', '{cleanMsg}', '{titulo}'); }});";
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "alert", script, true);
         }
     }
 }

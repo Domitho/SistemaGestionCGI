@@ -31,16 +31,18 @@ namespace SistemaGestionCGI.BLL
         {
             conv.strId_conv = GenerarCodigoAlfanumerico("INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION", "strId_conv", "CONV");
 
+            // 1. Sanitización básica para evitar errores SQL por apóstrofes (O'Connor -> O''Connor)
             string nombre = conv.strNombre_conv.Replace("'", "''");
             string desc = conv.strDescripcion_conv.Replace("'", "''");
-            string archivo = conv.strArchivo_conv.Replace("'", "''");
+            string archivo = conv.strArchivo_conv?.Replace("'", "''") ?? ""; // Manejo de nulos seguro
 
             string sql = $@"
-                INSERT INTO INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION 
+                INSERT INTO INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION
                 (strId_conv, strNombre_conv, strDescripcion_conv, strArchivo_conv, dtFechaini_conv, dtFechafin_conv)
-                VALUES 
+                VALUES
                 ('{conv.strId_conv}', '{nombre}', '{desc}', '{archivo}', 
-                 '{conv.dtFechaini_conv:yyyy-MM-dd HH:mm:ss}', '{conv.dtFechafin_conv:yyyy-MM-dd HH:mm:ss}')";
+                 '{conv.dtFechaini_conv:yyyy-MM-dd HH:mm:ss}', 
+                 '{conv.dtFechafin_conv:yyyy-MM-dd HH:mm:ss}')";
 
             _dal.UpdateSql(sql);
         }
@@ -49,10 +51,10 @@ namespace SistemaGestionCGI.BLL
         {
             string nombre = conv.strNombre_conv.Replace("'", "''");
             string desc = conv.strDescripcion_conv.Replace("'", "''");
-            string archivo = conv.strArchivo_conv.Replace("'", "''");
+            string archivo = conv.strArchivo_conv?.Replace("'", "''") ?? "";
 
             string sql = $@"
-                UPDATE INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION SET 
+                UPDATE INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION SET
                     strNombre_conv = '{nombre}',
                     strDescripcion_conv = '{desc}',
                     strArchivo_conv = '{archivo}',

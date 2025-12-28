@@ -1,0 +1,81 @@
+﻿/* =========================================================
+   MODAL VISTA INTEGRANTES - ESTILOS ESPECÍFICOS
+   Archivo: modal-vista-integantes.css
+   ========================================================= */
+
+/* --- 1. Encabezado Institucional (Centrado Perfecto) --- */
+.modal-header.bg-utc {
+    /* Degradado Institucional usando variables del sistema */
+    background: linear-gradient(90deg, var(--utc-azul, #312783) 0%, var(--utc-azul-oscuro, #241d66) 100%) !important;
+    color: #fff !important;
+    /* Bordes redondeados superiores */
+    border-top-left-radius: 12px !important;
+    border-top-right-radius: 12px !important;
+    /* Flexbox para alineación */
+    display: flex;
+    justify-content: center; /* Centra horizontalmente */
+    align-items: center; /* Centra verticalmente */
+    position: relative; /* Referencia para el botón de cerrar */
+    padding: 1rem 1.5rem;
+}
+
+    /* --- 2. Título del Modal --- */
+    .modal-header.bg-utc .modal-title {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        font-size: 1.1rem;
+        letter-spacing: 0.5px;
+        width: 100%; /* Ocupa todo el ancho */
+        text-align: center; /* Fuerza el texto al centro */
+        margin: 0;
+    }
+
+    /* --- 3. Botón de Cerrar (X) --- */
+    .modal-header.bg-utc .btn-close {
+        /* Invertir color para que sea blanco */
+        filter: invert(1) grayscale(100%) brightness(200%);
+        opacity: 0.8;
+        /* Posicionamiento Absoluto (Derecha-Centro) */
+        position: absolute;
+        right: 1.5rem;
+        top: 50%;
+        transform: translateY(-50%); /* Centrado vertical matemático */
+        margin: 0 !important;
+        transition: opacity 0.2s ease;
+    }
+
+        .modal-header.bg-utc .btn-close:hover {
+            opacity: 1;
+        }
+
+/* --- 4. Cuerpo y Contenedor del Modal --- */
+.modal-content.shadow-utc {
+    border: none !important;
+    /* Sombra profunda institucional */
+    box-shadow: 0 10px 30px rgba(49, 39, 131, 0.25) !important;
+    border-radius: 12px !important;
+    overflow: hidden; /* Mantiene el contenido dentro de los bordes curvos */
+}
+
+/* --- 5. Lista de Integrantes (Estilo Tarjeta) --- */
+.list-group-item {
+    transition: background-color 0.2s ease;
+    border-left: none;
+    border-right: none;
+}
+
+    .list-group-item:hover {
+        background-color: #f8f9fa; /* Gris muy suave al pasar el mouse */
+    }
+
+/* Avatar circular del integrante */
+.avatar-circle {
+    width: 45px;
+    height: 45px;
+    background-color: rgba(49, 39, 131, 0.1); /* Azul UTC con transparencia */
+    color: var(--utc-azul, #312783);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
