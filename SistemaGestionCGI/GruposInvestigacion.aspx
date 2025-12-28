@@ -231,23 +231,83 @@
         <div class="table-responsive bg-white p-3 rounded shadow-utc">
             <table id="tablaIntegrantes" class="table table-bordered table-hover table-utc align-middle text-center" style="width:100%">
                 <thead>
-                    <tr><th>ID</th><th>NOMBRES</th><th>FUNCIÓN</th><th>INICIO</th><th>FIN</th><th>ESTADO</th><th>ACCIONES</th></tr>
+                    <tr>
+                        <th>ID</th>
+                        <th>INVESTIGADOR</th>
+                        <th>FUNCIÓN</th>
+                        <th>INICIO</th>
+                        <th>FIN</th>
+                        <th>ESTADO</th>
+                        <th>ACCIONES</th>
+                    </tr>
                 </thead>
                 <tbody>
                     <asp:Repeater ID="rptIntegrantes" runat="server" OnItemCommand="rptIntegrantes_ItemCommand">
                         <ItemTemplate>
-                            <tr>
+                            <%-- 1. FILA CON ESTILO CONDICIONAL (Gris si está inactivo) --%>
+                            <tr class='<%# Convert.ToBoolean(Eval("bitActivo_int")) ? "" : "table-secondary text-muted" %>'>
+                        
                                 <td><%# Eval("strId_int") %></td>
-                                <td class="text-start"><%# Eval("strApellidos_int") + " " + Eval("strNombres_int") %></td>
-                                <td><%# Eval("strFuncion_int") %></td>
+                        
+                                <%-- Nombre en Negrita y alineado a la izquierda --%>
+                                <td class="text-start fw-semibold text-primary">
+                                    <%# Eval("strApellidos_int") + " " + Eval("strNombres_int") %>
+                                </td>
+                        
+                                <td class="text-start"><%# Eval("strFuncion_int") %></td>
+                        
                                 <td><%# Convert.ToDateTime(Eval("dtFechaini_int")).ToString("dd/MM/yyyy") %></td>
-                                <td><%# Eval("dtFechafin_int") == DBNull.Value ? "-" : Convert.ToDateTime(Eval("dtFechafin_int")).ToString("dd/MM/yyyy") %></td>
-                                <td><%# Convert.ToBoolean(Eval("bitActivo_int")) ? "<span class='badge bg-success'>Activo</span>" : "<span class='badge bg-danger'>Inactivo</span>" %></td>
+                        
                                 <td>
-                                    <asp:LinkButton ID="btnVerCertificado" runat="server" CommandName="VerCertificado" CommandArgument='<%# Eval("strCertificado_int") %>' Visible='<%# Eval("strFuncion_int").ToString() == "Investigador Principal" && !string.IsNullOrEmpty(Eval("strCertificado_int") as string) %>' CssClass="btn btn-success btn-sm rounded-circle me-1" ToolTip="Ver Certificado"><i class="fa-solid fa-eye"></i></asp:LinkButton>
-                                    <asp:LinkButton ID="btnEditarInt" runat="server" CommandName="EditarInt" CommandArgument='<%# Eval("strId_int") %>' CssClass="btn btn-warning btn-sm rounded-circle me-1" ToolTip="Editar"><i class="fa-solid fa-pen"></i></asp:LinkButton>
-                                    <asp:LinkButton ID="btnToggleEstado" runat="server" CommandName="CambiarEstado" CommandArgument='<%# Eval("strId_int") %>' CssClass="btn btn-info btn-sm rounded-circle me-1 text-white" ToolTip="Cambiar estado"><i class="fa-solid fa-power-off"></i></asp:LinkButton>
-                                    <asp:LinkButton ID="btnHistorial" runat="server" CommandName="Historial" CommandArgument='<%# Eval("strId_int") %>' CssClass="btn btn-primary btn-sm rounded-circle me-1" ToolTip="Historial"><i class="fa-solid fa-clock-rotate-left"></i></asp:LinkButton>
+                                    <%# Eval("dtFechafin_int") == DBNull.Value ? "-" : Convert.ToDateTime(Eval("dtFechafin_int")).ToString("dd/MM/yyyy") %>
+                                </td>
+                        
+                                <%-- 2. BADGES DE ESTADO CON ICONOS --%>
+                                <td>
+                                    <%# Convert.ToBoolean(Eval("bitActivo_int")) 
+                                        ? "<span class='badge bg-success'><i class='fa-solid fa-check me-1'></i>Activo</span>" 
+                                        : "<span class='badge bg-danger'><i class='fa-solid fa-ban me-1'></i>Inactivo</span>" 
+                                    %>
+                                </td>
+                        
+                                <%-- 3. BOTONES DE ACCIÓN (DISEÑO REPLICADO) --%>
+                                <td>
+                                    <%-- Botón Ver Certificado (Solo si aplica) --%>
+                                    <asp:LinkButton ID="btnVerCertificado" runat="server" 
+                                        CommandName="VerCertificado" 
+                                        CommandArgument='<%# Eval("strCertificado_int") %>'
+                                        Visible='<%# Eval("strFuncion_int").ToString() == "Investigador Principal" && !string.IsNullOrEmpty(Eval("strCertificado_int") as string) %>'
+                                        CssClass="btn btn-success btn-sm rounded-circle me-1" 
+                                        ToolTip="Ver Certificado">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </asp:LinkButton>
+
+                                    <%-- Botón Editar --%>
+                                    <asp:LinkButton ID="btnEditarInt" runat="server" 
+                                        CommandName="EditarInt" 
+                                        CommandArgument='<%# Eval("strId_int") %>' 
+                                        CssClass="btn btn-warning btn-sm rounded-circle me-1" 
+                                        ToolTip="Editar Datos">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </asp:LinkButton>
+
+                                    <%-- Botón Toggle Estado (Dinámico: Outline Rojo si está activo, Verde si está inactivo) --%>
+                                    <asp:LinkButton ID="btnToggleEstado" runat="server" 
+                                        CommandName="CambiarEstado" 
+                                        CommandArgument='<%# Eval("strId_int") %>' 
+                                        CssClass='<%# Convert.ToBoolean(Eval("bitActivo_int")) ? "btn btn-outline-danger btn-sm rounded-circle me-1" : "btn btn-outline-success btn-sm rounded-circle me-1" %>'
+                                        ToolTip='<%# Convert.ToBoolean(Eval("bitActivo_int")) ? "Dar de Baja" : "Reactivar" %>'>
+                                        <i class="fa-solid fa-power-off"></i>
+                                    </asp:LinkButton>
+
+                                    <%-- Botón Historial (Estilo Info Azul) --%>
+                                    <asp:LinkButton ID="btnHistorial" runat="server" 
+                                        CommandName="Historial" 
+                                        CommandArgument='<%# Eval("strId_int") %>' 
+                                        CssClass="btn btn-info btn-sm rounded-circle text-white" 
+                                        ToolTip="Ver Historial de Movimientos">
+                                        <i class="fa-solid fa-clock-rotate-left"></i>
+                                    </asp:LinkButton>
                                 </td>
                             </tr>
                         </ItemTemplate>

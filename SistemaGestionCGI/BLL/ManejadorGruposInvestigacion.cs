@@ -24,15 +24,14 @@ namespace SistemaGestionCGI.BLL
 
         public List<InvgccGrupoInvestigacion> ObtenerGrupos()
         {
-            // Hemos agregado una subconsulta (SELECT COUNT...) para llenar 'TotalProyectos'
             string sql = @"
                 SELECT 
-                    G.*, 
-                    C.strNombre_cen,
-                    (SELECT COUNT(*) FROM INVGCCINSCRIPCION_PROYECTOS P WHERE P.fkId_gru = G.strId_gru) as TotalProyectos
-                FROM INVGCCGRUPO_INVESTIGACION G
-                LEFT JOIN INVGCCCENTRO_INVESTIGACION C ON G.fkId_cen = C.strId_cen
-                ORDER BY G.dtFechacrea_gru DESC";
+                        G.*, 
+                        C.strNombre_cen,
+                        (SELECT COUNT(*) FROM INVGCCINSCRIPCION_PROYECTOS P WHERE P.fkId_gru = G.strId_gru) as TotalProyectos
+                    FROM INVGCCGRUPO_INVESTIGACION G
+                    LEFT JOIN INVGCCCENTRO_INVESTIGACION C ON G.fkId_cen = C.strId_cen
+                    ORDER BY TotalProyectos DESC, G.dtFechacrea_gru DESC";
 
             return _dal.SelectSql<InvgccGrupoInvestigacion>(sql);
         }

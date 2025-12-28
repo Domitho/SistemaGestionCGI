@@ -185,9 +185,13 @@ namespace SistemaGestionCGI
                 case "Archivo":
                     var grupo = _manejador.ObtenerGrupoPorId(id);
                     if (grupo != null && !string.IsNullOrEmpty(grupo.strArchivo_gru))
-                        DescargarArchivo(grupo.strArchivo_gru);
+                    {
+                        VisualizarArchivo(grupo.strArchivo_gru);
+                    }
                     else
-                        Msg("No hay archivo adjunto.", "ww");
+                    {
+                        Msg("No hay archivo adjunto para este grupo.", "ww");
+                    }
                     break;
             }
         }
@@ -365,8 +369,16 @@ namespace SistemaGestionCGI
                     break;
 
                 case "VerCertificado":
-                    if (!string.IsNullOrEmpty(idInt)) DescargarArchivo(idInt); // idInt trae la ruta en el argumento
-                    else Msg("No hay certificado cargado.", "ww");
+                    string rutaCertificado = idInt;
+
+                    if (!string.IsNullOrEmpty(rutaCertificado))
+                    {
+                        VisualizarArchivo(rutaCertificado);
+                    }
+                    else
+                    {
+                        Msg("No hay certificado cargado.", "ww");
+                    }
                     break;
             }
         }
@@ -646,18 +658,25 @@ namespace SistemaGestionCGI
             return ruta;
         }
 
-        private void DescargarArchivo(string ruta)
+        private void VisualizarArchivo(string ruta)
         {
             if (File.Exists(ruta))
             {
                 string nombre = Path.GetFileName(ruta);
+
                 Response.Clear();
-                Response.ContentType = "application/octet-stream";
-                Response.AppendHeader("Content-Disposition", "attachment; filename=" + nombre);
+                Response.Buffer = true;
+
+                Response.ContentType = "application/pdf";
+                Response.AddHeader("Content-Disposition", "inline; filename=" + nombre);
+
                 Response.TransmitFile(ruta);
                 Response.End();
             }
-            else Msg("El archivo no existe en el servidor.", "ww");
+            else
+            {
+                Msg("El archivo físico no existe en el servidor.", "ww");
+            }
         }
 
         protected string ObtenerImagenBase64(object rutaObj)
