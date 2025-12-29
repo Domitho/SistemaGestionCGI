@@ -15,49 +15,13 @@ namespace SistemaGestionCGI
     {
 
         /// <summary>
-        /// Control headerListado.
+        /// Control btnNuevo.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl headerListado;
-
-        /// <summary>
-        /// Control btnNuevoRegistro.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnNuevoRegistro;
-
-        /// <summary>
-        /// Control pnlGrilla.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlGrilla;
-
-        /// <summary>
-        /// Control rptCategorias.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptCategorias;
-
-        /// <summary>
-        /// Control pnlFormulario.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlFormulario;
+        protected global::System.Web.UI.WebControls.LinkButton btnNuevo;
 
         /// <summary>
         /// Control btnRegresar.
@@ -69,40 +33,85 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.LinkButton btnRegresar;
 
         /// <summary>
-        /// Control lblTituloFormulario.
+        /// Control pnlGrilla.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTituloFormulario;
+        protected global::System.Web.UI.WebControls.Panel pnlGrilla;
 
         /// <summary>
-        /// Control hfIdCat.
+        /// Control rptDatos.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hfIdCat;
+        protected global::System.Web.UI.WebControls.Repeater rptDatos;
 
         /// <summary>
-        /// Control ddlDocente.
+        /// Control pnlFormulario.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlDocente;
+        protected global::System.Web.UI.WebControls.Panel pnlFormulario;
 
         /// <summary>
-        /// Control txtFechaCat.
+        /// Control hfIdDocente.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtFechaCat;
+        protected global::System.Web.UI.WebControls.HiddenField hfIdDocente;
+
+        /// <summary>
+        /// Control txtCedula.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtCedula;
+
+        /// <summary>
+        /// Control txtNombres.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtNombres;
+
+        /// <summary>
+        /// Control txtApellidos.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtApellidos;
+
+        /// <summary>
+        /// Control ddlFacultad.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlFacultad;
+
+        /// <summary>
+        /// Control ddlCarrera.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlCarrera;
 
         /// <summary>
         /// Control ddlCategoria.
@@ -112,6 +121,15 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlCategoria;
+
+        /// <summary>
+        /// Control txtFecha.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtFecha;
 
         /// <summary>
         /// Control btnGuardar.
@@ -132,66 +150,111 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.LinkButton btnCancelar;
 
         /// <summary>
-        /// Control txtCedulaNuevo.
+        /// Control hfIdDocenteHistorial.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtCedulaNuevo;
+        protected global::System.Web.UI.WebControls.HiddenField hfIdDocenteHistorial;
 
         /// <summary>
-        /// Control ddlFuncionNuevo.
+        /// Control btnGenerarReporte.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlFuncionNuevo;
+        protected global::System.Web.UI.WebControls.LinkButton btnGenerarReporte;
 
         /// <summary>
-        /// Control txtNombresNuevo.
+        /// Control rptHistorial.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtNombresNuevo;
+        protected global::System.Web.UI.WebControls.Repeater rptHistorial;
 
         /// <summary>
-        /// Control txtApellidosNuevo.
+        /// Control modalVistaPrevia.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtApellidosNuevo;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl modalVistaPrevia;
 
         /// <summary>
-        /// Control ddlFacultadNuevo.
+        /// Control lblRefId.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlFacultadNuevo;
+        protected global::System.Web.UI.WebControls.Label lblRefId;
 
         /// <summary>
-        /// Control ddlCarreraNuevo.
+        /// Control lblReporteNombre.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlCarreraNuevo;
+        protected global::System.Web.UI.WebControls.Label lblReporteNombre;
 
         /// <summary>
-        /// Control btnGuardarDocenteRapido.
+        /// Control lblReporteCedula.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnGuardarDocenteRapido;
+        protected global::System.Web.UI.WebControls.Label lblReporteCedula;
+
+        /// <summary>
+        /// Control lblReporteFacultad.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblReporteFacultad;
+
+        /// <summary>
+        /// Control lblReporteCarrera.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblReporteCarrera;
+
+        /// <summary>
+        /// Control lblReporteCategoria.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblReporteCategoria;
+
+        /// <summary>
+        /// Control lblReporteFecha.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblReporteFecha;
+
+        /// <summary>
+        /// Control rptReporteHistorial.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptReporteHistorial;
     }
 }

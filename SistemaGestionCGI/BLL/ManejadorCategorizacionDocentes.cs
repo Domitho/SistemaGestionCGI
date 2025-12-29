@@ -8,141 +8,179 @@ namespace SistemaGestionCGI.BLL
 {
     public class ManejadorCategorizacionDocentes
     {
+        // Instancia Singleton del DAL (Base de Datos)
         private readonly ConnectionSqlServer _dal = ConnectionSqlServer.Instance;
-        private const string TABLA_CAT = "INVGCCCATEGORIZACION_DOCENTES";
-        private const string TABLA_DOC = "INVGCCDOCENTE";
 
         // ==========================================
-        // 1. CONSULTAS DE LISTADO (SELECT)
+        // 1. OBTENER TODOS (Para la Grilla Principal)
         // ==========================================
-
-        public List<InvgccDocente> ObtenerDocentesCombo()
+        public List<InvgccCategorizacionDocentes> ObtenerTodos()
         {
-            // Trae solo docentes activos para el combo
-            var docentes = _dal.SelectSql<InvgccDocente>($"SELECT * FROM {TABLA_DOC} WHERE bitActivo_doc = 1");
-            foreach (var d in docentes)
-            {
-                // Formateamos para mostrar en el DropDownList estándar
-                d.strApellidos_doc = $"{d.strApellidos_doc} {d.strNombres_doc} - [{d.strCedula_doc}]";
-            }
-            return docentes.OrderBy(x => x.strApellidos_doc).ToList();
-        }
-
-        public List<dynamic> ObtenerCategorizacionesActivas()
-        {
-            // INNER JOIN para evitar errores de "Invalid Column Name" en el listado
-            string sql = $@"
+            // Traemos todos los docentes activos, tengan o no categoría asignada
+            // Concatenamos Apellidos y Nombres para mostrarlo limpio en la vista
+            string sql = @"
                 SELECT 
-                    C.strId_cat, 
-                    C.dtFecha_cat, 
-                    C.strCategorizacion,
-                    D.strId_doc,
-                    D.strCedula_doc, 
-                    D.strNombres_doc, 
-                    D.strApellidos_doc,
-                    D.strFacultad_doc,
-                    D.strCarrera_doc
-                FROM {TABLA_CAT} C
-                INNER JOIN {TABLA_DOC} D ON C.fkId_doc = D.strId_doc
-                WHERE C.strEstado_cat = 'activo'";
+                    strId_doc, 
+                    strCedula_doc, 
+                    strFacultad_doc, 
+                    strCarrera_doc,
+                    bitActivo_doc,
+                    (ISNULL(strApellidos_doc, '') + ' ' + ISNULL(strNombres_doc, '')) AS NombreCompleto,
+                    strCategorizacion, 
+                    dtFechaCategorizacion
+                FROM INVGCCCATEGORIZACION_DOCENTES
+                WHERE bitActivo_doc = 1
+                ORDER BY strApellidos_doc";
 
-            return _dal.SelectSql<dynamic>(sql);
-        }
-
-        public InvgccCategoriaDocentes ObtenerCategoriaPorId(string id)
-        {
-            string sql = $"SELECT * FROM {TABLA_CAT} WHERE strId_cat = '{id}'";
-            return _dal.SelectSql<InvgccCategoriaDocentes>(sql).FirstOrDefault();
-        }
-
-        public InvgccDocente ObtenerDocentePorSql(string sql)
-        {
-            return _dal.SelectSql<InvgccDocente>(sql).FirstOrDefault();
+            return _dal.SelectSql<InvgccCategorizacionDocentes>(sql);
         }
 
         // ==========================================
-        // 2. LÓGICA DE VALIDACIÓN
+        // 2. OBTENER POR ID (Para cargar el Formulario)
         // ==========================================
-
-        public bool DocenteTieneCategoria(string idDocente)
+        public InvgccCategorizacionDocentes ObtenerPorId(string id)
         {
-            string sql = $"SELECT * FROM {TABLA_CAT} WHERE fkId_doc = '{idDocente}' AND strEstado_cat = 'activo'";
-            var resultado = _dal.SelectSql<InvgccCategoriaDocentes>(sql);
-            return resultado != null && resultado.Count > 0;
+            // Usamos interpolación de strings segura
+            string sql = $"SELECT * FROM INVGCCCATEGORIZACION_DOCENTES WHERE strId_doc = '{id}'";
+
+            var lista = _dal.SelectSql<InvgccCategorizacionDocentes>(sql);
+            return lista?.FirstOrDefault();
         }
 
         // ==========================================
-        // 3. OPERACIONES CRUD (LIMPIAS)
+        // 3. GUARDAR / ACTUALIZAR CATEGORÍA (NÚCLEO)
         // ==========================================
-
-        public void GuardarCategorizacion(InvgccCategoriaDocentes cat)
+        public void GuardarCategorizacion(string idDocente, string nuevaCategoria, DateTime fecha, string usuario, string motivo)
         {
-            cat.strId_cat = GenerarCodigoAlfanumerico(TABLA_CAT, "strId_cat", "CAT");
+            // PASO A: Obtenemos el dato actual para poder comparar (Auditoría)
+            var docenteActual = ObtenerPorId(idDocente);
 
-            // OBJETO LIMPIO: Solo campos que existen físicamente en la tabla de categorización
-            var datos = new
+            // Si no tiene categoría previa, lo manejamos como "SIN ASIGNAR"
+            string catAnterior = docenteActual?.strCategorizacion ?? "SIN ASIGNAR";
+
+            // Verificamos si realmente hubo un cambio de categoría
+            bool huboCambio = (catAnterior != nuevaCategoria);
+
+            // PASO B: Actualizamos la Tabla Maestra (Unificada)
+            // Solo tocamos los campos de categoría, respetando los datos personales
+            string sqlUpdate = $@"
+                UPDATE INVGCCCATEGORIZACION_DOCENTES SET
+                    strCategorizacion = '{nuevaCategoria}',
+                    dtFechaCategorizacion = '{fecha:yyyy-MM-dd}'
+                WHERE strId_doc = '{idDocente}'";
+
+            _dal.UpdateSql(sqlUpdate);
+
+            // PASO C: Insertar en el Historial SOLO si cambió la categoría o si es la primera vez
+            if (huboCambio)
             {
-                strId_cat = cat.strId_cat,
-                fkId_doc = cat.fkId_doc,
-                dtFecha_cat = cat.dtFecha_cat,
-                strCategorizacion = cat.strCategorizacion,
-                strEstado_cat = "activo"
-            };
+                string accion = (catAnterior == "SIN ASIGNAR") ? "ASIGNACION INICIAL" : "CAMBIO DE CATEGORIA";
 
-            _dal.Insert(TABLA_CAT, datos);
-        }
-
-        public void ActualizarCategorizacion(InvgccCategoriaDocentes cat)
-        {
-            // CORRECCIÓN: Objeto anónimo para evitar enviar columnas de 'Docente' en el UPDATE
-            var datosActualizar = new
-            {
-                fkId_doc = cat.fkId_doc,
-                dtFecha_cat = cat.dtFecha_cat,
-                strCategorizacion = cat.strCategorizacion,
-                strEstado_cat = "activo"
-            };
-
-            _dal.Update(TABLA_CAT, datosActualizar, $"strId_cat = '{cat.strId_cat}'");
-        }
-
-        public bool EliminarCategorizacion(string id)
-        {
-            // Eliminación física según tu requerimiento
-            return _dal.Delete(TABLA_CAT, $"strId_cat = '{id}'");
-        }
-
-        public string GuardarDocenteSimple(InvgccDocente docente)
-        {
-            docente.strId_doc = GenerarCodigoAlfanumerico(TABLA_DOC, "strId_doc", "D");
-            docente.bitActivo_doc = true;
-
-            _dal.Insert(TABLA_DOC, docente);
-            return docente.strId_doc;
+                RegistrarHistorial(idDocente, accion, catAnterior, nuevaCategoria, motivo, usuario);
+            }
         }
 
         // ==========================================
-        // 4. UTILIDADES (CENTRALIZADAS)
+        // 4. ELIMINAR / LIMPIAR CATEGORÍA
         // ==========================================
-
-        private string GenerarCodigoAlfanumerico(string tabla, string campoId, string prefijo)
+        public void EliminarCategorizacion(string idDocente, string usuario, string motivo)
         {
-            // Query dinámico para extraer el número después del prefijo
-            string sql = $@"SELECT TOP 1 {campoId} FROM {tabla} 
-                            WHERE {campoId} LIKE '{prefijo}%' 
-                            ORDER BY CAST(SUBSTRING({campoId}, {prefijo.Length + 1}, LEN({campoId})) AS INT) DESC";
+            var actual = ObtenerPorId(idDocente);
+            string catAnterior = actual?.strCategorizacion ?? "SIN ASIGNAR";
 
-            var lista = _dal.SelectSql<dynamic>(sql);
+            // Ponemos los campos en NULL (No borramos al docente, solo su categoría)
+            string sql = $"UPDATE INVGCCCATEGORIZACION_DOCENTES SET strCategorizacion = NULL, dtFechaCategorizacion = NULL WHERE strId_doc = '{idDocente}'";
+            _dal.UpdateSql(sql);
 
+            // Dejamos rastro en el historial
+            RegistrarHistorial(idDocente, "ELIMINACION", catAnterior, "SIN ASIGNAR", motivo, usuario);
+        }
+
+        // ==========================================
+        // 5. OBTENER HISTORIAL (Para el Modal)
+        // ==========================================
+        public List<InvgccCategorizacionDocentesHistorial> ObtenerHistorial(string idDoc)
+        {
+            string sql = $"SELECT * FROM INVGCCCATEGORIZACION_DOCENTES_HISTORIAL WHERE fkId_doc = '{idDoc}' ORDER BY dtFecha DESC";
+            return _dal.SelectSql<InvgccCategorizacionDocentesHistorial>(sql);
+        }
+
+        // EN: ManejadorCategorizacionDocentes.cs
+
+        // A. Generar ID Automático
+        private string GenerarNuevoIdDocente()
+        {
+            string prefijo = "DOC";
+            // Ordenar por longitud para que DOC100 no salga antes de DOC99
+            string sql = $"SELECT TOP 1 strId_doc FROM INVGCCCATEGORIZACION_DOCENTES WHERE strId_doc LIKE '{prefijo}%' ORDER BY LEN(strId_doc) DESC, strId_doc DESC";
+
+            var lista = _dal.SelectSql<InvgccCategorizacionDocentes>(sql);
             int siguiente = 1;
+
             if (lista != null && lista.Count > 0)
             {
-                // Acceso dinámico al primer campo del primer registro
-                var dict = (IDictionary<string, object>)lista[0];
-                string ultimoId = dict[campoId].ToString();
-                siguiente = int.Parse(ultimoId.Substring(prefijo.Length)) + 1;
+                string ultimoId = lista[0].strId_doc;
+                // Cortar "DOC" y parsear el número
+                if (int.TryParse(ultimoId.Substring(3), out int num))
+                    siguiente = num + 1;
             }
-            return prefijo + siguiente;
+            return $"{prefijo}{siguiente:D3}"; // Retorna DOC001, DOC002...
+        }
+
+        // B. Método Guardar Completo (Insertar o Actualizar)
+        // MÉTODO: GuardarDocenteCompleto
+
+        public void GuardarDocenteCompleto(InvgccCategorizacionDocentes obj, string usuario, string motivo)
+        {
+            // 1. SI ES NUEVO (INSERT)
+            if (string.IsNullOrEmpty(obj.strId_doc))
+            {
+                obj.strId_doc = GenerarNuevoIdDocente();
+
+                // CORRECCIÓN: Se agregó strCarrera_doc
+                string sqlInsert = $@"
+                    INSERT INTO INVGCCCATEGORIZACION_DOCENTES
+                    (strId_doc, strCedula_doc, strNombres_doc, strApellidos_doc, strFacultad_doc, strCarrera_doc, bitActivo_doc, strCategorizacion, dtFechaCategorizacion)
+                    VALUES
+                    ('{obj.strId_doc}', '{obj.strCedula_doc}', '{obj.strNombres_doc}', '{obj.strApellidos_doc}', '{obj.strFacultad_doc}', '{obj.strCarrera_doc}', 1, '{obj.strCategorizacion}', '{obj.dtFechaCategorizacion:yyyy-MM-dd}')";
+
+                _dal.UpdateSql(sqlInsert);
+
+                // Registrar Historial Automático
+                RegistrarHistorial(obj.strId_doc, "NUEVO INGRESO", "NO EXISTÍA", obj.strCategorizacion, motivo, usuario);
+            }
+            // 2. SI YA EXISTE (UPDATE)
+            else
+            {
+                // CORRECCIÓN: Se agregó strCarrera_doc al Update
+                string sqlUpdateDatos = $@"
+                    UPDATE INVGCCCATEGORIZACION_DOCENTES SET
+                        strCedula_doc = '{obj.strCedula_doc}',
+                        strNombres_doc = '{obj.strNombres_doc}',
+                        strApellidos_doc = '{obj.strApellidos_doc}',
+                        strFacultad_doc = '{obj.strFacultad_doc}',
+                        strCarrera_doc = '{obj.strCarrera_doc}'
+                    WHERE strId_doc = '{obj.strId_doc}'";
+
+                _dal.UpdateSql(sqlUpdateDatos);
+
+                GuardarCategorizacion(obj.strId_doc, obj.strCategorizacion, obj.dtFechaCategorizacion.Value, usuario, motivo);
+            }
+        }
+
+        // ==========================================
+        // MÉTODOS PRIVADOS (AYUDANTES)
+        // ==========================================
+        private void RegistrarHistorial(string idDoc, string accion, string anterior, string nuevo, string motivo, string usuario)
+        {
+            // Insertamos el registro de auditoría
+            string sql = $@"
+                INSERT INTO INVGCCCATEGORIZACION_DOCENTES_HISTORIAL
+                (fkId_doc, dtFecha, strAccion, strValorAnterior, strValorNuevo, strMotivo, strUsuario)
+                VALUES
+                ('{idDoc}', GETDATE(), '{accion}', '{anterior}', '{nuevo}', '{motivo}', '{usuario}')";
+
+            _dal.UpdateSql(sql);
         }
     }
 }

@@ -3,6 +3,34 @@
    ARCHIVO: modal-historial-reporte.css
    ============================================================= */
 
+.form-stack {
+    max-width: 100% !important;
+}
+
+.modal-header.bg-utc {
+    background: linear-gradient(90deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%) !important;
+    color: #fff !important;
+}
+
+.table-historial-utc thead th {
+    background: var(--utc-azul) !important; /* Azul UTC */
+    color: #fff !important;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    border: none;
+}
+
+.table-historial-utc tbody tr:hover {
+    background-color: rgba(0, 56, 118, 0.05) !important;
+}
+
+.badge-historial {
+    background-color: var(--utc-azul-oscuro) !important;
+    font-weight: normal;
+    font-size: 0.75rem;
+}
+
 /* 1. CONTENEDOR PRINCIPAL (HOJA VIRTUAL) */
 .report-paper {
     background: #ffffff;

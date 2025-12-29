@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using SistemaGestionCGI.BLL;
@@ -9,211 +8,296 @@ namespace SistemaGestionCGI
 {
     public partial class CategorizacionDocentes : System.Web.UI.Page
     {
+        // Instancia del BLL
         private readonly ManejadorCategorizacionDocentes _manejador = new ManejadorCategorizacionDocentes();
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Validar Sesión según tu estándar institucional
-            if (Session["Username"] == null)
+            if (IsPostBack) return;
+
+            // Validación de Sesión
+            if (Session["UsuarioLogueado"] == null)
             {
-                Response.Redirect("login.aspx");
+                Response.Redirect("Login.aspx");
                 return;
             }
 
-            if (!IsPostBack)
-            {
-                CargarDatosPagina();
-
-                // MANEJO DE POST-REDIRECT-GET (PRG) para evitar re-envío de formulario
-                if (Session["TempMsgCat"] != null)
-                {
-                    Msg(Session["TempMsgCat"].ToString(), Session["TempTipoCat"].ToString());
-                    Session["TempMsgCat"] = null;
-                    Session["TempTipoCat"] = null;
-                }
-            }
+            CargarGrilla();
+            MostrarMensajesFlash();
         }
 
-        private void CargarDatosPagina()
-        {
-            try
-            {
-                CargarGrilla();
-                CargarCombos();
-                txtFechaCat.Text = DateTime.Now.ToString("yyyy-MM-dd");
-            }
-            catch (Exception ex) { Msg("Error al cargar datos: " + ex.Message, "ee"); }
-        }
-
+        // ==========================================
+        // MÉTODOS DE CARGA
+        // ==========================================
         private void CargarGrilla()
         {
-            // Obtiene datos con INNER JOIN desde BLL para evitar "Invalid Column Name"
-            rptCategorias.DataSource = _manejador.ObtenerCategorizacionesActivas();
-            rptCategorias.DataBind();
+            try
+            {
+                var lista = _manejador.ObtenerTodos();
+                rptDatos.DataSource = lista;
+                rptDatos.DataBind();
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al cargar listado: " + ex.Message, "ee");
+            }
         }
 
-        private void CargarCombos()
-        {
-            ddlDocente.DataSource = _manejador.ObtenerDocentesCombo();
-            ddlDocente.DataTextField = "strApellidos_doc";
-            ddlDocente.DataValueField = "strId_doc";
-            ddlDocente.DataBind();
-            ddlDocente.Items.Insert(0, new ListItem("-- Seleccione Docente --", ""));
-        }
-
-        // =============================================
-        // REGISTRO DE DOCENTE (MODAL)
-        // =============================================
-
-        protected void btnGuardarDocenteRapido_Click(object sender, EventArgs e)
+        private void CargarFormulario(string idDocente)
         {
             try
             {
-                string cedula = txtCedulaNuevo.Text.Trim();
+                var docente = _manejador.ObtenerPorId(idDocente);
+                if (docente == null) return;
 
-                // Validación de duplicados antes de insertar
-                var existe = _manejador.ObtenerDocentePorSql($"SELECT * FROM INVGCCDOCENTE WHERE strCedula_doc = '{cedula}'");
-                if (existe != null)
-                {
-                    Msg("La cédula ya se encuentra registrada.", "ww");
-                    return;
-                }
+                hfIdDocente.Value = docente.strId_doc;
+                txtCedula.Text = docente.strCedula_doc;
+                txtNombres.Text = docente.strNombres_doc;
+                txtApellidos.Text = docente.strApellidos_doc;
 
-                var nuevoDocente = new InvgccDocente
-                {
-                    strCedula_doc = txtCedulaNuevo.Text.Trim(),
-                    strNombres_doc = txtNombresNuevo.Text.Trim().ToUpper(),
-                    strApellidos_doc = txtApellidosNuevo.Text.Trim().ToUpper(),
-                    strFacultad_doc = ddlFacultadNuevo.SelectedValue,
-                    strCarrera_doc = ddlCarreraNuevo.SelectedValue,
-                    strFuncion_doc = ddlFuncionNuevo.SelectedValue,
-                    bitActivo_doc = true
-                };
+                // SELECCIONAR VALORES EN COMBOS
+                SeleccionarCombo(ddlFacultad, docente.strFacultad_doc);
+                SeleccionarCombo(ddlCarrera, docente.strCarrera_doc);
+                SeleccionarCombo(ddlCategoria, docente.strCategorizacion);
 
-                string nuevoId = _manejador.GuardarDocenteSimple(nuevoDocente);
+                txtCedula.ReadOnly = true;
 
-                CargarCombos();
-                ddlDocente.SelectedValue = nuevoId;
-                LimpiarCamposModal();
+                if (docente.dtFechaCategorizacion.HasValue)
+                    txtFecha.Text = docente.dtFechaCategorizacion.Value.ToString("yyyy-MM-dd");
+                else
+                    txtFecha.Text = DateTime.Now.ToString("yyyy-MM-dd");
 
-                Msg("Docente registrado correctamente.", "ss");
-                ScriptManager.RegisterStartupScript(this, GetType(), "hideModal", "bootstrap.Modal.getInstance(document.getElementById('modalNuevoDocente')).hide();", true);
+                pnlGrilla.Visible = false;
+                pnlFormulario.Visible = true;
+                btnNuevo.Visible = false;
+                btnRegresar.Visible = true;
             }
-            catch (Exception ex) { Msg("Error al registrar docente: " + ex.Message, "ee"); }
+            catch (Exception ex) { Msg("Error: " + ex.Message, "ee"); }
         }
 
-        // =============================================
-        // CRUD CATEGORIZACIÓN
-        // =============================================
+        private void SeleccionarCombo(DropDownList ddl, string valor)
+        {
+            if (ddl.Items.FindByValue(valor) != null)
+                ddl.SelectedValue = valor;
+            else
+                ddl.SelectedIndex = 0; // Si no encuentra, resetea
+        }
 
+        private void CargarHistorial(string idDocente)
+        {
+            try
+            {
+                // Guardamos el ID en el HiddenField para usarlo luego en el reporte
+                hfIdDocenteHistorial.Value = idDocente;
+
+                var historial = _manejador.ObtenerHistorial(idDocente);
+                rptHistorial.DataSource = historial;
+                rptHistorial.DataBind();
+
+                // Abrir Modal de Historial
+                ScriptManager.RegisterStartupScript(this, GetType(), "OpenModal", "new bootstrap.Modal(document.getElementById('modalHistorial')).show();", true);
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al obtener historial: " + ex.Message, "ee");
+            }
+        }
+
+        protected void btnGenerarReporte_Click(object sender, EventArgs e)
+        {
+            // Recuperamos el ID que guardamos cuando se abrió el historial
+            string idDocente = hfIdDocenteHistorial.Value;
+
+            if (!string.IsNullOrEmpty(idDocente))
+            {
+                // Llamamos a la lógica de Vista Previa que ya creamos
+                GenerarVistaPrevia(idDocente);
+            }
+        }
+
+        // ==========================================
+        // EVENTOS DE BOTONES
+        // ==========================================
+        protected void rptDatos_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            string idDocente = e.CommandArgument.ToString();
+
+            switch (e.CommandName)
+            {
+                case "editar":
+                    CargarFormulario(idDocente);
+                    break;
+
+                case "historial":
+                    CargarHistorial(idDocente);
+                    break;
+
+                case "ReporteIndividual":
+                    GenerarVistaPrevia(idDocente);
+                    break;
+
+                case "eliminar":
+                    try
+                    {
+                        string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
+                        // Eliminamos pasando un motivo por defecto
+                        _manejador.EliminarCategorizacion(idDocente, usuario, "Eliminación directa desde listado");
+
+                        Redireccionar("Se ha quitado la categoría correctamente.", "ss");
+                    }
+                    catch (Exception ex)
+                    {
+                        Msg("Error al eliminar: " + ex.Message, "ee");
+                    }
+                    break;
+            }
+        }
+
+        // 1. EVENTO DEL BOTÓN NUEVO
+        protected void btnNuevo_Click(object sender, EventArgs e)
+        {
+            hfIdDocente.Value = "";
+            txtCedula.Text = "";
+            txtNombres.Text = "";
+            txtApellidos.Text = "";
+
+            // RESETEAR COMBOS
+            ddlFacultad.SelectedIndex = 0;
+            ddlCarrera.SelectedIndex = 0;
+            ddlCategoria.SelectedIndex = 0;
+
+            txtFecha.Text = DateTime.Now.ToString("yyyy-MM-dd");
+            txtCedula.ReadOnly = false;
+
+            pnlGrilla.Visible = false;
+            pnlFormulario.Visible = true;
+            btnNuevo.Visible = false;
+            btnRegresar.Visible = true;
+        }
+
+        // 2. ACTUALIZACIÓN DEL GUARDADO
         protected void btnGuardar_Click(object sender, EventArgs e)
         {
             try
             {
-                var cat = new InvgccCategoriaDocentes
+                // Validaciones: Revisar que los combos tengan selección válida
+                if (string.IsNullOrWhiteSpace(txtCedula.Text) ||
+                    string.IsNullOrWhiteSpace(txtApellidos.Text))
                 {
-                    fkId_doc = ddlDocente.SelectedValue,
-                    dtFecha_cat = Convert.ToDateTime(txtFechaCat.Text),
-                    strCategorizacion = ddlCategoria.SelectedValue
+                    Msg("Cédula y Apellidos son obligatorios.", "ww");
+                    return;
+                }
+
+                if (ddlFacultad.SelectedIndex == 0 || ddlCarrera.SelectedIndex == 0 || ddlCategoria.SelectedIndex == 0)
+                {
+                    Msg("Debe seleccionar Facultad, Carrera y Categoría.", "ww");
+                    return;
+                }
+
+                var obj = new InvgccCategorizacionDocentes
+                {
+                    strId_doc = hfIdDocente.Value,
+                    strCedula_doc = txtCedula.Text.Trim(),
+                    strNombres_doc = txtNombres.Text.Trim().ToUpper(),
+                    strApellidos_doc = txtApellidos.Text.Trim().ToUpper(),
+
+                    // TOMAR VALOR DEL DROPDOWN
+                    strFacultad_doc = ddlFacultad.SelectedValue,
+                    strCarrera_doc = ddlCarrera.SelectedValue,
+                    strCategorizacion = ddlCategoria.SelectedValue,
+
+                    dtFechaCategorizacion = DateTime.Parse(txtFecha.Text)
                 };
 
-                if (string.IsNullOrEmpty(hfIdCat.Value))
-                {
-                    _manejador.GuardarCategorizacion(cat); // Usa objeto anónimo en BLL para evitar errores SQL
-                    Redireccionar("Categorización guardada con éxito.", "ss");
-                }
-                else
-                {
-                    cat.strId_cat = hfIdCat.Value;
-                    _manejador.ActualizarCategorizacion(cat);
-                    Redireccionar("Categorización actualizada.", "ss");
-                }
+                string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
+
+                // Motivo Automático
+                string motivoAuto = string.IsNullOrEmpty(hfIdDocente.Value)
+                    ? "REGISTRO INICIAL DE DOCENTE"
+                    : "ACTUALIZACIÓN DE FICHA / CATEGORÍA";
+
+                _manejador.GuardarDocenteCompleto(obj, usuario, motivoAuto);
+
+                Redireccionar("Docente procesado correctamente.", "ss");
             }
-            catch (Exception ex) { Msg("Error al procesar: " + ex.Message, "ee"); }
+            catch (Exception ex) { Msg("Error al guardar: " + ex.Message, "ee"); }
         }
 
-        protected void rptCategorias_ItemCommand(object source, RepeaterCommandEventArgs e)
-        {
-            string id = e.CommandArgument.ToString();
-            if (e.CommandName == "Editar")
-            {
-                CargarEdicion(id);
-            }
-            else if (e.CommandName == "Eliminar")
-            {
-                if (_manejador.EliminarCategorizacion(id))
-                    Redireccionar("Registro eliminado.", "ss");
-            }
-        }
-
-        private void CargarEdicion(string id)
-        {
-            var cat = _manejador.ObtenerCategoriaPorId(id);
-            if (cat != null)
-            {
-                hfIdCat.Value = cat.strId_cat;
-                ddlDocente.SelectedValue = cat.fkId_doc;
-                ddlCategoria.SelectedValue = cat.strCategorizacion;
-                txtFechaCat.Text = cat.dtFecha_cat.ToString("yyyy-MM-dd");
-
-                lblTituloFormulario.Text = "Editando Categorización: " + cat.strId_cat;
-                CambiarVista(true);
-            }
-        }
-
-        // =============================================
-        // UTILIDADES Y NAVEGACIÓN
-        // =============================================
-
-        protected void btnNuevoRegistro_Click(object sender, EventArgs e)
-        {
-            LimpiarCampos();
-            lblTituloFormulario.Text = "Nueva Categorización";
-            CambiarVista(true);
-        }
-
-        protected void btnCancelar_Click(object sender, EventArgs e)
+        protected void btnRegresar_Click(object sender, EventArgs e)
         {
             Response.Redirect("CategorizacionDocentes.aspx");
         }
 
-        private void CambiarVista(bool mostrarFormulario)
-        {
-            pnlFormulario.Visible = mostrarFormulario;
-            pnlGrilla.Visible = !mostrarFormulario;
-            headerListado.Visible = !mostrarFormulario;
-        }
+        // ==========================================
+        // UTILIDADES Y MENSAJES (TOAST)
+        // ==========================================
 
-        private void LimpiarCampos()
+        private void GenerarVistaPrevia(string idDocente)
         {
-            hfIdCat.Value = "";
-            ddlDocente.SelectedIndex = 0;
-            ddlCategoria.SelectedIndex = 0;
-            txtFechaCat.Text = DateTime.Now.ToString("yyyy-MM-dd");
-        }
+            try
+            {
+                // 1. OBTENER DATOS
+                var docente = _manejador.ObtenerPorId(idDocente);
+                var historial = _manejador.ObtenerHistorial(idDocente);
 
-        private void LimpiarCamposModal()
-        {
-            txtCedulaNuevo.Text = ""; txtNombresNuevo.Text = ""; txtApellidosNuevo.Text = "";
-            ddlFacultadNuevo.SelectedIndex = 0;
-            ddlCarreraNuevo.SelectedIndex = 0;
-            ddlFuncionNuevo.SelectedIndex = 0;
+                if (docente == null) return;
+
+                // 2. ASIGNAR A LOS CONTROLES DEL MODAL
+                lblRefId.Text = docente.strId_doc;
+
+                // --- CORRECCIÓN AQUÍ ---
+                // En lugar de usar docente.NombreCompleto (que puede ser null), unimos los campos:
+                lblReporteNombre.Text = $"{docente.strApellidos_doc} {docente.strNombres_doc}";
+                // -----------------------
+
+                lblReporteCedula.Text = docente.strCedula_doc;
+                lblReporteFacultad.Text = docente.strFacultad_doc;
+                lblReporteCarrera.Text = docente.strCarrera_doc; // Asegúrate de que este campo tenga datos
+
+                string cat = string.IsNullOrEmpty(docente.strCategorizacion) ? "SIN ASIGNAR" : docente.strCategorizacion;
+                lblReporteCategoria.Text = cat;
+
+                // Fecha Resolución
+                lblReporteFecha.Text = docente.dtFechaCategorizacion.HasValue
+                    ? docente.dtFechaCategorizacion.Value.ToString("dd/MM/yyyy")
+                    : "-";
+
+                // 3. LLENAR EL TIMELINE
+                rptReporteHistorial.DataSource = historial;
+                rptReporteHistorial.DataBind();
+
+                // 4. ABRIR EL MODAL
+                string script = "var m = new bootstrap.Modal(document.getElementById('modalVistaPrevia')); m.show();";
+                ScriptManager.RegisterStartupScript(this, GetType(), "OpenPreview", script, true);
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al generar vista previa: " + ex.Message, "ee");
+            }
         }
 
         private void Redireccionar(string msg, string type)
         {
-            Session["TempMsgCat"] = msg;
-            Session["TempTipoCat"] = type;
+            Session["TempMsg"] = msg;
+            Session["TempTipo"] = type;
             Response.Redirect("CategorizacionDocentes.aspx", false);
-            Context.ApplicationInstance.CompleteRequest();
+        }
+
+        private void MostrarMensajesFlash()
+        {
+            if (Session["TempMsg"] != null)
+            {
+                Msg(Session["TempMsg"].ToString(), Session["TempTipo"].ToString());
+                Session["TempMsg"] = null;
+                Session["TempTipo"] = null;
+            }
         }
 
         private void Msg(string msg, string type)
         {
-            if (string.IsNullOrEmpty(msg)) return;
-            string cleanMsg = msg.Replace("'", "").Replace("\r", "").Replace("\n", " ");
-            string script = $"$(function() {{ toastify('{type.ToLower()}', '{cleanMsg}', 'SISTEMA INVESTIGACIÓN'); }});";
-            ScriptManager.RegisterStartupScript(this, GetType(), "msg", script, true);
+            string cleanMsg = msg.Replace("'", "").Replace("\r\n", " ");
+            ScriptManager.RegisterStartupScript(this, GetType(), "toast",
+                $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema UTC'); }});", true);
         }
     }
 }
