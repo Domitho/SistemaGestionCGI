@@ -107,6 +107,7 @@
   <ItemGroup>
     <Content Include="About.aspx" />
     <Content Include="CalificacionGruInvestigacion.aspx" />
+    <Content Include="CategorizacionDocentes.aspx" />
     <Content Include="CentrosInvestigacion.aspx" />
     <Content Include="Contact.aspx" />
     <Content Include="Content\bootstrap-theme.css" />
@@ -121,6 +122,7 @@
     <Content Include="DesignersUTC\Scripts\utc-fileinput.js" />
     <Content Include="DesignersUTC\Scripts\utc-selector-tiempo.js" />
     <Content Include="DesignersUTC\Styles\login-full.css" />
+    <Content Include="DesignersUTC\Styles\modal-form-docentes.css" />
     <Content Include="DesignersUTC\Styles\modal-historial-reporte.css" />
     <Content Include="DesignersUTC\Styles\modal-informes.css" />
     <Content Include="DesignersUTC\Styles\modal-vista-integrantes.css" />
@@ -192,6 +194,7 @@
     </Compile>
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="BLL\ManejadorCalificacionGrupo.cs" />
+    <Compile Include="BLL\ManejadorCategorizacionDocentes.cs" />
     <Compile Include="BLL\ManejadorCentroInvestigacion.cs" />
     <Compile Include="BLL\ManejadorConvocatorias.cs" />
     <Compile Include="BLL\ManejadorDashboard.cs" />
@@ -205,6 +208,13 @@
     </Compile>
     <Compile Include="CalificacionGruInvestigacion.aspx.designer.cs">
       <DependentUpon>CalificacionGruInvestigacion.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="CategorizacionDocentes.aspx.cs">
+      <DependentUpon>CategorizacionDocentes.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CategorizacionDocentes.aspx.designer.cs">
+      <DependentUpon>CategorizacionDocentes.aspx</DependentUpon>
     </Compile>
     <Compile Include="CentrosInvestigacion.aspx.cs">
       <DependentUpon>CentrosInvestigacion.aspx</DependentUpon>
@@ -266,10 +276,12 @@
       <DependentUpon>InscripcionProyectos.aspx</DependentUpon>
     </Compile>
     <Compile Include="Models\InvgccCalificacionGrupo.cs" />
+    <Compile Include="Models\InvgccCategoriaDocentes.cs" />
     <Compile Include="Models\InvgccCentroInvestigacion.cs" />
     <Compile Include="Models\InvgccConvocatoria.cs" />
     <Compile Include="Models\InvgccConvocatoriaGruInvestigacion.cs" />
     <Compile Include="Models\InvgccDashboard.cs" />
+    <Compile Include="Models\InvgccDocente.cs" />
     <Compile Include="Models\InvgccEjecucionMiembros.cs" />
     <Compile Include="Login.aspx.cs">
       <DependentUpon>Login.aspx</DependentUpon>
