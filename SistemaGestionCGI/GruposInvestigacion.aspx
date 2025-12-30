@@ -461,51 +461,93 @@
 
     <%-- =====================================================================
          MODAL 2: HISTORIAL DE MOVIMIENTOS 
-         ===================================================================== --%>
+        ===================================================================== --%>
     <div class="modal fade" id="modalHistorial" tabindex="-1" aria-hidden="true" ClientIDMode="Static" runat="server">
         <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content rounded-4 shadow-utc">
-                <div class="modal-header bg-utc text-white text-center">
-                    <h5 class="modal-title w-100">HISTORIAL DE MOVIMIENTOS</h5>
+            <div class="modal-content rounded-4 shadow-utc border-0">
+                
+                <%-- Header Azul Gradiente --%>
+                <div class="modal-header bg-utc text-white">
+                    <h5 class="modal-title w-100 text-center">
+                        <i class="fa-solid fa-clock-rotate-left me-2"></i> HISTORIAL DE MOVIMIENTOS
+                    </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <%-- LABEL REQUERIDO POR BACKEND --%>
-                    <h6 class="fw-bold mb-3 text-primary text-center">
-                        INTEGRANTE: <asp:Label ID="lblNombreHistorial" runat="server" Text="..." />
-                    </h6>
-                    <asp:HiddenField ID="hfIdIntegranteHistorial" runat="server" />
 
-                    <div class="d-flex justify-content-end mb-3">
+                <div class="modal-body bg-white">
+                    <%-- Info del Integrante --%>
+                    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-3">
+                        <h6 class="fw-bold text-secondary mb-0">
+                            INTEGRANTE: <asp:Label ID="lblNombreHistorial" runat="server" CssClass="text-primary text-uppercase" Text="..." />
+                        </h6>
+                        
+                        <%-- Botón Generar Reporte --%>
                         <asp:LinkButton ID="btnGenerarReporte" runat="server" 
-                            CssClass="btn btn-danger btn-pill px-4" 
+                            CssClass="btn btn-danger btn-pill btn-sm px-4 shadow-sm" 
                             OnClick="btnGenerarReporte_Click">
-                            <i class="fa-solid fa-file-pdf me-2"></i> Generar Reporte Completo
+                            <i class="fa-solid fa-file-pdf me-2"></i> Generar Reporte PDF
                         </asp:LinkButton>
                     </div>
 
-                    <div class="table-responsive bg-white p-3 rounded shadow-sm border">
-                        <table class="table table-bordered align-middle text-center">
-                            <thead class="table-light"><tr><th>Fecha</th><th>Acción</th><th>Motivo</th><th>Usuario</th></tr></thead>
+                    <asp:HiddenField ID="hfIdIntegranteHistorial" runat="server" />
+
+                    <%-- Tabla con Estilos UTC --%>
+                    <div class="table-responsive rounded border-0">
+                        <table class="table table-sm table-hover table-historial-utc align-middle text-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 15%">FECHA</th>
+                                    <th style="width: 15%">ACCIÓN</th>
+                                    <th style="width: 55%">MOTIVO / DETALLE</th>
+                                    <th style="width: 15%">USUARIO</th>
+                                </tr>
+                            </thead>
                             <tbody>
                                 <asp:Repeater ID="rptHistorial" runat="server">
                                     <ItemTemplate>
                                         <tr>
-                                            <td><%# Convert.ToDateTime(Eval("dtFecha")).ToString("dd/MM/yyyy HH:mm") %></td>
-                                            <td><span class='badge <%# Eval("strAccion").ToString() == "BAJA" ? "bg-danger" : "bg-success" %>'><%# Eval("strAccion") %></span></td>
-                                            <td class="text-start"><%# Eval("strMotivo") %></td>
-                                            <td><%# Eval("strUsuario") %></td>
+                                            <%-- Fecha --%>
+                                            <td class="text-secondary fw-bold" style="font-size: 0.85rem;">
+                                                <%# Convert.ToDateTime(Eval("dtFecha")).ToString("dd/MM/yyyy HH:mm") %>
+                                            </td>
+                                            
+                                            <%-- Acción (Badge) --%>
+                                            <td>
+                                                <span class='badge rounded-pill px-3 <%# Eval("strAccion").ToString() == "BAJA" ? "badge-baja" : (Eval("strAccion").ToString().Contains("NUEVO") ? "badge-alta" : "badge-historial") %>'>
+                                                    <%# Eval("strAccion") %>
+                                                </span>
+                                            </td>
+                                            
+                                            <%-- Motivo --%>
+                                            <td class="text-start fst-italic text-muted small ps-3">
+                                                <%# Eval("strMotivo") %>
+                                            </td>
+                                            
+                                            <%-- Usuario --%>
+                                            <td class="small fw-bold text-secondary">
+                                                <i class="fa-solid fa-user-check me-1 opacity-50"></i>
+                                                <%# Eval("strUsuario") %>
+                                            </td>
                                         </tr>
                                     </ItemTemplate>
                                     <FooterTemplate>
                                         <asp:Panel ID="pnlNoHistorial" runat="server" Visible='<%# rptHistorial.Items.Count == 0 %>'>
-                                            <tr><td colspan="4" class="text-muted py-3">Sin movimientos registrados.</td></tr>
+                                            <tr>
+                                                <td colspan="4" class="p-4 text-center text-muted">
+                                                    <i class="fa-solid fa-folder-open fa-2x mb-2 d-block opacity-25"></i>
+                                                    Sin movimientos registrados en el historial.
+                                                </td>
+                                            </tr>
                                         </asp:Panel>
                                     </FooterTemplate>
                                 </asp:Repeater>
                             </tbody>
                         </table>
                     </div>
+                </div>
+                
+                <div class="modal-footer justify-content-center border-0 pt-0 pb-4">
+                     <button type="button" class="btn btn-outline-secondary btn-pill px-5" data-bs-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>

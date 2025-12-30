@@ -483,15 +483,6 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.Label lblNombreHistorial;
 
         /// <summary>
-        /// Control hfIdIntegranteHistorial.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hfIdIntegranteHistorial;
-
-        /// <summary>
         /// Control btnGenerarReporte.
         /// </summary>
         /// <remarks>
@@ -499,6 +490,15 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnGenerarReporte;
+
+        /// <summary>
+        /// Control hfIdIntegranteHistorial.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfIdIntegranteHistorial;
 
         /// <summary>
         /// Control rptHistorial.

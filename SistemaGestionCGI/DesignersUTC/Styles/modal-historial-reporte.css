@@ -1,86 +1,143 @@
 ﻿/* =============================================================
-   ESTILOS REPORTE DE HISTORIAL (DISEÑO INSTITUCIONAL UTC)
+   ESTILOS UNIFICADOS: MODALES, HISTORIAL Y REPORTES UTC
    ARCHIVO: modal-historial-reporte.css
    ============================================================= */
 
+/* -------------------------------------------------------------
+   1. AJUSTES GENERALES Y MODALES
+   ------------------------------------------------------------- */
 .form-stack {
     max-width: 100% !important;
 }
 
+/* Cabecera del Modal con Degradado Institucional */
 .modal-header.bg-utc {
-    background: linear-gradient(90deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%) !important;
+    background: linear-gradient(90deg, var(--utc-azul, #003876) 0%, var(--utc-azul-oscuro, #002a5c) 100%) !important;
     color: #fff !important;
+    border-top-left-radius: 10px !important;
+    border-top-right-radius: 10px !important;
+    border-bottom: none;
 }
 
-.table-historial-utc thead th {
-    background: var(--utc-azul) !important; /* Azul UTC */
-    color: #fff !important;
-    font-weight: 500;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    border: none;
+    .modal-header.bg-utc .modal-title {
+        color: #fff !important;
+        font-weight: 600 !important;
+        text-transform: uppercase;
+        font-size: 1rem;
+        letter-spacing: 0.5px;
+    }
+
+.modal-content {
+    border: none !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
 }
 
-.table-historial-utc tbody tr:hover {
-    background-color: rgba(0, 56, 118, 0.05) !important;
+/* -------------------------------------------------------------
+   2. TABLA DE HISTORIAL (ESTILO GRID DENTRO DEL MODAL)
+   ------------------------------------------------------------- */
+.table-historial-utc {
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
+    .table-historial-utc thead th {
+        background: var(--utc-azul, #003876) !important;
+        color: #fff !important;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        border: none;
+        padding: 12px 10px;
+        vertical-align: middle;
+    }
+
+    .table-historial-utc tbody tr:hover {
+        background-color: rgba(0, 56, 118, 0.05) !important; /* Azul muy tenue al pasar mouse */
+    }
+
+    .table-historial-utc td {
+        vertical-align: middle;
+        border-bottom: 1px solid #f0f0f0;
+        padding: 12px 10px;
+        font-size: 0.9rem;
+    }
+
+/* Badges (Etiquetas) Personalizados para la Tabla */
 .badge-historial {
-    background-color: var(--utc-azul-oscuro) !important;
+    background-color: var(--utc-azul-oscuro, #002a5c) !important;
     font-weight: normal;
     font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    padding: 6px 12px;
 }
 
-/* 1. CONTENEDOR PRINCIPAL (HOJA VIRTUAL) */
+.badge-baja {
+    background-color: #dc3545 !important; /* Rojo */
+    font-weight: normal;
+    font-size: 0.75rem;
+    padding: 6px 12px;
+}
+
+.badge-alta, .badge-success {
+    background-color: #198754 !important; /* Verde */
+    font-weight: normal;
+    font-size: 0.75rem;
+    padding: 6px 12px;
+}
+
+/* Imagen de avatar en tablas (para módulo Grupos) */
+.img-avatar-table {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* -------------------------------------------------------------
+   3. HOJA DE REPORTE (VISTA PREVIA / PAPEL)
+   ------------------------------------------------------------- */
 .report-paper {
     background: #ffffff;
     padding: 40px 50px;
     font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     color: #333;
     position: relative;
-    box-shadow: 0 0 25px rgba(0,0,0,0.05); /* Sombra suave */
+    box-shadow: 0 0 25px rgba(0,0,0,0.05);
     min-height: 600px;
-    overflow: hidden; /* Para contener el banner superior */
+    overflow: hidden;
 }
 
-/* =============================================================
-   2. ENCABEZADO "HERO" (BANNER AZUL FULL WIDTH)
-   ============================================================= */
+/* Banner Superior Azul (Hero) */
 .header-hero-banner {
-    background-color: var(--utc-azul); /* Variable global UTC */
-    /* Márgenes negativos para romper el padding del contenedor padre */
-    margin: -40px -50px 40px -50px;
-    padding: 35px 20px;
+    background-color: var(--utc-azul, #003876);
+    margin: -40px -50px 40px -50px; /* Expande fuera del padding del padre */
+    padding: 30px 20px;
     text-align: center;
-    border-bottom: 6px solid var(--utc-azul-oscuro);
-    /* Asegurar impresión del fondo azul */
+    border-bottom: 6px solid var(--utc-azul-oscuro, #002a5c);
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
 }
 
-    /* Logo Centrado y convertido a Blanco Puro */
     .header-hero-banner img {
-        height: 90px;
+        height: 80px;
         width: auto;
         object-fit: contain;
-        /* FILTRO: Invierte color y ajusta brillo para volverlo BLANCO */
-        filter: brightness(0) invert(1);
+        filter: brightness(0) invert(1); /* Vuelve el logo blanco */
         opacity: 0.95;
     }
 
-/* =============================================================
-   3. SECCIÓN TÍTULO Y METADATOS (REDISEÑO LIMPIO)
-   ============================================================= */
+/* Sección Título y Metadatos */
 .header-info-split {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end; /* Alineación inferior para equilibrio */
+    align-items: flex-end;
     padding-bottom: 25px;
-    border-bottom: 2px solid var(--utc-azul); /* Línea base sólida de marca */
-    margin-bottom: 45px;
+    border-bottom: 2px solid var(--utc-azul, #003876);
+    margin-bottom: 40px;
 }
 
-/* --- LADO IZQUIERDO: TÍTULOS --- */
 .info-left {
     flex: 1;
 }
@@ -89,27 +146,24 @@
     display: block;
     font-size: 0.7rem;
     font-weight: 700;
-    color: #999; /* Gris suave para no competir */
+    color: #999;
     text-transform: uppercase;
     letter-spacing: 2px;
-    margin-bottom: 8px;
-    font-family: 'Segoe UI', sans-serif;
+    margin-bottom: 5px;
 }
 
 .doc-title {
     font-family: 'Segoe UI', sans-serif;
-    font-size: 2.2rem; /* Más grande e imponente */
-    font-weight: 900; /* Extra Bold */
-    color: var(--utc-azul); /* Título en Azul Institucional */
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--utc-azul, #003876);
     margin: 0;
-    line-height: 0.9;
+    line-height: 1;
     text-transform: uppercase;
-    letter-spacing: -1px; /* Letras un poco más juntas para modernidad */
+    letter-spacing: -0.5px;
 }
 
-/* --- LADO DERECHO: METADATOS (SIN CAJA) --- */
 .info-right {
-    /* Separador vertical sutil en lugar de caja */
     border-left: 1px solid #e0e0e0;
     padding-left: 30px;
     margin-left: 30px;
@@ -118,7 +172,7 @@
 }
 
 .meta-group {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
     .meta-group:last-child {
@@ -129,42 +183,43 @@
     display: block;
     font-size: 0.65rem;
     text-transform: uppercase;
-    color: #aaa; /* Etiqueta discreta */
+    color: #aaa;
     font-weight: 700;
-    letter-spacing: 0.5px;
     margin-bottom: 2px;
 }
 
 .meta-value {
     display: block;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
     color: #333;
 }
 
-/* Destacamos la Referencia con el ROJO UTC y fuente monoespaciada */
 .ref-highlight {
-    color: var(--utc-rojo);
-    font-family: 'Consolas', 'Courier New', monospace; /* Estilo técnico */
-    font-size: 1.2rem;
+    color: #dc3545; /* Rojo para el ID */
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 1.1rem;
 }
 
-/* =============================================================
-   4. TARJETA DE INFORMACIÓN DEL INVESTIGADOR
-   ============================================================= */
+/* -------------------------------------------------------------
+   4. TARJETA DE INFORMACIÓN (DATOS DEL DOCENTE/INTEGRANTE)
+   ------------------------------------------------------------- */
 .researcher-card {
-    background-color: #f8faff; /* Azul muy pálido */
+    background-color: #f8faff;
     border: 1px solid #e1e8f0;
-    border-left: 4px solid var(--utc-azul);
-    border-radius: 8px;
-    padding: 25px;
-    margin-bottom: 50px;
+    border-left: 4px solid var(--utc-azul, #003876);
+    border-radius: 6px;
+    padding: 20px 25px;
+    margin-bottom: 40px;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
 }
 
 .card-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+    flex-wrap: wrap; /* Permite que baje si no hay espacio */
 }
 
     .card-row:last-child {
@@ -173,6 +228,8 @@
 
 .card-item {
     flex: 1;
+    min-width: 150px; /* Evita que se aplasten */
+    padding-right: 10px;
 }
 
     .card-item .label {
@@ -181,19 +238,18 @@
         text-transform: uppercase;
         color: #8898aa;
         font-weight: 700;
-        margin-bottom: 5px;
-        letter-spacing: 0.5px;
+        margin-bottom: 4px;
     }
 
     .card-item .value {
-        font-size: 1.05rem;
+        font-size: 1rem;
         font-weight: 600;
-        color: var(--utc-azul-oscuro);
+        color: var(--utc-azul-oscuro, #002a5c);
     }
 
-/* =============================================================
+/* -------------------------------------------------------------
    5. LÍNEA DE TIEMPO (TIMELINE)
-   ============================================================= */
+   ------------------------------------------------------------- */
 .timeline-container {
     padding: 0 10px;
 }
@@ -204,8 +260,8 @@
     font-weight: 700;
     color: #999;
     border-bottom: 1px solid #eee;
-    padding-bottom: 15px;
-    margin-bottom: 30px;
+    padding-bottom: 10px;
+    margin-bottom: 25px;
     letter-spacing: 1px;
 }
 
@@ -216,7 +272,7 @@
     position: relative;
 }
 
-    /* Línea Vertical Gris */
+    /* Línea Vertical */
     .timeline-list::before {
         content: '';
         position: absolute;
@@ -230,10 +286,11 @@
 .timeline-item {
     position: relative;
     padding-left: 60px;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
+    page-break-inside: avoid; /* Evita que se corte al imprimir */
 }
 
-/* Punto (Círculo) sobre la línea */
+/* Punto marcador */
 .timeline-marker {
     position: absolute;
     left: 18px;
@@ -242,18 +299,15 @@
     height: 14px;
     border-radius: 50%;
     background: #fff;
-    border: 3px solid var(--utc-azul);
+    border: 3px solid var(--utc-azul, #003876);
     z-index: 2;
     box-shadow: 0 0 0 3px #fff;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
 }
 
-.timeline-content {
-    background: #fff;
-}
-
-/* Encabezado del item (Fecha y Hora) */
 .timeline-header {
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     display: flex;
     align-items: baseline;
     gap: 10px;
@@ -262,88 +316,90 @@
     .timeline-header .date {
         font-weight: 700;
         color: #333;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
     }
 
     .timeline-header .time {
         color: #8898aa;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         font-weight: 500;
     }
 
-/* Cuerpo del item */
 .timeline-body {
     border-left: 3px solid #f4f5f7;
     padding-left: 15px;
     margin-left: 2px;
 }
 
-/* Badges de Acción */
+/* Badges dentro del Timeline */
 .action-badge {
     display: inline-block;
-    padding: 5px 12px;
+    padding: 4px 10px;
     border-radius: 4px;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 800;
     text-transform: uppercase;
-    margin-bottom: 8px;
-    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
 }
 
     .action-badge.good {
-        background: rgba(27, 158, 75, 0.1);
-        color: var(--utc-verde);
+        background: rgba(25, 135, 84, 0.1);
+        color: #198754;
     }
 
     .action-badge.bad {
-        background: rgba(217, 83, 79, 0.1);
-        color: var(--utc-rojo);
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
     }
 
 .description {
-    margin: 5px 0;
-    font-size: 0.95rem;
+    margin: 4px 0;
+    font-size: 0.9rem;
     color: #525f7f;
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 .user-signature {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: #adb5bd;
-    margin-top: 10px;
+    margin-top: 8px;
     font-style: italic;
     display: flex;
     align-items: center;
     gap: 5px;
 }
 
-/* =============================================================
-   6. PIE DE PÁGINA (LEGAL)
-   ============================================================= */
+/* -------------------------------------------------------------
+   6. PIE DE PÁGINA LEGAL
+   ------------------------------------------------------------- */
 .report-legal-footer {
-    margin-top: 80px;
+    margin-top: 60px;
     padding-top: 20px;
     border-top: 1px solid #eee;
     text-align: center;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     color: #ccc;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
-/* =============================================================
-   7. AJUSTES PARA IMPRESIÓN (CTRL + P)
-   ============================================================= */
+/* -------------------------------------------------------------
+   7. MEDIA QUERY PARA IMPRESIÓN (CTRL + P)
+   ------------------------------------------------------------- */
 @media print {
+    /* Ocultar todo lo que no sea el reporte */
     body * {
-        visibility: hidden; /* Oculta todo el sistema */
+        visibility: hidden;
     }
 
-    #arealmpresion, #arealmpresion * {
-        visibility: visible; /* Muestra solo el reporte */
+    /* Mostrar solo el área de impresión */
+    #arealmpresion, #areaImpresion, #arealmpresion *, #areaImpresion * {
+        visibility: visible;
     }
 
-    #arealmpresion {
+    /* Posicionar el reporte en la esquina superior */
+    #arealmpresion, #areaImpresion {
         position: absolute;
         left: 0;
         top: 0;
@@ -354,21 +410,14 @@
         box-shadow: none;
     }
 
-    /* Ajuste de márgenes negativos para que el banner azul llegue al borde del papel */
+    /* Ajustar márgenes negativos para llenar el papel */
     .header-hero-banner {
         margin: -20px -20px 30px -20px;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
+        width: calc(100% + 40px);
     }
 
-    /* Asegurar colores de fondo */
-    .meta-box, .researcher-card, .action-badge {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
-
-    /* Ocultar botones del modal */
-    .btn-close, .modal-header, .modal-footer {
+    /* Ocultar elementos de UI del modal */
+    .btn-close, .modal-header, .modal-footer, button, .no-print {
         display: none !important;
     }
 }

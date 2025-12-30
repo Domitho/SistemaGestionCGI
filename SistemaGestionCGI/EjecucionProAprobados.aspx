@@ -5,24 +5,7 @@
     <link href="DesignersUTC/Styles/utc-full-design.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/modal-informes.css" rel="stylesheet" />
-
-    <style>
-        .modal-header.bg-utc {
-            background: linear-gradient(90deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%) !important;
-            color: #fff !important;
-            border-top-left-radius: 10px !important;
-            border-top-right-radius: 10px !important;
-        }
-
-        .modal-header.bg-utc .modal-title {
-            color: #fff !important;
-            font-weight: 600 !important;
-        }
-
-        .form-stack {
-            max-width: 100% !important;
-        }
-    </style>
+    <link href="DesignersUTC/Styles/modal-historial-reporte.css" rel="stylesheet" />
 
     <div id="headerEjecucion" runat="server" class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
         <h3 class="utc-title mb-0">
@@ -626,53 +609,92 @@
     </div>
 
     <div class="modal fade" id="modalHistorialMiembro" tabindex="-1" aria-hidden="true" ClientIDMode="Static" runat="server">
-        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content shadow-utc border-0 rounded-4">
+                
+                <%-- Header Azul Gradiente --%>
                 <div class="modal-header bg-utc text-white">
-                    <h5 class="modal-title"><i class="fa-solid fa-list-ul me-2"></i> Historial de Movimientos</h5>
+                    <h5 class="modal-title w-100 text-center">
+                        <i class="fa-solid fa-clock-rotate-left me-2"></i> HISTORIAL DE MOVIMIENTOS
+                    </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body bg-light">
-                    <h6 class="text-primary fw-bold text-center mb-3">
-                        <asp:Label ID="lblNombreHistorial" runat="server" Text="..." />
-                    </h6>
 
-                    <div class="d-flex justify-content-end mb-3">
+                <div class="modal-body bg-white">
+                    
+                    <%-- Encabezado con Nombre y Botón Reporte --%>
+                    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-3">
+                        <h6 class="fw-bold text-secondary mb-0">
+                            INTEGRANTE: <asp:Label ID="lblNombreHistorial" runat="server" CssClass="text-primary text-uppercase" Text="..." />
+                        </h6>
+
                         <asp:LinkButton ID="btnGenerarReporteHistorial" runat="server"
-                            CssClass="btn btn-danger btn-pill px-4"
+                            CssClass="btn btn-danger btn-pill btn-sm px-4 shadow-sm"
                             OnClick="btnGenerarReporteHistorial_Click">
                             <i class="fa-solid fa-file-pdf me-2"></i> Generar Reporte Oficial
                         </asp:LinkButton>
                     </div>
 
-                    <div class="table-responsive bg-white p-3 rounded shadow-sm">
-                        <table class="table table-sm table-bordered text-center align-middle">
-                            <thead class="table-light">
+                    <%-- Tabla Estilizada --%>
+                    <div class="table-responsive rounded border-0">
+                        <table class="table table-sm table-hover table-historial-utc align-middle text-center mb-0">
+                            <thead>
                                 <tr>
-                                    <th>Fecha</th>
-                                    <th>Acción</th>
-                                    <th>Motivo</th>
-                                    <th>Usuario</th>
+                                    <th style="width: 15%">FECHA</th>
+                                    <th style="width: 15%">ACCIÓN</th>
+                                    <th style="width: 55%">MOTIVO / DETALLE</th>
+                                    <th style="width: 15%">USUARIO</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <asp:Repeater ID="rptHistorialMiembro" runat="server">
                                     <ItemTemplate>
                                         <tr>
-                                            <td><%# Convert.ToDateTime(Eval("dtFecha")).ToString("dd/MM/yyyy HH:mm") %></td>
+                                            <%-- Fecha (Gris y Negrita) --%>
+                                            <td class="text-secondary fw-bold" style="font-size: 0.85rem;">
+                                                <%# Convert.ToDateTime(Eval("dtFecha")).ToString("dd/MM/yyyy HH:mm") %>
+                                            </td>
+                                            
+                                            <%-- Acción (Badge condicional) --%>
                                             <td>
-                                                <span class='badge <%# Eval("strAccion").ToString() == "BAJA" ? "bg-danger" : "bg-success" %>'>
+                                                <span class='badge rounded-pill px-3 <%# 
+                                                    Eval("strAccion").ToString().Contains("BAJA") ? "badge-baja" : 
+                                                    (Eval("strAccion").ToString().Contains("NUEVO") || Eval("strAccion").ToString().Contains("REACTIVAR") ? "badge-alta" : "badge-historial") 
+                                                %>'>
                                                     <%# Eval("strAccion") %>
                                                 </span>
                                             </td>
-                                            <td class="text-start small"><%# Eval("strMotivo") %></td>
-                                            <td class="small text-muted"><%# Eval("strUsuario") %></td>
+                                            
+                                            <%-- Motivo (Cursiva y alineado izq) --%>
+                                            <td class="text-start fst-italic text-muted small ps-3">
+                                                <%# Eval("strMotivo") %>
+                                            </td>
+                                            
+                                            <%-- Usuario --%>
+                                            <td class="small fw-bold text-secondary">
+                                                <i class="fa-solid fa-user-check me-1 opacity-50"></i>
+                                                <%# Eval("strUsuario") %>
+                                            </td>
                                         </tr>
                                     </ItemTemplate>
+                                    <FooterTemplate>
+                                        <asp:Panel ID="pnlNoData" runat="server" Visible='<%# rptHistorialMiembro.Items.Count == 0 %>'>
+                                            <tr>
+                                                <td colspan="4" class="p-4 text-center text-muted">
+                                                    <i class="fa-solid fa-folder-open fa-2x mb-2 d-block opacity-25"></i>
+                                                    Sin movimientos registrados en el historial.
+                                                </td>
+                                            </tr>
+                                        </asp:Panel>
+                                    </FooterTemplate>
                                 </asp:Repeater>
                             </tbody>
                         </table>
                     </div>
+                </div>
+                
+                <div class="modal-footer justify-content-center border-0 pt-0 pb-4">
+                     <button type="button" class="btn btn-outline-secondary btn-pill px-5" data-bs-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>
