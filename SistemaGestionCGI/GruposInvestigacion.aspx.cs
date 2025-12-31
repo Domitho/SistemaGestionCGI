@@ -91,17 +91,12 @@ namespace SistemaGestionCGI
                     Msg("El nombre del grupo es obligatorio.", "ww");
                     return;
                 }
-                if (ddlCentro.SelectedIndex <= 0)
-                {
-                    Msg("Debe seleccionar un Centro de Investigación.", "ww");
-                    return;
-                }
 
                 // MAPEO DE DATOS (UI -> MODELO)
                 var g = new InvgccGrupoInvestigacion
                 {
                     strNombre_gru = txtNombreGru.Text.Trim(),
-                    fkId_cen = ddlCentro.SelectedValue, // Relación con Centro
+                    fkId_cen = (ddlCentro.SelectedValue == "") ? null : ddlCentro.SelectedValue,
                     strCoordinador_gru = txtCoordinadorGru.Text.Trim(),
                     strCategoria_gru = ddlCategoriaGru.SelectedValue,
                     strLineasinv_gru = ddlLineaInv.SelectedValue,

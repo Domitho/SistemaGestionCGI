@@ -123,7 +123,7 @@
             <div class="row g-3">
                 <%-- NUEVO CAMPO: CENTRO DE INVESTIGACIÓN --%>
                 <div class="col-12">
-                    <label class="form-label">Centro de Investigación <span class="text-danger">*</span></label>
+                    <label class="form-label">Centro de Investigación</label>
                     <asp:DropDownList ID="ddlCentro" runat="server" CssClass="form-select"></asp:DropDownList>
                 </div>
 

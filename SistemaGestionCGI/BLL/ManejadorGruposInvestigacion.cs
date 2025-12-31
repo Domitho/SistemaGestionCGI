@@ -59,16 +59,20 @@ namespace SistemaGestionCGI.BLL
         {
             grupo.strId_gru = GenerarCodigoAlfanumerico("INVGCCGRUPO_INVESTIGACION", "strId_gru", "G");
 
+            string valorCentro = string.IsNullOrEmpty(grupo.fkId_cen)
+                         ? "NULL"
+                         : $"'{grupo.fkId_cen}'";
+
             string sql = $@"
                 INSERT INTO INVGCCGRUPO_INVESTIGACION
                 (strId_gru, strNombre_gru, strCoordinador_gru, dtFechacrea_gru, 
                  strCategoria_gru, strLineasinv_gru, strSublineasinv_gru, 
-                 strArchivo_gru, strFoto_gru, fkId_cen) -- Agregamos fkId_cen
+                 strArchivo_gru, strFoto_gru, fkId_cen)
                 VALUES
                 ('{grupo.strId_gru}', '{grupo.strNombre_gru}', '{grupo.strCoordinador_gru}', 
                  '{grupo.dtFechacrea_gru:yyyy-MM-dd HH:mm:ss}', '{grupo.strCategoria_gru}', 
                  '{grupo.strLineasinv_gru}', '{grupo.strSublineasinv_gru}', 
-                 '{grupo.strArchivo_gru}', '{grupo.strFoto_gru}', '{grupo.fkId_cen}')";
+                 '{grupo.strArchivo_gru}', '{grupo.strFoto_gru}', {valorCentro})";
 
             _dal.InsertSql(sql);
         }
