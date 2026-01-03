@@ -519,27 +519,131 @@ namespace SistemaGestionCGI
 
         private string ConstruirReporteHistorial(int idMiembro)
         {
+            // 1. Obtener Datos
             var miembro = _manejador.ObtenerMiembroPorId(idMiembro);
             var historial = _manejador.ObtenerHistorialMiembro(idMiembro);
             var ejecucion = _manejador.ObtenerEjecucionPorId(miembro.fkId_ejec);
 
             StringBuilder sb = new StringBuilder();
-            sb.Append("<style>.rep-header{text-align:center;border-bottom:2px solid #312783;padding-bottom:15px}.rep-logo{width:200px}.rep-title{color:#312783;font-size:20px;font-weight:bold;text-transform:uppercase}.rep-card{background:#f8f9fa;border:1px solid #ddd;padding:20px;margin:20px 0}.rep-label{font-weight:bold;color:#312783}.rep-timeline{padding-left:30px;border-left:2px solid #e0e0e0}.rep-item{margin-bottom:25px;position:relative}.rep-dot{width:16px;height:16px;background:#fff;border:3px solid #312783;border-radius:50%;position:absolute;left:-39px;top:0}.rep-date{font-size:13px;color:#999;font-weight:600}.badge-baja{color:#dc3545}.badge-alta{color:#198754}</style>");
 
-            sb.Append("<div class='rep-header'><img src='https://aplicaciones.utc.edu.ec/sigutc/img/bnUTC.png' class='rep-logo'><br><h3 class='rep-title'>Historial de Movimientos</h3></div>");
-            sb.Append("<div class='rep-card'><div class='row'>");
-            sb.Append($"<div class='col-6 mb-2'><span class='rep-label'>NOMBRE:</span> {miembro.strNombres_miembro} {miembro.strApellidos_miembro}</div>");
-            sb.Append($"<div class='col-6 mb-2'><span class='rep-label'>CÉDULA:</span> {miembro.strCedula_miembro}</div>");
-            sb.Append($"<div class='col-6 mb-2'><span class='rep-label'>ROL:</span> {miembro.strRol_miembro}</div>");
-            sb.Append($"<div class='col-12 border-top pt-2 mt-2'><span class='rep-label'>PROYECTO:</span> {ejecucion.TituloProyecto}</div></div></div>");
+            // 2. HERO BANNER (LOGO)
+            sb.Append("<div class='header-hero-banner'>");
+            sb.Append("<img src='https://aplicaciones.utc.edu.ec/sigutc/img/bnUTC.png' alt='UTC Logo' />");
+            sb.Append("</div>");
 
-            sb.Append("<div class='p-3'><h5 class='mb-4'>Línea de Tiempo</h5><div class='rep-timeline'>");
-            foreach (var h in historial)
+            // 3. CABECERA DIVIDIDA (TÍTULO Y METADATA)
+            sb.Append("<div class='header-info-split'>");
+
+            // Lado Izquierdo
+            sb.Append("<div class='info-left'>");
+            sb.Append("<span class='system-label'>Dirección de Investigación</span>");
+            sb.Append("<h1 class='doc-title'>Historial de Movimientos</h1>");
+            sb.Append("</div>");
+
+            // Lado Derecho
+            sb.Append("<div class='info-right'>");
+            sb.Append("<div class='meta-group'>");
+            sb.Append($"<span class='meta-label'>Referencia ID</span>");
+            sb.Append($"<span class='meta-value ref-highlight'>{miembro.strId_miembro}</span>");
+            sb.Append("</div>");
+            sb.Append("<div class='meta-group'>");
+            sb.Append($"<span class='meta-label'>Fecha Emisión</span>");
+            sb.Append($"<span class='meta-value'>{DateTime.Now:dd/MM/yyyy}</span>");
+            sb.Append("</div>");
+            sb.Append("</div>"); // Fin info-right
+            sb.Append("</div>"); // Fin header-info-split
+
+            sb.Append("<div class='mt-5'></div>");
+
+            // 4. TARJETA DE INFORMACIÓN (RESEARCHER CARD)
+            sb.Append("<div class='researcher-card'>");
+
+            // Fila 1
+            sb.Append("<div class='card-row'>");
+            sb.Append("<div class='card-item'>");
+            sb.Append("<span class='label'>INTEGRANTE</span>");
+            sb.Append($"<span class='value'>{miembro.strApellidos_miembro} {miembro.strNombres_miembro}</span>");
+            sb.Append("</div>");
+            sb.Append("<div class='card-item'>");
+            sb.Append("<span class='label'>CÉDULA</span>");
+            sb.Append($"<span class='value'>{miembro.strCedula_miembro}</span>");
+            sb.Append("</div>");
+            sb.Append("</div>");
+
+            // Fila 2
+            sb.Append("<div class='card-row'>");
+            sb.Append("<div class='card-item'>");
+            sb.Append("<span class='label'>PROYECTO</span>");
+            sb.Append($"<span class='value' style='font-size: 0.9rem;'>{ejecucion.TituloProyecto}</span>");
+            sb.Append("</div>");
+            sb.Append("</div>");
+
+            // Fila 3
+            sb.Append("<div class='card-row'>");
+            sb.Append("<div class='card-item'>");
+            sb.Append("<span class='label'>ROL / FUNCIÓN</span>");
+            sb.Append($"<span class='value'>{miembro.strRol_miembro}</span>");
+            sb.Append("</div>");
+            sb.Append("<div class='card-item'>");
+            sb.Append("<span class='label'>ESTADO ACTUAL</span>");
+            string estado = miembro.bitActivo_miembro ? "ACTIVO" : "INACTIVO";
+            string colorEstado = miembro.bitActivo_miembro ? "#198754" : "#dc3545"; // Verde o Rojo
+            sb.Append($"<span class='value' style='color:{colorEstado}'>{estado}</span>");
+            sb.Append("</div>");
+            sb.Append("</div>");
+
+            sb.Append("</div>"); // Fin Card
+
+            // 5. TIMELINE (LÍNEA DE TIEMPO)
+            sb.Append("<div class='timeline-container'>");
+            sb.Append("<h4 class='timeline-title'>Registro Cronológico</h4>");
+            sb.Append("<ul class='timeline-list'>");
+
+            if (historial != null && historial.Count > 0)
             {
-                string color = h.strAccion == "BAJA" ? "#dc3545" : "#198754";
-                sb.Append($"<div class='rep-item'><div class='rep-dot' style='border-color:{color}'></div><div class='rep-date'>{h.dtFecha:dddd, dd MMM yyyy HH:mm}</div><div><strong style='color:{color}'>{h.strAccion}</strong> - Usuario: {h.strUsuario}</div><div class='mt-1 small bg-white border p-2 rounded'>Motivo: {h.strMotivo}</div></div>");
+                foreach (var h in historial)
+                {
+                    sb.Append("<li class='timeline-item'>");
+                    sb.Append("<div class='timeline-marker'></div>");
+                    sb.Append("<div class='timeline-content'>");
+
+                    // Header del item
+                    sb.Append("<div class='timeline-header'>");
+                    sb.Append($"<span class='date'>{h.dtFecha:dd 'de' MMMM, yyyy}</span>");
+                    sb.Append($"<span class='time'>{h.dtFecha:HH:mm}</span>");
+                    sb.Append("</div>");
+
+                    // Body del item
+                    sb.Append("<div class='timeline-body'>");
+
+                    // Badge Acción
+                    string badgeClass = h.strAccion.Contains("BAJA") ? "bad" : "good";
+                    sb.Append($"<div class='action-badge {badgeClass}'>{h.strAccion}</div>");
+
+                    // Motivo
+                    sb.Append($"<p class='description'><strong>Detalle:</strong> {h.strMotivo}</p>");
+
+                    // Firma Usuario
+                    sb.Append($"<div class='user-signature'><i class='fa-solid fa-user-check'></i> Procesado por: {h.strUsuario}</div>");
+
+                    sb.Append("</div>"); // Fin timeline-body
+                    sb.Append("</div>"); // Fin timeline-content
+                    sb.Append("</li>");
+                }
             }
-            sb.Append("</div></div>");
+            else
+            {
+                sb.Append("<li class='timeline-item'><p class='text-muted'>Sin historial registrado.</p></li>");
+            }
+
+            sb.Append("</ul>");
+            sb.Append("</div>"); // Fin Timeline Container
+
+            // 6. FOOTER LEGAL
+            sb.Append("<div class='report-legal-footer'>");
+            sb.Append("Documento generado automáticamente por el Sistema de Gestión CGI-UTC.<br>");
+            sb.Append("La validez de este reporte está sujeta a los registros digitales institucionales.");
+            sb.Append("</div>");
 
             return sb.ToString();
         }

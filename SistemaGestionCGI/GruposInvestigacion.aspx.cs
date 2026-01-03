@@ -19,17 +19,14 @@ namespace SistemaGestionCGI
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // CONTROL DE SESIÓN
             if (Session["UsuarioLogueado"] == null)
             {
                 Response.Redirect("Login.aspx");
                 return;
             }
 
-            // SI ES POSTBACK (Clic en botón), NO recargamos nada para no perder datos del form
             if (IsPostBack) return;
 
-            // CARGA INICIAL DE DATOS
             try
             {
                 CargarCombosGlobales();
@@ -43,7 +40,6 @@ namespace SistemaGestionCGI
             }
             catch (Exception ex) { Msg("Error al iniciar módulo: " + ex.Message, "ee"); }
 
-            // MOSTRAR MENSAJES FLASH (Toastify) DESPUÉS DE UN REDIRECT
             if (Session["TempMsg"] != null)
             {
                 Msg(Session["TempMsg"].ToString(), Session["TempTipo"].ToString());
@@ -54,8 +50,7 @@ namespace SistemaGestionCGI
 
         private void CargarCombosGlobales()
         {
-            // 1. Cargar Centros de Investigación
-            var centros = _manejador.ObtenerCentrosCombo(); // Asegúrate de tener este método en tu BLL
+            var centros = _manejador.ObtenerCentrosCombo();
             ddlCentro.DataSource = centros;
             ddlCentro.DataTextField = "strNombre_cen";
             ddlCentro.DataValueField = "strId_cen";
@@ -65,7 +60,6 @@ namespace SistemaGestionCGI
 
         private void CargarGrillaGrupos()
         {
-            // Carga la tabla principal
             rptGrupoInv.DataSource = _manejador.ObtenerGrupos();
             rptGrupoInv.DataBind();
         }
@@ -85,14 +79,12 @@ namespace SistemaGestionCGI
         {
             try
             {
-                // VALIDACIONES
                 if (string.IsNullOrWhiteSpace(txtNombreGru.Text))
                 {
                     Msg("El nombre del grupo es obligatorio.", "ww");
                     return;
                 }
 
-                // MAPEO DE DATOS (UI -> MODELO)
                 var g = new InvgccGrupoInvestigacion
                 {
                     strNombre_gru = txtNombreGru.Text.Trim(),
@@ -102,40 +94,33 @@ namespace SistemaGestionCGI
                     strLineasinv_gru = ddlLineaInv.SelectedValue,
                     strSublineasinv_gru = ddlSublineaInv.SelectedValue,
 
-                    // Parseo seguro de fecha
                     dtFechacrea_gru = !string.IsNullOrEmpty(txtFechaCreaGru.Text)
                                       ? DateTime.Parse(txtFechaCreaGru.Text)
                                       : DateTime.Now,
 
-                    // Mantener valores actuales por defecto
                     strFoto_gru = hfFotoActual.Value,
                     strArchivo_gru = hfArchivoActual.Value
                 };
 
-                // GESTIÓN DE ARCHIVOS (FOTO)
                 if (flpFotoGrupo.HasFile)
                 {
                     string nombre = $"FOTO_{DateTime.Now.Ticks}{Path.GetExtension(flpFotoGrupo.FileName)}";
                     g.strFoto_gru = GuardarArchivoFisico(flpFotoGrupo, "FOTOS", nombre);
                 }
 
-                // GESTIÓN DE ARCHIVOS (DOCUMENTO RESOLUCIÓN)
                 if (flpArchivoGrupo.HasFile)
                 {
                     string nombre = $"DOC_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivoGrupo.FileName)}";
                     g.strArchivo_gru = GuardarArchivoFisico(flpArchivoGrupo, "DOCUMENTOS", nombre);
                 }
 
-                // DECISIÓN: ¿INSERTAR O ACTUALIZAR?
                 if (string.IsNullOrEmpty(hfIdGrupo.Value))
                 {
-                    // INSERTAR
                     _manejador.GuardarGrupo(g);
                     Redireccionar("Grupo creado exitosamente.", "ss");
                 }
                 else
                 {
-                    // ACTUALIZAR
                     g.strId_gru = hfIdGrupo.Value;
                     _manejador.ActualizarGrupo(g);
                     Redireccionar("Grupo actualizado exitosamente.", "ss");
@@ -169,7 +154,6 @@ namespace SistemaGestionCGI
                     break;
 
                 case "VerIntegrantes":
-                    // Redirección limpia para cambiar de contexto a Integrantes
                     Response.Redirect($"GruposInvestigacion.aspx?idGrupo={id}", false);
                     break;
 
@@ -196,7 +180,6 @@ namespace SistemaGestionCGI
             var g = _manejador.ObtenerGrupoPorId(id);
             if (g == null) return;
 
-            // Configurar UI para Edición
             lblTituloFormulario.Text = $"Editar Grupo: {g.strId_gru}";
             hfIdGrupo.Value = g.strId_gru;
 
@@ -204,18 +187,15 @@ namespace SistemaGestionCGI
             txtCoordinadorGru.Text = g.strCoordinador_gru;
             txtFechaCreaGru.Text = g.dtFechacrea_gru.ToString("yyyy-MM-dd");
 
-            // Seleccionar Combos
             if (ddlCentro.Items.FindByValue(g.fkId_cen) != null)
                 ddlCentro.SelectedValue = g.fkId_cen;
 
             if (ddlCategoriaGru.Items.FindByValue(g.strCategoria_gru) != null)
                 ddlCategoriaGru.SelectedValue = g.strCategoria_gru;
 
-            // Archivos actuales
             hfFotoActual.Value = g.strFoto_gru;
             hfArchivoActual.Value = g.strArchivo_gru;
 
-            // Mostrar preview foto si existe
             if (!string.IsNullOrEmpty(g.strFoto_gru))
             {
                 imgFotoActual.ImageUrl = ObtenerImagenBase64(g.strFoto_gru);
@@ -251,7 +231,6 @@ namespace SistemaGestionCGI
         {
             CambiarVista(Vista.FormularioIntegrante);
             LimpiarFormularioIntegrante();
-            // Ejecutar script para inicializar la lógica visual (ocultar campos externos, etc.)
             ScriptManager.RegisterStartupScript(this, GetType(), "initForm", "InitFormulario();", true);
         }
 
@@ -259,14 +238,12 @@ namespace SistemaGestionCGI
         {
             try
             {
-                // Validaciones
                 if (string.IsNullOrWhiteSpace(txtCedulaInt.Text) || string.IsNullOrWhiteSpace(txtNombresInt.Text))
                 {
                     Msg("Cédula y Nombres son obligatorios.", "ww");
                     return;
                 }
 
-                // Validar duplicidad SOLO si es nuevo
                 if (string.IsNullOrEmpty(hfIdIntEdit.Value))
                 {
                     string grupoExistente = _manejador.VerificarIntegranteEnOtroGrupo(txtCedulaInt.Text.Trim());
@@ -291,7 +268,6 @@ namespace SistemaGestionCGI
                     strCertificado_int = hfCertificadoIntActual.Value
                 };
 
-                // Lógica Condicional (Interno vs Externo)
                 if (i.strTipo_int == "Externo")
                 {
                     if (string.IsNullOrWhiteSpace(txtEntidadInt.Text))
@@ -303,21 +279,19 @@ namespace SistemaGestionCGI
                     i.strCarrera_int = null;
                     i.strFacultad_int = null;
                 }
-                else // Interno
+                else 
                 {
                     i.strEntidad_int = null;
                     i.strCarrera_int = txtCarreraInt.Text.Trim();
                     i.strFacultad_int = ddlFacultadInt.SelectedValue;
                 }
 
-                // Archivo Certificado (Solo Invest. Principal)
                 if (flpCertificadoInt.HasFile)
                 {
                     string nombre = $"CERT_{DateTime.Now.Ticks}{Path.GetExtension(flpCertificadoInt.FileName)}";
                     i.strCertificado_int = GuardarArchivoFisico(flpCertificadoInt, "CERTIFICADOS", nombre);
                 }
 
-                // Guardar o Actualizar
                 if (string.IsNullOrEmpty(hfIdIntEdit.Value))
                 {
                     string usuario = Session["UsuarioLogueado"]?.ToString() ?? "Sistema";
@@ -327,7 +301,6 @@ namespace SistemaGestionCGI
                 else
                 {
                     i.strId_int = hfIdIntEdit.Value;
-                    // Preservar datos no editables en form
                     var original = _manejador.ObtenerIntegrantePorId(i.strId_int);
                     if (original != null)
                     {
@@ -339,7 +312,6 @@ namespace SistemaGestionCGI
                     SetFlashMessage("Datos del integrante actualizados.", "ss");
                 }
 
-                // Redireccionar al mismo grupo para refrescar
                 Response.Redirect($"GruposInvestigacion.aspx?idGrupo={hfGrupoIdActual.Value}", false);
             }
             catch (Exception ex) { Msg("Error integrante: " + ex.Message, "ee"); }
@@ -398,7 +370,6 @@ namespace SistemaGestionCGI
 
             hfCertificadoIntActual.Value = i.strCertificado_int;
 
-            // Manejo Interno/Externo
             if (ddlTipoInt.Items.FindByValue(i.strTipo_int) != null)
                 ddlTipoInt.SelectedValue = i.strTipo_int;
 
@@ -456,7 +427,6 @@ namespace SistemaGestionCGI
 
             if (i != null)
             {
-                // Script para llenar datos del modal usando JS
                 string estado = i.bitActivo_int ? "Activo" : "Inactivo";
                 string accion = i.bitActivo_int ? "dar de baja" : "reactivar";
 
@@ -482,7 +452,6 @@ namespace SistemaGestionCGI
                 string usuario = Session["UsuarioLogueado"]?.ToString() ?? "Sistema";
 
                 var i = _manejador.ObtenerIntegrantePorId(idInt);
-                // Invertimos el estado actual
                 _manejador.CambiarEstadoIntegrante(idInt, !i.bitActivo_int, motivo, usuario);
 
                 SetFlashMessage("Estado actualizado correctamente.", "ss");

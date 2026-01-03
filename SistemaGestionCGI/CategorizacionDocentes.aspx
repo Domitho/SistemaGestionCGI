@@ -292,7 +292,7 @@
 
                 <%-- Cuerpo del Reporte (Hoja Blanca) --%>
                 <div class="modal-body p-4" style="background: white; min-height: 500px;">
-                    <div id="areaImpresion" class="report-paper">
+                    <div id="arealmpresion" class="report-paper">
                         
                         <%-- 1. HERO BANNER (LOGO) --%>
                         <div class="header-hero-banner">
@@ -416,19 +416,72 @@
         }
 
         function imprimirReporte() {
-            var contenido = document.getElementById("areaImpresion").innerHTML;
+            // 1. Obtener contenido del panel
+            var contenido = document.getElementById("arealmpresion").innerHTML;
+
+            // 2. Abrir ventana emergente
             var ventana = window.open('', 'PRINT', 'height=800,width=1000');
+
             ventana.document.write('<html><head><title>Ficha de Categorización</title>');
-            // Importante: Incluir Bootstrap y tu CSS personalizado para que se vea igual
+
+            // 3. Cargar Bootstrap (CDN)
             ventana.document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">');
-            // Aquí deberías apuntar a tu CSS de reporte si lo tienes publicado, si no, se verán estilos básicos
-            // Para asegurar estilos, copiamos los básicos:
-            ventana.document.write('<style>body{font-family: sans-serif;} .header-hero-banner img{width:100%;} .researcher-card{border:1px solid #ccc; padding:15px; margin-bottom:20px; border-radius:8px;} .card-row{display:flex; border-bottom:1px solid #eee; padding:5px 0;} .label{font-weight:bold; font-size:0.8rem; color:#666; width:120px; display:inline-block;} .value{font-weight:bold;}</style>');
+
+            // 4. INYECTAR ESTILOS MANUALMENTE (ESTO ASEGURA EL DISEÑO)
+            ventana.document.write('<style>');
+
+            // Ajustes Generales
+            ventana.document.write('body { font-family: "Segoe UI", sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0; }');
+            ventana.document.write('.report-paper { padding: 40px 50px; background: white; }');
+
+            // BANNER AZUL (Con corrección de logo centrado)
+            ventana.document.write('.header-hero-banner { background-color: #003876 !important; color: white !important; margin: -40px -50px 40px -50px; padding: 50px 20px 30px 20px; display: flex !important; justify-content: center !important; align-items: center !important; border-bottom: 6px solid #002a5c; }');
+            ventana.document.write('.header-hero-banner img { height: 80px; width: auto; filter: brightness(0) invert(1); display: block; }');
+
+            // Encabezados y Títulos
+            ventana.document.write('.header-info-split { display: flex; justify-content: space-between; border-bottom: 2px solid #003876; margin-bottom: 40px; padding-bottom: 25px; }');
+            ventana.document.write('.doc-title { color: #003876; font-weight: 900; font-size: 2rem; text-transform: uppercase; }');
+            ventana.document.write('.system-label { font-size: 0.7rem; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 5px; }');
+
+            // Metadatos (Derecha)
+            ventana.document.write('.meta-group { margin-bottom: 10px; text-align: right; }');
+            ventana.document.write('.meta-label { font-size: 0.65rem; text-transform: uppercase; color: #aaa; font-weight: 700; display: block; }');
+            ventana.document.write('.meta-value { font-size: 1rem; font-weight: 700; color: #333; display: block; }');
+            ventana.document.write('.ref-highlight { color: #dc3545; font-family: Consolas, monospace; font-size: 1.1rem; }');
+
+            // Tarjeta de Datos (Card)
+            ventana.document.write('.researcher-card { background-color: #f8faff; border-left: 4px solid #003876; padding: 20px; margin-bottom: 40px; border: 1px solid #e1e8f0; border-radius: 6px; }');
+            ventana.document.write('.card-row { display: flex; justify-content: space-between; margin-bottom: 15px; }');
+            ventana.document.write('.card-item .label { font-size: 0.7rem; color: #8898aa; font-weight: 700; display: block; text-transform: uppercase; }');
+            ventana.document.write('.card-item .value { font-size: 1rem; font-weight: 600; color: #002a5c; }');
+
+            // Timeline (Historial)
+            ventana.document.write('.timeline-container { padding: 0 10px; }');
+            ventana.document.write('.timeline-title { font-size: 0.9rem; text-transform: uppercase; font-weight: 700; color: #999; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 25px; }');
+            ventana.document.write('.timeline-list { list-style: none; padding: 0; position: relative; }');
+            ventana.document.write('.timeline-list::before { content: ""; position: absolute; top: 0; bottom: 0; left: 24px; width: 2px; background: #e9ecef; }');
+            ventana.document.write('.timeline-item { position: relative; padding-left: 60px; margin-bottom: 30px; page-break-inside: avoid; }');
+            ventana.document.write('.timeline-marker { position: absolute; left: 18px; top: 0; width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 3px solid #003876; z-index: 2; }');
+            ventana.document.write('.timeline-header { margin-bottom: 6px; display: flex; align-items: baseline; gap: 10px; }');
+            ventana.document.write('.timeline-header .date { font-weight: 700; color: #333; font-size: 0.9rem; }');
+
+            // Badges y Detalles
+            ventana.document.write('.action-badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; }');
+            ventana.document.write('.action-badge.good { background: rgba(25, 135, 84, 0.1); color: #198754; }');
+            ventana.document.write('.action-badge.bad { background: rgba(220, 53, 69, 0.1); color: #dc3545; }');
+
+            // Footer Legal
+            ventana.document.write('.report-legal-footer { margin-top: 60px; border-top: 1px solid #eee; text-align: center; font-size: 0.65rem; color: #ccc; padding-top: 20px; text-transform: uppercase; }');
+            ventana.document.write('</style>');
+
             ventana.document.write('</head><body>');
             ventana.document.write(contenido);
             ventana.document.write('</body></html>');
+
+            // 5. Cerrar flujo y mostrar diálogo de impresión
             ventana.document.close();
             ventana.focus();
+
             setTimeout(function () {
                 ventana.print();
                 ventana.close();

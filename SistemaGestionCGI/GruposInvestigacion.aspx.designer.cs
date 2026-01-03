@@ -519,6 +519,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl modalVistaPrevia;
 
         /// <summary>
+        /// Control arealmpresion.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl arealmpresion;
+
+        /// <summary>
         /// Control lblRefId.
         /// </summary>
         /// <remarks>

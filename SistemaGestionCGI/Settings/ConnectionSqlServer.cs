@@ -18,14 +18,12 @@ namespace SistemaGestionCGI.Settings
 
         private string CreateConnectionString()
         {
-            // Se mantiene la cadena base, permitiendo formateo dinámico si Server/Database se asignan
             string baseConn = @"server=DESKTOP-A925LIU\SQLEXPRESS2019;database=INVESTIGACION;INTEGRATED SECURITY=true";
             return (string.IsNullOrEmpty(Server) || string.IsNullOrEmpty(Database))
                 ? baseConn
                 : string.Format("server={0};database={1};INTEGRATED SECURITY=true", Server, Database);
         }
 
-        // --- MÉTODOS DE APOYO CENTRALIZADOS ---
 
         private T ExecuteBase<T>(string sql, Func<SqlCommand, T> action)
         {
@@ -65,8 +63,6 @@ namespace SistemaGestionCGI.Settings
                 return data;
             }
         }
-
-        // --- MÉTODOS PÚBLICOS OPTIMIZADOS ---
 
         public string Select(string table, string where = "", string filter = "*")
         {
@@ -125,7 +121,6 @@ namespace SistemaGestionCGI.Settings
             return Select<T>(table, $"uuid = {uuid}").First();
         }
 
-        // Métodos de sobrecarga simplificados
         public string Insert(string table, List<object> data) => Insert(table, JsonConvert.DeserializeObject<List<Hashtable>>(JsonConvert.SerializeObject(data)));
         public string Insert(string table, object data) => Insert(table, JsonConvert.DeserializeObject<Hashtable>(JsonConvert.SerializeObject(data)));
         public string Insert(string table, Hashtable data) => Insert(table, new List<Hashtable> { data });
@@ -174,7 +169,7 @@ namespace SistemaGestionCGI.Settings
             return SelectSql(sql);
         }
 
-        // --- MÉTODOS DE CONVERSIÓN ---
+        // --- MÉTODOS DE CONVERSION ---
 
         private Hashtable SetStandarValues(Hashtable data, int op = 1)
         {

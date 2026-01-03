@@ -564,7 +564,7 @@
                     <iframe id="framePdf" class="pdf-viewer-frame" style="width: 100%; height: 100%; border: none;"></iframe>
 
                     <asp:Panel ID="pnlReporteHtml" runat="server" Visible="false" CssClass="p-5 overflow-auto h-100">
-                        <div id="areaImpresion">
+                        <div id="arealmpresion" class="report-paper" ClientIDMode="Static">
                             <asp:Literal ID="litReporteGenerado" runat="server"></asp:Literal>
                         </div>
                     </asp:Panel>
@@ -612,7 +612,6 @@
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content shadow-utc border-0 rounded-4">
                 
-                <%-- Header Azul Gradiente --%>
                 <div class="modal-header bg-utc text-white">
                     <h5 class="modal-title w-100 text-center">
                         <i class="fa-solid fa-clock-rotate-left me-2"></i> HISTORIAL DE MOVIMIENTOS
@@ -622,11 +621,13 @@
 
                 <div class="modal-body bg-white">
                     
-                    <%-- Encabezado con Nombre y Botón Reporte --%>
                     <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-3">
                         <h6 class="fw-bold text-secondary mb-0">
                             INTEGRANTE: <asp:Label ID="lblNombreHistorial" runat="server" CssClass="text-primary text-uppercase" Text="..." />
                         </h6>
+
+                        <%-- 1. CAMPO OCULTO FALTANTE (IMPORTANTE) --%>
+                        <asp:HiddenField ID="hfIdIntegranteHistorial" runat="server" />
 
                         <asp:LinkButton ID="btnGenerarReporteHistorial" runat="server"
                             CssClass="btn btn-danger btn-pill btn-sm px-4 shadow-sm"
@@ -635,7 +636,6 @@
                         </asp:LinkButton>
                     </div>
 
-                    <%-- Tabla Estilizada --%>
                     <div class="table-responsive rounded border-0">
                         <table class="table table-sm table-hover table-historial-utc align-middle text-center mb-0">
                             <thead>
@@ -650,12 +650,9 @@
                                 <asp:Repeater ID="rptHistorialMiembro" runat="server">
                                     <ItemTemplate>
                                         <tr>
-                                            <%-- Fecha (Gris y Negrita) --%>
                                             <td class="text-secondary fw-bold" style="font-size: 0.85rem;">
                                                 <%# Convert.ToDateTime(Eval("dtFecha")).ToString("dd/MM/yyyy HH:mm") %>
                                             </td>
-                                            
-                                            <%-- Acción (Badge condicional) --%>
                                             <td>
                                                 <span class='badge rounded-pill px-3 <%# 
                                                     Eval("strAccion").ToString().Contains("BAJA") ? "badge-baja" : 
@@ -664,13 +661,9 @@
                                                     <%# Eval("strAccion") %>
                                                 </span>
                                             </td>
-                                            
-                                            <%-- Motivo (Cursiva y alineado izq) --%>
                                             <td class="text-start fst-italic text-muted small ps-3">
                                                 <%# Eval("strMotivo") %>
                                             </td>
-                                            
-                                            <%-- Usuario --%>
                                             <td class="small fw-bold text-secondary">
                                                 <i class="fa-solid fa-user-check me-1 opacity-50"></i>
                                                 <%# Eval("strUsuario") %>
@@ -815,15 +808,70 @@
 
     <script>
         function imprimirReporteJS() {
-            var contenido = document.getElementById("areaImpresion").innerHTML;
+            // A. Obtener el contenido HTML
+            var contenido = document.getElementById("arealmpresion").innerHTML;
+
+            // B. Abrir ventana limpia
             var ventana = window.open('', 'PRINT', 'height=800,width=1000');
 
             ventana.document.write('<html><head><title>Reporte de Historial</title>');
+
+            // C. Cargar Bootstrap (CDN)
             ventana.document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">');
+
+            // D. INYECTAR ESTILOS MANUALMENTE (DISEÑO UTC)
+            ventana.document.write('<style>');
+
+            // Ajustes Generales
+            ventana.document.write('body { font-family: "Segoe UI", sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0; }');
+            ventana.document.write('.report-paper { padding: 40px 50px; background: white; }');
+
+            // BANNER AZUL (Con corrección de logo centrado)
+            ventana.document.write('.header-hero-banner { background-color: #003876 !important; color: white !important; margin: -40px -50px 40px -50px; padding: 50px 20px 30px 20px; display: flex !important; justify-content: center !important; align-items: center !important; border-bottom: 6px solid #002a5c; }');
+            ventana.document.write('.header-hero-banner img { height: 80px; width: auto; filter: brightness(0) invert(1); display: block; }');
+
+            // Encabezados y Títulos
+            ventana.document.write('.header-info-split { display: flex; justify-content: space-between; border-bottom: 2px solid #003876; margin-bottom: 40px; padding-bottom: 25px; }');
+            ventana.document.write('.doc-title { color: #003876; font-weight: 900; font-size: 2rem; text-transform: uppercase; }');
+            ventana.document.write('.system-label { font-size: 0.7rem; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 5px; }');
+
+            // Metadatos (Derecha)
+            ventana.document.write('.meta-group { margin-bottom: 10px; text-align: right; }');
+            ventana.document.write('.meta-label { font-size: 0.65rem; text-transform: uppercase; color: #aaa; font-weight: 700; display: block; }');
+            ventana.document.write('.meta-value { font-size: 1rem; font-weight: 700; color: #333; display: block; }');
+            ventana.document.write('.ref-highlight { color: #dc3545; font-family: Consolas, monospace; font-size: 1.1rem; }');
+
+            // Tarjeta de Datos (Card)
+            ventana.document.write('.researcher-card { background-color: #f8faff; border-left: 4px solid #003876; padding: 20px; margin-bottom: 40px; border: 1px solid #e1e8f0; border-radius: 6px; }');
+            ventana.document.write('.card-row { display: flex; justify-content: space-between; margin-bottom: 15px; }');
+            ventana.document.write('.card-item { flex: 1; padding-right: 10px; }'); // Añadido para asegurar distribución
+            ventana.document.write('.card-item .label { font-size: 0.7rem; color: #8898aa; font-weight: 700; display: block; text-transform: uppercase; }');
+            ventana.document.write('.card-item .value { font-size: 1rem; font-weight: 600; color: #002a5c; }');
+
+            // Timeline (Historial)
+            ventana.document.write('.timeline-container { padding: 0 10px; }');
+            ventana.document.write('.timeline-title { font-size: 0.9rem; text-transform: uppercase; font-weight: 700; color: #999; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 25px; }');
+            ventana.document.write('.timeline-list { list-style: none; padding: 0; position: relative; }');
+            ventana.document.write('.timeline-list::before { content: ""; position: absolute; top: 0; bottom: 0; left: 24px; width: 2px; background: #e9ecef; }');
+            ventana.document.write('.timeline-item { position: relative; padding-left: 60px; margin-bottom: 30px; page-break-inside: avoid; }');
+            ventana.document.write('.timeline-marker { position: absolute; left: 18px; top: 0; width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 3px solid #003876; z-index: 2; }');
+            ventana.document.write('.timeline-header { margin-bottom: 6px; display: flex; align-items: baseline; gap: 10px; }');
+            ventana.document.write('.timeline-header .date { font-weight: 700; color: #333; font-size: 0.9rem; }');
+
+            // Badges y Detalles
+            ventana.document.write('.action-badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; }');
+            ventana.document.write('.action-badge.good { background: rgba(25, 135, 84, 0.1); color: #198754; }');
+            ventana.document.write('.action-badge.bad { background: rgba(220, 53, 69, 0.1); color: #dc3545; }');
+
+            // Footer Legal
+            ventana.document.write('.report-legal-footer { margin-top: 60px; border-top: 1px solid #eee; text-align: center; font-size: 0.65rem; color: #ccc; padding-top: 20px; text-transform: uppercase; }');
+            ventana.document.write('</style>');
+
             ventana.document.write('</head><body>');
             ventana.document.write(contenido);
             ventana.document.write('</body></html>');
 
+            // E. Cerrar flujo y ejecutar impresión
             ventana.document.close();
             ventana.focus();
 
