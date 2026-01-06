@@ -5,7 +5,6 @@
     <link href="DesignersUTC/Styles/utc-full-design.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/modal-vista-integrantes.css" rel="stylesheet" />
 
-    <%-- HEADER PRINCIPAL [cite: 1751] --%>
     <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
         <h3 class="utc-title mb-0">
             <i class="fa-solid fa-building-columns me-2"></i> CENTROS DE INVESTIGACIÓN
@@ -23,7 +22,6 @@
     <%-- PANEL 1: GRILLA  --%>
     <asp:Panel ID="pnlGrilla" runat="server" Visible="true">
         <div class="table-responsive bg-white p-3 rounded shadow-utc">
-            <%-- DataTables UTC [cite: 149] --%>
             <table id="tablaCentros" class="table table-bordered table-hover table-utc align-middle text-center" style="width: 100%">
                 <thead>
                     <tr>
@@ -70,7 +68,6 @@
         </div>
     </asp:Panel>
 
-    <%-- PANEL 2: FORMULARIO [cite: 1845] --%>
     <asp:Panel ID="pnlFormulario" runat="server" Visible="false">
         <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4">
             <h4 class="utc-subtitle mb-4 text-center">
@@ -223,7 +220,6 @@
         </div>
     </div>
 
-    <%-- SCRIPT DATATABLES CONFIG [cite: 2181] --%>
     <script type="text/javascript">
         const dtConfig = {
             responsive: true, autoWidth: false, ordering: true, pageLength: 10,

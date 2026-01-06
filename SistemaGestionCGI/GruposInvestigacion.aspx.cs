@@ -15,14 +15,14 @@ namespace SistemaGestionCGI
         // 1. CONFIGURACIÓN Y CARGA INICIAL
         // =============================================
         private readonly ManejadorGruposInvestigacion _manejador = new ManejadorGruposInvestigacion();
-        private const string RUTA_BASE_GRUPOS = @"C:\UTC\GRUPOS\";
+        private const string RUTA_VIRTUAL_BASE = "~/RepositorioUTC/Grupos/";
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["UsuarioLogueado"] == null)
             {
                 Response.Redirect("Login.aspx");
-                return;
+                return; 
             }
 
             if (IsPostBack) return;
@@ -547,7 +547,6 @@ namespace SistemaGestionCGI
                     sb.Append("<tr>");
                     sb.Append($"<td>{item.dtFecha:dd/MM/yyyy HH:mm}</td>");
 
-                    // Estilo condicional según la acción (Baja en rojo, Reactivación en verde)
                     string colorBadge = item.strAccion == "BAJA" ? "bg-danger" : "bg-success";
                     sb.Append($"<td><span class='badge {colorBadge}'>{item.strAccion}</span></td>");
 
@@ -562,8 +561,6 @@ namespace SistemaGestionCGI
             }
 
             sb.Append("</tbody></table>");
-
-            // --- PIE DE PÁGINA (FIRMAS) ---
             sb.Append("<br/><br/><div class='row mt-5 text-center'>");
             sb.Append("<div class='col-6'><hr class='w-50 mx-auto'/>Firma Responsable</div>");
             sb.Append("<div class='col-6'><hr class='w-50 mx-auto'/>Recibido Conforme</div>");
@@ -615,39 +612,58 @@ namespace SistemaGestionCGI
 
         private string GuardarArchivoFisico(FileUpload control, string subCarpeta, string nombre)
         {
-            string carpeta = Path.Combine(RUTA_BASE_GRUPOS, subCarpeta);
-            if (!Directory.Exists(carpeta)) Directory.CreateDirectory(carpeta);
-            string ruta = Path.Combine(carpeta, nombre);
-            control.SaveAs(ruta);
-            return ruta;
+            string rutaVirtualCarpeta = Path.Combine(RUTA_VIRTUAL_BASE, subCarpeta);
+            string rutaFisicaCarpeta = Server.MapPath(rutaVirtualCarpeta);
+
+            if (!Directory.Exists(rutaFisicaCarpeta))
+            {
+                Directory.CreateDirectory(rutaFisicaCarpeta);
+            }
+
+            string rutaFisicaCompleta = Path.Combine(rutaFisicaCarpeta, nombre);
+            control.SaveAs(rutaFisicaCompleta);
+            return Path.Combine(rutaVirtualCarpeta, nombre).Replace("\\", "/");
         }
 
-        private void VisualizarArchivo(string ruta)
+        private void VisualizarArchivo(string rutaRelativaDb)
         {
-            if (File.Exists(ruta))
-            {
-                string nombre = Path.GetFileName(ruta);
+            string rutaFisica = rutaRelativaDb;
 
+            if (rutaRelativaDb.StartsWith("~") || rutaRelativaDb.StartsWith("/"))
+            {
+                rutaFisica = Server.MapPath(rutaRelativaDb);
+            }
+
+            if (File.Exists(rutaFisica))
+            {
+                string nombre = Path.GetFileName(rutaFisica);
                 Response.Clear();
                 Response.Buffer = true;
-
                 Response.ContentType = "application/pdf";
                 Response.AddHeader("Content-Disposition", "inline; filename=" + nombre);
-
-                Response.TransmitFile(ruta);
+                Response.TransmitFile(rutaFisica);
                 Response.End();
             }
             else
             {
-                Msg("El archivo físico no existe en el servidor.", "ww");
+                Msg("El archivo no se encuentra en el servidor.", "ww");
             }
         }
 
         protected string ObtenerImagenBase64(object rutaObj)
         {
-            string ruta = rutaObj as string;
-            if (string.IsNullOrEmpty(ruta) || !File.Exists(ruta)) return "DesignersUTC/Images/default-group.png";
-            try { return "data:image/jpeg;base64," + Convert.ToBase64String(File.ReadAllBytes(ruta)); }
+            string rutaRelativa = rutaObj as string;
+
+            if (string.IsNullOrEmpty(rutaRelativa)) return "DesignersUTC/Images/default-group.png";
+
+            try
+            {
+                string rutaFisica = rutaRelativa.StartsWith("~") ? Server.MapPath(rutaRelativa) : rutaRelativa;
+
+                if (!File.Exists(rutaFisica)) return "DesignersUTC/Images/default-group.png";
+
+                return "data:image/jpeg;base64," + Convert.ToBase64String(File.ReadAllBytes(rutaFisica));
+            }
             catch { return ""; }
         }
 

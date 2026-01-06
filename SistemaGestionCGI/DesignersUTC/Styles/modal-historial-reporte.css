@@ -12,7 +12,7 @@
 
 /* Cabecera del Modal con Degradado Institucional */
 .modal-header.bg-utc {
-    background: linear-gradient(90deg, var(--utc-azul, #003876) 0%, var(--utc-azul-oscuro, #002a5c) 100%) !important;
+    background: linear-gradient(90deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%) !important;
     color: #fff !important;
     border-top-left-radius: 10px !important;
     border-top-right-radius: 10px !important;
@@ -38,10 +38,11 @@
 .table-historial-utc {
     border-collapse: separate;
     border-spacing: 0;
+    border: none;
 }
 
     .table-historial-utc thead th {
-        background: var(--utc-azul, #003876) !important;
+        background: linear-gradient(90deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%) !important;
         color: #fff !important;
         font-weight: 600;
         text-transform: uppercase;
@@ -111,8 +112,9 @@
 
 /* Banner Superior Azul (Hero) */
 .header-hero-banner {
-    background-color: var(--utc-azul, #003876);
-    margin: -40px -50px 40px -50px; /* Expande fuera del padding del padre */
+    background: linear-gradient(90deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%) !important;
+    color: white !important;
+    margin: -40px -50px 40px -50px;
     padding: 30px 20px;
     text-align: center;
     border-bottom: 6px solid var(--utc-azul-oscuro, #002a5c);

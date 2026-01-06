@@ -16,7 +16,7 @@ namespace SistemaGestionCGI
         // ==========================================
         private readonly ManejadorEjecucionProyectos _manejador = new ManejadorEjecucionProyectos();
         private readonly ManejadorInscripcionProyectos _manejadorProyectos = new ManejadorInscripcionProyectos();
-        private const string RUTA_BASE_ARCHIVOS = @"C:\UTC\EJECUCION_INFORMES\";
+        private const string RUTA_VIRTUAL_ARCHIVOS = "~/RepositorioUTC/EjecucionInformes/";
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -444,13 +444,13 @@ namespace SistemaGestionCGI
         {
             try
             {
-                // Validación de extensión
                 if (flpArchivoInf.HasFile)
                 {
                     string ext = Path.GetExtension(flpArchivoInf.FileName).ToLower();
-                    if (ext != ".doc" && ext != ".docx")
+
+                    if (ext != ".doc" && ext != ".docx" && ext != ".pdf")
                     {
-                        Msg("Solo se permiten archivos Word (.doc, .docx).", "ww");
+                        Msg("Formato no válido. Solo se permiten archivos Word (.doc, .docx) o PDF (.pdf).", "ww");
                         ScriptManager.RegisterStartupScript(this, GetType(), "Reopen", "AbrirSubModalUpload();", true);
                         return;
                     }
@@ -651,13 +651,19 @@ namespace SistemaGestionCGI
         // ==========================================
         // 7. UTILIDADES
         // ==========================================
-
         private string GuardarArchivoFisico(FileUpload control, string nombreArchivo)
         {
-            if (!Directory.Exists(RUTA_BASE_ARCHIVOS)) Directory.CreateDirectory(RUTA_BASE_ARCHIVOS);
-            string ruta = Path.Combine(RUTA_BASE_ARCHIVOS, nombreArchivo);
-            control.SaveAs(ruta);
-            return ruta;
+            string rutaFisicaCarpeta = Server.MapPath(RUTA_VIRTUAL_ARCHIVOS);
+
+            if (!Directory.Exists(rutaFisicaCarpeta))
+            {
+                Directory.CreateDirectory(rutaFisicaCarpeta);
+            }
+
+            string rutaFisicaCompleta = Path.Combine(rutaFisicaCarpeta, nombreArchivo);
+            control.SaveAs(rutaFisicaCompleta);
+
+            return Path.Combine(RUTA_VIRTUAL_ARCHIVOS, nombreArchivo).Replace("\\", "/");
         }
 
         private void SetFlashMessage(string msg, string type)

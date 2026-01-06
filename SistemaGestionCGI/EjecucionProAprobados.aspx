@@ -411,7 +411,7 @@
                             <ItemTemplate>
                                 <div class="col-md-4 col-sm-6">
 
-                                    <div class="file-card" onclick="DescargarWord('<%# Eval("strId_informe") %>')">
+                                    <div class="file-card" onclick="GestionarArchivoDirecto('<%# ResolveUrl(Eval("strArchivo_path").ToString()) %>')">
 
                                         <div class="position-absolute top-0 end-0 p-2 d-flex gap-1" style="z-index: 10;">
 
@@ -433,7 +433,10 @@
                                         </div>
 
                                         <div class="file-card-preview">
-                                            <i class="fa-solid fa-file-word text-primary"></i>
+                                            <i class='<%# Eval("strArchivo_path").ToString().ToLower().EndsWith(".pdf") 
+                                                ? "fa-solid fa-file-pdf text-danger" 
+                                                : "fa-solid fa-file-word text-primary" %>'>
+                                            </i>
                                         </div>
 
                                         <div class="file-card-body">
@@ -516,12 +519,15 @@
                         </div>
 
                         <div class="utc-dropzone" id="dropzoneArchivoInf">
-                            <i class="fa-solid fa-file-word fa-2x mb-2 text-primary"></i><br />
-                            Arrastra documento Word aquí o haz clic
+                            <div class="mb-2">
+                                <i class="fa-solid fa-file-word fa-2x text-primary me-2"></i>
+                                <i class="fa-solid fa-file-pdf fa-2x text-danger"></i>
+                            </div>
+                            Arrastra documento Word o PDF aquí o haz clic
                         </div>
 
                         <asp:FileUpload ID="flpArchivoInf" runat="server" CssClass="utc-fileinput-input"
-                            accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+                            accept=".doc,.docx,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf" />
                     </div>
 
                     <div class="form-text small text-muted mb-3">
@@ -543,12 +549,14 @@
     </div>
 
     <div class="modal fade" id="modalVistaPrevia" tabindex="-1" aria-hidden="true" style="z-index: 1070;" ClientIDMode="Static" runat="server">
-        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 rounded-4 shadow-lg">
+                
+                <%-- Cabecera Oscura --%>
                 <div class="modal-header border-bottom-0 py-2 px-3 bg-dark text-white">
-                    <h6 class="modal-title" id="lblTituloPreview" runat="server">Vista Previa</h6>
+                    <h6 class="modal-title" id="lblTituloPreview" runat="server" ClientIDMode="Static">Vista Previa</h6>
                     <div>
-                        <button type="button" id="btnImprimirReporte" class="btn btn-sm btn-light me-2" onclick="imprimirReporteJS()" style="display: none;" runat="server">
+                        <button type="button" id="btnImprimirReporte" class="btn btn-sm btn-light me-2" onclick="imprimirReporteJS()" style="display: none;" runat="server" ClientIDMode="Static">
                             <i class="fa-solid fa-print"></i> Imprimir
                         </button>
 
@@ -560,14 +568,16 @@
                     </div>
                 </div>
 
-                <div class="modal-body p-0" style="height: 80vh; background: white;">
-                    <iframe id="framePdf" class="pdf-viewer-frame" style="width: 100%; height: 100%; border: none;"></iframe>
+                <div class="modal-body p-4" style="background: white; min-height: 500px;">
+                    
+                    <iframe id="framePdf" class="pdf-viewer-frame" style="width: 100%; height: 100%; min-height: 500px; border: none; display:none;"></iframe>
 
-                    <asp:Panel ID="pnlReporteHtml" runat="server" Visible="false" CssClass="p-5 overflow-auto h-100">
+                    <asp:Panel ID="pnlReporteHtml" runat="server" Visible="false">
                         <div id="arealmpresion" class="report-paper" ClientIDMode="Static">
                             <asp:Literal ID="litReporteGenerado" runat="server"></asp:Literal>
                         </div>
                     </asp:Panel>
+
                 </div>
             </div>
         </div>
@@ -626,7 +636,6 @@
                             INTEGRANTE: <asp:Label ID="lblNombreHistorial" runat="server" CssClass="text-primary text-uppercase" Text="..." />
                         </h6>
 
-                        <%-- 1. CAMPO OCULTO FALTANTE (IMPORTANTE) --%>
                         <asp:HiddenField ID="hfIdIntegranteHistorial" runat="server" />
 
                         <asp:LinkButton ID="btnGenerarReporteHistorial" runat="server"
@@ -692,19 +701,6 @@
             </div>
         </div>
     </div>
-
-    <script>
-        function guardarMotivoJS() {
-            var txt = document.getElementById('txtMotivoCambio');
-            var hf = document.getElementById('hfMotivoHidden');
-            if (txt.value.trim() === "") {
-                alert("Debe ingresar un motivo.");
-                return false;
-            }
-            hf.value = txt.value;
-            return true;
-        }
-    </script>
 
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
 
@@ -780,109 +776,61 @@
             AbrirSubModalUpload();
         }
 
-        function DescargarWord(id) {
-            var url = 'VerArchivo.ashx?id=' + id + '&tipo=INFORME';
-            window.location.href = url;
+        function guardarMotivoJS() {
+            var txt = document.getElementById('txtMotivoCambio');
+            var hf = document.getElementById('hfMotivoHidden');
+            if (txt.value.trim() === "") {
+                alert("Debe ingresar un motivo.");
+                return false;
+            }
+            hf.value = txt.value;
+            return true;
         }
 
-        function VerPDF(id, tipo) {
-            var url = 'VerArchivo.ashx?id=' + id + '&tipo=' + tipo;
+        function GestionarArchivoDirecto(url) {
+            if (!url || url.trim() === "") {
+                alert("No se encuentra el archivo físico.");
+                return;
+            }
 
-            document.getElementById('framePdf').src = url;
-            document.getElementById('lblTituloPreview').innerText = "Visualización de Documento";
-            document.getElementById('btnDescargarDirecto').href = url;
+            var extension = url.split('.').pop().toLowerCase();
 
-            var el = document.getElementById('modalVistaPrevia');
-            var modal = bootstrap.Modal.getOrCreateInstance(el);
-            modal.show();
+            if (extension === 'pdf') {
+                var frame = document.getElementById('framePdf');
+                frame.src = url;
+                frame.style.display = 'block';
+
+                document.getElementById('lblTituloPreview').innerText = "Visualización de Documento";
+
+                var btnDL = document.getElementById('btnDescargarDirecto');
+                btnDL.href = url;
+                btnDL.setAttribute('download', url.split('/').pop());
+                var btnPrint = document.getElementById('btnImprimirReporte');
+                if (btnPrint) btnPrint.style.display = 'none';
+
+                var pnlHtml = document.getElementById('<%= pnlReporteHtml.ClientID %>');
+                if (pnlHtml) pnlHtml.style.display = 'none';
+
+                new bootstrap.Modal(document.getElementById('modalVistaPrevia')).show();
+
+            } else {
+                var link = document.createElement('a');
+                link.href = url;
+                link.download = url.split('/').pop(); 
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
         }
 
         function CerrarVistaPrevia() {
             var el = document.getElementById('modalVistaPrevia');
             var modal = bootstrap.Modal.getInstance(el);
             if (modal) modal.hide();
+
             document.getElementById('framePdf').src = '';
         }
 
-    </script>
-
-    <script>
-        function imprimirReporteJS() {
-            // A. Obtener el contenido HTML
-            var contenido = document.getElementById("arealmpresion").innerHTML;
-
-            // B. Abrir ventana limpia
-            var ventana = window.open('', 'PRINT', 'height=800,width=1000');
-
-            ventana.document.write('<html><head><title>Reporte de Historial</title>');
-
-            // C. Cargar Bootstrap (CDN)
-            ventana.document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">');
-
-            // D. INYECTAR ESTILOS MANUALMENTE (DISEÑO UTC)
-            ventana.document.write('<style>');
-
-            // Ajustes Generales
-            ventana.document.write('body { font-family: "Segoe UI", sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0; }');
-            ventana.document.write('.report-paper { padding: 40px 50px; background: white; }');
-
-            // BANNER AZUL (Con corrección de logo centrado)
-            ventana.document.write('.header-hero-banner { background-color: #003876 !important; color: white !important; margin: -40px -50px 40px -50px; padding: 50px 20px 30px 20px; display: flex !important; justify-content: center !important; align-items: center !important; border-bottom: 6px solid #002a5c; }');
-            ventana.document.write('.header-hero-banner img { height: 80px; width: auto; filter: brightness(0) invert(1); display: block; }');
-
-            // Encabezados y Títulos
-            ventana.document.write('.header-info-split { display: flex; justify-content: space-between; border-bottom: 2px solid #003876; margin-bottom: 40px; padding-bottom: 25px; }');
-            ventana.document.write('.doc-title { color: #003876; font-weight: 900; font-size: 2rem; text-transform: uppercase; }');
-            ventana.document.write('.system-label { font-size: 0.7rem; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 5px; }');
-
-            // Metadatos (Derecha)
-            ventana.document.write('.meta-group { margin-bottom: 10px; text-align: right; }');
-            ventana.document.write('.meta-label { font-size: 0.65rem; text-transform: uppercase; color: #aaa; font-weight: 700; display: block; }');
-            ventana.document.write('.meta-value { font-size: 1rem; font-weight: 700; color: #333; display: block; }');
-            ventana.document.write('.ref-highlight { color: #dc3545; font-family: Consolas, monospace; font-size: 1.1rem; }');
-
-            // Tarjeta de Datos (Card)
-            ventana.document.write('.researcher-card { background-color: #f8faff; border-left: 4px solid #003876; padding: 20px; margin-bottom: 40px; border: 1px solid #e1e8f0; border-radius: 6px; }');
-            ventana.document.write('.card-row { display: flex; justify-content: space-between; margin-bottom: 15px; }');
-            ventana.document.write('.card-item { flex: 1; padding-right: 10px; }'); // Añadido para asegurar distribución
-            ventana.document.write('.card-item .label { font-size: 0.7rem; color: #8898aa; font-weight: 700; display: block; text-transform: uppercase; }');
-            ventana.document.write('.card-item .value { font-size: 1rem; font-weight: 600; color: #002a5c; }');
-
-            // Timeline (Historial)
-            ventana.document.write('.timeline-container { padding: 0 10px; }');
-            ventana.document.write('.timeline-title { font-size: 0.9rem; text-transform: uppercase; font-weight: 700; color: #999; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 25px; }');
-            ventana.document.write('.timeline-list { list-style: none; padding: 0; position: relative; }');
-            ventana.document.write('.timeline-list::before { content: ""; position: absolute; top: 0; bottom: 0; left: 24px; width: 2px; background: #e9ecef; }');
-            ventana.document.write('.timeline-item { position: relative; padding-left: 60px; margin-bottom: 30px; page-break-inside: avoid; }');
-            ventana.document.write('.timeline-marker { position: absolute; left: 18px; top: 0; width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 3px solid #003876; z-index: 2; }');
-            ventana.document.write('.timeline-header { margin-bottom: 6px; display: flex; align-items: baseline; gap: 10px; }');
-            ventana.document.write('.timeline-header .date { font-weight: 700; color: #333; font-size: 0.9rem; }');
-
-            // Badges y Detalles
-            ventana.document.write('.action-badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; }');
-            ventana.document.write('.action-badge.good { background: rgba(25, 135, 84, 0.1); color: #198754; }');
-            ventana.document.write('.action-badge.bad { background: rgba(220, 53, 69, 0.1); color: #dc3545; }');
-
-            // Footer Legal
-            ventana.document.write('.report-legal-footer { margin-top: 60px; border-top: 1px solid #eee; text-align: center; font-size: 0.65rem; color: #ccc; padding-top: 20px; text-transform: uppercase; }');
-            ventana.document.write('</style>');
-
-            ventana.document.write('</head><body>');
-            ventana.document.write(contenido);
-            ventana.document.write('</body></html>');
-
-            // E. Cerrar flujo y ejecutar impresión
-            ventana.document.close();
-            ventana.focus();
-
-            setTimeout(function () {
-                ventana.print();
-                ventana.close();
-            }, 500);
-        }
-    </script>
-
-    <script>
         function validarPesoArchivo() {
 
             var inputId = '<%= flpArchivoInf.ClientID %>';
@@ -927,6 +875,64 @@
 
             console.log("Validación exitosa o sin archivo. Continuando...");
             return true;
+        }
+
+    </script>
+
+    <script>
+        function imprimirReporteJS() {
+            var contenido = document.getElementById("arealmpresion").innerHTML;
+            var ventana = window.open('', 'PRINT', 'height=800,width=1000');
+            ventana.document.write('<html><head><title>Reporte de Historial</title>');
+            ventana.document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">');
+            ventana.document.write('<style>');
+            ventana.document.write('body { font-family: "Segoe UI", sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0; }');
+            ventana.document.write('.report-paper { padding: 40px 50px; background: white; }');
+            ventana.document.write('.header-hero-banner { background-color: #003876 !important; color: white !important; margin: -40px -50px 40px -50px; padding: 50px 20px 30px 20px; display: flex !important; justify-content: center !important; align-items: center !important; border-bottom: 6px solid #002a5c; }');
+            ventana.document.write('.header-hero-banner img { height: 80px; width: auto; filter: brightness(0) invert(1); display: block; }');
+
+            ventana.document.write('.header-info-split { display: flex; justify-content: space-between; border-bottom: 2px solid #003876; margin-bottom: 40px; padding-bottom: 25px; }');
+            ventana.document.write('.doc-title { color: #003876; font-weight: 900; font-size: 2rem; text-transform: uppercase; }');
+            ventana.document.write('.system-label { font-size: 0.7rem; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 5px; }');
+
+            ventana.document.write('.meta-group { margin-bottom: 10px; text-align: right; }');
+            ventana.document.write('.meta-label { font-size: 0.65rem; text-transform: uppercase; color: #aaa; font-weight: 700; display: block; }');
+            ventana.document.write('.meta-value { font-size: 1rem; font-weight: 700; color: #333; display: block; }');
+            ventana.document.write('.ref-highlight { color: #dc3545; font-family: Consolas, monospace; font-size: 1.1rem; }');
+
+            ventana.document.write('.researcher-card { background-color: #f8faff; border-left: 4px solid #003876; padding: 20px; margin-bottom: 40px; border: 1px solid #e1e8f0; border-radius: 6px; }');
+            ventana.document.write('.card-row { display: flex; justify-content: space-between; margin-bottom: 15px; }');
+            ventana.document.write('.card-item { flex: 1; padding-right: 10px; }'); // Añadido para asegurar distribución
+            ventana.document.write('.card-item .label { font-size: 0.7rem; color: #8898aa; font-weight: 700; display: block; text-transform: uppercase; }');
+            ventana.document.write('.card-item .value { font-size: 1rem; font-weight: 600; color: #002a5c; }');
+
+            ventana.document.write('.timeline-container { padding: 0 10px; }');
+            ventana.document.write('.timeline-title { font-size: 0.9rem; text-transform: uppercase; font-weight: 700; color: #999; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 25px; }');
+            ventana.document.write('.timeline-list { list-style: none; padding: 0; position: relative; }');
+            ventana.document.write('.timeline-list::before { content: ""; position: absolute; top: 0; bottom: 0; left: 24px; width: 2px; background: #e9ecef; }');
+            ventana.document.write('.timeline-item { position: relative; padding-left: 60px; margin-bottom: 30px; page-break-inside: avoid; }');
+            ventana.document.write('.timeline-marker { position: absolute; left: 18px; top: 0; width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 3px solid #003876; z-index: 2; }');
+            ventana.document.write('.timeline-header { margin-bottom: 6px; display: flex; align-items: baseline; gap: 10px; }');
+            ventana.document.write('.timeline-header .date { font-weight: 700; color: #333; font-size: 0.9rem; }');
+
+            ventana.document.write('.action-badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; }');
+            ventana.document.write('.action-badge.good { background: rgba(25, 135, 84, 0.1); color: #198754; }');
+            ventana.document.write('.action-badge.bad { background: rgba(220, 53, 69, 0.1); color: #dc3545; }');
+
+            ventana.document.write('.report-legal-footer { margin-top: 60px; border-top: 1px solid #eee; text-align: center; font-size: 0.65rem; color: #ccc; padding-top: 20px; text-transform: uppercase; }');
+            ventana.document.write('</style>');
+
+            ventana.document.write('</head><body>');
+            ventana.document.write(contenido);
+            ventana.document.write('</body></html>');
+
+            ventana.document.close();
+            ventana.focus();
+
+            setTimeout(function () {
+                ventana.print();
+                ventana.close();
+            }, 500);
         }
     </script>
 
