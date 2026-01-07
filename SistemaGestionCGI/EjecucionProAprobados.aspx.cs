@@ -6,6 +6,7 @@ using System.Web.UI.WebControls;
 using System.Text;
 using SistemaGestionCGI.BLL;
 using SistemaGestionCGI.Models;
+using System.Diagnostics;
 
 namespace SistemaGestionCGI
 {
@@ -637,7 +638,7 @@ namespace SistemaGestionCGI
             }
 
             sb.Append("</ul>");
-            sb.Append("</div>"); // Fin Timeline Container
+            sb.Append("</div>"); 
 
             // 6. FOOTER LEGAL
             sb.Append("<div class='report-legal-footer'>");
@@ -646,6 +647,30 @@ namespace SistemaGestionCGI
             sb.Append("</div>");
 
             return sb.ToString();
+        }
+
+        protected void btnAbrirGenerador_Click(object sender, EventArgs e)
+        {
+            if (int.TryParse(hfIdEjecucionInforme.Value, out int id))
+            {
+                // Llamamos al método público del control
+                ucGenerador.Mostrar(id);
+            }
+            else
+            {
+                Msg("Seleccione un proyecto primero (Botón Informes)", "ww");
+            }
+        }
+
+        // GENERACION DEL DOCUMENTO
+        protected void ucGenerador_InformeGuardado(object sender, EventArgs e)
+        {
+            // Este evento se dispara automáticamente cuando el UserControl termina de guardar
+            if (int.TryParse(hfIdEjecucionInforme.Value, out int id))
+            {
+                CargarInformes(id); // Refresca la tabla de archivos
+                Msg("Documento generado y guardado correctamente.", "ss");
+            }
         }
 
         // ==========================================

@@ -1,4 +1,5 @@
 ﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="EjecucionProAprobados.aspx.cs" Inherits="SistemaGestionCGI.EjecucionProAprobados" %>
+<%@ Register Src="~/GeneradorInforme.ascx" TagPrefix="uc" TagName="GeneradorInforme" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
 
@@ -401,9 +402,16 @@
                             </div>
                         </div>
 
-                        <button type="button" class="btn-upload-modern" onclick="LimpiarYSubir()">
-                            <i class="fa-solid fa-cloud-arrow-up me-2"></i> Subir Nuevo
-                        </button>
+                        <div class="d-flex gap-2">
+                            <asp:LinkButton ID="btnAbrirGenerador" runat="server" CssClass="btn btn-outline-primary d-flex align-items-center" OnClick="btnAbrirGenerador_Click">
+                                <i class="fa-solid fa-wand-magic-sparkles me-2"></i> Generar Informe
+                            </asp:LinkButton>
+
+                            <button type="button" class="btn-upload-modern" onclick="LimpiarYSubir()">
+                                <i class="fa-solid fa-cloud-arrow-up me-2"></i> Subir Escaneado
+                            </button>
+                        </div>
+
                     </div>
 
                     <div class="row g-3">
@@ -475,6 +483,8 @@
             </div>
         </div>
     </div>
+
+    <uc:GeneradorInforme ID="ucGenerador" runat="server" OnInformeGuardado="ucGenerador_InformeGuardado" />
 
     <div class="modal fade" id="modalSubirInforme" tabindex="-1" aria-hidden="true" style="z-index: 1060;" ClientIDMode="Static" runat="server">
         <div class="modal-dialog modal-dialog-centered">

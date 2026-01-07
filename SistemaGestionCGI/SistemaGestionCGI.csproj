@@ -131,6 +131,7 @@
     <Content Include="EjecucionProAprobados.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="GeneradorInforme.ascx" />
     <Content Include="Global.asax" />
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
@@ -258,6 +259,13 @@
     <Compile Include="EjecucionProAprobados.aspx.designer.cs">
       <DependentUpon>EjecucionProAprobados.aspx</DependentUpon>
     </Compile>
+    <Compile Include="GeneradorInforme.ascx.cs">
+      <DependentUpon>GeneradorInforme.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="GeneradorInforme.ascx.designer.cs">
+      <DependentUpon>GeneradorInforme.ascx</DependentUpon>
+    </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -329,6 +337,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Binarios\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

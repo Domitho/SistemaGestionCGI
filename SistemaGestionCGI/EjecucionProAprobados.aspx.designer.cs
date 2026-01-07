@@ -402,6 +402,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.HiddenField hfIdInformeEdit;
 
         /// <summary>
+        /// Control btnAbrirGenerador.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnAbrirGenerador;
+
+        /// <summary>
         /// Control rptInformes.
         /// </summary>
         /// <remarks>
@@ -409,6 +418,15 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptInformes;
+
+        /// <summary>
+        /// Control ucGenerador.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::SistemaGestionCGI.GeneradorInforme ucGenerador;
 
         /// <summary>
         /// Control modalSubirInforme.
