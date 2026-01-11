@@ -13,84 +13,47 @@ namespace SistemaGestionCGI
         protected void Page_Load(object sender, EventArgs e)
         {
             if (IsPostBack) return;
-
-            // Validación de sesión
             if (Session["UsuarioLogueado"] == null)
             {
                 Response.Redirect("Login.aspx");
                 return;
             }
-            CargarDatos();
-            CargarCombos();
 
+            CargarCentros();
+
+            // Mensajes Flash (Toastify)
             if (Session["TempMsg"] != null)
             {
                 Msg(Session["TempMsg"].ToString(), Session["TempTipo"].ToString());
                 Session["TempMsg"] = null;
                 Session["TempTipo"] = null;
             }
-
-            VerificarModalPendiente();
         }
 
-        private void CargarDatos()
+        // ==========================
+        // VISTA 1 & 2: GESTIÓN DE CENTROS
+        // ==========================
+        private void CargarCentros()
         {
             try
             {
                 rptCentros.DataSource = _manejador.ObtenerTodos();
                 rptCentros.DataBind();
             }
-            catch (Exception ex) { Msg("Error al cargar tabla: " + ex.Message, "ee"); }
+            catch (Exception ex) { Msg("Error cargando centros: " + ex.Message, "ee"); }
         }
 
-        private void CargarCombos()
-        {
-            try
-            {
-                var directores = _manejador.ObtenerCandidatosDirector();
-                ddlDirector.DataSource = directores;
-                ddlDirector.DataTextField = "NombreCompleto";
-                ddlDirector.DataValueField = "strId_int";
-                ddlDirector.DataBind();
-                ddlDirector.Items.Insert(0, new ListItem("-- Seleccione Director --", ""));
-            }
-            catch (Exception ex) { Msg("Error al cargar directores: " + ex.Message, "ee"); }
-        }
-
-        // ========================
-        // GESTIÓN DE PANELES
-        // ========================
         protected void btnNuevo_Click(object sender, EventArgs e)
         {
             LimpiarFormulario();
-            lblTituloFormulario.Text = "Registrar Nuevo Centro"; 
-
-            pnlGrilla.Visible = false;
-            pnlFormulario.Visible = true;
-            btnNuevo.Visible = false;
-            btnRegresar.Visible = true;
+            CambiarVista(Vista.FormularioCentro);
         }
 
-        protected void btnRegresar_Click(object sender, EventArgs e)
-        {
-            pnlGrilla.Visible = true;
-            pnlFormulario.Visible = false;
-            btnNuevo.Visible = true;
-            btnRegresar.Visible = false;
-        }
-
-        // ========================
-        // ACCIONES CRUD (CREATE / UPDATE / DELETE)
-        // ========================
         protected void btnGuardar_Click(object sender, EventArgs e)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(txtNombre.Text))
-                {
-                    Msg("El nombre del centro es obligatorio.", "ww");
-                    return;
-                }
+                if (string.IsNullOrWhiteSpace(txtNombre.Text)) { Msg("Nombre obligatorio.", "ww"); return; }
 
                 var centro = new InvgccCentroInvestigacion
                 {
@@ -101,136 +64,220 @@ namespace SistemaGestionCGI
                     strLineaInv_cen = txtLineas.Text.Trim(),
                     strMision_cen = txtMision.Text.Trim(),
                     strVision_cen = txtVision.Text.Trim(),
-                    fkId_director = ddlDirector.SelectedValue,
-                    dtFechaAprobacion_cen = !string.IsNullOrEmpty(txtFechaAprobacion.Text)
-                                            ? DateTime.Parse(txtFechaAprobacion.Text)
-                                            : DateTime.Now
+                    dtFechaAprobacion_cen = string.IsNullOrEmpty(txtFechaAprobacion.Text) ? DateTime.Now : DateTime.Parse(txtFechaAprobacion.Text)
                 };
 
                 if (string.IsNullOrEmpty(hfIdCentro.Value))
                 {
                     _manejador.Guardar(centro);
-                    Redireccionar("Centro registrado correctamente.", "ss");
+                    Redireccionar("Centro creado.", "ss");
                 }
                 else
                 {
                     centro.strId_cen = hfIdCentro.Value;
                     _manejador.Actualizar(centro);
-                    Redireccionar("Centro actualizado correctamente.", "ss");
+                    Redireccionar("Centro actualizado.", "ss");
                 }
             }
-            catch (Exception ex) { Msg("Error al guardar: " + ex.Message, "ee"); }
+            catch (Exception ex) { Msg("Error: " + ex.Message, "ee"); }
         }
 
         protected void rptCentros_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
-            try
-            {
-                string id = e.CommandArgument.ToString();
+            string id = e.CommandArgument.ToString();
 
-                if (e.CommandName == "eliminar")
-                {
-                    _manejador.Eliminar(id);
-                    Redireccionar("Centro eliminado correctamente.", "ss");
-                }
-                else if (e.CommandName == "editar")
-                {
-                    CargarEdicion(id);
-                }
-                else if (e.CommandName == "verIntegrantes")
-                {
-                    Session["ModalCentroId"] = id;
-                    Response.Redirect("CentrosInvestigacion.aspx", false);
-                    Context.ApplicationInstance.CompleteRequest();
-                }
+            if (e.CommandName == "Integrantes") // LÓGICA MOVIDA AQUI
+            {
+                hfIdCentro.Value = id;
+                CargarIntegrantes(id);
+                CambiarVista(Vista.ListaIntegrantes);
             }
-            catch (Exception ex) { Msg("Error en operación: " + ex.Message, "ee"); }
+            else if (e.CommandName == "Editar")
+            {
+                CargarEdicion(id);
+            }
+            else if (e.CommandName == "Eliminar")
+            {
+                _manejador.Eliminar(id);
+                Redireccionar("Centro eliminado.", "ss");
+            }
         }
 
-        // ========================
-        // LÓGICA DE CARGA Y MODAL
-        // ========================
         private void CargarEdicion(string id)
         {
-            var centro = _manejador.ObtenerPorId(id);
-            if (centro == null) return;
+            var c = _manejador.ObtenerPorId(id);
+            if (c == null) return;
 
-            lblTituloFormulario.Text = $"Editar Centro: {centro.strId_cen}";
+            hfIdCentro.Value = c.strId_cen;
+            txtNombre.Text = c.strNombre_cen;
+            txtArea.Text = c.strArea_cen;
+            txtUbicacion.Text = c.strUbicacion_cen;
+            txtLineas.Text = c.strLineaInv_cen;
+            txtMision.Text = c.strMision_cen;
+            txtVision.Text = c.strVision_cen;
+            txtFechaAprobacion.Text = c.dtFechaAprobacion_cen.ToString("yyyy-MM-dd");
+            if (ddlFacultad.Items.FindByValue(c.strFacultad_cen) != null) ddlFacultad.SelectedValue = c.strFacultad_cen;
 
-            hfIdCentro.Value = centro.strId_cen;
-            txtNombre.Text = centro.strNombre_cen;
-            txtArea.Text = centro.strArea_cen;
-            txtUbicacion.Text = centro.strUbicacion_cen;
-            txtLineas.Text = centro.strLineaInv_cen;
-            txtMision.Text = centro.strMision_cen;
-            txtVision.Text = centro.strVision_cen;
-            txtFechaAprobacion.Text = centro.dtFechaAprobacion_cen.ToString("yyyy-MM-dd");
+            // Buscamos al director actual
+            var director = _manejador.BuscarDirectorDelCentro(c.strId_cen);
+            txtDirectorActual.Text = director != null ? director.NombreCompleto : "--- SIN ASIGNAR ---";
 
-            if (ddlFacultad.Items.FindByValue(centro.strFacultad_cen) != null)
-                ddlFacultad.SelectedValue = centro.strFacultad_cen;
+            // CORRECCIÓN: Se eliminaron las líneas que causaban error (btnGestionarIntegrantes.Visible...)
 
-            if (ddlDirector.Items.FindByValue(centro.fkId_director) != null)
-                ddlDirector.SelectedValue = centro.fkId_director;
-
-            pnlGrilla.Visible = false;
-            pnlFormulario.Visible = true;
-            btnNuevo.Visible = false;
-            btnRegresar.Visible = true;
+            CambiarVista(Vista.FormularioCentro);
         }
 
-        private void MostrarModalIntegrantes(string idCentro)
+        // ==========================
+        // VISTA 3 & 4: GESTIÓN DE INTEGRANTES
+        // ==========================
+
+        private void CargarIntegrantes(string idCentro)
         {
-            var centro = _manejador.ObtenerPorId(idCentro);
-            if (centro != null) lblCentroModal.Text = centro.strNombre_cen;
+            rptIntegrantes.DataSource = _manejador.ObtenerIntegrantesPorCentro(idCentro);
+            rptIntegrantes.DataBind();
+        }
 
-            var integrantes = _manejador.ObtenerIntegrantesPorCentro(idCentro);
-            rptIntegrantesModal.DataSource = integrantes;
-            rptIntegrantesModal.DataBind();
+        protected void btnNuevoIntegrante_Click(object sender, EventArgs e)
+        {
+            LimpiarFormInt();
+            CambiarVista(Vista.FormularioIntegrante);
+        }
 
-            ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalInt", "AbrirModalIntegrantes();", true);
+        protected void btnGuardarInt_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(txtCedulaInt.Text) || string.IsNullOrWhiteSpace(txtNombresInt.Text))
+                {
+                    Msg("Cédula y Nombres obligatorios", "ww"); return;
+                }
+
+                var i = new InvgccCentroIntegrantes
+                {
+                    fkId_cen = hfIdCentro.Value,
+                    strCedula_cin = txtCedulaInt.Text.Trim(),
+                    strNombres_cin = txtNombresInt.Text.Trim(),
+                    strApellidos_cin = txtApellidosInt.Text.Trim(),
+                    strCorreo_cin = txtCorreoInt.Text.Trim(),
+                    strFuncion_cin = ddlFuncionInt.SelectedValue,
+                    strTipo_cin = ddlTipoInt.SelectedValue,
+                    strCarrera_cin = txtEntidadInt.Text.Trim(),
+                    strFacultad_cin = "",
+                    strEntidad_cin = (ddlTipoInt.SelectedValue == "Externo") ? txtEntidadInt.Text : ""
+                };
+
+                if (string.IsNullOrEmpty(hfIdIntegrante.Value))
+                {
+                    _manejador.GuardarIntegrante(i);
+                    Msg("Integrante agregado.", "ss");
+                }
+                else
+                {
+                    i.strId_cin = hfIdIntegrante.Value;
+                    _manejador.ActualizarIntegrante(i);
+                    Msg("Integrante actualizado.", "ss");
+                }
+
+                CargarIntegrantes(hfIdCentro.Value);
+                CambiarVista(Vista.ListaIntegrantes);
+            }
+            catch (Exception ex) { Msg("Error int: " + ex.Message, "ee"); }
+        }
+
+        protected void rptIntegrantes_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            string id = e.CommandArgument.ToString();
+            if (e.CommandName == "Eliminar")
+            {
+                _manejador.EliminarIntegrante(id);
+                CargarIntegrantes(hfIdCentro.Value);
+                Msg("Integrante eliminado", "ss");
+            }
+            else if (e.CommandName == "Editar")
+            {
+                var i = _manejador.ObtenerIntegrantePorId(id);
+                if (i != null)
+                {
+                    hfIdIntegrante.Value = i.strId_cin;
+                    txtCedulaInt.Text = i.strCedula_cin;
+                    txtNombresInt.Text = i.strNombres_cin;
+                    txtApellidosInt.Text = i.strApellidos_cin;
+                    txtCorreoInt.Text = i.strCorreo_cin;
+                    txtEntidadInt.Text = i.strCarrera_cin;
+                    ddlFuncionInt.SelectedValue = i.strFuncion_cin;
+                    ddlTipoInt.SelectedValue = i.strTipo_cin;
+                    CambiarVista(Vista.FormularioIntegrante);
+                }
+            }
+        }
+
+        protected void btnVolverCentro_Click(object sender, EventArgs e)
+        {
+            // Regresa a la PANTALLA PRINCIPAL (Centros)
+            CargarCentros();
+            CambiarVista(Vista.ListaCentros);
+        }
+
+        protected void btnCancelarInt_Click(object sender, EventArgs e)
+        {
+            // Regresa a la LISTA DE INTEGRANTES del mismo centro
+            CambiarVista(Vista.ListaIntegrantes);
+        }
+
+        // ==========================
+        // UTILIDADES Y NAVEGACIÓN
+        // ==========================
+        protected void btnRegresar_Click(object sender, EventArgs e) { Response.Redirect("CentrosInvestigacion.aspx"); }
+
+        private enum Vista { ListaCentros, FormularioCentro, ListaIntegrantes, FormularioIntegrante }
+
+        private void CambiarVista(Vista v)
+        {
+            // 1. HEADER PRINCIPAL (CENTROS): Solo visible en la lista principal
+            headerCentros.Visible = (v == Vista.ListaCentros);
+
+            // 2. VISIBILIDAD DE PANELES (Al mostrar el panel, se muestra su header interno)
+            pnlGrilla.Visible = v == Vista.ListaCentros;
+            pnlFormulario.Visible = v == Vista.FormularioCentro;
+            pnlIntegrantes.Visible = v == Vista.ListaIntegrantes;
+            pnlFormularioInt.Visible = v == Vista.FormularioIntegrante;
+
+            // 3. CONTEXTO DE INTEGRANTES
+            if (v == Vista.ListaIntegrantes && !string.IsNullOrEmpty(hfIdCentro.Value))
+            {
+                var centro = _manejador.ObtenerPorId(hfIdCentro.Value);
+                if (centro != null) lblNombreCentroSeleccionado.Text = centro.strNombre_cen;
+            }
         }
 
         private void LimpiarFormulario()
         {
             hfIdCentro.Value = "";
-            txtNombre.Text = "";
-            txtArea.Text = "";
-            txtUbicacion.Text = "";
-            txtLineas.Text = "";
-            txtMision.Text = "";
-            txtVision.Text = "";
-            txtFechaAprobacion.Text = DateTime.Now.ToString("yyyy-MM-dd");
-            ddlFacultad.SelectedIndex = 0;
-            ddlDirector.SelectedIndex = 0;
+            txtNombre.Text = ""; txtArea.Text = ""; txtUbicacion.Text = "";
+            txtDirectorActual.Text = "";
+            // CORRECCIÓN: Se eliminaron las líneas que causaban error (msgDirector.Visible...)
         }
 
-        private void VerificarModalPendiente()
+        private void LimpiarFormInt()
         {
-            if (Session["ModalCentroId"] != null)
-            {
-                string id = Session["ModalCentroId"].ToString();
-                MostrarModalIntegrantes(id);
-                Session["ModalCentroId"] = null;
-            }
+            hfIdIntegrante.Value = "";
+            txtCedulaInt.Text = ""; txtNombresInt.Text = ""; txtApellidosInt.Text = "";
+            txtCorreoInt.Text = ""; txtEntidadInt.Text = "";
+            ddlFuncionInt.SelectedIndex = 0;
         }
 
-        // ========================
-        // REDIRECCIÓN Y MENSAJES
-        // ========================
         private void Redireccionar(string msg, string type)
         {
             Session["TempMsg"] = msg;
             Session["TempTipo"] = type;
-
             Response.Redirect("CentrosInvestigacion.aspx", false);
-            Context.ApplicationInstance.CompleteRequest();
         }
 
         private void Msg(string msg, string type)
         {
-            if (string.IsNullOrEmpty(msg)) return;
-            string cleanMsg = msg.Replace("'", "").Replace("\r\n", " ").Replace("\n", " ");
-            ScriptManager.RegisterStartupScript(this, GetType(), "alert", $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema'); }});", true);
+            string cleanMsg = msg.Replace("'", "").Replace("\r\n", "");
+            string script = $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema'); }});";
+            ScriptManager.RegisterStartupScript(this, GetType(), "toast", script, true);
         }
     }
 }

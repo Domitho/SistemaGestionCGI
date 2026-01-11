@@ -286,6 +286,7 @@
     <Compile Include="Models\InvgccCalificacionGrupo.cs" />
     <Compile Include="Models\InvgccCategorizacionDocentes.cs" />
     <Compile Include="Models\InvgccCategorizacionDocentesHistorial.cs" />
+    <Compile Include="Models\InvgccCentroIntegrantes.cs" />
     <Compile Include="Models\InvgccCentroInvestigacion.cs" />
     <Compile Include="Models\InvgccConvocatoria.cs" />
     <Compile Include="Models\InvgccConvocatoriaGruInvestigacion.cs" />

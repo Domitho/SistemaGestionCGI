@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq; // Necesario para GenerarCodigoAlfanumerico
 using SistemaGestionCGI.Models;
 using SistemaGestionCGI.Settings;
 
@@ -8,20 +9,26 @@ namespace SistemaGestionCGI.BLL
 {
     public class ManejadorCentroInvestigacion
     {
-        // Instancia del DAL (Data Access Layer)
         private readonly ConnectionSqlServer _dal = ConnectionSqlServer.Instance;
 
         // ========================
-        // LECTURA (READ)
+        // 1. GESTIÓN DE CENTROS (CRUD)
         // ========================
+
         public List<InvgccCentroInvestigacion> ObtenerTodos()
         {
-            // Usamos un alias 'NombreDirector' para que coincida con el JsonProperty del modelo
+            // CORRECCIÓN: Ahora buscamos el nombre del Director en la NUEVA tabla de integrantes
+            // usando una subconsulta, ya que el fkId_director ya no se usa.
             string sql = @"
                 SELECT C.*, 
-                       (I.strApellidos_int + ' ' + I.strNombres_int) as NombreDirector
+                (
+                    SELECT TOP 1 (I.strApellidos_cin + ' ' + I.strNombres_cin)
+                    FROM INVGCCCENTRO_INVESTIGACION_INTEGRANTES I
+                    WHERE I.fkId_cen = C.strId_cen 
+                    AND I.strFuncion_cin = 'Director' 
+                    AND I.bitActivo_cin = 1
+                ) as NombreDirector
                 FROM INVGCCCENTRO_INVESTIGACION C
-                LEFT JOIN INVGCCGRUPO_INTEGRANTES I ON C.fkId_director = I.strId_int
                 WHERE C.bitActivo_cen = 1
                 ORDER BY C.strNombre_cen ASC";
 
@@ -34,93 +41,124 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<InvgccCentroInvestigacion>(sql)?.FirstOrDefault();
         }
 
-        // ========================
-        // ESCRITURA (CREATE / UPDATE)
-        // ========================
         public void Guardar(InvgccCentroInvestigacion centro)
         {
-            // Generar ID Institucional (Ej: CEN-2025-001)
-            centro.strId_cen = GenerarNuevoId();
+            centro.strId_cen = GenerarNuevoIdCentro();
 
+            // CORRECCIÓN: Se eliminó fkId_director del INSERT para evitar el error de Foreign Key
             string sql = $@"
                 INSERT INTO INVGCCCENTRO_INVESTIGACION
                 (strId_cen, strNombre_cen, strFacultad_cen, strArea_cen, strUbicacion_cen, 
                  strLineaInv_cen, strMision_cen, strVision_cen, dtFechaAprobacion_cen, 
-                 bitActivo_cen, fkId_director, dtFechaRegistro)
+                 bitActivo_cen, dtFechaRegistro)
                 VALUES
                 ('{centro.strId_cen}', '{centro.strNombre_cen}', '{centro.strFacultad_cen}', 
                  '{centro.strArea_cen}', '{centro.strUbicacion_cen}', '{centro.strLineaInv_cen}', 
                  '{centro.strMision_cen}', '{centro.strVision_cen}', 
-                 '{centro.dtFechaAprobacion_cen:yyyy-MM-dd}', 1, '{centro.fkId_director}', GETDATE())";
+                 '{centro.dtFechaAprobacion_cen:yyyy-MM-dd}', 1, GETDATE())";
 
             _dal.InsertSql(sql);
         }
 
         public void Actualizar(InvgccCentroInvestigacion centro)
         {
+            // CORRECCIÓN: Se eliminó fkId_director del UPDATE
             string sql = $@"
                 UPDATE INVGCCCENTRO_INVESTIGACION SET
-                    strNombre_cen = '{centro.strNombre_cen}',
-                    strFacultad_cen = '{centro.strFacultad_cen}',
-                    strArea_cen = '{centro.strArea_cen}',
-                    strUbicacion_cen = '{centro.strUbicacion_cen}',
-                    strLineaInv_cen = '{centro.strLineaInv_cen}',
-                    strMision_cen = '{centro.strMision_cen}',
-                    strVision_cen = '{centro.strVision_cen}',
-                    dtFechaAprobacion_cen = '{centro.dtFechaAprobacion_cen:yyyy-MM-dd}',
-                    fkId_director = '{centro.fkId_director}'
+                strNombre_cen = '{centro.strNombre_cen}',
+                strFacultad_cen = '{centro.strFacultad_cen}',
+                strArea_cen = '{centro.strArea_cen}',
+                strUbicacion_cen = '{centro.strUbicacion_cen}',
+                strLineaInv_cen = '{centro.strLineaInv_cen}',
+                strMision_cen = '{centro.strMision_cen}',
+                strVision_cen = '{centro.strVision_cen}',
+                dtFechaAprobacion_cen = '{centro.dtFechaAprobacion_cen:yyyy-MM-dd}'
                 WHERE strId_cen = '{centro.strId_cen}'";
 
             _dal.UpdateSql(sql);
         }
 
-        // ========================
-        // BORRADO LÓGICO (SOFT DELETE)
-        // ========================
         public void Eliminar(string id)
         {
             string sql = $"UPDATE INVGCCCENTRO_INVESTIGACION SET bitActivo_cen = 0 WHERE strId_cen = '{id}'";
             _dal.UpdateSql(sql);
         }
 
-        // ========================
-        // UTILIDADES Y COMBOS
-        // ========================
+        // ==========================================
+        // 2. GESTIÓN DE INTEGRANTES DEL CENTRO
+        // ==========================================
 
-        // Dentro de la clase ManejadorCentroInvestigacion
-
-        public List<dynamic> ObtenerIntegrantesPorCentro(string idCentro)
+        public List<InvgccCentroIntegrantes> ObtenerIntegrantesPorCentro(string idCentro)
         {
             string sql = $@"
-                SELECT 
-                    I.strId_int,
-                    (I.strApellidos_int + ' ' + I.strNombres_int) as NombreCompleto,
-                    I.strFuncion_int,
-                    I.strCorreo_int,
-                    I.strTipo_int, 
-                    G.strNombre_gru
-                FROM INVGCCGRUPO_INTEGRANTES I
-                INNER JOIN INVGCCGRUPO_INVESTIGACION G ON I.fkId_gru = G.strId_gru
-                WHERE G.fkId_cen = '{idCentro}' AND I.bitActivo_int = 1
-                ORDER BY I.strApellidos_int ASC";
+                SELECT * FROM INVGCCCENTRO_INVESTIGACION_INTEGRANTES 
+                WHERE fkId_cen = '{idCentro}' 
+                ORDER BY strApellidos_cin ASC";
 
-            return _dal.SelectSql<dynamic>(sql);
+            return _dal.SelectSql<InvgccCentroIntegrantes>(sql);
         }
 
-        public List<InvgccGrupoIntegrantes> ObtenerCandidatosDirector()
+        public InvgccCentroIntegrantes ObtenerIntegrantePorId(string idIntegrante)
         {
-            // Se agregó el filtro: AND strFuncion_int = 'Investigador Principal'
-            string sql = @"
-                SELECT strId_int, (strApellidos_int + ' ' + strNombres_int) as NombreCompleto 
-                FROM INVGCCGRUPO_INTEGRANTES 
-                WHERE bitActivo_int = 1 
-                AND strFuncion_int = 'Investigador Principal'
-                ORDER BY strApellidos_int";
-
-            return _dal.SelectSql<InvgccGrupoIntegrantes>(sql);
+            string sql = $"SELECT * FROM INVGCCCENTRO_INVESTIGACION_INTEGRANTES WHERE strId_cin = '{idIntegrante}'";
+            return _dal.SelectSql<InvgccCentroIntegrantes>(sql)?.FirstOrDefault();
         }
 
-        private string GenerarNuevoId()
+        public void GuardarIntegrante(InvgccCentroIntegrantes obj)
+        {
+            // Usamos el método genérico que faltaba
+            obj.strId_cin = GenerarCodigoAlfanumerico("INVGCCCENTRO_INVESTIGACION_INTEGRANTES", "strId_cin", "CIN");
+
+            string sql = $@"
+                INSERT INTO INVGCCCENTRO_INVESTIGACION_INTEGRANTES
+                (strId_cin, fkId_cen, strCedula_cin, strNombres_cin, strApellidos_cin, strCorreo_cin,
+                 strFuncion_cin, strTipo_cin, strCarrera_cin, strFacultad_cin, strEntidad_cin, bitActivo_cin)
+                VALUES
+                ('{obj.strId_cin}', '{obj.fkId_cen}', '{obj.strCedula_cin}', '{obj.strNombres_cin}', 
+                 '{obj.strApellidos_cin}', '{obj.strCorreo_cin}', '{obj.strFuncion_cin}', '{obj.strTipo_cin}',
+                 '{obj.strCarrera_cin}', '{obj.strFacultad_cin}', '{obj.strEntidad_cin}', 1)";
+
+            _dal.InsertSql(sql);
+        }
+
+        public void ActualizarIntegrante(InvgccCentroIntegrantes obj)
+        {
+            string sql = $@"
+                UPDATE INVGCCCENTRO_INVESTIGACION_INTEGRANTES SET
+                strCedula_cin = '{obj.strCedula_cin}',
+                strNombres_cin = '{obj.strNombres_cin}',
+                strApellidos_cin = '{obj.strApellidos_cin}',
+                strCorreo_cin = '{obj.strCorreo_cin}',
+                strFuncion_cin = '{obj.strFuncion_cin}',
+                strTipo_cin = '{obj.strTipo_cin}',
+                strCarrera_cin = '{obj.strCarrera_cin}',
+                strFacultad_cin = '{obj.strFacultad_cin}',
+                strEntidad_cin = '{obj.strEntidad_cin}'
+                WHERE strId_cin = '{obj.strId_cin}'";
+
+            _dal.UpdateSql(sql);
+        }
+
+        public void EliminarIntegrante(string id)
+        {
+            string sql = $"DELETE FROM INVGCCCENTRO_INVESTIGACION_INTEGRANTES WHERE strId_cin = '{id}'";
+            _dal.DeleteSql(sql);
+        }
+
+        public InvgccCentroIntegrantes BuscarDirectorDelCentro(string idCentro)
+        {
+            string sql = $@"
+                SELECT TOP 1 * FROM INVGCCCENTRO_INVESTIGACION_INTEGRANTES 
+                WHERE fkId_cen = '{idCentro}' AND strFuncion_cin = 'Director' AND bitActivo_cin = 1";
+
+            return _dal.SelectSql<InvgccCentroIntegrantes>(sql)?.FirstOrDefault();
+        }
+
+        // ========================
+        // 3. GENERADORES DE CÓDIGO
+        // ========================
+
+        private string GenerarNuevoIdCentro()
         {
             int anio = DateTime.Now.Year;
             string prefijo = $"CEN-{anio}-";
@@ -132,7 +170,6 @@ namespace SistemaGestionCGI.BLL
             if (lista != null && lista.Count > 0)
             {
                 string ultimoId = lista[0].strId_cen;
-                // Formato esperado: CEN-2025-001 (Extraer últimos 3 dígitos)
                 string numeroStr = ultimoId.Substring(ultimoId.LastIndexOf('-') + 1);
                 if (int.TryParse(numeroStr, out int numeroActual))
                 {
@@ -140,6 +177,37 @@ namespace SistemaGestionCGI.BLL
                 }
             }
             return $"{prefijo}{siguiente:D3}";
+        }
+
+        // METODO AGREGADO: Necesario para los integrantes
+        private string GenerarCodigoAlfanumerico(string tabla, string campoId, string prefijo)
+        {
+            string sql = $"SELECT TOP 1 {campoId} FROM {tabla} WHERE {campoId} LIKE '{prefijo}%' ORDER BY Len({campoId}) DESC, {campoId} DESC";
+            var lista = _dal.SelectSql<dynamic>(sql);
+            int siguienteNumero = 1;
+
+            if (lista != null && lista.Count > 0)
+            {
+                string ultimoId = "";
+                var item = lista[0];
+
+                if (item is JObject jobj) ultimoId = jobj[campoId]?.ToString();
+                else
+                {
+                    try { ultimoId = ((dynamic)item).GetType().GetProperty(campoId).GetValue(item, null).ToString(); }
+                    catch { }
+                }
+
+                if (!string.IsNullOrEmpty(ultimoId) && ultimoId.StartsWith(prefijo))
+                {
+                    string numeroStr = ultimoId.Substring(prefijo.Length).Replace("-", "");
+                    if (int.TryParse(numeroStr, out int numeroActual))
+                    {
+                        siguienteNumero = numeroActual + 1;
+                    }
+                }
+            }
+            return $"{prefijo}{siguienteNumero}";
         }
     }
 }
