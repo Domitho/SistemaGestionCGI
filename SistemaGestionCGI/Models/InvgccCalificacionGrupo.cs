@@ -5,7 +5,6 @@ namespace SistemaGestionCGI.Models
 {
     public class InvgccCalificacionGrupo
     {
-        // CAMBIO: string porque en BD es VARCHAR(50)
         [JsonProperty("strId_valo")]
         public string strId_valo { get; set; }
 
@@ -30,7 +29,7 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("intAnioMetrica")]
         public int intAnioMetrica { get; set; }
 
-        // Propiedad extendida (JOIN)
+        [JsonProperty("NombreGrupo")]
         public string NombreGrupo { get; set; }
     }
 }

@@ -325,12 +325,81 @@
 
 <script>
     let pasoActual = 1;
+    let idProyectoActual = 0; // Variable para diferenciar borradores
+    const STORAGE_KEY_PREFIX = 'UTC_Draft_';
+
+    // 1. INICIALIZACIÓN (Llamada desde C#)
+    // Ahora recibe el ID para saber de quién es el borrador
+    function resetWizard(idEjecucion) {
+        idProyectoActual = idEjecucion; // Guardamos el ID actual
+        pasoActual = 1;
+
+        actualizarVista();
+
+        // Iniciamos escuchas de eventos una sola vez
+        iniciarAutoGuardado();
+
+        // Recuperar datos ESPECÍFICOS de este proyecto
+        setTimeout(restaurarBorrador, 200);
+    }
+
+    // 2. AUTO-GUARDADO (CON ID DE PROYECTO)
+    function iniciarAutoGuardado() {
+        const inputs = document.querySelectorAll('#modalGeneradorInforme input[type="text"], #modalGeneradorInforme textarea, #modalGeneradorInforme input[type="number"]');
+
+        inputs.forEach(input => {
+            // Removemos listeners anteriores para no duplicar (seguridad por si se llama varias veces)
+            input.removeEventListener('input', manejarInput);
+            input.addEventListener('input', manejarInput);
+        });
+    }
+
+    function manejarInput() {
+        if (idProyectoActual === 0) return; // Seguridad
+
+        // CLAVE ÚNICA: UTC_Draft_105_txtObjetivos
+        const key = STORAGE_KEY_PREFIX + idProyectoActual + '_' + this.id;
+        localStorage.setItem(key, this.value);
+    }
+
+    // 3. RESTAURAR (CON ID DE PROYECTO)
+    function restaurarBorrador() {
+        if (idProyectoActual === 0) return;
+
+        const inputs = document.querySelectorAll('#modalGeneradorInforme input[type="text"], #modalGeneradorInforme textarea, #modalGeneradorInforme input[type="number"]');
+
+        inputs.forEach(input => {
+            // Buscamos la clave específica de ESTE proyecto
+            const key = STORAGE_KEY_PREFIX + idProyectoActual + '_' + input.id;
+            const savedValue = localStorage.getItem(key);
+
+            // Solo restauramos si hay algo guardado y el campo está vacío
+            // (Si la BDD trajo datos, respetamos la BDD)
+            if (savedValue !== null && input.value === "") {
+                input.value = savedValue;
+            }
+        });
+    }
+
+    // 4. LIMPIAR (SOLO ESTE PROYECTO)
+    function limpiarBorrador() {
+        if (idProyectoActual === 0) return;
+
+        const inputs = document.querySelectorAll('#modalGeneradorInforme input[type="text"], #modalGeneradorInforme textarea, #modalGeneradorInforme input[type="number"]');
+        inputs.forEach(input => {
+            const key = STORAGE_KEY_PREFIX + idProyectoActual + '_' + input.id;
+            localStorage.removeItem(key);
+        });
+    }
+
+    // 5. NAVEGACIÓN VISUAL (Igual que antes)
     function navegar(direccion) {
         pasoActual += direccion;
         if (pasoActual < 1) pasoActual = 1;
         if (pasoActual > 3) pasoActual = 3;
         actualizarVista();
     }
+
     function actualizarVista() {
         [1, 2, 3].forEach(p => document.getElementById('step' + p).classList.add('d-none'));
         document.getElementById('step' + pasoActual).classList.remove('d-none');
@@ -347,10 +416,10 @@
             let item = document.getElementById('stInd' + i);
             let circle = item.querySelector('.step-circle');
             item.classList.remove('active', 'completed');
+
             if (i < pasoActual) { item.classList.add('completed'); circle.innerHTML = '<i class="fa-solid fa-check"></i>'; }
             else if (i === pasoActual) { item.classList.add('active'); circle.innerHTML = i; }
             else { circle.innerHTML = i; }
         }
     }
-    function resetWizard() { pasoActual = 1; actualizarVista(); }
 </script>

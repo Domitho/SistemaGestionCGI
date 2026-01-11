@@ -109,7 +109,9 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-bold text-primary">Año de la Métrica</label>
-                    <asp:DropDownList ID="ddlAnioMetricaSeleccion" runat="server" CssClass="form-select border-primary" AutoPostBack="true" OnSelectedIndexChanged="ddlAnioMetricaSeleccion_SelectedIndexChanged"></asp:DropDownList>
+                    <asp:DropDownList ID="ddlAnioMetricaSeleccion" runat="server" CssClass="form-select border-primary"
+                        AutoPostBack="true" OnSelectedIndexChanged="ddlAnioMetricaSeleccion_SelectedIndexChanged">
+                    </asp:DropDownList>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Puntaje Obtenido</label>
@@ -191,21 +193,6 @@
         </div>
     </div>
 
-    <%-- MODAL VISTA PREVIA --%>
-    <div class="modal fade" id="modalVistaPrevia" tabindex="-1" aria-hidden="true" ClientIDMode="Static" runat="server">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content border-0 rounded-4 shadow-lg" style="background: #333;">
-                <div class="modal-header border-bottom-0 py-2 px-3">
-                    <h6 class="modal-title text-white">Vista Previa</h6>
-                    <button type="button" class="btn-close btn-close-white" onclick="CerrarVistaPrevia()"></button>
-                </div>
-                <div class="modal-body p-0" style="height: 85vh;">
-                    <iframe id="framePdf" class="pdf-viewer-frame" style="width:100%; height:100%; border:none; background:white;"></iframe>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <%-- SCRIPTS OPTIMIZADOS --%>
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
     <script type="text/javascript">
@@ -246,23 +233,6 @@
         function AbrirModalMetricas() {
             var el = document.getElementById('modalMetricas');
             if (el) { var modal = bootstrap.Modal.getOrCreateInstance(el); modal.show(); }
-        }
-
-        function VerPDF(idCalificacion) {
-            var url = 'VerArchivo.ashx?id=' + idCalificacion;
-            var frame = document.getElementById('framePdf');
-            if (frame) {
-                frame.src = url;
-                var el = document.getElementById('modalVistaPrevia');
-                if (el) { var modal = bootstrap.Modal.getOrCreateInstance(el); modal.show(); }
-            }
-        }
-
-        function CerrarVistaPrevia() {
-            var el = document.getElementById('modalVistaPrevia');
-            var modal = bootstrap.Modal.getInstance(el);
-            if (modal) modal.hide();
-            document.getElementById('framePdf').src = 'about:blank';
         }
     </script>
 

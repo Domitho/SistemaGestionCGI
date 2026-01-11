@@ -72,8 +72,9 @@ namespace SistemaGestionCGI
             }
             catch { /* Si falla, simplemente salen vacíos */ }
 
-            ScriptManager.RegisterStartupScript(this, GetType(), "OpenWiz",
-                "resetWizard(); var m = new bootstrap.Modal(document.getElementById('modalGeneradorInforme')); m.show();", true);
+            string script = $"resetWizard({idEjecucion}); var m = new bootstrap.Modal(document.getElementById('modalGeneradorInforme')); m.show();";
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "OpenWiz", script, true);
         }
 
         private void LimpiarCampos()
@@ -300,11 +301,16 @@ namespace SistemaGestionCGI
 
                 _manejador.GuardarInforme(nuevoInforme);
 
-                // Cerrar modal
-                ScriptManager.RegisterStartupScript(this, GetType(), "CloseWiz",
-                    "bootstrap.Modal.getInstance(document.getElementById('modalGeneradorInforme')).hide();", true);
+                string scriptFinal = @"
+                    limpiarBorrador(); 
+                    bootstrap.Modal.getInstance(document.getElementById('modalGeneradorInforme')).hide();
+                ";
 
-                // Avisar al padre para recargar la grilla
+                // Cerrar modal
+                string scriptCierre = "limpiarBorrador(); bootstrap.Modal.getInstance(document.getElementById('modalGeneradorInforme')).hide();";
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "CloseWiz", scriptCierre, true);
+
                 InformeGuardado?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex)

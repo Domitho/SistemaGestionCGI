@@ -13,7 +13,7 @@ namespace SistemaGestionCGI
     {
         // 1. Instancias y Constantes
         private readonly ManejadorCalificacionGrupo _manejador = new ManejadorCalificacionGrupo();
-        private const string RUTA_CALIFICACIONES = @"C:\UTC\CALIFICACIONES\";
+        private const string RUTA_VIRTUAL = "~/Archivos/Calificaciones/";
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -160,14 +160,22 @@ namespace SistemaGestionCGI
         {
             try
             {
-                if (string.IsNullOrEmpty(ddlGrupoAdd.SelectedValue)) { Msg("Seleccione un grupo.", "ww"); return; }
-                if (string.IsNullOrEmpty(txtPuntajeAdd.Text)) { Msg("Ingrese el puntaje.", "ww"); return; }
-                if (string.IsNullOrEmpty(txtFechaAdd.Text)) { Msg("Ingrese la fecha.", "ww"); return; }
+                // 1. Validaciones
+                if (ddlGrupoAdd.SelectedIndex <= 0) { Msg("Seleccione un grupo.", "ww"); return; }
+                if (string.IsNullOrWhiteSpace(txtFechaAdd.Text)) { Msg("Ingrese la fecha.", "ww"); return; }
 
+                // 2. CORRECCIÓN: Validación numérica segura (Evita crash)
+                if (!int.TryParse(txtPuntajeAdd.Text, out int puntaje))
+                {
+                    Msg("El puntaje debe ser un número entero válido.", "ww");
+                    return;
+                }
+
+                // 3. Validación de Archivo
                 if (!flpArchivoAdd.HasFile) { Msg("Debe subir el informe PDF.", "ww"); return; }
                 if (Path.GetExtension(flpArchivoAdd.FileName).ToLower() != ".pdf") { Msg("Solo se permiten archivos PDF.", "ww"); return; }
 
-                int puntaje = int.Parse(txtPuntajeAdd.Text);
+                // 4. Lógica
                 int anioM = int.Parse(ddlAnioMetricaSeleccion.SelectedValue);
                 int minConsolidado = _manejador.ObtenerMinimoConsolidado(anioM);
 
@@ -179,6 +187,7 @@ namespace SistemaGestionCGI
                     strReconocimiento_valo = txtReconocimientoAdd.Text.Trim(),
                     intAnioMetrica = anioM,
                     strCategoria_valo = (puntaje >= minConsolidado) ? "CONSOLIDADO" : "EMERGENTE",
+                    // 5. CORRECCIÓN: Sintaxis de interpolación corregida (Llave de cierre agregada)
                     strInforme_valo = GuardarArchivoFisico(flpArchivoAdd, $"VAL_{DateTime.Now.Ticks}.pdf")
                 };
 
@@ -203,7 +212,16 @@ namespace SistemaGestionCGI
             }
             else if (e.CommandName == "Ver")
             {
-                ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalPDF", $"VerPDF('{id}');", true);
+                var calificacion = _manejador.ObtenerPorId(id);
+
+                if (calificacion != null && !string.IsNullOrEmpty(calificacion.strInforme_valo))
+                {
+                    VisualizarArchivo(calificacion.strInforme_valo);
+                }
+                else
+                {
+                    Msg("Esta calificación no tiene un archivo adjunto válido.", "ww");
+                }
             }
         }
 
@@ -237,6 +255,43 @@ namespace SistemaGestionCGI
         // UTILIDADES Y AYUDAS
         // =============================================
 
+        private void VisualizarArchivo(string rutaVirtual)
+        {
+            try
+            {
+                // 1. Convertir ruta virtual (~) a física (C:\...)
+                string rutaFisica = Server.MapPath(rutaVirtual);
+
+                // 2. Verificar si existe
+                if (File.Exists(rutaFisica))
+                {
+                    string nombreArchivo = Path.GetFileName(rutaFisica);
+
+                    // 3. Configurar respuesta para descargar/ver PDF
+                    Response.Clear();
+                    Response.Buffer = true;
+                    Response.ContentType = "application/pdf";
+                    // "inline" intenta abrirlo en el navegador. Cambia a "attachment" si quieres forzar descarga.
+                    Response.AddHeader("Content-Disposition", "inline; filename=" + nombreArchivo);
+                    Response.TransmitFile(rutaFisica);
+                    Response.Flush();
+                    Response.End();
+                }
+                else
+                {
+                    Msg("El archivo físico no existe en el servidor.", "ee");
+                }
+            }
+            catch (System.Threading.ThreadAbortException)
+            {
+                // Esta excepción es normal al usar Response.End(), la ignoramos.
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al visualizar: " + ex.Message, "ee");
+            }
+        }
+
         private enum Vista { Lista, Formulario }
 
         private void CambiarVista(Vista vista)
@@ -249,10 +304,17 @@ namespace SistemaGestionCGI
 
         private string GuardarArchivoFisico(FileUpload control, string nombre)
         {
-            if (!Directory.Exists(RUTA_CALIFICACIONES)) Directory.CreateDirectory(RUTA_CALIFICACIONES);
-            string ruta = Path.Combine(RUTA_CALIFICACIONES, nombre);
-            control.SaveAs(ruta);
-            return ruta;
+            string rutaFisicaCarpeta = Server.MapPath(RUTA_VIRTUAL);
+
+            if (!Directory.Exists(rutaFisicaCarpeta))
+            {
+                Directory.CreateDirectory(rutaFisicaCarpeta);
+            }
+
+            string rutaFisicaCompleta = Path.Combine(rutaFisicaCarpeta, nombre);
+            control.SaveAs(rutaFisicaCompleta);
+
+            return Path.Combine(RUTA_VIRTUAL, nombre).Replace("\\", "/");
         }
 
         private void Redireccionar(string msg, string type)
@@ -265,8 +327,18 @@ namespace SistemaGestionCGI
         private void Msg(string msg, string type)
         {
             if (string.IsNullOrEmpty(msg)) return;
-            string cleanMsg = msg.Replace("'", "\\'").Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ").Replace("\\", "\\\\");
-            ScriptManager.RegisterStartupScript(this, GetType(), "alert", $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema'); }});", true);
+
+            string cleanMsg = msg
+                .Replace("\\", "\\\\")
+                .Replace("'", "\\'")
+                .Replace("\"", "\\\"")
+                .Replace("\r\n", " ")
+                .Replace("\n", " ")
+                .Replace("\r", " ");
+
+            string script = $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema'); }});";
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "toast", script, true);
         }
     }
 }
