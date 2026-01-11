@@ -209,5 +209,79 @@ namespace SistemaGestionCGI.BLL
             }
             return $"{prefijo}{siguienteNumero}";
         }
+
+        // ==========================================
+        // 4. GESTIÓN DE HISTORIAL (MOVIMIENTOS)
+        // ==========================================
+
+        public List<InvgccCentroIntegrantesHistorial> ObtenerHistorial(string idIntegrante)
+        {
+            // Ordenamos por fecha descendente para ver lo más reciente arriba
+            string sql = $"SELECT * FROM INVGCCCENTRO_INVESTIGACION_INTEGRANTES_HISTORIAL WHERE strId_cin = '{idIntegrante}' ORDER BY dtFecha DESC";
+            return _dal.SelectSql<InvgccCentroIntegrantesHistorial>(sql);
+        }
+
+        public void GuardarHistorial(string idIntegrante, string accion, string motivo, string usuario)
+        {
+            // Generamos ID: HIS-1, HIS-2, etc.
+            string idHistorial = GenerarCodigoAlfanumerico("INVGCCCENTRO_INVESTIGACION_INTEGRANTES_HISTORIAL", "strId_his", "HIS");
+            string fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            string sql = $@"
+                INSERT INTO INVGCCCENTRO_INVESTIGACION_INTEGRANTES_HISTORIAL
+                (strId_his, strId_cin, dtFecha, strAccion, strMotivo, strUsuario)
+                VALUES
+                ('{idHistorial}', '{idIntegrante}', '{fecha}', '{accion}', '{motivo}', '{usuario}')";
+
+            _dal.InsertSql(sql);
+        }
+
+        // ==========================================
+        // ACTUALIZACIÓN DE MÉTODOS DE INTEGRANTES
+        // ==========================================
+
+        // IMPORTANTE: Ahora este método recibe el 'usuarioLogueado' para el historial
+        public void GuardarIntegrante(InvgccCentroIntegrantes obj, string usuarioLogueado)
+        {
+            obj.strId_cin = GenerarCodigoAlfanumerico("INVGCCCENTRO_INVESTIGACION_INTEGRANTES", "strId_cin", "CIN");
+
+            string sql = $@"
+                INSERT INTO INVGCCCENTRO_INVESTIGACION_INTEGRANTES
+                (strId_cin, fkId_cen, strCedula_cin, strNombres_cin, strApellidos_cin, strCorreo_cin,
+                 strFuncion_cin, strTipo_cin, strCarrera_cin, strFacultad_cin, strEntidad_cin, bitActivo_cin)
+                VALUES
+                ('{obj.strId_cin}', '{obj.fkId_cen}', '{obj.strCedula_cin}', '{obj.strNombres_cin}', 
+                 '{obj.strApellidos_cin}', '{obj.strCorreo_cin}', '{obj.strFuncion_cin}', '{obj.strTipo_cin}',
+                 '{obj.strCarrera_cin}', '{obj.strFacultad_cin}', '{obj.strEntidad_cin}', 1)";
+
+            _dal.InsertSql(sql);
+
+            // REGISTRO AUTOMÁTICO EN HISTORIAL
+            GuardarHistorial(obj.strId_cin, "NUEVO", "Ingreso inicial al Centro de Investigación", usuarioLogueado);
+        }
+
+        // Este método maneja el botón de "Dar de Baja / Reactivar"
+        public void CambiarEstadoIntegrante(string idIntegrante, string motivo, string usuario)
+        {
+            // 1. Obtenemos el integrante para saber su estado actual
+            var integrante = ObtenerIntegrantePorId(idIntegrante);
+            if (integrante != null)
+            {
+                // 2. Invertimos el estado (Si es true pasa a false, y viceversa)
+                bool nuevoEstado = !integrante.bitActivo_cin;
+                int bit = nuevoEstado ? 1 : 0;
+
+                // 3. Definimos la acción para el historial
+                string accion = nuevoEstado ? "REACTIVAR" : "BAJA";
+
+                // 4. Actualizamos la tabla principal
+                string sql = $"UPDATE INVGCCCENTRO_INVESTIGACION_INTEGRANTES SET bitActivo_cin = {bit} WHERE strId_cin = '{idIntegrante}'";
+                _dal.UpdateSql(sql);
+
+                // 5. Guardamos en el historial
+                GuardarHistorial(idIntegrante, accion, motivo, usuario);
+            }
+        }
+
     }
 }
