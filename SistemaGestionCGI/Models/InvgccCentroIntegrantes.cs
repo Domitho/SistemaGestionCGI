@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 
 namespace SistemaGestionCGI.Models
 {
+    [Serializable]
     public class InvgccCentroIntegrantes
     {
         // Identificadores

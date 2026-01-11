@@ -99,10 +99,17 @@
                 <div class="col-md-12">
                     <label class="form-label fw-bold text-primary">Director Encargado</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-user-tie text-primary"></i></span>
-                        <asp:TextBox ID="txtDirectorActual" runat="server" CssClass="form-control bg-light border-start-0" ReadOnly="true" placeholder="Sin asignar..." />
+                        <span class="input-group-text bg-white text-primary border-end-0"><i class="fa-solid fa-user-tie"></i></span>
+                        
+                        <asp:DropDownList ID="ddlDirector" runat="server" CssClass="form-select border-start-0 bg-light">
+                            <asp:ListItem Text="-- Sin Director Asignado --" Value="" />
+                        </asp:DropDownList>
+                        
+                        <button type="button" class="btn btn-outline-primary" onclick="AbrirModalNuevoDirector()">
+                            <i class="fa-solid fa-plus me-1"></i> Nuevo
+                        </button>
                     </div>
-                    <small class="text-muted">* Para asignar, guarde el centro y use el botón de Integrantes en la lista principal.</small>
+                    <small class="text-muted">* Seleccione un integrante existente o registre uno nuevo directamente.</small>
                 </div>
                 
                 <div class="col-md-6">
@@ -513,6 +520,89 @@
         </div>
     </div>
 
+    <%-- ============================================================================== --%>
+    <%-- MODAL 4: REGISTRO RÁPIDO DE DIRECTOR (REPLICA DE PROYECTOS)                    --%>
+    <%-- ============================================================================== --%>
+    <div class="modal fade" id="modalNuevoDirector" tabindex="-1" aria-hidden="true" ClientIDMode="Static">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content shadow-utc border-0 rounded-4">
+                <div class="modal-header bg-utc text-white">
+                    <h5 class="modal-title"><i class="fa-solid fa-user-tie me-2"></i> Registrar Nuevo Director</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    
+                    <%-- ALERTA DE CONTEXTO --%>
+                    <div class="alert alert-light border-start border-primary border-4 shadow-sm small text-muted mb-4">
+                        <i class="fa-solid fa-circle-info text-primary me-2"></i> Este registro se asignará automáticamente como <strong>DIRECTOR</strong> del centro actual.
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12"><h6 class="text-primary fw-bold border-bottom pb-2">Datos Personales</h6></div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">Cédula <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtCedulaDirModal" runat="server" CssClass="form-control" MaxLength="15" autocomplete="off"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtNombresDirModal" runat="server" CssClass="form-control" autocomplete="off" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtApellidosDirModal" runat="server" CssClass="form-control" autocomplete="off" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Correo Institucional</label>
+                            <asp:TextBox ID="txtCorreoDirModal" runat="server" CssClass="form-control" TextMode="Email" autocomplete="off" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo de Vinculación</label>
+                            <asp:DropDownList ID="ddlTipoDirModal" runat="server" CssClass="form-select" onchange="ToggleTipoDirector(this)">
+                                <asp:ListItem Text="Interno (UTC)" Value="Interno" Selected="True"/>
+                                <asp:ListItem Text="Externo" Value="Externo" />
+                            </asp:DropDownList>
+                        </div>
+
+                        <div class="col-12 mt-3"><h6 class="text-primary fw-bold border-bottom pb-2">Datos Académicos</h6></div>
+
+                        <%-- SECCIÓN INTERNO --%>
+                        <div id="divDirInterno" class="col-12 row g-3 m-0 p-0">
+                            <div class="col-md-6">
+                                <label class="form-label">Carrera / Departamento</label>
+                                <asp:TextBox ID="txtCarreraDirModal" runat="server" CssClass="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Facultad</label>
+                                <asp:DropDownList ID="ddlFacultadDirModal" runat="server" CssClass="form-select">
+                                    <asp:ListItem Text="-- Seleccione --" Value="" />
+                                    <asp:ListItem>CIENCIAS DE LA INGENIERÍA Y APLICADAS</asp:ListItem>
+                                    <asp:ListItem>CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES</asp:ListItem>
+                                    <asp:ListItem>CIENCIAS ADMINISTRATIVAS Y ECONÓMICAS</asp:ListItem>
+                                    <asp:ListItem>CIENCIAS SOCIALES ARTES Y EDUCACIÓN</asp:ListItem>
+                                    <asp:ListItem>CIENCIAS DE LA SALUD</asp:ListItem>
+                                    <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
+                                    <asp:ListItem>EXTENSIÓN LA MANÁ</asp:ListItem>
+                                </asp:DropDownList>
+                            </div>
+                        </div>
+
+                        <%-- SECCIÓN EXTERNO --%>
+                        <div id="divDirExterno" class="col-12" style="display:none;">
+                            <label class="form-label">Institución de Origen</label>
+                            <asp:TextBox ID="txtEntidadDirModal" runat="server" CssClass="form-control" placeholder="Universidad o Entidad..." />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light justify-content-center">
+                    <asp:LinkButton ID="btnGuardarDirectorModal" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow-sm" OnClick="btnGuardarDirectorModal_Click">
+                        <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Director
+                    </asp:LinkButton>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <%-- JAVASCRIPT DE IMPRESIÓN (EXTRAÍDO DEL PDF - FUENTE: 674-712) --%>
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
     <script>
@@ -537,6 +627,24 @@
         $(function () { initTables(); });
         var prm = Sys.WebForms.PageRequestManager.getInstance();
         prm.add_endRequest(function () { initTables(); });
+
+        function AbrirModalNuevoDirector() {
+            var myModal = new bootstrap.Modal(document.getElementById('modalNuevoDirector'));
+            myModal.show();
+        }
+
+        function ToggleTipoDirector(el) {
+            var tipo = el.value;
+            var divInt = document.getElementById('divDirInterno');
+            var divExt = document.getElementById('divDirExterno');
+            if (tipo === "Externo") {
+                divInt.style.display = 'none';
+                divExt.style.display = 'block';
+            } else {
+                divInt.style.display = 'flex';
+                divExt.style.display = 'none';
+            }
+        }
 
         function imprimirReporte() {
             var contenido = document.getElementById("arealmpresion").innerHTML;

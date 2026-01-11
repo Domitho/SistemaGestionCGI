@@ -44,6 +44,92 @@ namespace SistemaGestionCGI
             rptCentros.DataBind();
         }
 
+        private void CargarCombosDirector(string idCentro)
+        {
+            ddlDirector.Items.Clear();
+            ddlDirector.Items.Add(new ListItem("-- Sin Director Asignado --", ""));
+
+            if (!string.IsNullOrEmpty(idCentro))
+            {
+                // Obtenemos todos los integrantes para llenarlo en el combo
+                var integrantes = _manejador.ObtenerIntegrantesPorCentro(idCentro);
+
+                foreach (var item in integrantes)
+                {
+                    ListItem li = new ListItem(item.NombreCompleto, item.strId_cin); // Value=ID, Text=Nombre
+                    ddlDirector.Items.Add(li);
+                }
+
+                // Intentamos seleccionar al que ya es Director
+                var directorActual = _manejador.BuscarDirectorDelCentro(idCentro);
+                if (directorActual != null && ddlDirector.Items.FindByValue(directorActual.strId_cin) != null)
+                {
+                    ddlDirector.SelectedValue = directorActual.strId_cin;
+                }
+            }
+        }
+
+        protected void btnGuardarDirectorModal_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(txtCedulaDirModal.Text) || string.IsNullOrWhiteSpace(txtNombresDirModal.Text))
+                {
+                    Msg("Cédula y Nombres obligatorios.", "ww");
+                    ScriptManager.RegisterStartupScript(this, GetType(), "ReOpen", "new bootstrap.Modal(document.getElementById('modalNuevoDirector')).show();", true);
+                    return;
+                }
+
+                var nuevoDir = new InvgccCentroIntegrantes
+                {
+                    fkId_cen = hfIdCentro.Value,
+                    strCedula_cin = txtCedulaDirModal.Text.Trim(),
+                    strNombres_cin = txtNombresDirModal.Text.Trim(),
+                    strApellidos_cin = txtApellidosDirModal.Text.Trim(),
+                    strCorreo_cin = txtCorreoDirModal.Text.Trim(),
+                    strTipo_cin = ddlTipoDirModal.SelectedValue,
+                    strFuncion_cin = "Director", // Rol Fijo
+                    strCarrera_cin = txtCarreraDirModal.Text.Trim(),
+                    strFacultad_cin = ddlFacultadDirModal.SelectedValue,
+                    strEntidad_cin = (ddlTipoDirModal.SelectedValue == "Externo") ? txtEntidadDirModal.Text : ""
+                };
+
+                if (string.IsNullOrEmpty(hfIdCentro.Value))
+                {
+                    // CASO NUEVO: Guardamos en memoria (Ahora funciona gracias a [Serializable])
+                    ViewState["DirectorPendiente"] = nuevoDir;
+
+                    // Actualizamos visualmente el combo para que veas que ya está listo
+                    ddlDirector.Items.Clear();
+                    string nombreCompleto = $"{nuevoDir.strApellidos_cin} {nuevoDir.strNombres_cin}";
+                    ddlDirector.Items.Add(new ListItem(nombreCompleto + " (Por Guardar)", "-1"));
+                    ddlDirector.SelectedValue = "-1";
+
+                    Msg("Director asignado. Se guardará al crear el Centro.", "ii");
+                }
+                else
+                {
+                    // CASO EXISTENTE: Guardamos directo en BD (Como en Proyectos)
+                    string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
+                    _manejador.GuardarIntegrante(nuevoDir, usuario);
+
+                    CargarCombosDirector(hfIdCentro.Value);
+
+                    // Seleccionar el recién creado
+                    var dirGuardado = _manejador.ObtenerIntegrantesPorCentro(hfIdCentro.Value)
+                                                .Find(x => x.strCedula_cin == nuevoDir.strCedula_cin);
+                    if (dirGuardado != null) ddlDirector.SelectedValue = dirGuardado.strId_cin;
+
+                    Msg("Director registrado exitosamente.", "ss");
+                }
+
+                // Limpiar modal
+                txtCedulaDirModal.Text = ""; txtNombresDirModal.Text = ""; txtApellidosDirModal.Text = "";
+                txtCorreoDirModal.Text = ""; txtCarreraDirModal.Text = ""; txtEntidadDirModal.Text = "";
+            }
+            catch (Exception ex) { Msg("Error modal: " + ex.Message, "ee"); }
+        }
+
         protected void btnNuevo_Click(object sender, EventArgs e)
         {
             LimpiarFormulario();
@@ -54,7 +140,17 @@ namespace SistemaGestionCGI
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(txtNombre.Text)) { Msg("Nombre obligatorio.", "ww"); return; }
+                if (string.IsNullOrWhiteSpace(txtNombre.Text)) { Msg("Nombre del centro obligatorio.", "ww"); return; }
+
+                // VALIDACIÓN: Verificar si hay director (ya sea seleccionado o pendiente)
+                bool hayDirectorSeleccionado = ddlDirector.SelectedValue != "" && ddlDirector.SelectedValue != "0";
+                bool hayDirectorPendiente = ViewState["DirectorPendiente"] != null;
+
+                if (!hayDirectorSeleccionado && !hayDirectorPendiente)
+                {
+                    Msg("El Director es obligatorio. Seleccione uno o cree uno nuevo.", "ww");
+                    return;
+                }
 
                 var centro = new InvgccCentroInvestigacion
                 {
@@ -70,17 +166,30 @@ namespace SistemaGestionCGI
 
                 if (string.IsNullOrEmpty(hfIdCentro.Value))
                 {
+                    // 1. Guardar Centro (Se genera el ID)
                     _manejador.Guardar(centro);
-                    Redireccionar("Centro creado correctamente.", "ss");
+
+                    // 2. Guardar Director Pendiente (Usando el ID del centro recién creado)
+                    if (hayDirectorPendiente)
+                    {
+                        var dirPendiente = (InvgccCentroIntegrantes)ViewState["DirectorPendiente"];
+                        dirPendiente.fkId_cen = centro.strId_cen; // ¡Aquí hacemos el vínculo!
+
+                        string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
+                        _manejador.GuardarIntegrante(dirPendiente, usuario);
+
+                        ViewState["DirectorPendiente"] = null;
+                    }
+                    Redireccionar("Centro y Director registrados correctamente.", "ss");
                 }
                 else
                 {
                     centro.strId_cen = hfIdCentro.Value;
                     _manejador.Actualizar(centro);
-                    Redireccionar("Centro actualizado.", "ss");
+                    Redireccionar("Centro actualizado correctamente.", "ss");
                 }
             }
-            catch (Exception ex) { Msg("Error: " + ex.Message, "ee"); }
+            catch (Exception ex) { Msg("Error al guardar: " + ex.Message, "ee"); }
         }
 
         protected void rptCentros_ItemCommand(object source, RepeaterCommandEventArgs e)
@@ -119,8 +228,9 @@ namespace SistemaGestionCGI
             txtFechaAprobacion.Text = c.dtFechaAprobacion_cen.ToString("yyyy-MM-dd");
             if (ddlFacultad.Items.FindByValue(c.strFacultad_cen) != null) ddlFacultad.SelectedValue = c.strFacultad_cen;
 
-            var director = _manejador.BuscarDirectorDelCentro(c.strId_cen);
-            txtDirectorActual.Text = director != null ? director.NombreCompleto : "--- SIN ASIGNAR ---";
+            // ANTES: txtDirectorActual.Text = ...
+            // AHORA: Cargar el combo
+            CargarCombosDirector(c.strId_cen);
 
             CambiarVista(Vista.FormularioCentro);
         }
@@ -306,8 +416,6 @@ namespace SistemaGestionCGI
             catch (Exception ex) { Msg("Error al generar reporte: " + ex.Message, "ee"); }
         }
 
-        // MÉTODO SOLICITADO: ConstruirHtmlReporte (Para paridad con Grupos)
-        // Aunque el reporte visual usa controles server-side, este método queda disponible como helper.
         private string ConstruirHtmlReporte(InvgccCentroIntegrantes integrante, List<InvgccCentroIntegrantesHistorial> historial)
         {
             StringBuilder sb = new StringBuilder();
@@ -376,7 +484,19 @@ namespace SistemaGestionCGI
         protected void btnCancelarInt_Click(object sender, EventArgs e) { CambiarVista(Vista.ListaIntegrantes); }
         protected void btnRegresar_Click(object sender, EventArgs e) { Response.Redirect("CentrosInvestigacion.aspx"); }
 
-        private void LimpiarFormulario() { hfIdCentro.Value = ""; txtNombre.Text = ""; txtArea.Text = ""; txtUbicacion.Text = ""; txtDirectorActual.Text = ""; }
+        private void LimpiarFormulario()
+        {
+            hfIdCentro.Value = "";
+            txtNombre.Text = ""; txtArea.Text = ""; txtUbicacion.Text = "";
+            txtLineas.Text = ""; txtMision.Text = ""; txtVision.Text = "";
+            txtFechaAprobacion.Text = DateTime.Now.ToString("yyyy-MM-dd");
+
+            // Reseteamos el combo y la memoria
+            ddlDirector.Items.Clear();
+            ddlDirector.Items.Add(new ListItem("-- Sin Director Asignado --", ""));
+            ViewState["DirectorPendiente"] = null;
+        }
+
         private void LimpiarFormInt() { hfIdIntegrante.Value = ""; txtCedulaInt.Text = ""; txtNombresInt.Text = ""; txtApellidosInt.Text = ""; txtCorreoInt.Text = ""; txtEntidadInt.Text = ""; ddlFuncionInt.SelectedIndex = 0; }
 
         private void Redireccionar(string msg, string type) { Session["TempMsg"] = msg; Session["TempTipo"] = type; Response.Redirect("CentrosInvestigacion.aspx", false); }
