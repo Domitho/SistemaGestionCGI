@@ -1,5 +1,5 @@
 ﻿using System;
-using Newtonsoft.Json; // Requerido por la arquitectura UTC
+using Newtonsoft.Json; 
 
 namespace SistemaGestionCGI.Models
 {
@@ -39,13 +39,13 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("dtFechaRegistro")]
         public DateTime dtFechaRegistro { get; set; }
 
-        [JsonProperty("bitActivo_cen")]
-        public bool bitActivo_cen { get; set; }
-
         [JsonProperty("fkId_director")]
         public string fkId_director { get; set; }
 
         [JsonProperty("NombreDirector")]
         public string NombreDirector { get; set; }
+
+        [JsonProperty("bitActivo_cen")]
+        public bool bitActivo_cen { get; set; }
     }
 }

@@ -1,21 +1,26 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="CategorizacionDocentes.aspx.cs" Inherits="SistemaGestionCGI.CategorizacionDocentes" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true"
+    CodeBehind="CategorizacionDocentes.aspx.cs" Inherits="SistemaGestionCGI.CategorizacionDocentes" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
-    <%-- RECURSOS DE ESTILO UTC --%>
-    <link href="DesignersUTC/Styles/modal-historial-reporte.css" rel="stylesheet" />
-    <link href="DesignersUTC/Styles/utc-full-design.css" rel="stylesheet" />
 
-    <%-- HEADER --%>
+    <%-- RECURSOS DE ESTILO UTC --%>
+    <link href="DesignersUTC/Styles/utc-full-design.css" rel="stylesheet" />
+    <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
+    <link href="DesignersUTC/Styles/modal-historial-reporte.css" rel="stylesheet" />
+
+    <%-- ENCABEZADO PRINCIPAL --%>
     <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
         <h3 class="utc-title mb-0">
             <i class="fa-solid fa-graduation-cap me-2"></i> GESTIÓN DE CATEGORIZACIÓN
         </h3>
         <div class="d-flex gap-2">
-            <asp:LinkButton runat="server" ID="btnNuevo" CssClass="btn btn-primary btn-pill d-flex align-items-center" OnClick="btnNuevo_Click">
+            <asp:LinkButton runat="server" ID="btnNuevo" CssClass="btn btn-primary btn-pill d-flex align-items-center"
+                OnClick="btnNuevo_Click">
                 <i class="fa-solid fa-plus me-2"></i> NUEVO DOCENTE
             </asp:LinkButton>
-
-            <asp:LinkButton runat="server" ID="btnRegresar" CssClass="btn btn-outline-primary btn-pill px-4" Visible="false" OnClick="btnRegresar_Click" CausesValidation="false">
+            
+            <asp:LinkButton runat="server" ID="btnRegresar" CssClass="btn btn-outline-primary btn-pill px-4" Visible="false"
+                OnClick="btnRegresar_Click" CausesValidation="false">
                 <i class="fa-solid fa-chevron-left me-2"></i> REGRESAR
             </asp:LinkButton>
         </div>
@@ -40,12 +45,12 @@
                         <ItemTemplate>
                             <tr>
                                 <td><%# Eval("strCedula_doc") %></td>
-                                <td class="text-start fw-bold"><%# Eval("NombreCompleto") %></td>
-                                <td class="small"><%# Eval("strFacultad_doc") %></td>
+                                <td class="text-start fw-semibold text-primary"><%# Eval("NombreCompleto") %></td>
+                                <td class="small text-muted"><%# Eval("strFacultad_doc") %></td>
                                 
                                 <%-- Columna Categoría con Badges --%>
                                 <td>
-                                    <span class='<%# string.IsNullOrEmpty(Eval("strCategorizacion")?.ToString()) ? "badge bg-secondary opacity-50" : "badge bg-primary" %>'>
+                                    <span class='<%# string.IsNullOrEmpty(Eval("strCategorizacion")?.ToString()) ? "badge bg-secondary opacity-50 rounded-pill px-3" : "badge bg-primary rounded-pill px-3" %>'>
                                         <%# string.IsNullOrEmpty(Eval("strCategorizacion")?.ToString()) ? "SIN ASIGNAR" : Eval("strCategorizacion") %>
                                     </span>
                                 </td>
@@ -54,7 +59,7 @@
                                 
                                 <td>
                                     <%-- Botón Editar/Asignar --%>
-                                    <asp:LinkButton ID="btnEditar" runat="server" CommandName="editar" CommandArgument='<%# Eval("strId_doc") %>' 
+                                    <asp:LinkButton ID="btnEditar" runat="server" CommandName="editar" CommandArgument='<%# Eval("strId_doc") %>'
                                         CssClass="btn btn-warning btn-sm rounded-circle me-1" ToolTip="Asignar o Cambiar Categoría">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </asp:LinkButton>
@@ -67,9 +72,9 @@
 
                                     <%-- Botón Eliminar (Solo si tiene categoría) --%>
                                     <asp:LinkButton ID="btnEliminar" runat="server" CommandName="eliminar" CommandArgument='<%# Eval("strId_doc") %>'
-                                        CssClass="btn btn-eliminar btn-sm rounded-circle" 
+                                        CssClass="btn btn-eliminar btn-sm rounded-circle"
                                         Visible='<%# !string.IsNullOrEmpty(Eval("strCategorizacion")?.ToString()) %>'
-                                        OnClientClick="return confirm('¿Está seguro de QUITAR la categoría actual de este docente? Esta acción quedará registrada en el historial.');" 
+                                        OnClientClick="return confirm('¿Está seguro de QUITAR la categoría actual de este docente? Esta acción quedará registrada en el historial.');"
                                         ToolTip="Quitar Categoría">
                                         <i class="fa-solid fa-trash"></i>
                                     </asp:LinkButton>
@@ -88,7 +93,6 @@
             <h4 class="utc-subtitle mb-4 text-center border-bottom pb-3">
                 <i class="fa-solid fa-file-signature me-2"></i> Ficha del Docente
             </h4>
-            
             <asp:HiddenField ID="hfIdDocente" runat="server" />
             
             <div class="row g-3">
@@ -97,19 +101,17 @@
                     <label class="form-label">Cédula <span class="text-danger">*</span></label>
                     <asp:TextBox ID="txtCedula" runat="server" CssClass="form-control" placeholder="Ingrese Cédula" />
                 </div>
-
                 <%-- Nombres --%>
                 <div class="col-md-6">
                     <label class="form-label">Nombres <span class="text-danger">*</span></label>
                     <asp:TextBox ID="txtNombres" runat="server" CssClass="form-control" placeholder="Nombres del docente" />
                 </div>
-
                 <%-- Apellidos --%>
                 <div class="col-md-6">
                     <label class="form-label">Apellidos <span class="text-danger">*</span></label>
                     <asp:TextBox ID="txtApellidos" runat="server" CssClass="form-control" placeholder="Apellidos del docente" />
                 </div>
-
+                
                 <%-- Facultad (DROPDOWN) --%>
                 <div class="col-md-6">
                     <label class="form-label">Facultad <span class="text-danger">*</span></label>
@@ -171,45 +173,47 @@
 
             <%-- Botones --%>
             <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
-                <asp:LinkButton ID="btnGuardar" runat="server" CssClass="btn btn-primary btn-pill px-5 py-2" OnClick="btnGuardar_Click">
+                <asp:LinkButton ID="btnGuardar" runat="server" CssClass="btn btn-primary btn-pill px-5 py-2 shadow-sm" OnClick="btnGuardar_Click">
                     <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Ficha
                 </asp:LinkButton>
-                <asp:LinkButton ID="btnCancelar" runat="server" CssClass="btn btn-outline-secondary btn-pill px-5 py-2" OnClick="btnRegresar_Click">
+                <asp:LinkButton ID="btnCancelar" runat="server" CssClass="btn btn-outline-secondary btn-pill px-5 py-2" 
+                    OnClick="btnRegresar_Click">
                     Cancelar
                 </asp:LinkButton>
             </div>
         </div>
     </asp:Panel>
 
-    <%-- MODAL DE HISTORIAL --%>
-    <div class="modal fade" id="modalHistorial" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered"> <%-- AQUI ESTÁ EL XL --%>
-            <div class="modal-content shadow-utc border-0">
+    <%-- ============================================================================== --%>
+    <%-- MODAL 1: HISTORIAL DE CAMBIOS (DISEÑO INSTITUCIONAL UTC)                       --%>
+    <%-- ============================================================================== --%>
+    <div class="modal fade" id="modalHistorial" tabindex="-1" aria-hidden="true" ClientIDMode="Static">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content rounded-4 shadow-utc border-0">
                 
-                <%-- Header Azul Gradiente --%>
-                <div class="modal-header bg-utc">
-                    <h5 class="modal-title w-100 text-center text-white">
+                <%-- HEADER BG-UTC --%>
+                <div class="modal-header bg-utc text-white">
+                    <h5 class="modal-title w-100 text-center">
                         <i class="fa-solid fa-clock-rotate-left me-2"></i> HISTORIAL DE CAMBIOS
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
 
-                <div class="modal-body">
-
-                    <%-- 1. CAMPO OCULTO PARA EL ID (Necesario para generar el reporte) --%>
+                <div class="modal-body bg-white">
+                    
                     <asp:HiddenField ID="hfIdDocenteHistorial" runat="server" />
 
-                    <%-- 2. BOTÓN GENERAR REPORTE (Alineado a la derecha) --%>
-                    <div class="d-flex justify-content-end mb-3">
+                    <%-- ENCABEZADO INTERNO CON BOTÓN PDF --%>
+                    <div class="d-flex justify-content-end mb-3 border-bottom pb-2">
                         <asp:LinkButton ID="btnGenerarReporte" runat="server" 
-                            CssClass="btn btn-danger btn-pill px-4 shadow-sm" 
+                            CssClass="btn btn-danger btn-pill btn-sm px-4 shadow-sm" 
                             OnClick="btnGenerarReporte_Click">
                             <i class="fa-solid fa-file-pdf me-2"></i> Generar Reporte Completo
                         </asp:LinkButton>
                     </div>
 
                     <div class="table-responsive rounded border-0">
-                        <%-- Tabla con estilos UTC --%>
+                        <%-- TABLA CON ESTILO INSTITUCIONAL --%>
                         <table class="table table-sm table-hover table-historial-utc align-middle text-center mb-0">
                             <thead>
                                 <tr>
@@ -228,26 +232,25 @@
                                             <td class="text-secondary fw-bold" style="font-size: 0.85rem;">
                                                 <%# Convert.ToDateTime(Eval("dtFecha")).ToString("dd/MM/yyyy HH:mm") %>
                                             </td>
-                                            
                                             <td>
-                                                <span class="badge badge-historial rounded-pill px-3">
+                                                <%-- Badge con lógica simple --%>
+                                                <span class='badge rounded-pill px-3 <%# Eval("strAccion").ToString().Contains("BAJA") || Eval("strAccion").ToString().Contains("ELIMINACION") ? "badge-baja" : "badge-alta" %>'>
                                                     <%# Eval("strAccion") %>
                                                 </span>
                                             </td>
-                                            
-                                            <td class="text-muted small text-start ps-4">
+                                            <td class="text-muted small text-start ps-3">
                                                 <i class="fa-solid fa-arrow-right-from-bracket me-1 text-danger opacity-50"></i>
                                                 <%# Eval("strValorAnterior") %>
                                             </td>
-                                            
-                                            <td class="text-primary fw-bold small text-start ps-4">
+                                            <td class="text-primary fw-bold small text-start ps-3">
                                                 <i class="fa-solid fa-arrow-right-to-bracket me-1"></i>
                                                 <%# Eval("strValorNuevo") %>
                                             </td>
-                                            
                                             <td class="text-start fst-italic text-muted small"><%# Eval("strMotivo") %></td>
-                                            
-                                            <td class="small fw-bold text-secondary"><%# Eval("strUsuario") %></td>
+                                            <td class="small fw-bold text-secondary">
+                                                <i class="fa-solid fa-user-check me-1 opacity-50"></i>
+                                                <%# Eval("strUsuario") %>
+                                            </td>
                                         </tr>
                                     </ItemTemplate>
                                     <FooterTemplate>
@@ -267,118 +270,115 @@
                 </div>
                 
                 <div class="modal-footer justify-content-center border-0 pt-0 pb-4">
-                     <button type="button" class="btn btn-outline-primary btn-pill px-5" data-bs-dismiss="modal">
-                         Cerrar Historial
-                     </button>
+                    <button type="button" class="btn btn-outline-secondary btn-pill px-5" data-bs-dismiss="modal">
+                        Cerrar Historial
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <%-- =====================================================================
-         MODAL VISTA PREVIA REPORTE (REPLICADO DEL EJEMPLO)
-         ===================================================================== --%>
+    <%-- ============================================================================== --%>
+    <%-- MODAL 2: VISTA PREVIA DEL REPORTE PDF (IDÉNTICO A CENTROS)                     --%>
+    <%-- ============================================================================== --%>
     <div class="modal fade" id="modalVistaPrevia" tabindex="-1" aria-hidden="true" ClientIDMode="Static" runat="server">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 rounded-4 shadow-lg">
-                <%-- Cabecera del Modal (Negra) --%>
+                
+                <%-- Cabecera del Modal (Negra para contraste) --%>
                 <div class="modal-header border-bottom-0 py-2 px-3 bg-dark text-white">
                     <h6 class="modal-title">Vista Previa del Reporte</h6>
                     <div>
-                        <button type="button" class="btn btn-sm btn-light me-2" onclick="imprimirReporte()"><i class="fa-solid fa-print"></i> Imprimir</button>
+                        <button type="button" class="btn btn-sm btn-light me-2" onclick="imprimirReporte()">
+                            <i class="fa-solid fa-print"></i> Imprimir
+                        </button>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                 </div>
 
                 <%-- Cuerpo del Reporte (Hoja Blanca) --%>
-                <div class="modal-body p-4" style="background: white; min-height: 500px;">
-                    <div id="arealmpresion" class="report-paper">
+                <div class="modal-body p-4" style="background: #525659; min-height: 500px;">
+                    <div id="arealmpresion" class="report-paper bg-white mx-auto shadow-sm" style="max-width: 800px; min-height: 1000px; padding: 40px 50px;">
                         
-                        <%-- 1. HERO BANNER (LOGO) --%>
-                        <div class="header-hero-banner">
-                            <img src="https://aplicaciones.utc.edu.ec/sigutc/img/bnUTC.png" alt="UTC Logo" />
+                        <%-- 1. HERO BANNER UTC --%>
+                        <div class="header-hero-banner" style="background-color: #003876; color: white; margin: -40px -50px 40px -50px; padding: 30px; text-align: center; border-bottom: 6px solid #002a5c;">
+                            <img src="https://aplicaciones.utc.edu.ec/sigutc/img/bnUTC.png" alt="UTC Logo" style="height: 70px; filter: brightness(0) invert(1);" />
                         </div>
 
-                        <%-- 2. CABECERA DIVIDIDA (TITULO Y METADATA) --%>
-                        <div class="header-info-split">
+                        <%-- 2. CABECERA DIVIDIDA --%>
+                        <div class="header-info-split d-flex justify-content-between border-bottom pb-4 mb-4" style="border-color: #003876 !important;">
                             <div class="info-left">
-                                <span class="system-label">Dirección de Investigación</span>
-                                <h1 class="doc-title">Ficha de Categorización</h1>
+                                <span class="d-block text-uppercase small fw-bold text-secondary">Dirección de Investigación</span>
+                                <h1 class="doc-title mb-0" style="color: #003876; font-weight: 900; font-size: 2rem; text-transform: uppercase;">Ficha de Categorización</h1>
                             </div>
-        
-                            <div class="info-right">
+                            <div class="info-right text-end">
                                 <div class="meta-group">
-                                    <span class="meta-label">ID Referencia</span>
-                                    <asp:Label ID="lblRefId" runat="server" CssClass="meta-value ref-highlight" Text="DOC-000"></asp:Label>
+                                    <span class="d-block text-uppercase small fw-bold text-secondary">ID Referencia</span>
+                                    <asp:Label ID="lblRefId" runat="server" CssClass="fw-bold fs-5 text-dark" Text="DOC-000"></asp:Label>
                                 </div>
-                                <div class="meta-group">
-                                    <span class="meta-label">Fecha de Emisión</span>
-                                    <span class="meta-value"><%= DateTime.Now.ToString("dd/MM/yyyy") %></span>
-                                </div>
-                            </div>
-                        </div>
-        
-                        <div class="mt-5"></div>
-
-                        <%-- 3. CARD DE DATOS (REJILLA DE INFORMACIÓN) --%>
-                        <div class="researcher-card">
-                            <div class="card-row">
-                                <div class="card-item">
-                                    <span class="label">DOCENTE</span>
-                                    <asp:Label ID="lblReporteNombre" runat="server" CssClass="value"></asp:Label>
-                                </div>
-                                <div class="card-item">
-                                    <span class="label">CÉDULA</span>
-                                    <asp:Label ID="lblReporteCedula" runat="server" CssClass="value"></asp:Label>
-                                </div>
-                            </div>
-                            <div class="card-row">
-                                <div class="card-item">
-                                    <span class="label">FACULTAD</span>
-                                    <asp:Label ID="lblReporteFacultad" runat="server" CssClass="value"></asp:Label>
-                                </div>
-                                <div class="card-item">
-                                    <span class="label">CARRERA</span>
-                                    <asp:Label ID="lblReporteCarrera" runat="server" CssClass="value"></asp:Label>
-                                </div>
-                            </div>
-                            <div class="card-row">
-                                <div class="card-item" style="flex: 2;">
-                                    <span class="label">CATEGORÍA ACTUAL</span>
-                                    <asp:Label ID="lblReporteCategoria" runat="server" CssClass="value text-primary fw-bold"></asp:Label>
-                                </div>
-                                <div class="card-item">
-                                    <span class="label">F. RESOLUCIÓN</span>
-                                    <asp:Label ID="lblReporteFecha" runat="server" CssClass="value"></asp:Label>
+                                <div class="meta-group mt-2">
+                                    <span class="d-block text-uppercase small fw-bold text-secondary">Fecha de Emisión</span>
+                                    <span class="fw-bold text-dark"><%= DateTime.Now.ToString("dd/MM/yyyy") %></span>
                                 </div>
                             </div>
                         </div>
 
-                        <%-- 4. TIMELINE (HISTORIAL CRONOLÓGICO) --%>
-                        <div class="timeline-container">
-                            <h4 class="timeline-title">Historial de Cambios y Movimientos</h4>
-        
-                            <ul class="timeline-list">
+                        <%-- 3. CARD DE DATOS --%>
+                        <div class="researcher-card p-4 mb-5 rounded-3" style="background-color: #f8faff; border: 1px solid #e1e8f0; border-left: 5px solid #003876;">
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <span class="d-block small fw-bold text-uppercase text-secondary">DOCENTE</span>
+                                    <asp:Label ID="lblReporteNombre" runat="server" CssClass="fs-5 fw-bold text-primary"></asp:Label>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <span class="d-block small fw-bold text-uppercase text-secondary">CÉDULA</span>
+                                    <asp:Label ID="lblReporteCedula" runat="server" CssClass="fs-5 fw-bold text-dark"></asp:Label>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <span class="d-block small fw-bold text-uppercase text-secondary">FACULTAD</span>
+                                    <asp:Label ID="lblReporteFacultad" runat="server" CssClass="fw-bold text-dark"></asp:Label>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <span class="d-block small fw-bold text-uppercase text-secondary">CARRERA</span>
+                                    <asp:Label ID="lblReporteCarrera" runat="server" CssClass="fw-bold text-dark"></asp:Label>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <span class="d-block small fw-bold text-uppercase text-secondary">CATEGORÍA ACTUAL</span>
+                                    <asp:Label ID="lblReporteCategoria" runat="server" CssClass="fw-bold fs-5 text-success"></asp:Label>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <span class="d-block small fw-bold text-uppercase text-secondary">F. RESOLUCIÓN</span>
+                                    <asp:Label ID="lblReporteFecha" runat="server" CssClass="fw-bold"></asp:Label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <%-- 4. TIMELINE --%>
+                        <div class="timeline-container ps-2">
+                            <h4 class="mb-4 pb-2 border-bottom fw-bold text-secondary">Historial de Cambios y Movimientos</h4>
+                            <ul class="timeline-list list-unstyled position-relative ps-4" style="border-left: 2px solid #e9ecef;">
                                 <asp:Repeater ID="rptReporteHistorial" runat="server">
                                     <ItemTemplate>
-                                        <li class="timeline-item">
-                                            <div class="timeline-marker"></div>
-                                            <div class="timeline-content">
-                                                <div class="timeline-header">
-                                                    <span class="date"><%# Convert.ToDateTime(Eval("dtFecha")).ToString("dd 'de' MMMM, yyyy") %></span>
-                                                    <span class="time"><%# Convert.ToDateTime(Eval("dtFecha")).ToString("HH:mm") %></span>
+                                        <li class="timeline-item mb-4 position-relative">
+                                            <div class="timeline-marker position-absolute bg-white border border-3 border-primary rounded-circle" style="width: 16px; height: 16px; left: -25px; top: 5px;"></div>
+                                            <div class="timeline-content ps-3">
+                                                <div class="timeline-header d-flex justify-content-between mb-1">
+                                                    <span class="date fw-bold text-dark"><%# Convert.ToDateTime(Eval("dtFecha")).ToString("dd 'de' MMMM, yyyy") %></span>
+                                                    <span class="time text-muted small"><%# Convert.ToDateTime(Eval("dtFecha")).ToString("HH:mm") %></span>
                                                 </div>
-                            
-                                                <div class="timeline-body">
-                                                    <%-- Badge condicional según acción --%>
-                                                    <div class="action-badge <%# Eval("strAccion").ToString().Contains("BAJA") || Eval("strAccion").ToString().Contains("ELIMINACION") ? "bad" : "good" %>">
+                                                <div class="timeline-body bg-light p-3 rounded border-start border-4" style="border-color: #003876 !important;">
+                                                    <div class="action-badge d-inline-block px-2 py-1 rounded small fw-bold mb-2 text-uppercase" style="background: rgba(0,56,118,0.1); color: #003876;">
                                                         <%# Eval("strAccion") %>
                                                     </div>
-                                                    <p class="description">
+                                                    <p class="description mb-2 small text-muted">
                                                         <strong>Detalle:</strong> <%# Eval("strMotivo") %>
                                                     </p>
-                                                    <div class="user-signature">
-                                                        <i class="fa-solid fa-user-check"></i> Responsable: <%# Eval("strUsuario") %>
+                                                    <div class="user-signature small text-secondary">
+                                                        <i class="fa-solid fa-user-check me-1"></i> Responsable: <strong><%# Eval("strUsuario") %></strong>
                                                     </div>
                                                 </div>
                                             </div>
@@ -389,9 +389,9 @@
                         </div>
 
                         <%-- 5. FOOTER LEGAL --%>
-                        <div class="report-legal-footer" style="margin-top: 80px;">
-                            Documento generado automáticamente por el Sistema de Gestión CGI-UTC. 
-                            Información válida para procesos internos de la Dirección de Investigación.
+                        <div class="report-legal-footer mt-5 pt-4 border-top text-center text-muted small">
+                            <p>Documento generado automáticamente por el Sistema de Gestión CGI-UTC.<br/>
+                            Información válida para procesos internos de la Dirección de Investigación.</p>
                         </div>
 
                     </div>
@@ -403,6 +403,7 @@
     <%-- SCRIPTS --%>
     <script type="text/javascript">
         $(document).ready(function () {
+            // Inicialización de DataTable con configuración en español y diseño responsivo
             $('#tablaDocentes').DataTable({
                 responsive: true,
                 language: { url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json" },
@@ -410,75 +411,30 @@
             });
         });
 
-        function abrirModalHistorial() {
-            var myModal = new bootstrap.Modal(document.getElementById('modalHistorial'));
-            myModal.show();
-        }
-
         function imprimirReporte() {
-            // 1. Obtener contenido del panel
             var contenido = document.getElementById("arealmpresion").innerHTML;
-
-            // 2. Abrir ventana emergente
             var ventana = window.open('', 'PRINT', 'height=800,width=1000');
 
             ventana.document.write('<html><head><title>Ficha de Categorización</title>');
-
-            // 3. Cargar Bootstrap (CDN)
             ventana.document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">');
 
-            // 4. INYECTAR ESTILOS MANUALMENTE (ESTO ASEGURA EL DISEÑO)
+            // ESTILOS DE IMPRESIÓN (Idénticos a Centros)
             ventana.document.write('<style>');
-
-            // Ajustes Generales
             ventana.document.write('body { font-family: "Segoe UI", sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0; }');
             ventana.document.write('.report-paper { padding: 40px 50px; background: white; }');
-
-            // BANNER AZUL (Con corrección de logo centrado)
-            ventana.document.write('.header-hero-banner { background-color: #003876 !important; color: white !important; margin: -40px -50px 40px -50px; padding: 50px 20px 30px 20px; display: flex !important; justify-content: center !important; align-items: center !important; border-bottom: 6px solid #002a5c; }');
-            ventana.document.write('.header-hero-banner img { height: 80px; width: auto; filter: brightness(0) invert(1); display: block; }');
-
-            // Encabezados y Títulos
-            ventana.document.write('.header-info-split { display: flex; justify-content: space-between; border-bottom: 2px solid #003876; margin-bottom: 40px; padding-bottom: 25px; }');
+            ventana.document.write('.header-hero-banner { background-color: #003876 !important; color: white !important; margin: -40px -50px 40px -50px; padding: 30px; text-align: center; border-bottom: 6px solid #002a5c; display: block; }');
+            ventana.document.write('.header-hero-banner img { height: 70px; width: auto; filter: brightness(0) invert(1); }');
             ventana.document.write('.doc-title { color: #003876; font-weight: 900; font-size: 2rem; text-transform: uppercase; }');
-            ventana.document.write('.system-label { font-size: 0.7rem; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 5px; }');
-
-            // Metadatos (Derecha)
-            ventana.document.write('.meta-group { margin-bottom: 10px; text-align: right; }');
-            ventana.document.write('.meta-label { font-size: 0.65rem; text-transform: uppercase; color: #aaa; font-weight: 700; display: block; }');
-            ventana.document.write('.meta-value { font-size: 1rem; font-weight: 700; color: #333; display: block; }');
-            ventana.document.write('.ref-highlight { color: #dc3545; font-family: Consolas, monospace; font-size: 1.1rem; }');
-
-            // Tarjeta de Datos (Card)
-            ventana.document.write('.researcher-card { background-color: #f8faff; border-left: 4px solid #003876; padding: 20px; margin-bottom: 40px; border: 1px solid #e1e8f0; border-radius: 6px; }');
-            ventana.document.write('.card-row { display: flex; justify-content: space-between; margin-bottom: 15px; }');
-            ventana.document.write('.card-item .label { font-size: 0.7rem; color: #8898aa; font-weight: 700; display: block; text-transform: uppercase; }');
-            ventana.document.write('.card-item .value { font-size: 1rem; font-weight: 600; color: #002a5c; }');
-
-            // Timeline (Historial)
-            ventana.document.write('.timeline-container { padding: 0 10px; }');
-            ventana.document.write('.timeline-title { font-size: 0.9rem; text-transform: uppercase; font-weight: 700; color: #999; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 25px; }');
-            ventana.document.write('.timeline-list { list-style: none; padding: 0; position: relative; }');
-            ventana.document.write('.timeline-list::before { content: ""; position: absolute; top: 0; bottom: 0; left: 24px; width: 2px; background: #e9ecef; }');
-            ventana.document.write('.timeline-item { position: relative; padding-left: 60px; margin-bottom: 30px; page-break-inside: avoid; }');
-            ventana.document.write('.timeline-marker { position: absolute; left: 18px; top: 0; width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 3px solid #003876; z-index: 2; }');
-            ventana.document.write('.timeline-header { margin-bottom: 6px; display: flex; align-items: baseline; gap: 10px; }');
-            ventana.document.write('.timeline-header .date { font-weight: 700; color: #333; font-size: 0.9rem; }');
-
-            // Badges y Detalles
-            ventana.document.write('.action-badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; }');
-            ventana.document.write('.action-badge.good { background: rgba(25, 135, 84, 0.1); color: #198754; }');
-            ventana.document.write('.action-badge.bad { background: rgba(220, 53, 69, 0.1); color: #dc3545; }');
-
-            // Footer Legal
-            ventana.document.write('.report-legal-footer { margin-top: 60px; border-top: 1px solid #eee; text-align: center; font-size: 0.65rem; color: #ccc; padding-top: 20px; text-transform: uppercase; }');
+            ventana.document.write('.researcher-card { background-color: #f8faff !important; border-left: 5px solid #003876 !important; padding: 20px; margin-bottom: 40px; border: 1px solid #e1e8f0; border-radius: 6px; }');
+            ventana.document.write('.timeline-list { list-style: none; padding: 0; position: relative; margin-left: 10px; border-left: 2px solid #e9ecef; }');
+            ventana.document.write('.timeline-item { position: relative; padding-left: 30px; margin-bottom: 30px; }');
+            ventana.document.write('.timeline-marker { position: absolute; left: -9px; top: 0; width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 3px solid #003876; z-index: 2; }');
             ventana.document.write('</style>');
 
             ventana.document.write('</head><body>');
             ventana.document.write(contenido);
             ventana.document.write('</body></html>');
 
-            // 5. Cerrar flujo y mostrar diálogo de impresión
             ventana.document.close();
             ventana.focus();
 
@@ -487,6 +443,6 @@
                 ventana.close();
             }, 500);
         }
-
     </script>
+
 </asp:Content>

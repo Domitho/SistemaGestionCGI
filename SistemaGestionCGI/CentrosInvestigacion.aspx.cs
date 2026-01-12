@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text; // Necesario para StringBuilder
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using SistemaGestionCGI.BLL;
@@ -51,16 +51,14 @@ namespace SistemaGestionCGI
 
             if (!string.IsNullOrEmpty(idCentro))
             {
-                // Obtenemos todos los integrantes para llenarlo en el combo
                 var integrantes = _manejador.ObtenerIntegrantesPorCentro(idCentro);
 
                 foreach (var item in integrantes)
                 {
-                    ListItem li = new ListItem(item.NombreCompleto, item.strId_cin); // Value=ID, Text=Nombre
+                    ListItem li = new ListItem(item.NombreCompleto, item.strId_cin); 
                     ddlDirector.Items.Add(li);
                 }
 
-                // Intentamos seleccionar al que ya es Director
                 var directorActual = _manejador.BuscarDirectorDelCentro(idCentro);
                 if (directorActual != null && ddlDirector.Items.FindByValue(directorActual.strId_cin) != null)
                 {
@@ -88,7 +86,7 @@ namespace SistemaGestionCGI
                     strApellidos_cin = txtApellidosDirModal.Text.Trim(),
                     strCorreo_cin = txtCorreoDirModal.Text.Trim(),
                     strTipo_cin = ddlTipoDirModal.SelectedValue,
-                    strFuncion_cin = "Director", // Rol Fijo
+                    strFuncion_cin = "Director",
                     strCarrera_cin = txtCarreraDirModal.Text.Trim(),
                     strFacultad_cin = ddlFacultadDirModal.SelectedValue,
                     strEntidad_cin = (ddlTipoDirModal.SelectedValue == "Externo") ? txtEntidadDirModal.Text : ""
@@ -96,10 +94,8 @@ namespace SistemaGestionCGI
 
                 if (string.IsNullOrEmpty(hfIdCentro.Value))
                 {
-                    // CASO NUEVO: Guardamos en memoria (Ahora funciona gracias a [Serializable])
                     ViewState["DirectorPendiente"] = nuevoDir;
 
-                    // Actualizamos visualmente el combo para que veas que ya está listo
                     ddlDirector.Items.Clear();
                     string nombreCompleto = $"{nuevoDir.strApellidos_cin} {nuevoDir.strNombres_cin}";
                     ddlDirector.Items.Add(new ListItem(nombreCompleto + " (Por Guardar)", "-1"));
@@ -109,13 +105,11 @@ namespace SistemaGestionCGI
                 }
                 else
                 {
-                    // CASO EXISTENTE: Guardamos directo en BD (Como en Proyectos)
                     string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
                     _manejador.GuardarIntegrante(nuevoDir, usuario);
 
                     CargarCombosDirector(hfIdCentro.Value);
 
-                    // Seleccionar el recién creado
                     var dirGuardado = _manejador.ObtenerIntegrantesPorCentro(hfIdCentro.Value)
                                                 .Find(x => x.strCedula_cin == nuevoDir.strCedula_cin);
                     if (dirGuardado != null) ddlDirector.SelectedValue = dirGuardado.strId_cin;
@@ -123,7 +117,6 @@ namespace SistemaGestionCGI
                     Msg("Director registrado exitosamente.", "ss");
                 }
 
-                // Limpiar modal
                 txtCedulaDirModal.Text = ""; txtNombresDirModal.Text = ""; txtApellidosDirModal.Text = "";
                 txtCorreoDirModal.Text = ""; txtCarreraDirModal.Text = ""; txtEntidadDirModal.Text = "";
             }
@@ -142,7 +135,6 @@ namespace SistemaGestionCGI
             {
                 if (string.IsNullOrWhiteSpace(txtNombre.Text)) { Msg("Nombre del centro obligatorio.", "ww"); return; }
 
-                // VALIDACIÓN: Verificar si hay director (ya sea seleccionado o pendiente)
                 bool hayDirectorSeleccionado = ddlDirector.SelectedValue != "" && ddlDirector.SelectedValue != "0";
                 bool hayDirectorPendiente = ViewState["DirectorPendiente"] != null;
 
@@ -166,14 +158,12 @@ namespace SistemaGestionCGI
 
                 if (string.IsNullOrEmpty(hfIdCentro.Value))
                 {
-                    // 1. Guardar Centro (Se genera el ID)
                     _manejador.Guardar(centro);
 
-                    // 2. Guardar Director Pendiente (Usando el ID del centro recién creado)
                     if (hayDirectorPendiente)
                     {
                         var dirPendiente = (InvgccCentroIntegrantes)ViewState["DirectorPendiente"];
-                        dirPendiente.fkId_cen = centro.strId_cen; // ¡Aquí hacemos el vínculo!
+                        dirPendiente.fkId_cen = centro.strId_cen; 
 
                         string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
                         _manejador.GuardarIntegrante(dirPendiente, usuario);
@@ -228,8 +218,6 @@ namespace SistemaGestionCGI
             txtFechaAprobacion.Text = c.dtFechaAprobacion_cen.ToString("yyyy-MM-dd");
             if (ddlFacultad.Items.FindByValue(c.strFacultad_cen) != null) ddlFacultad.SelectedValue = c.strFacultad_cen;
 
-            // ANTES: txtDirectorActual.Text = ...
-            // AHORA: Cargar el combo
             CargarCombosDirector(c.strId_cen);
 
             CambiarVista(Vista.FormularioCentro);
@@ -278,16 +266,14 @@ namespace SistemaGestionCGI
 
                 if (string.IsNullOrEmpty(hfIdIntegrante.Value))
                 {
-                    // Guardar (BLL registra historial NUEVO)
                     _manejador.GuardarIntegrante(i, usuario);
                     Msg("Integrante agregado.", "ss");
                 }
                 else
                 {
-                    // Actualizar
                     i.strId_cin = hfIdIntegrante.Value;
                     var original = _manejador.ObtenerIntegrantePorId(i.strId_cin);
-                    if (original != null) i.bitActivo_cin = original.bitActivo_cin; // Mantiene estado
+                    if (original != null) i.bitActivo_cin = original.bitActivo_cin; 
 
                     _manejador.ActualizarIntegrante(i);
                     _manejador.GuardarHistorial(i.strId_cin, "EDICIÓN", "Actualización de datos generales", usuario);
@@ -306,13 +292,13 @@ namespace SistemaGestionCGI
 
             switch (e.CommandName)
             {
-                case "Eliminar": // Botón Power (Cambio Estado)
+                case "Eliminar": 
                     CargarModalEstado(id);
                     break;
                 case "Editar":
                     CargarEdicionIntegrante(id);
                     break;
-                case "Historial": // Botón Reloj
+                case "Historial":
                     CargarModalHistorial(id);
                     break;
             }
@@ -328,7 +314,7 @@ namespace SistemaGestionCGI
                 txtNombresInt.Text = i.strNombres_cin;
                 txtApellidosInt.Text = i.strApellidos_cin;
                 txtCorreoInt.Text = i.strCorreo_cin;
-                txtEntidadInt.Text = i.strCarrera_cin; // O entidad
+                txtEntidadInt.Text = i.strCarrera_cin; 
                 if (ddlFuncionInt.Items.FindByValue(i.strFuncion_cin) != null) ddlFuncionInt.SelectedValue = i.strFuncion_cin;
                 if (ddlTipoInt.Items.FindByValue(i.strTipo_cin) != null) ddlTipoInt.SelectedValue = i.strTipo_cin;
 
@@ -372,7 +358,7 @@ namespace SistemaGestionCGI
             if (i != null)
             {
                 lblNombreHistorial.Text = $"{i.strNombres_cin} {i.strApellidos_cin}";
-                hfIdIntegranteHistorial.Value = idInt; // Importante para el reporte
+                hfIdIntegranteHistorial.Value = idInt;
                 rptHistorial.DataSource = _manejador.ObtenerHistorial(idInt);
                 rptHistorial.DataBind();
 
@@ -399,16 +385,13 @@ namespace SistemaGestionCGI
                     lblReporteFuncion.Text = integrante.strFuncion_cin;
 
                     lblReporteEstado.Text = integrante.bitActivo_cin ? "ACTIVO" : "INACTIVO";
-                    // Color dinámico usando System.Drawing
                     lblReporteEstado.ForeColor = integrante.bitActivo_cin
                         ? System.Drawing.ColorTranslator.FromHtml("#1b9e4b")
                         : System.Drawing.ColorTranslator.FromHtml("#d9534f");
 
-                    // Llenar el Timeline
                     rptReporteHistorial.DataSource = historial;
                     rptReporteHistorial.DataBind();
 
-                    // Abrir Modal de Vista Previa
                     string script = "var m = new bootstrap.Modal(document.getElementById('modalVistaPrevia')); m.show();";
                     ScriptManager.RegisterStartupScript(this, GetType(), "OpenPreview", script, true);
                 }
@@ -491,15 +474,26 @@ namespace SistemaGestionCGI
             txtLineas.Text = ""; txtMision.Text = ""; txtVision.Text = "";
             txtFechaAprobacion.Text = DateTime.Now.ToString("yyyy-MM-dd");
 
-            // Reseteamos el combo y la memoria
             ddlDirector.Items.Clear();
             ddlDirector.Items.Add(new ListItem("-- Sin Director Asignado --", ""));
             ViewState["DirectorPendiente"] = null;
         }
 
-        private void LimpiarFormInt() { hfIdIntegrante.Value = ""; txtCedulaInt.Text = ""; txtNombresInt.Text = ""; txtApellidosInt.Text = ""; txtCorreoInt.Text = ""; txtEntidadInt.Text = ""; ddlFuncionInt.SelectedIndex = 0; }
+        private void LimpiarFormInt() { 
+            hfIdIntegrante.Value = ""; 
+            txtCedulaInt.Text = ""; 
+            txtNombresInt.Text = ""; 
+            txtApellidosInt.Text = ""; 
+            txtCorreoInt.Text = ""; 
+            txtEntidadInt.Text = ""; 
+            ddlFuncionInt.SelectedIndex = 0; 
+        }
 
-        private void Redireccionar(string msg, string type) { Session["TempMsg"] = msg; Session["TempTipo"] = type; Response.Redirect("CentrosInvestigacion.aspx", false); }
+        private void Redireccionar(string msg, string type) { 
+            Session["TempMsg"] = msg; 
+            Session["TempTipo"] = type; 
+            Response.Redirect("CentrosInvestigacion.aspx", false); 
+        }
         private void Msg(string msg, string type) { string script = $"$(function() {{ toastify('{type}', '{msg.Replace("'", "").Replace("\r\n", "")}', 'Sistema'); }});"; ScriptManager.RegisterStartupScript(this, GetType(), "toast", script, true); }
     }
 }

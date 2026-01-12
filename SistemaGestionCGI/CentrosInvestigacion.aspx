@@ -2,12 +2,10 @@
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
 
-    <%-- RECURSOS DE ESTILO (UTC DESIGN) --%>
     <link href="DesignersUTC/Styles/utc-full-design.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/modal-historial-reporte.css" rel="stylesheet" />
 
-    <%-- ENCABEZADO PRINCIPAL (Estilo Grupos) --%>
     <div id="headerCentros" runat="server" class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
         <h3 class="utc-title mb-0">
             <i class="fa-solid fa-building-columns me-2"></i> CENTROS DE INVESTIGACIÓN
@@ -19,7 +17,6 @@
         </div>
     </div>
 
-    <%-- PANEL 1: LISTADO (GRILLA) --%>
     <asp:Panel ID="pnlGrilla" runat="server" Visible="true">
         <div class="table-responsive bg-white p-3 rounded shadow-utc">
             <table id="tablaCentros" class="table table-bordered table-hover table-utc align-middle text-center" style="width:100%">
@@ -29,7 +26,6 @@
                         <th>NOMBRE</th>
                         <th>FACULTAD</th>
                         <th>DIRECTOR</th>
-                        <th>ESTADO</th>
                         <th>ACCIONES</th>
                     </tr>
                 </thead>
@@ -41,12 +37,6 @@
                                 <td class="text-start fw-semibold text-primary"><%# Eval("strNombre_cen") %></td>
                                 <td class="text-start small text-muted"><%# Eval("strFacultad_cen") %></td>
                                 <td class="text-start"><%# Eval("NombreDirector") ?? "--- SIN ASIGNAR ---" %></td>
-                                <td>
-                                    <%# Convert.ToBoolean(Eval("bitActivo_cen")) 
-                                        ? "<span class='badge bg-success'><i class='fa-solid fa-check me-1'></i>Activo</span>" 
-                                        : "<span class='badge bg-danger'><i class='fa-solid fa-ban me-1'></i>Inactivo</span>" 
-                                    %>
-                                </td>
                                 <td>
                                     <asp:LinkButton ID="btnIntegrantes" runat="server" CommandName="Integrantes" CommandArgument='<%# Eval("strId_cen") %>' 
                                         CssClass="btn btn-primary btn-sm rounded-circle me-1 text-white" ToolTip="Gestionar Integrantes">
@@ -71,7 +61,6 @@
         </div>
     </asp:Panel>
 
-    <%-- PANEL 2: FORMULARIO DE CENTRO --%>
     <asp:Panel ID="pnlFormulario" runat="server" Visible="false">
         
         <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-4 rounded shadow-utc border header-utc-line">
@@ -144,8 +133,6 @@
         </div>
     </asp:Panel>
 
-    <%-- PANEL 3: LISTADO DE INTEGRANTES --%>
-    <%-- PANEL 3: LISTADO DE INTEGRANTES --%>
     <asp:Panel ID="pnlIntegrantes" runat="server" Visible="false">
         
         <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
@@ -194,7 +181,6 @@
                                     %>
                                 </td>
                                 <td>
-                                    <%-- BOTÓN HISTORIAL (NUEVO) --%>
                                     <asp:LinkButton ID="btnHistorial" runat="server" CommandName="Historial" CommandArgument='<%# Eval("strId_cin") %>' 
                                         CssClass="btn btn-info btn-sm rounded-circle me-1 text-white" ToolTip="Ver Historial de Movimientos">
                                         <i class="fa-solid fa-clock-rotate-left"></i>
@@ -219,7 +205,6 @@
         </div>
     </asp:Panel>
 
-    <%-- PANEL 4: FORMULARIO INTEGRANTE --%>
     <asp:Panel ID="pnlFormularioInt" runat="server" Visible="false">
         
         <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-4 rounded shadow-utc border header-utc-line">
@@ -277,12 +262,10 @@
         </div>
     </asp:Panel>
 
-    <%-- MODAL: HISTORIAL DE MOVIMIENTOS --%>
     <div class="modal fade" id="modalHistorial" tabindex="-1" aria-hidden="true" ClientIDMode="Static">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content rounded-4 shadow-utc border-0">
                 
-                <%-- USAMOS LA CLASE 'bg-utc' PARA EL COLOR INSTITUCIONAL EXACTO --%>
                 <div class="modal-header bg-utc text-white">
                     <h5 class="modal-title w-100 text-center">
                         <i class="fa-solid fa-clock-rotate-left me-2"></i> HISTORIAL DE MOVIMIENTOS
@@ -291,7 +274,6 @@
                 </div>
 
                 <div class="modal-body bg-white">
-                    <%-- ENCABEZADO INTERNO --%>
                     <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-3">
                         <h6 class="fw-bold text-secondary mb-0">
                             INTEGRANTE: <asp:Label ID="lblNombreHistorial" runat="server" CssClass="text-primary text-uppercase" Text="..." />
@@ -305,7 +287,6 @@
 
                     <asp:HiddenField ID="hfIdIntegranteHistorial" runat="server" />
 
-                    <%-- TABLA CON LA CLASE 'table-historial-utc' QUE COPIA EL ESTILO DE GRUPOS --%>
                     <div class="table-responsive rounded border-0">
                         <table class="table table-sm table-hover table-historial-utc align-middle text-center mb-0">
                             <thead>
@@ -324,7 +305,6 @@
                                                 <%# Convert.ToDateTime(Eval("dtFecha")).ToString("dd/MM/yyyy HH:mm") %>
                                             </td>
                                             <td>
-                                                <%-- Badges Institucionales --%>
                                                 <span class='badge rounded-pill px-3 <%# 
                                                     Eval("strAccion").ToString() == "BAJA" ? "badge-baja" : 
                                                     (Eval("strAccion").ToString().Contains("NUEVO") || Eval("strAccion").ToString() == "VINCULACIÓN" ? "badge-alta" : "badge-historial") 
@@ -364,9 +344,6 @@
         </div>
     </div>
 
-    <%-- ============================================================================== --%>
-    <%-- MODAL 2: CAMBIO DE ESTADO (DISEÑO INSTITUCIONAL IDENTICO A GRUPOS)             --%>
-    <%-- ============================================================================== --%>
     <div class="modal fade" id="modalEstadoInt" tabindex="-1" aria-hidden="true" ClientIDMode="Static">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow-utc border-0 rounded-4">
@@ -396,14 +373,10 @@
         </div>
     </div>
 
-    <%-- ============================================================================== --%>
-    <%-- MODAL 3: VISTA PREVIA DEL REPORTE PDF (IDÉNTICO A GRUPOS)                      --%>
-    <%-- ============================================================================== --%>
     <div class="modal fade" id="modalVistaPrevia" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 rounded-4 shadow-lg">
                 
-                <%-- CABECERA DEL MODAL (OSCURA) --%>
                 <div class="modal-header border-bottom-0 py-2 px-3 bg-dark text-white">
                     <h6 class="modal-title" id="lblTituloPreview">Vista Previa del Reporte</h6>
                     <div>
@@ -414,18 +387,14 @@
                     </div>
                 </div>
 
-                <%-- CUERPO: PAPEL DEL REPORTE --%>
                 <div class="modal-body p-4" style="background: #525659; min-height: 500px;">
                     
-                    <%-- ÁREA IMPRIMIBLE (ID: arealmpresion) --%>
                     <div id="arealmpresion" class="report-paper bg-white mx-auto shadow-sm" style="max-width: 800px; min-height: 1000px; padding: 40px 50px;">
                         
-                        <%-- 1. HERO BANNER UTC --%>
                         <div class="header-hero-banner" style="background-color: #003876; color: white; margin: -40px -50px 40px -50px; padding: 30px; text-align: center; border-bottom: 6px solid #002a5c;">
                             <img src="https://aplicaciones.utc.edu.ec/sigutc/img/bnUTC.png" alt="UTC Logo" style="height: 70px; filter: brightness(0) invert(1);" />
                         </div>
 
-                        <%-- 2. TÍTULO Y METADATOS --%>
                         <div class="header-info-split d-flex justify-content-between border-bottom pb-4 mb-4" style="border-color: #003876 !important;">
                             <div class="info-left">
                                 <span class="d-block text-uppercase small fw-bold text-secondary">Sistema de Gestión de Investigación</span>
@@ -443,7 +412,6 @@
                             </div>
                         </div>
 
-                        <%-- 3. TARJETA DE DATOS DEL INTEGRANTE --%>
                         <div class="researcher-card p-4 mb-5 rounded-3" style="background-color: #f8faff; border: 1px solid #e1e8f0; border-left: 5px solid #003876;">
                             <div class="row mb-3">
                                 <div class="col-6">
@@ -467,7 +435,6 @@
                             </div>
                         </div>
 
-                        <%-- 4. LÍNEA DE TIEMPO (TIMELINE) --%>
                         <div class="timeline-container ps-2">
                             <h4 class="mb-4 pb-2 border-bottom fw-bold text-secondary">Registro Cronológico de Eventos</h4>
                             
@@ -475,7 +442,6 @@
                                 <asp:Repeater ID="rptReporteHistorial" runat="server">
                                     <ItemTemplate>
                                         <li class="timeline-item mb-4 position-relative">
-                                            <%-- Marcador --%>
                                             <div class="timeline-marker position-absolute bg-white border border-3 border-primary rounded-circle" 
                                                  style="width: 16px; height: 16px; left: -25px; top: 5px;"></div>
                                             
@@ -508,7 +474,6 @@
                             </ul>
                         </div>
 
-                        <%-- 5. PIE DE PÁGINA LEGAL --%>
                         <div class="report-legal-footer mt-5 pt-4 border-top text-center text-muted small">
                             <p>Documento generado automáticamente por el Sistema de Gestión CGI-UTC.<br/>
                             La validez de este reporte está sujeta a los registros digitales institucionales.</p>
@@ -520,9 +485,6 @@
         </div>
     </div>
 
-    <%-- ============================================================================== --%>
-    <%-- MODAL 4: REGISTRO RÁPIDO DE DIRECTOR (REPLICA DE PROYECTOS)                    --%>
-    <%-- ============================================================================== --%>
     <div class="modal fade" id="modalNuevoDirector" tabindex="-1" aria-hidden="true" ClientIDMode="Static">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content shadow-utc border-0 rounded-4">
@@ -532,7 +494,6 @@
                 </div>
                 <div class="modal-body p-4">
                     
-                    <%-- ALERTA DE CONTEXTO --%>
                     <div class="alert alert-light border-start border-primary border-4 shadow-sm small text-muted mb-4">
                         <i class="fa-solid fa-circle-info text-primary me-2"></i> Este registro se asignará automáticamente como <strong>DIRECTOR</strong> del centro actual.
                     </div>
@@ -566,7 +527,6 @@
 
                         <div class="col-12 mt-3"><h6 class="text-primary fw-bold border-bottom pb-2">Datos Académicos</h6></div>
 
-                        <%-- SECCIÓN INTERNO --%>
                         <div id="divDirInterno" class="col-12 row g-3 m-0 p-0">
                             <div class="col-md-6">
                                 <label class="form-label">Carrera / Departamento</label>
@@ -587,7 +547,6 @@
                             </div>
                         </div>
 
-                        <%-- SECCIÓN EXTERNO --%>
                         <div id="divDirExterno" class="col-12" style="display:none;">
                             <label class="form-label">Institución de Origen</label>
                             <asp:TextBox ID="txtEntidadDirModal" runat="server" CssClass="form-control" placeholder="Universidad o Entidad..." />
@@ -603,7 +562,7 @@
         </div>
     </div>
 
-    <%-- JAVASCRIPT DE IMPRESIÓN (EXTRAÍDO DEL PDF - FUENTE: 674-712) --%>
+    <%-- JAVASCRIPT --%>
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
     <script>
 
@@ -623,7 +582,6 @@
             $('#tablaIntegrantes').DataTable(dtConfig);
         }
 
-        // Inicialización al cargar la página y después de UpdatePanel
         $(function () { initTables(); });
         var prm = Sys.WebForms.PageRequestManager.getInstance();
         prm.add_endRequest(function () { initTables(); });
@@ -651,27 +609,20 @@
             var ventana = window.open('', 'PRINT', 'height=800,width=1000');
 
             ventana.document.write('<html><head><title>Reporte de Historial</title>');
-            // Bootstrap para mantener la estructura base
             ventana.document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">');
-            // FontAwesome para los iconos
             ventana.document.write('<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">');
 
-            // ESTILOS INYECTADOS MANUALMENTE (REPLICA EXACTA DEL PDF)
             ventana.document.write('<style>');
             ventana.document.write('body { font-family: "Segoe UI", sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }');
             ventana.document.write('.report-paper { padding: 40px 50px; }');
 
-            // Estilos Header
             ventana.document.write('.header-hero-banner { background-color: #003876 !important; color: white !important; margin: -40px -50px 40px -50px; padding: 30px; text-align: center; border-bottom: 6px solid #002a5c; display: block; }');
             ventana.document.write('.header-hero-banner img { height: 70px; width: auto; filter: brightness(0) invert(1); }');
 
-            // Estilos Títulos
             ventana.document.write('.doc-title { color: #003876; font-weight: 900; font-size: 2rem; text-transform: uppercase; }');
 
-            // Estilos Tarjeta Investigador
             ventana.document.write('.researcher-card { background-color: #f8faff !important; border-left: 5px solid #003876 !important; padding: 20px; margin-bottom: 40px; border: 1px solid #e1e8f0; border-radius: 6px; }');
 
-            // Estilos Timeline (Re-dibujados para impresión)
             ventana.document.write('.timeline-list { list-style: none; padding: 0; position: relative; margin-left: 10px; border-left: 2px solid #e9ecef; }');
             ventana.document.write('.timeline-item { position: relative; padding-left: 30px; margin-bottom: 30px; }');
             ventana.document.write('.timeline-marker { position: absolute; left: -9px; top: 0; width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 3px solid #003876; z-index: 2; }');

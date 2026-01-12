@@ -17,20 +17,16 @@ namespace SistemaGestionCGI.BLL
 
         public List<InvgccCentroInvestigacion> ObtenerTodos()
         {
-            // CORRECCIÓN: Ahora buscamos el nombre del Director en la NUEVA tabla de integrantes
-            // usando una subconsulta, ya que el fkId_director ya no se usa.
             string sql = @"
-                SELECT C.*, 
-                (
-                    SELECT TOP 1 (I.strApellidos_cin + ' ' + I.strNombres_cin)
-                    FROM INVGCCCENTRO_INVESTIGACION_INTEGRANTES I
-                    WHERE I.fkId_cen = C.strId_cen 
-                    AND I.strFuncion_cin = 'Director' 
-                    AND I.bitActivo_cin = 1
-                ) as NombreDirector
+                SELECT 
+                    C.strId_cen, C.strNombre_cen, C.strFacultad_cen, C.strArea_cen, 
+                    C.strUbicacion_cen, C.strLineaInv_cen, C.strMision_cen, C.strVision_cen, 
+                    C.dtFechaAprobacion_cen, C.bitActivo_cen, 
+                    (I.strNombres_cin + ' ' + I.strApellidos_cin) AS NombreDirector
                 FROM INVGCCCENTRO_INVESTIGACION C
-                WHERE C.bitActivo_cen = 1
-                ORDER BY C.strNombre_cen ASC";
+                LEFT JOIN INVGCCCENTRO_INVESTIGACION_INTEGRANTES I 
+                    ON C.strId_cen = I.fkId_cen AND I.strFuncion_cin = 'Director'
+                ORDER BY C.strNombre_cen";
 
             return _dal.SelectSql<InvgccCentroInvestigacion>(sql);
         }
