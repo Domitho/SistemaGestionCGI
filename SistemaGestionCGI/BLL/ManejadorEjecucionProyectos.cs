@@ -178,6 +178,25 @@ namespace SistemaGestionCGI.BLL
         public void EliminarInforme(int idInforme) =>
             _dal.Delete("INVGCCEJECUCION_INFORMES", $"strId_informe = {idInforme}");
 
+
+        public void SubirInformeCierre(int idEjecucion, string rutaArchivo, string usuario)
+        {
+            string fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            // 1. Preparamos el SQL de Actualización
+            string sql = $@"
+        UPDATE INVGCCEJECUCION_PROYECTO 
+        SET strInforme_Cierre = '{rutaArchivo}',
+            strEstado_ejec = 'EN REVISION'
+        WHERE strId_ejec = {idEjecucion}";
+
+            // 2. Ejecutamos contra la BD
+            _dal.UpdateSql(sql);
+
+            // 3. (Opcional pero recomendado) Dejamos rastro en el historial del proyecto/miembros
+            // Esto dependerá si quieres auditarlo, por ahora nos centramos en el requerimiento principal.
+        }
+
         // =============================================================
         // 4. GESTIÓN DE AUDITORÍA Y ESTADOS
         // =============================================================

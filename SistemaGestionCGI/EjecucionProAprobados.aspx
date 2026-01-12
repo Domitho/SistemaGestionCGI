@@ -8,6 +8,25 @@
     <link href="DesignersUTC/Styles/modal-informes.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/modal-historial-reporte.css" rel="stylesheet" />
 
+    <style>
+        /* Efecto de elevación suave para las tarjetas de cierre */
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+            background-color: #fff !important;
+            border-color: var(--utc-azul) !important; /* Borde azul sutil al hover */
+        }
+
+        /* Ajuste para iconos dentro de los círculos */
+        .bg-opacity-10 {
+            --bs-bg-opacity: 0.1;
+        }
+    </style>
+
     <div id="headerEjecucion" runat="server" class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
         <h3 class="utc-title mb-0">
             <i class="fa-solid fa-person-digging me-2"></i> PROYECTOS EN EJECUCIÓN
@@ -474,6 +493,58 @@
                                 </asp:Panel>
                             </FooterTemplate>
                         </asp:Repeater>
+
+                        <hr class="my-4" style="opacity: 0.1">
+
+                        <h6 class="utc-title text-muted mb-3" style="font-size: 0.9rem; letter-spacing: 1px;">
+                            <i class="fa-solid fa-flag-checkered me-1"></i> ETAPA DE FINALIZACIÓN
+                        </h6>
+
+                        <div class="card bg-light border-0 rounded-3 p-3">
+                            <div class="row g-3">
+        
+                                <div class="col-md-6">
+                                    <div class="d-grid h-100">
+                                        <asp:LinkButton ID="btnInformeCierre" runat="server" 
+                                            OnClick="btnInformeCierre_Click"
+                                            CssClass="btn btn-white border shadow-sm p-3 text-start position-relative hover-lift">
+                    
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-warning bg-opacity-10 text-warning rounded-circle p-3 me-3">
+                                                    <i class="fa-solid fa-file-signature fa-lg"></i>
+                                                </div>
+                                                <div>
+                                                    <span class="d-block fw-bold text-dark">Informe de Cierre</span>
+                                                    <span class="d-block text-muted small mt-1">Trámite administrativo</span>
+                                                </div>
+                                            </div>
+
+                                            </asp:LinkButton>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="d-grid h-100">
+                                        <asp:LinkButton ID="btnInformeFinal" runat="server" 
+                                            OnClick="btnInformeFinal_Click"
+                                            CssClass="btn btn-white border shadow-sm p-3 text-start hover-lift">
+                    
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-success bg-opacity-10 text-success rounded-circle p-3 me-3">
+                                                    <i class="fa-solid fa-award fa-lg"></i>
+                                                </div>
+                                                <div>
+                                                    <span class="d-block fw-bold text-dark">Informe Final</span>
+                                                    <span class="d-block text-muted small mt-1">Cierre del proyecto</span>
+                                                </div>
+                                            </div>
+                                        </asp:LinkButton>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -553,6 +624,113 @@
                         </asp:LinkButton>
                     </div>
 
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalSubirCierre" tabindex="-1" aria-hidden="true" style="z-index: 1080;" ClientIDMode="Static" runat="server">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0 rounded-4">
+                <div class="modal-header border-bottom-0 pb-0 bg-warning bg-opacity-10">
+                    <h5 class="modal-title fw-bold text-dark">
+                        <i class="fa-solid fa-file-signature me-2"></i> Informe de Cierre
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+            
+                <div class="modal-body pt-3 px-4 pb-4">
+                    <div class="alert alert-warning border-0 d-flex align-items-center small" role="alert">
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                        <div>
+                            Al subir este documento, el proyecto pasará a estado <strong>EN REVISIÓN</strong>.
+                        </div>
+                    </div>
+
+                    <label class="form-label fw-bold small text-secondary">Documento de Cierre (PDF Firmado)</label>
+
+                    <div class="modal-body pt-3 px-4 pb-4">
+    
+                        <div class="alert alert-warning border-0 d-flex align-items-center small" role="alert">
+                            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                            <div>Al subir este documento, el proyecto pasará a estado <strong>EN REVISIÓN</strong>.</div>
+                        </div>
+
+                        <asp:Panel ID="pnlArchivoCierreActual" runat="server" Visible="false" CssClass="mb-3">
+                            <label class="form-label fw-bold small text-primary">Archivo Actual en el Sistema:</label>
+                            <div class="d-flex align-items-center justify-content-between p-2 border rounded bg-light">
+                                <div class="d-flex align-items-center text-truncate">
+                                    <i class="fa-solid fa-file-pdf text-danger fs-4 me-2"></i>
+                                    <asp:Label ID="lblNombreArchivoCierre" runat="server" CssClass="small fw-bold text-dark text-truncate" style="max-width: 200px;"></asp:Label>
+                                </div>
+                                <a id="lnkVerCierreActual" runat="server" target="_blank" class="btn btn-sm btn-outline-primary rounded-circle" title="Ver archivo actual">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+                            </div>
+                            <div class="text-end mt-1">
+                                <small class="text-muted fst-italic" style="font-size: 0.75rem;">Suba un nuevo archivo abajo solo si desea reemplazar este.</small>
+                            </div>
+                        </asp:Panel>
+                        <label class="form-label fw-bold small text-secondary" id="lblTituloInputCierre" runat="server">Documento de Cierre</label>
+    
+                        <div class="utc-fileinput-wrapper" id="wrapperCierre">
+                            <div class="utc-fileinput-header">
+                                 <div class="utc-fileinput-icon"><i class="fa-solid fa-file-pdf"></i></div>
+                                 <div class="d-flex justify-content-between align-items-center mb-2">
+                                     <span class="utc-fileinput-name">Sin archivo</span>
+                                     <div class="utc-fileinput-buttons d-flex gap-2">
+                                         <button type="button" class="btn btn-outline-primary utc-btn-small rename-btn"><i class="fa-solid fa-pen-to-square"></i></button>
+                                         <button type="button" class="btn btn-outline-danger utc-btn-small remove-btn"><i class="fa-solid fa-xmark"></i></button>
+                                     </div>
+                                 </div>
+                            </div>
+                            <input type="text" class="form-control form-control-sm utc-edit-name-field" placeholder="Renombrar..." />
+                            <div class="utc-fileinput-preview" id="previewCierre"></div>
+                            <div class="utc-fileinput-loader" id="loaderCierre"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
+                            <div class="utc-dropzone" id="dropzoneCierre">
+                                <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-warning"></i><br />
+                                <span id="lblTextoDropzoneCierre" runat="server">Subir Informe de Cierre</span>
+                            </div>
+                            <asp:FileUpload ID="FileUpload1" runat="server" CssClass="utc-fileinput-input" accept=".pdf" />
+                        </div>
+    
+                        <div class="d-grid gap-2 mt-4">
+                            <asp:LinkButton ID="LinkButton1" runat="server" 
+                                CssClass="btn btn-warning text-dark fw-bold btn-lg shadow-sm"
+                                OnClick="btnGuardarCierre_Click">
+                                <i class="fa-solid fa-paper-plane me-2"></i> <asp:Literal ID="litBtnCierreTexto" runat="server">Enviar a Revisión</asp:Literal>
+                            </asp:LinkButton>
+                        </div>
+                    </div>
+                
+                    <div class="utc-fileinput-wrapper" id="wrapperCierre">
+                        <div class="utc-fileinput-header">
+                            <div class="utc-fileinput-icon"><i class="fa-solid fa-file-pdf"></i></div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="utc-fileinput-name">Sin archivo</span>
+                                <div class="utc-fileinput-buttons d-flex gap-2">
+                                    <button type="button" class="btn btn-outline-primary utc-btn-small rename-btn"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button type="button" class="btn btn-outline-danger utc-btn-small remove-btn"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="text" class="form-control form-control-sm utc-edit-name-field" placeholder="Renombrar..." />
+                        <div class="utc-fileinput-preview" id="previewCierre"></div>
+                        <div class="utc-fileinput-loader" id="loaderCierre"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
+                        <div class="utc-dropzone" id="dropzoneCierre">
+                            <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-warning"></i><br />
+                            Subir Informe de Cierre
+                        </div>
+                        <asp:FileUpload ID="flpCierre" runat="server" CssClass="utc-fileinput-input" accept=".pdf" />
+                    </div>
+                
+                    <div class="d-grid gap-2 mt-4">
+                        <asp:LinkButton ID="btnGuardarCierre" runat="server" 
+                            CssClass="btn btn-warning text-dark fw-bold btn-lg shadow-sm"
+                            OnClick="btnGuardarCierre_Click">
+                            <i class="fa-solid fa-paper-plane me-2"></i> Enviar a Revisión
+                        </asp:LinkButton>
+                    </div>
                 </div>
             </div>
         </div>
@@ -725,6 +903,7 @@
                 initInput("wrapperArchivoAdd", "<%= flpArchivoAdd.ClientID %>");
                 initInput("wrapperArchivoEdit", "<%= flpArchivoEdit.ClientID %>");
                 initInput("wrapperArchivoInf", "<%= flpArchivoInf.ClientID %>");
+                initInput("wrapperCierre", "<%= flpCierre.ClientID %>");
             }
         });
 

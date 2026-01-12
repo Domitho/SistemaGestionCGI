@@ -487,6 +487,133 @@ namespace SistemaGestionCGI
             catch (Exception ex) { Msg("Error: " + ex.Message, "ee"); }
         }
 
+
+        // Evento para el Botón 1: Abrir Modal de Cierre
+        protected void btnInformeCierre_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 1. Obtener ID del HiddenField (hfIdEjecucionInforme)
+                string idEjecucionStr = hfIdEjecucionInforme.Value;
+
+                if (!string.IsNullOrEmpty(idEjecucionStr) && int.TryParse(idEjecucionStr, out int idEjec))
+                {
+                    // 2. Consultar datos actuales del proyecto para ver si ya tiene archivo
+                    var proyecto = _manejador.ObtenerEjecucionPorId(idEjec);
+
+                    if (proyecto != null && !string.IsNullOrEmpty(proyecto.strInforme_Cierre))
+                    {
+                        // === MODO EDICIÓN (Ya existe archivo) ===
+                        pnlArchivoCierreActual.Visible = true;
+
+                        // Mostrar nombre limpio del archivo
+                        // Asumiendo que guardas ruta tipo: "~/Repositorio/CIERRE_123456_NombreOriginal.pdf"
+                        string nombreArchivo = Path.GetFileName(proyecto.strInforme_Cierre);
+
+                        // (Opcional) Si quieres quitar el prefijo "CIERRE_Ticks_" para que se vea bonito:
+                        int indexGuion = nombreArchivo.IndexOf('_', nombreArchivo.IndexOf('_') + 1); // Busca el segundo guion
+                        if (indexGuion > 0 && indexGuion + 1 < nombreArchivo.Length)
+                            lblNombreArchivoCierre.Text = nombreArchivo.Substring(indexGuion + 1);
+                        else
+                            lblNombreArchivoCierre.Text = nombreArchivo;
+
+                        // Configurar link de descarga/vista
+                        lnkVerCierreActual.HRef = ResolveUrl(proyecto.strInforme_Cierre);
+
+                        // Cambiar textos para contexto de "Sustitución"
+                        lblTituloInputCierre.InnerText = "Sustituir Documento";
+                        litBtnCierreTexto.Text = "Actualizar y Enviar a Revisión";
+                        lblTextoDropzoneCierre.InnerText = "Arrastra el NUEVO archivo para reemplazar el actual";
+                    }
+                    else
+                    {
+                        // === MODO NUEVO (No existe archivo) ===
+                        pnlArchivoCierreActual.Visible = false;
+                        lblNombreArchivoCierre.Text = "";
+                        lnkVerCierreActual.HRef = "#";
+
+                        // Textos por defecto
+                        lblTituloInputCierre.InnerText = "Documento de Cierre (PDF Firmado)";
+                        litBtnCierreTexto.Text = "Enviar a Revisión";
+                        lblTextoDropzoneCierre.InnerText = "Subir Informe de Cierre";
+                    }
+
+                    // 3. Abrir el Modal
+                    ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalCierre",
+                        "new bootstrap.Modal(document.getElementById('modalSubirCierre')).show();", true);
+                }
+                else
+                {
+                    Msg("No se ha identificado el proyecto.", "ee");
+                }
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al preparar carga: " + ex.Message, "ee");
+            }
+        }
+
+        protected void btnGuardarCierre_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 1. Validaciones
+                if (!flpCierre.HasFile)
+                {
+                    Msg("Debe adjuntar el informe de cierre.", "ww");
+                    // Reabrimos el modal si falla la validación
+                    ScriptManager.RegisterStartupScript(this, GetType(), "ReopenCierre",
+                        "new bootstrap.Modal(document.getElementById('modalSubirCierre')).show();", true);
+                    return;
+                }
+
+                // CORREGIDO: Usamos hfIdEjecucionInforme
+                if (!int.TryParse(hfIdEjecucionInforme.Value, out int idEjec))
+                {
+                    Msg("Error al identificar el proyecto.", "ee");
+                    return;
+                }
+
+                // 2. Guardar Físicamente
+                // Nomenclatura: CIERRE_Ticks_Nombre.pdf
+                string nombreArchivo = $"CIERRE_{DateTime.Now.Ticks}{Path.GetExtension(flpCierre.FileName)}";
+                string rutaGuardada = GuardarArchivoFisico(flpCierre, nombreArchivo);
+
+                // 3. Lógica de Negocio (BLL)
+                string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
+                _manejador.SubirInformeCierre(idEjec, rutaGuardada, usuario);
+
+                string mensaje = pnlArchivoCierreActual.Visible
+                    ? "Informe de cierre actualizado/corregido correctamente."
+                    : "Informe de cierre subido. El proyecto está EN REVISIÓN.";
+
+                Msg(mensaje, "ss");
+
+                // 4. Feedback y Refresco
+                ScriptManager.RegisterStartupScript(this, GetType(), "CloseAll",
+                            "bootstrap.Modal.getInstance(document.getElementById('modalSubirCierre')).hide(); $('#modalInformes').modal('hide');", true);
+
+                CargarGrillaEjecucion();
+
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al subir cierre: " + ex.Message, "ee");
+            }
+        }
+
+        // Evento para el Botón 2
+        protected void btnInformeFinal_Click(object sender, EventArgs e)
+        {
+            string idProyecto = ViewState["IdProyectoActual"] as string;
+
+            if (!string.IsNullOrEmpty(idProyecto))
+            {
+                // LOGICA PENDIENTE
+                System.Diagnostics.Debug.WriteLine($"Click en Informe Final para: {idProyecto}");
+            }
+        }
+
         // ==========================================
         // 6. GENERACIÓN DE REPORTES (HTML)
         // ==========================================
