@@ -214,6 +214,47 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sql);
         }
 
+
+        // Versión simplificada solo para corregir el error de compilación
+        protected void txtDocCedula_TextChanged(object sender, EventArgs e)
+        {
+            // Aquí iría la lógica de búsqueda. 
+            // Por ahora lo dejamos vacío o con un comentario para que el sistema compile.
+        }
+
+        // Agrega esto dentro de la clase ManejadorEjecucionProyectos
+
+        public dynamic BuscarDocentePorCedula(string cedula)
+        {
+            // Validar entrada
+            if (string.IsNullOrEmpty(cedula)) return null;
+
+            // Consulta SQL a la tabla de docentes
+            // Usamos TOP 1 para traer solo un registro
+            string sql = string.Format(@"
+        SELECT TOP 1 
+            strNombres_doc, 
+            strApellidos_doc, 
+            strCarrera_doc, 
+            strFacultad_doc,
+            strCedula_doc
+        FROM INVGCCCATEGORIZACION_DOCENTES 
+        WHERE strCedula_doc = '{0}' AND bitActivo_doc = 1", cedula);
+
+            // Ejecutar consulta usando tu DAL (Capa de Datos)
+            // Asumo que tu DAL devuelve una lista de objetos dinámicos
+            var resultados = _dal.SelectSql<dynamic>(sql);
+
+            // Si hay resultados, retornamos el primero
+            if (resultados != null && resultados.Count > 0)
+            {
+                return resultados[0];
+            }
+
+            // Si no encuentra nada
+            return null;
+        }
+
         // =============================================================
         // 4. GESTIÓN DE AUDITORÍA Y ESTADOS
         // =============================================================

@@ -90,232 +90,409 @@ namespace SistemaGestionCGI
         {
             try
             {
-                // =========================================================================
-                // 1. VALIDACIÓN Y DATOS INICIALES
-                // =========================================================================
+                // 1. OBTENER DATOS
                 if (!int.TryParse(hfIdEjecucionInterno.Value, out int idEjecucion)) return;
+                string tipoFormato = ((LinkButton)sender).CommandArgument; // WORD o PDF
+                var proyecto = _manejador.ObtenerEjecucionPorId(idEjecucion);
 
-                string tipoFormato = ((LinkButton)sender).CommandArgument; // "WORD" o "PDF"
-                var proyecto = _manejador.ObtenerEjecucionPorId(idEjecucion); // Datos base del proyecto
-
-                // =========================================================================
-                // 2. CONSTRUCCIÓN DEL HTML (ESTRUCTURA PROFESIONAL)
-                // =========================================================================
+                // 2. CONSTRUCCIÓN DEL HTML (DISEÑO FIEL AL WORD)
                 StringBuilder sb = new StringBuilder();
 
-                // Cabeceras XML para Word (Vital para márgenes y orientación)
-                sb.Append("<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>");
-                sb.Append("<head><meta charset='utf-8'>");
-                sb.Append("<style>");
+                // --- CABECERAS Y ESTILOS CSS (BORDES TIPO WORD) ---
+                sb.Append("<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'>");
+                sb.Append("<head><meta charset='utf-8'><style>");
 
-                // --- CONFIGURACIÓN DE PÁGINA HORIZONTAL (LANDSCAPE) ---
-                sb.Append("@page Section1 { size: 841.9pt 595.3pt; mso-page-orientation: landscape; margin: 2cm; }");
+                // Configuración A4 Horizontal
+                sb.Append("@page Section1 { size: 841.9pt 595.3pt; mso-page-orientation: landscape; margin: 1.5cm; }");
                 sb.Append("div.Section1 { page: Section1; }");
 
-                // --- ESTILOS GENERALES ---
-                sb.Append("body { font-family: 'Times New Roman', serif; font-size: 11pt; margin: 0; line-height: 1.1; }");
+                // Fuente Base
+                sb.Append("body { font-family: 'Times New Roman', serif; font-size: 10pt; line-height: 1.1; }");
 
-                // Clase para salto de página forzado
+                // === ESTILOS DE CUADRÍCULA (BORDES NEGROS FINOS) ===
+                // border-collapse: collapse es VITAL para que se vea como rejilla
+                sb.Append("table { width: 100%; border-collapse: collapse; margin-bottom: 15px; table-layout: fixed; }");
+                sb.Append("th, td { border: 1px solid black; padding: 4px; vertical-align: middle; word-wrap: break-word; }");
+
+                // Cabeceras de Tabla (Gris Word)
+                sb.Append("th { background-color: #D9D9D9; font-weight: bold; text-align: center; font-size: 8pt; }");
+
+                // Celdas de Datos
+                sb.Append("td { text-align: left; font-size: 9pt; }");
+
+                // Clases Utilitarias
+                sb.Append(".no-border { border: none !important; }"); // Para los datos informativos (sin borde)
+                sb.Append(".text-center { text-align: center; }");
+                sb.Append(".text-bold { font-weight: bold; }");
                 sb.Append(".page-break { page-break-before: always; }");
-
-                // --- ESTILOS DE TABLAS (PROFESIONAL) ---
-                sb.Append("table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; }");
-
-                // TH: Gris Word (#D9D9D9), Centrado, Negrita
-                sb.Append("th { background-color: #D9D9D9; border: 1px solid #000; padding: 5px; font-weight: bold; text-align: center; vertical-align: middle; font-size: 9pt; }");
-
-                // TD: Ajuste de texto, alineación vertical media
-                sb.Append("td { border: 1px solid #000; padding: 5px; text-align: left; vertical-align: middle; font-size: 10pt; word-wrap: break-word; }");
-
-                // Utilidades
-                sb.Append(".text-center { text-align: center; } .text-bold { font-weight: bold; } .uppercase { text-transform: uppercase; }");
-                sb.Append(".info-table td { border: none; vertical-align: top; } .center-data { text-align: center; }");
+                sb.Append(".section-title { font-weight: bold; margin-bottom: 5px; margin-top: 15px; text-transform: uppercase; font-size: 10pt; }");
 
                 sb.Append("</style></head><body>");
+                sb.Append("<div class='Section1'>"); // Inicio Landscape
 
-                // APERTURA DEL CONTENEDOR "LANDSCAPE"
-                sb.Append("<div class='Section1'>");
+                // ==========================================================================================
+                // CABECERA INSTITUCIONAL
+                // ==========================================================================================
+                sb.Append("<div class='text-center text-bold' style='font-size:12pt; margin-bottom:15px;'>");
+                sb.Append("FORMATO PARA LOS INFORME DE AVANCES POR PERIÓDOS ACADÉMICOS<br>");
+                sb.Append("DEL PROYECTO ACADÉMICO CIENTÍFICO");
+                sb.Append("</div>");
 
-
-                // =========================================================================
-                // PÁGINA 1: DATOS GENERALES Y MATRIZ DE ACTIVIDADES
-                // =========================================================================
-
-                // 1. Encabezado
-                sb.Append("<div class='text-center text-bold uppercase' style='font-size:14pt; margin-bottom:20px;'>FORMATO PARA LOS INFORME DE AVANCES POR PERIÓDOS ACADÉMICOS<br>DEL PROYECTO ACADÉMICO CIENTÍFICO</div>");
-
-                // 2. Datos Informativos (Tabla sin bordes)
-                sb.Append("<table class='info-table'>");
-                sb.Append($"<tr><td style='width:25%'><b>Nombre del proyecto:</b></td><td>{proyecto.TituloProyecto.ToUpper()}</td></tr>");
-                sb.Append($"<tr><td><b>Grupo de Investigación:</b></td><td>{txtGenGrupoInv.Text.ToUpper()}</td></tr>");
-                sb.Append($"<tr><td><b>Período de seguimiento:</b></td><td>{txtGenPeriodo.Text.ToUpper()}</td></tr>");
+                // Datos Informativos (Tabla SIN BORDES, como texto plano alineado)
+                sb.Append("<table style='border:none; margin-bottom:20px;'>");
+                sb.Append($"<tr><td class='no-border' style='width:300px;'><b>Nombre del proyecto:</b></td><td class='no-border'>{proyecto.TituloProyecto}</td></tr>");
+                sb.Append($"<tr><td class='no-border'><b>Grupo de Investigación al que pertenece el proyecto:</b></td><td class='no-border'>{txtGenGrupoInv.Text}</td></tr>");
+                sb.Append($"<tr><td class='no-border'><b>Período de seguimiento:</b></td><td class='no-border'>{txtGenPeriodo.Text}</td></tr>");
                 sb.Append("</table>");
 
-                // 3. Matriz Punto 1
-                sb.Append("<div class='text-bold uppercase' style='margin-bottom:5px; font-size:11pt;'>ACTIVIDADES PLANIFICADAS - ACTIVIDADES EJECUTADAS Y RESULTADOS</div>");
+
+                // ==========================================================================================
+                // 1. ACTIVIDADES (MATRIZ PRINCIPAL)
+                // ==========================================================================================
+                sb.Append("<div class='section-title'>ACTIVIDADES PLANIFICADAS - ACTIVIDADES EJECUTADAS Y RESULTADOS</div>");
 
                 sb.Append("<table><thead><tr>");
-                sb.Append("<th style='width:15%'>COMPONENTE /<br>OBJETIVOS</th>");
-                sb.Append("<th style='width:20%'>ACTIVIDADES<br>PLANIFICADAS</th>");
-                sb.Append("<th style='width:20%'>ACTIVIDADES<br>EJECUTADAS</th>");
-                sb.Append("<th style='width:15%'>DOCENTES /<br>INVESTIGADORES</th>");
-                sb.Append("<th style='width:10%'>INSTITUCIÓN /<br>CARRERA</th>");
-                sb.Append("<th style='width:6%'>% DE<br>CUMP.</th>");
-                sb.Append("<th style='width:14%'>RESULTADOS<br>ALCANZADOS</th>");
+                sb.Append("<th style='width:15%'>COMPONENTE/<br>OBJETIVOS</th>");
+                sb.Append("<th style='width:18%'>ACTIVIDADES<br>PLANIFICADAS</th>");
+                sb.Append("<th style='width:18%'>ACTIVIDADES<br>EJECUTADAS</th>");
+                sb.Append("<th style='width:15%'>DOCENTES/INVESTIGADORES<br>PARTICIPANTES/COLABORADORES</th>");
+                sb.Append("<th style='width:12%'>INSTITUCIÓN/CARRERA<br>A LA QUE PERTENECE</th>"); // Ajustado al doc
+                sb.Append("<th style='width:7%'>% DE<br>CUMPLIMIENTO</th>");
+                sb.Append("<th style='width:15%'>RESULTADOS<br>ALCANZADOS</th>");
                 sb.Append("</tr></thead><tbody><tr>");
 
                 sb.Append($"<td>{txtGenObjetivos.Text.Replace("\n", "<br>")}</td>");
                 sb.Append($"<td>{txtGenPlanificadas.Text.Replace("\n", "<br>")}</td>");
                 sb.Append($"<td>{txtGenEjecutadas.Text.Replace("\n", "<br>")}</td>");
                 sb.Append($"<td>{txtGenParticipantes.Text.Replace("\n", "<br>")}</td>");
-                sb.Append($"<td class='center-data'>{txtGenInstitucion.Text.Replace("\n", "<br>")}</td>");
-                sb.Append($"<td class='center-data'>{txtGenAvance.Text}%</td>");
+                sb.Append($"<td class='text-center'>{txtGenInstitucion.Text.Replace("\n", "<br>")}</td>");
+                sb.Append($"<td class='text-center'>{txtGenAvance.Text}%</td>");
                 sb.Append($"<td>{txtGenResultados.Text.Replace("\n", "<br>")}</td>");
-
                 sb.Append("</tr></tbody></table>");
 
 
-                // =========================================================================
-                // PÁGINA 2: INVESTIGADORES (SALTO DE PÁGINA)
-                // =========================================================================
+                // ==========================================================================================
+                // 2. INVESTIGADORES (SALTO DE PÁGINA)
+                // ==========================================================================================
+                sb.Append("<br><div class='section-title'>INVESTIGADORES PARTICIPANTES DEL PROYECTO</div>");
 
-                // Salto de página compatible con Word y HTML
-                if (tipoFormato == "WORD")
-                    sb.Append("<br clear=all style='mso-special-character:line-break;page-break-before:always'>");
-                else
-                    sb.Append("<div class='page-break'></div>");
-
-                sb.Append("<div class='text-bold uppercase' style='font-size:12pt; margin-bottom:15px; margin-top:20px;'>2. INVESTIGADORES PARTICIPANTES DEL PROYECTO</div>");
-
-                // --- TABLA 2.1 DOCENTES ---
-                sb.Append("<div class='text-bold' style='margin-bottom:5px;'>2.1. DOCENTES PARTICIPANTES</div>");
+                // 2.1 DOCENTES
+                sb.Append("<div class='text-bold' style='font-size:9pt;'>2.1. DOCENTES PARTICIPANTES</div>");
                 sb.Append("<table><thead><tr>");
                 sb.Append("<th style='width:20%'>NOMBRES Y APELLIDOS</th>");
                 sb.Append("<th style='width:10%'>CÉDULA</th>");
-                sb.Append("<th style='width:15%'>CARRERA</th>");
-                sb.Append("<th style='width:20%'>FACULTAD / EXTENSIÓN</th>");
-                sb.Append("<th style='width:10%'>HORAS</th>");
-                sb.Append("<th style='width:25%'>OBSERVACIONES</th>");
+                sb.Append("<th style='width:10%'>CARRERA</th>");
+                sb.Append("<th style='width:15%'>FACULTAD Y/O EXTENSIÓN/O EXTERNO A LA UTC</th>");
+                sb.Append("<th style='width:10%'>PERÍODO DE PARTICIPACIÓN<br>(CICLO ACADÉMICO)</th>");
+                sb.Append("<th style='width:10%'>TOTAL HORAS (DISTRIBUTIVO)</th>");
+                sb.Append("<th style='width:10%'>TOTAL HORAS (SIN ASIGNACIÓN)</th>");
+                sb.Append("<th style='width:15%'>OBSERVACIONES</th>");
                 sb.Append("</tr></thead><tbody><tr>");
 
-                // Datos del Paso 2 (Docentes)
                 sb.Append($"<td>{txtDocNombres.Text.Replace("\n", "<br>")}</td>");
-                sb.Append($"<td class='center-data'>{txtDocCedula.Text.Replace("\n", "<br>")}</td>");
-                sb.Append($"<td>{txtDocCarrera.Text.Replace("\n", "<br>")}</td>");
-                sb.Append($"<td>UTC</td>"); // Por defecto UTC, o usa otro campo
-                sb.Append($"<td class='center-data'>{txtDocHoras.Text.Replace("\n", "<br>")}</td>");
+                sb.Append($"<td class='text-center'>{txtDocCedula.Text.Replace("\n", "<br>")}</td>");
+                sb.Append($"<td>{txtDocCarrera.Text.Replace("\n", "<br>")}</td>"); // Asumiendo carrera en este campo
+                sb.Append($"<td>UTC</td>"); // O usar un campo facultad
+                sb.Append($"<td>{txtGenPeriodo.Text}</td>");
+                sb.Append($"<td class='text-center'>{txtDocHoras.Text}</td>");
+                sb.Append("<td class='text-center'>0</td>"); // Campo nuevo del doc
                 sb.Append($"<td>{txtDocObs.Text.Replace("\n", "<br>")}</td>");
-
                 sb.Append("</tr></tbody></table>");
 
-                // --- TABLA 2.2 ESTUDIANTES ---
-                sb.Append("<div class='text-bold' style='margin-bottom:5px; margin-top:10px;'>2.2. ESTUDIANTES PARTICIPANTES</div>");
+                sb.Append("<div style='font-size:8pt; font-style:italic; margin-bottom:10px;'>Nota: Se deben reportar solo los investigadores registrados...</div>");
+
+                // 2.2 ESTUDIANTES
+                sb.Append("<div class='text-bold' style='font-size:9pt;'>2.2. ESTUDIANTES PARTICIPANTES</div>");
                 sb.Append("<table><thead><tr>");
                 sb.Append("<th style='width:25%'>NOMBRES Y APELLIDOS</th>");
                 sb.Append("<th style='width:10%'>CÉDULA</th>");
-                sb.Append("<th style='width:20%'>CARRERA</th>");
-                sb.Append("<th style='width:20%'>ACTIVIDAD REALIZADA</th>");
-                sb.Append("<th style='width:25%'>OBSERVACIONES</th>");
+                sb.Append("<th style='width:15%'>CARRERA</th>");
+                sb.Append("<th style='width:15%'>FACULTAD Y/O EXTENSIÓN/O EXTERNOS AL UTC</th>");
+                sb.Append("<th style='width:10%'>PERÍODO DE PARTICIPACIÓN</th>");
+                sb.Append("<th style='width:10%'>ACTIVIDAD REALIZADA</th>");
+                sb.Append("<th style='width:15%'>OBSERVACIONES</th>");
                 sb.Append("</tr></thead><tbody><tr>");
 
-                // Datos del Paso 2 (Estudiantes)
                 sb.Append($"<td>{txtEstNombres.Text.Replace("\n", "<br>")}</td>");
-                sb.Append($"<td class='center-data'>{txtEstCedula.Text.Replace("\n", "<br>")}</td>");
+                sb.Append($"<td class='text-center'>{txtEstCedula.Text.Replace("\n", "<br>")}</td>");
                 sb.Append($"<td>{txtEstCarrera.Text.Replace("\n", "<br>")}</td>");
+                sb.Append($"<td>UTC</td>");
+                sb.Append($"<td>{txtGenPeriodo.Text}</td>");
                 sb.Append($"<td>{txtEstActividad.Text.Replace("\n", "<br>")}</td>");
                 sb.Append($"<td>{txtEstObs.Text.Replace("\n", "<br>")}</td>");
-
                 sb.Append("</tr></tbody></table>");
 
 
-                // =========================================================================
-                // PÁGINA 3 (O CONTINUACIÓN): PRESUPUESTO
-                // =========================================================================
+                // ==========================================================================================
+                // 3. TITULACIONES (SALTO)
+                // ==========================================================================================
+                if (tipoFormato == "WORD") sb.Append("<br clear=all style='page-break-before:always'>"); else sb.Append("<div class='page-break'></div>");
 
-                sb.Append("<div class='text-bold uppercase' style='font-size:11pt; margin-bottom:5px; margin-top:25px;'>3. AVANCE EN LA GESTIÓN DE COMPRAS PÚBLICAS - EJECUCIÓN DE PRESUPUESTO</div>");
+                sb.Append("<div class='section-title'>TITULACIONES DE TERCER O CUARTO NIVEL DERIVADAS DEL PROYECTO</div>");
+                sb.Append("<div class='text-bold' style='font-size:9pt;'>TITULACIÓN DE ESTUDIANTES PARTICIPANTES</div>");
 
                 sb.Append("<table><thead><tr>");
-                sb.Append("<th style='width:35%'>RUBRO / DESCRIPCIÓN</th>");
-                sb.Append("<th style='width:15%'>ASIGNADO ($)</th>");
-                sb.Append("<th style='width:15%'>EJECUTADO ($)</th>");
-                sb.Append("<th style='width:10%'>% EJEC.</th>");
-                sb.Append("<th style='width:25%'>OBSERVACIONES</th>");
+                sb.Append("<th>NOMBRES Y APELLIDOS</th><th>CÉDULA</th><th>CARRERA/PROGRAMA</th><th>FACULTAD Y/O EXTENSIÓN</th>");
+                sb.Append("<th>TÍTULO</th><th>PERÍODO TITULACIÓN</th><th>OBSERVACIONES</th>");
                 sb.Append("</tr></thead><tbody><tr>");
-
-                // Datos del Paso 3
-                sb.Append($"<td>{txtPresupRubro.Text.Replace("\n", "<br>")}</td>");
-                sb.Append($"<td class='center-data'>{txtPresupAsignado.Text.Replace("\n", "<br>")}</td>");
-                sb.Append($"<td class='center-data'>{txtPresupEjecutado.Text.Replace("\n", "<br>")}</td>");
-                sb.Append($"<td class='center-data'>{txtPresupPorcentaje.Text.Replace("\n", "<br>")}</td>");
-                sb.Append($"<td>{txtPresupObservacion.Text.Replace("\n", "<br>")}</td>");
-
+                sb.Append($"<td colspan='7'>{txtTitDetalle.Text.Replace("\n", "<br>")}</td>"); // Fila única con datos
                 sb.Append("</tr></tbody></table>");
 
-                sb.Append("<div style='font-size:9pt; font-style:italic;'>Nota: Los valores deben coincidir con la planificación financiera.</div>");
 
-                // CIERRE
-                sb.Append("</div></body></html>");
+                // ==========================================================================================
+                // 4. INTEGRACIÓN CURRICULAR / VINCULACIÓN
+                // ==========================================================================================
+                sb.Append("<div class='section-title'>COMPONENTE DE INTEGRACIÓN CURRICULAR, PRÁCTICA Y/O VINCULACIÓN REALIZADA (SI APLICA)</div>");
+                sb.Append("<div class='text-bold' style='font-size:9pt;'>INTEGRACIÓN CURRICULAR, PRÁCTICA Y/O VINCULACIÓN REALIZADA (SI APLICA)</div>");
+
+                sb.Append("<table><thead><tr>");
+                sb.Append("<th>ACTIVIDAD</th><th>SECTOR</th><th>TOTAL BENEFICIARIOS</th>");
+                sb.Append("<th>NOMBRES PARTICIPANTES</th><th>HORAS</th><th>FACULTAD/CARRERA</th>");
+                sb.Append("<th>RESPONSABLE</th><th>RESULTADOS ALCANZADOS</th>");
+                sb.Append("</tr></thead><tbody><tr>");
+                sb.Append($"<td colspan='8'>{txtVinculacion.Text.Replace("\n", "<br>")}</td>");
+                sb.Append("</tr></tbody></table>");
 
 
-                // =========================================================================
+                // ==========================================================================================
+                // 5. INNOVACIÓN / SENADI
+                // ==========================================================================================
+                sb.Append("<div class='section-title'>COMPONENTE DE INNOVACIÓN Y/O REGISTRO DE PROPIEDAD INTELECTUAL (SEGÚN SENADI) (SI APLICA)</div>");
+                sb.Append("<div class='text-bold' style='font-size:9pt;'>INNOVACIÓN Y/O REGISTRO DE PROPIEDAD INTELECTUAL (SI APLICA)</div>");
+
+                sb.Append("<table><thead><tr>");
+                sb.Append("<th>ACTIVIDAD Y/O COMPONENTE</th><th>CANTIDAD PARTICIPANTES</th><th>NOMBRES Y APELLIDOS</th>");
+                sb.Append("<th>CÉDULA</th><th>FACULTAD / EXTENSIÓN / CARRERA</th>");
+                sb.Append("</tr></thead><tbody><tr>");
+                sb.Append($"<td colspan='5'>{txtInnovacion.Text.Replace("\n", "<br>")}</td>");
+                sb.Append("</tr></tbody></table>");
+
+
+                // ==========================================================================================
+                // 6. CONVENIOS
+                // ==========================================================================================
+                sb.Append("<div class='section-title'>CONVENIOS INTERINSTITUCIONALES ESCRITOS EN EL PERÍODO DE SEGUIMIENTO (SI APLICA)</div>");
+                sb.Append("<div class='text-bold' style='font-size:9pt;'>CONVENIOS INTERINSTITUCIONALES ESCRITOS EN EL PERÍODO DE SEGUIMIENTO (SI APLICA)</div>");
+
+                sb.Append("<table><thead><tr>");
+                sb.Append("<th>ENTIDAD</th><th>PERÍODO VIGENCIA</th><th>FECHA SUSCRIPCIÓN</th>");
+                sb.Append("<th>RESPONSABLE SEGUIMIENTO</th><th>CARRERA/PROGRAMA</th><th>FACULTAD Y/O EXTENSIÓN</th>");
+                sb.Append("</tr></thead><tbody><tr>");
+                sb.Append($"<td colspan='6'>{txtConvenios.Text.Replace("\n", "<br>")}</td>");
+                sb.Append("</tr></tbody></table>");
+
+
+                // ==========================================================================================
+                // 7. PRODUCCIÓN CIENTÍFICA (SALTO)
+                // ==========================================================================================
+                if (tipoFormato == "WORD") sb.Append("<br clear=all style='page-break-before:always'>"); else sb.Append("<div class='page-break'></div>");
+
+                sb.Append("<div class='section-title'>PRODUCCIÓN CIENTÍFICA DERIVADA DEL PROYECTO*</div>");
+
+                // 7.1 ARTÍCULOS
+                sb.Append("<div class='text-bold' style='font-size:9pt; margin-top:5px;'>7.1. ARTÍCULOS CIENTÍFICOS</div>");
+                sb.Append("<table><thead><tr>");
+                sb.Append("<th>AÑO</th><th>BASE DE DATOS</th><th>TÍTULO PUBLICACIÓN</th><th>AUTORES</th><th>ISSN REVISTA</th>");
+                sb.Append("<th>NOMBRE REVISTA</th><th>VOLUMEN/NÚMERO</th><th>FILIACIÓN INSTITUCIONAL</th><th>URL/DOI</th>");
+                sb.Append("</tr></thead><tbody><tr>");
+                sb.Append($"<td colspan='9'>{txtProdArticulos.Text.Replace("\n", "<br>")}</td>");
+                sb.Append("</tr></tbody></table>");
+
+                // 7.2 LIBROS
+                sb.Append("<div class='text-bold' style='font-size:9pt;'>7.2. LIBROS</div>");
+                sb.Append("<table><thead><tr>");
+                sb.Append("<th>AÑO</th><th>CÓDIGO ISBN</th><th>TÍTULO OBRA</th><th>ESTADO</th><th>FILIACIÓN INSTITUCIONAL</th><th>AUTORES</th>");
+                sb.Append("</tr></thead><tbody><tr>");
+                sb.Append($"<td colspan='6'>{txtProdLibros.Text.Replace("\n", "<br>")}</td>");
+                sb.Append("</tr></tbody></table>");
+
+                // 7.3 CAPÍTULOS
+                sb.Append("<div class='text-bold' style='font-size:9pt;'>7.3. CAPÍTULO DE LIBROS</div>");
+                sb.Append("<table><thead><tr>");
+                sb.Append("<th>AÑO PUBLICACIÓN</th><th>ISBN</th><th>NOMBRE LIBRO</th><th>NOMBRE CAPÍTULO</th><th>ESTADO</th><th>FILIACIÓN INSTITUCIONAL</th>");
+                sb.Append("</tr></thead><tbody><tr>");
+                sb.Append($"<td colspan='6'>{txtProdCapitulos.Text.Replace("\n", "<br>")}</td>");
+                sb.Append("</tr></tbody></table>");
+
+                // 7.4 PONENCIAS
+                sb.Append("<div class='text-bold' style='font-size:9pt;'>7.4. PONENCIAS PRESENTADAS A EVENTOS</div>");
+                sb.Append("<table><thead><tr>");
+                sb.Append("<th>EVENTO</th><th>LUGAR EVENTO</th><th>FECHA PARTICIPACIÓN</th><th>TÍTULO PONENCIA</th><th>ISBN/ISSN</th><th>ESTADO</th>");
+                sb.Append("</tr></thead><tbody><tr>");
+                sb.Append($"<td colspan='6'>{txtProdPonencias.Text.Replace("\n", "<br>")}</td>");
+                sb.Append("</tr></tbody></table>");
+
+                sb.Append("<div style='font-size:8pt; font-style:italic;'>Nota: Toda la producción científica se debe subir a la plataforma de Ecuciencia</div>");
+
+
+                // ==========================================================================================
+                // 8. PRESUPUESTO (SALTO)
+                // ==========================================================================================
+                if (tipoFormato == "WORD") sb.Append("<br clear=all style='page-break-before:always'>"); else sb.Append("<div class='page-break'></div>");
+
+                sb.Append("<div class='section-title'>AVANCE EN LA GESTIÓN DE COMPRAS PÚBLICAS DEL COMPONENTE PLANIFICADO EN LA ETAPA</div>");
+                sb.Append("<div class='text-bold' style='font-size:9pt;'>EJECUCIÓN DE PRESUPUESTO</div>");
+
+                sb.Append("<table><thead><tr>");
+                sb.Append("<th style='width:40%'>RUBRO</th>");
+                sb.Append("<th style='width:15%'>VALOR ASIGNADO</th>");
+                sb.Append("<th style='width:15%'>VALOR EJECUTADO</th>");
+                sb.Append("<th style='width:30%'>OBSERVACIONES*</th>");
+                sb.Append("</tr></thead><tbody><tr>");
+                sb.Append($"<td>{txtPresupRubro.Text.Replace("\n", "<br>")}</td>");
+                sb.Append($"<td class='text-center'>{txtPresupAsignado.Text}</td>");
+                sb.Append($"<td class='text-center'>{txtPresupEjecutado.Text}</td>");
+                sb.Append($"<td>{txtPresupObservacion.Text.Replace("\n", "<br>")}</td>");
+                sb.Append("</tr></tbody></table>");
+                sb.Append("<div style='font-size:8pt;'>*Describir las novedades referidas a la gestión en compras públicas</div>");
+
+
+                // ==========================================================================================
+                // 9. CONCLUSIONES Y RECOMENDACIONES
+                // ==========================================================================================
+                sb.Append("<br><div class='section-title'>CONCLUSIONES/RECOMENDACIONES</div>");
+
+                // 9.1
+                sb.Append("<table><thead><tr><th style='text-align:left;'>9.1. CONCLUSIONES (Referente a los objetivos del proyecto)</th></tr></thead>");
+                sb.Append($"<tbody><tr><td style='height:80px;'>{txtConclusiones.Text.Replace("\n", "<br>")}</td></tr></tbody></table>");
+
+                // 9.2
+                sb.Append("<table><thead><tr><th style='text-align:left;'>9.2. RECOMENDACIONES (Referente a perpectivas y lecciones aprendidas)</th></tr></thead>");
+                sb.Append($"<tbody><tr><td style='height:80px;'>{txtRecomendaciones.Text.Replace("\n", "<br>")}</td></tr></tbody></table>");
+
+                sb.Append("<div style='margin-top:10px; font-size:9pt;'>Anexos: Se deben adjuntar la documentación de evidencias físicas o digitales...</div>");
+
+
+                // ==========================================================================================
+                // FIRMAS DE RESPONSABILIDAD
+                // ==========================================================================================
+                sb.Append("<br><br><br>");
+
+                // Tabla de Firmas (SIN BORDES DE CELDA, para maquetar)
+                sb.Append("<table style='border:none; margin-top:30px;'>");
+                sb.Append("<tr>");
+
+                // Columna 1
+                sb.Append("<td class='no-border text-center' style='padding:10px; width:33%;'>");
+                sb.Append("ELABORADO POR<br>(Coordinador del proyecto):<br><br><br>");
+                sb.Append("__________________________<br>");
+                sb.Append("Nombre:.......................<br>");
+                sb.Append("C.I.:.......................<br>");
+                sb.Append("Fecha:.......................");
+                sb.Append("</td>");
+
+                // Columna 2
+                sb.Append("<td class='no-border text-center' style='padding:10px; width:33%;'>");
+                sb.Append("REVISADO POR<br>(Director de Inv. Facultad/Extensión):<br><br><br>");
+                sb.Append("__________________________<br>");
+                sb.Append("Nombre:.......................<br>");
+                sb.Append("C.I.:.......................<br>");
+                sb.Append("Fecha:.......................");
+                sb.Append("</td>");
+
+                // Columna 3
+                sb.Append("<td class='no-border text-center' style='padding:10px; width:33%;'>");
+                sb.Append("AUTORIZADO POR<br>(DGI):<br><br><br>");
+                sb.Append("__________________________<br>");
+                sb.Append("Nombre: Carlos Javier Torres Miño<br>");
+                sb.Append("C.I.: 0502329238<br>");
+                sb.Append("Fecha:.......................");
+                sb.Append("</td>");
+
+                sb.Append("</tr></table>");
+
+                sb.Append("</div></body></html>"); // Fin Section1
+
+                // ==========================================================================================
                 // 3. GUARDADO DEL ARCHIVO FÍSICO
-                // =========================================================================
-                string nombreBase = $"INFORME_{proyecto.strId_ejec}_{DateTime.Now:yyyyMMdd_HHmm}";
+                // ==========================================================================================
+                string nombreBase = $"INFORME_AVANCE_{proyecto.strId_ejec}_{DateTime.Now:yyyyMMdd_HHmm}";
                 string carpetaDestino = Server.MapPath("~/RepositorioUTC/EjecucionInformes/");
-
                 if (!Directory.Exists(carpetaDestino)) Directory.CreateDirectory(carpetaDestino);
 
                 string nombreFinal = "";
 
                 if (tipoFormato == "WORD")
                 {
-                    // Generación WORD
                     nombreFinal = nombreBase + ".doc";
                     string rutaDoc = Path.Combine(carpetaDestino, nombreFinal);
                     File.WriteAllText(rutaDoc, sb.ToString(), Encoding.UTF8);
                 }
-                else
+                else // PDF
                 {
-                    // Generación PDF (Requiere wkhtmltopdf en carpeta Binarios)
                     nombreFinal = nombreBase + ".pdf";
                     string rutaPdf = Path.Combine(carpetaDestino, nombreFinal);
 
-                    // Llamamos al método auxiliar. IMPORTANTE: "-O Landscape"
-                    bool exito = GenerarPdfConExe(sb.ToString(), rutaPdf);
-
-                    if (!exito)
+                    // Asegúrate de que tu método GenerarPdfConExe usa "-O Landscape"
+                    if (!GenerarPdfConExe(sb.ToString(), rutaPdf))
                     {
-                        // Si falla el PDF, lanzamos alerta en JS
-                        ScriptManager.RegisterStartupScript(this, GetType(), "AlertErr", "alert('Error: No se pudo generar el PDF. Verifique wkhtmltopdf.exe');", true);
+                        ScriptManager.RegisterStartupScript(this, GetType(), "Alert", "alert('Error al generar PDF. Revise wkhtmltopdf.');", true);
                         return;
                     }
                 }
 
-                // =========================================================================
-                // 4. REGISTRO EN BDD Y FINALIZACIÓN
-                // =========================================================================
-                var nuevoInforme = new InvgccEjecucionInformes();
-                nuevoInforme.fkId_ejec = idEjecucion;
-                nuevoInforme.strNombrePeriodo = string.IsNullOrEmpty(txtGenPeriodo.Text) ? "Informe Generado" : txtGenPeriodo.Text;
-                nuevoInforme.strArchivo_path = "~/RepositorioUTC/EjecucionInformes/" + nombreFinal;
-
+                // ==========================================================================================
+                // 4. REGISTRO EN BASE DE DATOS
+                // ==========================================================================================
+                var nuevoInforme = new InvgccEjecucionInformes
+                {
+                    fkId_ejec = idEjecucion,
+                    strNombrePeriodo = txtGenPeriodo.Text,
+                    strArchivo_path = "~/RepositorioUTC/EjecucionInformes/" + nombreFinal,
+                    // dtFecha_creacion = DateTime.Now // Si tu tabla no tiene este campo, borra esta línea.
+                };
                 _manejador.GuardarInforme(nuevoInforme);
 
-                string scriptFinal = @"
-                    limpiarBorrador(); 
-                    bootstrap.Modal.getInstance(document.getElementById('modalGeneradorInforme')).hide();
-                ";
-
-                // Cerrar modal
-                string scriptCierre = "limpiarBorrador(); bootstrap.Modal.getInstance(document.getElementById('modalGeneradorInforme')).hide();";
-
-                ScriptManager.RegisterStartupScript(this, GetType(), "CloseWiz", scriptCierre, true);
+                // 5. CERRAR Y LIMPIAR
+                string scriptFin = $"limpiarBorrador(); bootstrap.Modal.getInstance(document.getElementById('modalGeneradorInforme')).hide(); resetWizard({idEjecucion});";
+                ScriptManager.RegisterStartupScript(this, GetType(), "CloseGen", scriptFin, true);
 
                 InformeGuardado?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
-                ScriptManager.RegisterStartupScript(this, GetType(), "ErrorCritico", $"alert('Error crítico: {ex.Message}');", true);
+                ScriptManager.RegisterStartupScript(this, GetType(), "Err", $"alert('Error crítico: {ex.Message}');", true);
+            }
+        }
+
+        protected void txtDocCedula_TextChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                string cedula = txtDocCedula.Text.Trim();
+                if (string.IsNullOrEmpty(cedula)) return;
+
+                // 1. Buscamos al docente en la base de datos
+                // Asegúrate de que este método exista en tu manejador, o ajusta la llamada según tu lógica
+                var docente = _manejador.BuscarDocentePorCedula(cedula);
+
+                if (docente != null)
+                {
+                    // ¡ENCONTRADO! Llenamos los campos automáticamente
+                    // Ajusta los nombres de las propiedades (strNombres_doc, etc.) según tu modelo real
+                    txtDocNombres.Text = $"{docente.strApellidos_doc} {docente.strNombres_doc}";
+                    txtDocCarrera.Text = $"{docente.strFacultad_doc} - {docente.strCarrera_doc}";
+
+                    // Opcional: Feedback visual en JavaScript (si usas Toastify o alert)
+                    ScriptManager.RegisterStartupScript(this, GetType(), "Found", "console.log('Docente encontrado');", true);
+                }
+                else
+                {
+                    // NO ENCONTRADO: Limpiamos para permitir escritura manual
+                    // No borramos la cédula, solo los nombres para que el usuario los escriba
+                    txtDocNombres.Text = "";
+                    txtDocCarrera.Text = "";
+
+                    // ScriptManager.RegisterStartupScript(this, GetType(), "NotFound", "alert('Cédula no encontrada. Ingrese datos manualmente.');", true);
+                }
+
+                // Mantener el foco en el campo de nombres para agilizar
+                txtDocNombres.Focus();
+            }
+            catch (Exception ex)
+            {
+                // Manejo de error silencioso para no romper el flujo
+                System.Diagnostics.Debug.WriteLine("Error al buscar docente: " + ex.Message);
             }
         }
 
