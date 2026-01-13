@@ -22,6 +22,7 @@ namespace SistemaGestionCGI.BLL
                     C.strId_cen, C.strNombre_cen, C.strFacultad_cen, C.strArea_cen, 
                     C.strUbicacion_cen, C.strLineaInv_cen, C.strMision_cen, C.strVision_cen, 
                     C.dtFechaAprobacion_cen, C.bitActivo_cen, 
+                    C.strResolucion_cen, C.strAceptacion_cen,
                     (I.strNombres_cin + ' ' + I.strApellidos_cin) AS NombreDirector
                 FROM INVGCCCENTRO_INVESTIGACION C
                 LEFT JOIN INVGCCCENTRO_INVESTIGACION_INTEGRANTES I 
@@ -40,17 +41,19 @@ namespace SistemaGestionCGI.BLL
         public void Guardar(InvgccCentroInvestigacion centro)
         {
             centro.strId_cen = GenerarNuevoIdCentro();
-
             string sql = $@"
                 INSERT INTO INVGCCCENTRO_INVESTIGACION
-                (strId_cen, strNombre_cen, strFacultad_cen, strArea_cen, strUbicacion_cen, 
-                 strLineaInv_cen, strMision_cen, strVision_cen, dtFechaAprobacion_cen, 
+                (strId_cen, strNombre_cen, strFacultad_cen, strArea_cen, strUbicacion_cen,
+                 strLineaInv_cen, strMision_cen, strVision_cen, dtFechaAprobacion_cen,
+                 strResolucion_cen, strAceptacion_cen,
                  bitActivo_cen, dtFechaRegistro)
                 VALUES
-                ('{centro.strId_cen}', '{centro.strNombre_cen}', '{centro.strFacultad_cen}', 
-                 '{centro.strArea_cen}', '{centro.strUbicacion_cen}', '{centro.strLineaInv_cen}', 
-                 '{centro.strMision_cen}', '{centro.strVision_cen}', 
-                 '{centro.dtFechaAprobacion_cen:yyyy-MM-dd}', 1, GETDATE())";
+                ('{centro.strId_cen}', '{centro.strNombre_cen}', '{centro.strFacultad_cen}',
+                 '{centro.strArea_cen}', '{centro.strUbicacion_cen}', '{centro.strLineaInv_cen}',
+                 '{centro.strMision_cen}', '{centro.strVision_cen}',
+                 '{centro.dtFechaAprobacion_cen:yyyy-MM-dd}',
+                 '{centro.strResolucion_cen}', '{centro.strAceptacion_cen}', -- <CORREGIDO
+                 1, GETDATE())";
 
             _dal.InsertSql(sql);
         }
@@ -66,7 +69,9 @@ namespace SistemaGestionCGI.BLL
                 strLineaInv_cen = '{centro.strLineaInv_cen}',
                 strMision_cen = '{centro.strMision_cen}',
                 strVision_cen = '{centro.strVision_cen}',
-                dtFechaAprobacion_cen = '{centro.dtFechaAprobacion_cen:yyyy-MM-dd}'
+                dtFechaAprobacion_cen = '{centro.dtFechaAprobacion_cen:yyyy-MM-dd}',
+                strResolucion_cen = '{centro.strResolucion_cen}',
+                strAceptacion_cen = '{centro.strAceptacion_cen}' -- <CORREGIDO
                 WHERE strId_cen = '{centro.strId_cen}'";
 
             _dal.UpdateSql(sql);

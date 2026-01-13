@@ -159,8 +159,29 @@ namespace SistemaGestionCGI
                     strLineaInv_cen = txtLineas.Text.Trim(),
                     strMision_cen = txtMision.Text.Trim(),
                     strVision_cen = txtVision.Text.Trim(),
-                    dtFechaAprobacion_cen = string.IsNullOrEmpty(txtFechaAprobacion.Text) ? DateTime.Now : DateTime.Parse(txtFechaAprobacion.Text)
+                    dtFechaAprobacion_cen = string.IsNullOrEmpty(txtFechaAprobacion.Text)
+                                                    ? DateTime.Now
+                                                    : DateTime.Parse(txtFechaAprobacion.Text),
+
+                    strResolucion_cen = hfResolucionActual.Value,
+                    strAceptacion_cen = hfAceptacionActual.Value
                 };
+
+                string rutaVirtualRes = "~/Archivos/Centros/Resoluciones/";
+
+                if (flpResolucion.HasFile)
+                {
+                    // Si subió un archivo nuevo, lo guardamos y actualizamos la propiedad
+                    centro.strResolucion_cen = GuardarArchivoVirtual(flpResolucion, rutaVirtualRes, "RES");
+                }
+
+                // B. Documento de Aceptación
+                string rutaVirtualAce = "~/Archivos/Centros/Aceptaciones/";
+
+                if (flpAceptacion.HasFile)
+                {
+                    centro.strAceptacion_cen = GuardarArchivoVirtual(flpAceptacion, rutaVirtualAce, "ACEP");
+                }
 
                 if (string.IsNullOrEmpty(hfIdCentro.Value))
                 {
@@ -194,6 +215,9 @@ namespace SistemaGestionCGI
 
             switch (e.CommandName)
             {
+                case "Archivos": 
+                    CargarModalDocumentos(id);
+                    break;
                 case "Integrantes":
                     hfIdCentro.Value = id;
                     CargarIntegrantes(id);
@@ -206,6 +230,40 @@ namespace SistemaGestionCGI
                     _manejador.Eliminar(id);
                     Redireccionar("Centro eliminado.", "ss");
                     break;
+            }
+        }
+
+        // Método auxiliar para guardar usando rutas virtuales (relativas al proyecto)
+        private string GuardarArchivoVirtual(FileUpload control, string carpetaVirtual, string prefijo)
+        {
+            if (!control.HasFile) return "";
+
+            try
+            {
+                // 1. Obtener la ruta física en el servidor (Ej: C:\Inetpub\wwwroot\Sitio\Archivos\Centros\Resoluciones)
+                string rutaFisica = Server.MapPath(carpetaVirtual);
+
+                // 2. Verificar y crear el directorio si no existe
+                if (!System.IO.Directory.Exists(rutaFisica))
+                {
+                    System.IO.Directory.CreateDirectory(rutaFisica);
+                }
+
+                // 3. Generar un nombre único para evitar reemplazos (PREFIJO_TIMESTAMP.ext)
+                string extension = System.IO.Path.GetExtension(control.FileName);
+                string nombreArchivo = $"{prefijo}_{DateTime.Now.Ticks}{extension}";
+
+                // 4. Guardar el archivo físicamente
+                string rutaCompleta = System.IO.Path.Combine(rutaFisica, nombreArchivo);
+                control.SaveAs(rutaCompleta);
+
+                // 5. Retornar la ruta VIRTUAL para guardar en la BD (Ej: ~/Archivos/Centros/Resoluciones/RES_12345.pdf)
+                // Usamos '/' para asegurar compatibilidad web
+                return System.IO.Path.Combine(carpetaVirtual, nombreArchivo).Replace("\\", "/");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al subir archivo: " + ex.Message);
             }
         }
 
@@ -223,10 +281,15 @@ namespace SistemaGestionCGI
             txtVision.Text = c.strVision_cen;
             txtFechaAprobacion.Text = c.dtFechaAprobacion_cen.ToString("yyyy-MM-dd");
             if (ddlFacultad.Items.FindByValue(c.strFacultad_cen) != null) ddlFacultad.SelectedValue = c.strFacultad_cen;
+            hfResolucionActual.Value = c.strResolucion_cen;
+            hfAceptacionActual.Value = c.strAceptacion_cen;
 
             CargarCombosDirector(c.strId_cen);
 
             CambiarVista(Vista.FormularioCentro);
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "InitFiles",
+                "if(typeof initFileInput === 'function') { initFileInput('wrapperResolucion', '" + flpResolucion.ClientID + "'); initFileInput('wrapperAceptacion', '" + flpAceptacion.ClientID + "'); }", true);
         }
 
         // ==========================
@@ -331,6 +394,55 @@ namespace SistemaGestionCGI
         // ==========================
         // 3. MODALS (ESTADO, HISTORIAL, REPORTE)
         // ==========================
+
+        private void CargarModalDocumentos(string id)
+        {
+            var centro = _manejador.ObtenerPorId(id);
+            if (centro == null) return;
+
+            lblCentroDocNombre.Text = centro.strNombre_cen;
+
+            // --- 1. CONFIGURAR RESOLUCIÓN ---
+            if (!string.IsNullOrEmpty(centro.strResolucion_cen))
+            {
+                lblEstadoRes.Text = "Archivo disponible";
+                lblEstadoRes.ForeColor = System.Drawing.Color.Green;
+                pnlAccionesRes.Visible = true;
+
+                // ResolveUrl convierte ~/Ruta en /Aplicacion/Ruta para que funcione el link
+                string urlRes = ResolveUrl(centro.strResolucion_cen);
+                lnkVerRes.NavigateUrl = urlRes;
+                lnkDescargarRes.NavigateUrl = urlRes;
+            }
+            else
+            {
+                lblEstadoRes.Text = "Sin archivo cargado";
+                lblEstadoRes.ForeColor = System.Drawing.Color.Gray;
+                pnlAccionesRes.Visible = false;
+            }
+
+            // --- 2. CONFIGURAR ACEPTACIÓN ---
+            if (!string.IsNullOrEmpty(centro.strAceptacion_cen))
+            {
+                lblEstadoAce.Text = "Archivo disponible";
+                lblEstadoAce.ForeColor = System.Drawing.Color.Green;
+                pnlAccionesAce.Visible = true;
+
+                string urlAce = ResolveUrl(centro.strAceptacion_cen);
+                lnkVerAce.NavigateUrl = urlAce;
+                lnkDescargarAce.NavigateUrl = urlAce;
+            }
+            else
+            {
+                lblEstadoAce.Text = "Sin archivo cargado";
+                lblEstadoAce.ForeColor = System.Drawing.Color.Gray;
+                pnlAccionesAce.Visible = false;
+            }
+
+            // Abrir Modal
+            ScriptManager.RegisterStartupScript(this, GetType(), "OpenDocs",
+                "new bootstrap.Modal(document.getElementById('modalDocumentos')).show();", true);
+        }
 
         private void CargarModalEstado(string idInt)
         {
@@ -479,6 +591,8 @@ namespace SistemaGestionCGI
             txtNombre.Text = ""; txtArea.Text = ""; txtUbicacion.Text = "";
             txtLineas.Text = ""; txtMision.Text = ""; txtVision.Text = "";
             txtFechaAprobacion.Text = DateTime.Now.ToString("yyyy-MM-dd");
+            hfResolucionActual.Value = "";
+            hfAceptacionActual.Value = "";
 
             ddlDirector.Items.Clear();
             ddlDirector.Items.Add(new ListItem("-- Sin Director Asignado --", ""));

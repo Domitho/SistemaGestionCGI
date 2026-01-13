@@ -159,6 +159,42 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtVision;
 
         /// <summary>
+        /// Control hfResolucionActual.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfResolucionActual;
+
+        /// <summary>
+        /// Control hfAceptacionActual.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfAceptacionActual;
+
+        /// <summary>
+        /// Control flpResolucion.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.FileUpload flpResolucion;
+
+        /// <summary>
+        /// Control flpAceptacion.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.FileUpload flpAceptacion;
+
+        /// <summary>
         /// Control btnGuardar.
         /// </summary>
         /// <remarks>
@@ -526,5 +562,86 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnGuardarDirectorModal;
+
+        /// <summary>
+        /// Control lblCentroDocNombre.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblCentroDocNombre;
+
+        /// <summary>
+        /// Control lblEstadoRes.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblEstadoRes;
+
+        /// <summary>
+        /// Control pnlAccionesRes.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlAccionesRes;
+
+        /// <summary>
+        /// Control lnkVerRes.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkVerRes;
+
+        /// <summary>
+        /// Control lnkDescargarRes.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkDescargarRes;
+
+        /// <summary>
+        /// Control lblEstadoAce.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblEstadoAce;
+
+        /// <summary>
+        /// Control pnlAccionesAce.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlAccionesAce;
+
+        /// <summary>
+        /// Control lnkVerAce.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkVerAce;
+
+        /// <summary>
+        /// Control lnkDescargarAce.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkDescargarAce;
     }
 }

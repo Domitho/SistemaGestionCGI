@@ -47,5 +47,12 @@ namespace SistemaGestionCGI.Models
 
         [JsonProperty("bitActivo_cen")]
         public bool bitActivo_cen { get; set; }
+
+        [JsonProperty("strResolucion_cen")]
+        public string strResolucion_cen { get; set; }
+
+        [JsonProperty("strAceptacion_cen")]
+        public string strAceptacion_cen { get; set; }
+
     }
 }
