@@ -420,6 +420,24 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.Repeater rptInformes;
 
         /// <summary>
+        /// Control tituloEtapaFinal.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl tituloEtapaFinal;
+
+        /// <summary>
+        /// Control divContenedorBotonesFinales.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divContenedorBotonesFinales;
+
+        /// <summary>
         /// Control btnInformeCierre.
         /// </summary>
         /// <remarks>

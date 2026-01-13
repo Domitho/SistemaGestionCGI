@@ -18,10 +18,15 @@ namespace SistemaGestionCGI
         {
             if (IsPostBack) return;
 
-            // Validar Sesión
             if (Session["UsuarioLogueado"] == null)
             {
                 Response.Redirect("Login.aspx");
+                return;
+            }
+
+            if (Session["RolUsuario"]?.ToString() == "COORDINADOR")
+            {
+                Response.Redirect("EjecucionProAprobados.aspx");
                 return;
             }
 

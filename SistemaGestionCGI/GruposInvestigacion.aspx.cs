@@ -25,6 +25,12 @@ namespace SistemaGestionCGI
                 return; 
             }
 
+            if (Session["RolUsuario"]?.ToString() == "COORDINADOR")
+            {
+                Response.Redirect("EjecucionProAprobados.aspx");
+                return;
+            }
+
             if (IsPostBack) return;
 
             try

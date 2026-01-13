@@ -79,7 +79,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <asp:Repeater ID="rptEjecucion" runat="server" OnItemCommand="rptEjecucion_ItemCommand">
+                    <asp:Repeater ID="rptEjecucion" runat="server" OnItemCommand="rptEjecucion_ItemCommand" OnItemDataBound="rptEjecucion_ItemDataBound">
                         <ItemTemplate>
                             <tr>
                                 <td><%# Eval("strId_ejec") %></td>
@@ -516,11 +516,11 @@
 
                         <hr class="my-4" style="opacity: 0.1">
 
-                        <h6 class="utc-title text-muted mb-3" style="font-size: 0.9rem; letter-spacing: 1px;">
+                        <h6 id="tituloEtapaFinal" runat="server" class="utc-title text-muted mb-3" style="font-size: 0.9rem; letter-spacing: 1px;">
                             <i class="fa-solid fa-flag-checkered me-1"></i> ETAPA DE FINALIZACIÓN
                         </h6>
 
-                        <div class="card bg-light border-0 rounded-3 p-3">
+                        <div id="divContenedorBotonesFinales" runat="server" class="card bg-light border-0 rounded-3 p-3">
                             <div class="row g-3">
         
                                 <div class="col-md-6">

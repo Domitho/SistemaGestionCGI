@@ -168,7 +168,17 @@ namespace SistemaGestionCGI
                 case "Informes":
                     hfIdEjecucionInforme.Value = id.ToString();
                     CargarInformes(id);
-                    ConfigurarBotonesFaseFinal(id);
+
+                    // --- SEGURIDAD DEL MODAL ---
+                    ConfigurarPermisosModalInformes(); // <--- LLAMADA AL NUEVO MÉTODO
+                                                       // ---------------------------
+
+                    // Configurar estado de botones de cierre (si aplica)
+                    if (Session["RolUsuario"]?.ToString() == "ADMINISTRADOR")
+                    {
+                        ConfigurarBotonesFaseFinal(id);
+                    }
+
                     ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalInf", "AbrirModalInformes();", true);
                     break;
                 case "Eliminar":
@@ -179,6 +189,39 @@ namespace SistemaGestionCGI
                     }
                     catch (Exception ex) { Msg("Error al eliminar: " + ex.Message, "ee"); }
                     break;
+            }
+        }
+
+        protected void rptEjecucion_ItemDataBound(object sender, RepeaterItemEventArgs e)
+        {
+            // Solo nos interesa filtrar las filas de datos (no el encabezado ni el pie)
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                // 1. Obtener el Rol del usuario actual
+                string rol = Session["RolUsuario"]?.ToString() ?? "";
+
+                // 2. Buscar los botones en la fila actual
+                var btnEditar = (LinkButton)e.Item.FindControl("btnEditar");
+                var btnEquipo = (LinkButton)e.Item.FindControl("btnEquipo");
+                var btnEliminar = (LinkButton)e.Item.FindControl("btnEliminar");
+                var btnInformes = (LinkButton)e.Item.FindControl("btnInformes");
+
+                // 3. APLICAR LÓGICA DE SEGURIDAD
+                if (rol == "COORDINADOR")
+                {
+                    // El Coordinador NO puede editar, ni gestionar equipo, ni eliminar.
+                    if (btnEditar != null) btnEditar.Visible = false;
+                    if (btnEquipo != null) btnEquipo.Visible = false;
+                    if (btnEliminar != null) btnEliminar.Visible = false;
+
+                    // El Coordinador SÍ puede ver informes (botón verde)
+                    if (btnInformes != null) btnInformes.Visible = true;
+                }
+                else if (rol == "ADMINISTRADOR")
+                {
+                    // El Admin ve todo
+                    // (No es necesario hacer nada porque Visible="true" es el default)
+                }
             }
         }
 
@@ -903,6 +946,31 @@ namespace SistemaGestionCGI
         // ==========================================
         // 7. UTILIDADES
         // ==========================================
+
+        private void ConfigurarPermisosModalInformes()
+        {
+            string rol = Session["RolUsuario"]?.ToString() ?? "";
+
+            if (rol == "COORDINADOR")
+            {
+                // Ocultar toda la sección inferior del modal
+                tituloEtapaFinal.Visible = false;
+                divContenedorBotonesFinales.Visible = false;
+
+                // Los botones individuales ya no importan porque ocultamos su contenedor padre,
+                // pero por seguridad también los apagamos.
+                btnInformeCierre.Visible = false;
+                btnInformeFinal.Visible = false;
+            }
+            else
+            {
+                tituloEtapaFinal.Visible = true;
+                divContenedorBotonesFinales.Visible = true;
+                btnInformeCierre.Visible = true;
+                btnInformeFinal.Visible = true;
+            }
+        }
+
         private string GuardarArchivoFisico(FileUpload control, string nombreArchivo)
         {
             string rutaFisicaCarpeta = Server.MapPath(RUTA_VIRTUAL_ARCHIVOS);

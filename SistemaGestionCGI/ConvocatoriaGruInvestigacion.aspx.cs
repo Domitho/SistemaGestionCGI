@@ -25,6 +25,12 @@ namespace SistemaGestionCGI
                 return;
             }
 
+            if (Session["RolUsuario"]?.ToString() == "COORDINADOR")
+            {
+                Response.Redirect("EjecucionProAprobados.aspx");
+                return;
+            }
+
             CargarGrilla();
 
             if (Session["TempMsg"] != null)

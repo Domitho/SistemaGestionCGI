@@ -38,12 +38,18 @@ namespace SistemaGestionCGI
                 {
                     // === LOGIN EXITOSO ===
                     Session["UsuarioLogueado"] = usuarioLogueado.strNombre_usu;
-
+                    Session["RolUsuario"] = usuarioLogueado.strRol_usu;
                     Session["UserId"] = usuarioLogueado.intId_usu;
-                    Session["UserName"] = usuarioLogueado.strNombre_usu;
-                    Session["UserRole"] = usuarioLogueado.strRol_usu;
 
-                    Response.Redirect("Dashboard.aspx", false);
+                    if (usuarioLogueado.strRol_usu == "COORDINADOR")
+                    {
+                        Response.Redirect("EjecucionProAprobados.aspx");
+                    }
+                    else
+                    {
+                        Response.Redirect("Dashboard.aspx"); 
+                    }
+
                 }
                 else
                 {
