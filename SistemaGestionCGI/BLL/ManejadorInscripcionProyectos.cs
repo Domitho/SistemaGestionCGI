@@ -43,7 +43,6 @@ namespace SistemaGestionCGI.BLL
 
         public void Guardar(InvgccInscripcionProyectos pro)
         {
-            // Lógica de Negocio: Generar ID Institucional
             int anioBase = ObtenerAnioDeConvocatoria(pro.fkId_conv);
             pro.strId_pro = GenerarNuevoIdProyecto(anioBase);
             pro.strEstado_pro = "Pendiente";
@@ -170,7 +169,6 @@ namespace SistemaGestionCGI.BLL
             {
                 try
                 {
-                    // Manejo dinámico para asegurar la conversión
                     DateTime fecha = Convert.ToDateTime(lista[0].dtFechaini_conv);
                     return fecha.Year;
                 }
@@ -181,7 +179,6 @@ namespace SistemaGestionCGI.BLL
 
         private string GenerarNuevoIdProyecto(int anio)
         {
-            // Formato institucional: DIRGI-CP[Año]-XXX
             string prefijo = $"DIRGI-CP{anio}-";
             string sql = $"SELECT TOP 1 strId_pro FROM INVGCCINSCRIPCION_PROYECTOS WHERE strId_pro LIKE '{prefijo}%' ORDER BY strId_pro DESC";
 
@@ -191,7 +188,6 @@ namespace SistemaGestionCGI.BLL
             if (lista != null && lista.Count > 0)
             {
                 string ultimoId = lista[0].strId_pro;
-                // Extraer el número después del último guion
                 if (!string.IsNullOrEmpty(ultimoId) && ultimoId.Contains("-"))
                 {
                     string numeroStr = ultimoId.Substring(ultimoId.LastIndexOf('-') + 1);
@@ -207,7 +203,6 @@ namespace SistemaGestionCGI.BLL
 
         private string GenerarNuevoIdIntegrante()
         {
-            // Lógica existente: Buscar el máximo "I..."
             string sql = "SELECT strId_int FROM INVGCCGRUPO_INTEGRANTES WHERE strId_int LIKE 'I%'";
             var lista = _dal.SelectSql<InvgccGrupoIntegrantes>(sql);
 
@@ -217,7 +212,6 @@ namespace SistemaGestionCGI.BLL
                 foreach (var item in lista)
                 {
                     string id = item.strId_int;
-                    // Filtro robusto para asegurar que es formato 'I'+Numero
                     if (!string.IsNullOrEmpty(id) &&
                         id.StartsWith("I", StringComparison.OrdinalIgnoreCase) &&
                         !id.StartsWith("INT", StringComparison.OrdinalIgnoreCase))

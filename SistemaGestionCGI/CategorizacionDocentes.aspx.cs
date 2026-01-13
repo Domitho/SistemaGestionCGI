@@ -8,14 +8,13 @@ namespace SistemaGestionCGI
 {
     public partial class CategorizacionDocentes : System.Web.UI.Page
     {
-        // Instancia del BLL
+        // Instancia
         private readonly ManejadorCategorizacionDocentes _manejador = new ManejadorCategorizacionDocentes();
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (IsPostBack) return;
 
-            // Validación de Sesión
             if (Session["UsuarioLogueado"] == null)
             {
                 Response.Redirect("Login.aspx");
@@ -55,7 +54,6 @@ namespace SistemaGestionCGI
                 txtNombres.Text = docente.strNombres_doc;
                 txtApellidos.Text = docente.strApellidos_doc;
 
-                // SELECCIONAR VALORES EN COMBOS
                 SeleccionarCombo(ddlFacultad, docente.strFacultad_doc);
                 SeleccionarCombo(ddlCarrera, docente.strCarrera_doc);
                 SeleccionarCombo(ddlCategoria, docente.strCategorizacion);
@@ -80,21 +78,19 @@ namespace SistemaGestionCGI
             if (ddl.Items.FindByValue(valor) != null)
                 ddl.SelectedValue = valor;
             else
-                ddl.SelectedIndex = 0; // Si no encuentra, resetea
+                ddl.SelectedIndex = 0; 
         }
 
         private void CargarHistorial(string idDocente)
         {
             try
             {
-                // Guardamos el ID en el HiddenField para usarlo luego en el reporte
                 hfIdDocenteHistorial.Value = idDocente;
 
                 var historial = _manejador.ObtenerHistorial(idDocente);
                 rptHistorial.DataSource = historial;
                 rptHistorial.DataBind();
 
-                // Abrir Modal de Historial
                 ScriptManager.RegisterStartupScript(this, GetType(), "OpenModal", "new bootstrap.Modal(document.getElementById('modalHistorial')).show();", true);
             }
             catch (Exception ex)
@@ -105,12 +101,10 @@ namespace SistemaGestionCGI
 
         protected void btnGenerarReporte_Click(object sender, EventArgs e)
         {
-            // Recuperamos el ID que guardamos cuando se abrió el historial
             string idDocente = hfIdDocenteHistorial.Value;
 
             if (!string.IsNullOrEmpty(idDocente))
             {
-                // Llamamos a la lógica de Vista Previa que ya creamos
                 GenerarVistaPrevia(idDocente);
             }
         }
@@ -140,7 +134,6 @@ namespace SistemaGestionCGI
                     try
                     {
                         string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
-                        // Eliminamos pasando un motivo por defecto
                         _manejador.EliminarCategorizacion(idDocente, usuario, "Eliminación directa desde listado");
 
                         Redireccionar("Se ha quitado la categoría correctamente.", "ss");
@@ -153,7 +146,6 @@ namespace SistemaGestionCGI
             }
         }
 
-        // 1. EVENTO DEL BOTÓN NUEVO
         protected void btnNuevo_Click(object sender, EventArgs e)
         {
             hfIdDocente.Value = "";
@@ -161,7 +153,6 @@ namespace SistemaGestionCGI
             txtNombres.Text = "";
             txtApellidos.Text = "";
 
-            // RESETEAR COMBOS
             ddlFacultad.SelectedIndex = 0;
             ddlCarrera.SelectedIndex = 0;
             ddlCategoria.SelectedIndex = 0;
@@ -175,12 +166,10 @@ namespace SistemaGestionCGI
             btnRegresar.Visible = true;
         }
 
-        // 2. ACTUALIZACIÓN DEL GUARDADO
         protected void btnGuardar_Click(object sender, EventArgs e)
         {
             try
             {
-                // Validaciones: Revisar que los combos tengan selección válida
                 if (string.IsNullOrWhiteSpace(txtCedula.Text) ||
                     string.IsNullOrWhiteSpace(txtApellidos.Text))
                 {
@@ -201,7 +190,6 @@ namespace SistemaGestionCGI
                     strNombres_doc = txtNombres.Text.Trim().ToUpper(),
                     strApellidos_doc = txtApellidos.Text.Trim().ToUpper(),
 
-                    // TOMAR VALOR DEL DROPDOWN
                     strFacultad_doc = ddlFacultad.SelectedValue,
                     strCarrera_doc = ddlCarrera.SelectedValue,
                     strCategorizacion = ddlCategoria.SelectedValue,
@@ -211,7 +199,6 @@ namespace SistemaGestionCGI
 
                 string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
 
-                // Motivo Automático
                 string motivoAuto = string.IsNullOrEmpty(hfIdDocente.Value)
                     ? "REGISTRO INICIAL DE DOCENTE"
                     : "ACTUALIZACIÓN DE FICHA / CATEGORÍA";
@@ -236,37 +223,29 @@ namespace SistemaGestionCGI
         {
             try
             {
-                // 1. OBTENER DATOS
                 var docente = _manejador.ObtenerPorId(idDocente);
                 var historial = _manejador.ObtenerHistorial(idDocente);
 
                 if (docente == null) return;
 
-                // 2. ASIGNAR A LOS CONTROLES DEL MODAL
                 lblRefId.Text = docente.strId_doc;
 
-                // --- CORRECCIÓN AQUÍ ---
-                // En lugar de usar docente.NombreCompleto (que puede ser null), unimos los campos:
                 lblReporteNombre.Text = $"{docente.strApellidos_doc} {docente.strNombres_doc}";
-                // -----------------------
 
                 lblReporteCedula.Text = docente.strCedula_doc;
                 lblReporteFacultad.Text = docente.strFacultad_doc;
-                lblReporteCarrera.Text = docente.strCarrera_doc; // Asegúrate de que este campo tenga datos
+                lblReporteCarrera.Text = docente.strCarrera_doc;
 
                 string cat = string.IsNullOrEmpty(docente.strCategorizacion) ? "SIN ASIGNAR" : docente.strCategorizacion;
                 lblReporteCategoria.Text = cat;
 
-                // Fecha Resolución
                 lblReporteFecha.Text = docente.dtFechaCategorizacion.HasValue
                     ? docente.dtFechaCategorizacion.Value.ToString("dd/MM/yyyy")
                     : "-";
 
-                // 3. LLENAR EL TIMELINE
                 rptReporteHistorial.DataSource = historial;
                 rptReporteHistorial.DataBind();
 
-                // 4. ABRIR EL MODAL
                 string script = "var m = new bootstrap.Modal(document.getElementById('modalVistaPrevia')); m.show();";
                 ScriptManager.RegisterStartupScript(this, GetType(), "OpenPreview", script, true);
             }

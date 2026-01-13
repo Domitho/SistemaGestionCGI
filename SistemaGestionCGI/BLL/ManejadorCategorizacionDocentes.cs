@@ -8,7 +8,6 @@ namespace SistemaGestionCGI.BLL
 {
     public class ManejadorCategorizacionDocentes
     {
-        // Instancia Singleton del DAL (Base de Datos)
         private readonly ConnectionSqlServer _dal = ConnectionSqlServer.Instance;
 
         // ==========================================
@@ -16,8 +15,6 @@ namespace SistemaGestionCGI.BLL
         // ==========================================
         public List<InvgccCategorizacionDocentes> ObtenerTodos()
         {
-            // Traemos todos los docentes activos, tengan o no categoría asignada
-            // Concatenamos Apellidos y Nombres para mostrarlo limpio en la vista
             string sql = @"
                 SELECT 
                     strId_doc, 
@@ -40,7 +37,6 @@ namespace SistemaGestionCGI.BLL
         // ==========================================
         public InvgccCategorizacionDocentes ObtenerPorId(string id)
         {
-            // Usamos interpolación de strings segura
             string sql = $"SELECT * FROM INVGCCCATEGORIZACION_DOCENTES WHERE strId_doc = '{id}'";
 
             var lista = _dal.SelectSql<InvgccCategorizacionDocentes>(sql);
@@ -52,17 +48,12 @@ namespace SistemaGestionCGI.BLL
         // ==========================================
         public void GuardarCategorizacion(string idDocente, string nuevaCategoria, DateTime fecha, string usuario, string motivo)
         {
-            // PASO A: Obtenemos el dato actual para poder comparar (Auditoría)
             var docenteActual = ObtenerPorId(idDocente);
 
-            // Si no tiene categoría previa, lo manejamos como "SIN ASIGNAR"
             string catAnterior = docenteActual?.strCategorizacion ?? "SIN ASIGNAR";
 
-            // Verificamos si realmente hubo un cambio de categoría
             bool huboCambio = (catAnterior != nuevaCategoria);
 
-            // PASO B: Actualizamos la Tabla Maestra (Unificada)
-            // Solo tocamos los campos de categoría, respetando los datos personales
             string sqlUpdate = $@"
                 UPDATE INVGCCCATEGORIZACION_DOCENTES SET
                     strCategorizacion = '{nuevaCategoria}',
@@ -71,7 +62,6 @@ namespace SistemaGestionCGI.BLL
 
             _dal.UpdateSql(sqlUpdate);
 
-            // PASO C: Insertar en el Historial SOLO si cambió la categoría o si es la primera vez
             if (huboCambio)
             {
                 string accion = (catAnterior == "SIN ASIGNAR") ? "ASIGNACION INICIAL" : "CAMBIO DE CATEGORIA";
@@ -88,7 +78,6 @@ namespace SistemaGestionCGI.BLL
             var actual = ObtenerPorId(idDocente);
             string catAnterior = actual?.strCategorizacion ?? "SIN ASIGNAR";
 
-            // Ponemos los campos en NULL (No borramos al docente, solo su categoría)
             string sql = $"UPDATE INVGCCCATEGORIZACION_DOCENTES SET strCategorizacion = NULL, dtFechaCategorizacion = NULL WHERE strId_doc = '{idDocente}'";
             _dal.UpdateSql(sql);
 
@@ -105,13 +94,9 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<InvgccCategorizacionDocentesHistorial>(sql);
         }
 
-        // EN: ManejadorCategorizacionDocentes.cs
-
-        // A. Generar ID Automático
         private string GenerarNuevoIdDocente()
         {
             string prefijo = "DOC";
-            // Ordenar por longitud para que DOC100 no salga antes de DOC99
             string sql = $"SELECT TOP 1 strId_doc FROM INVGCCCATEGORIZACION_DOCENTES WHERE strId_doc LIKE '{prefijo}%' ORDER BY LEN(strId_doc) DESC, strId_doc DESC";
 
             var lista = _dal.SelectSql<InvgccCategorizacionDocentes>(sql);
@@ -120,24 +105,19 @@ namespace SistemaGestionCGI.BLL
             if (lista != null && lista.Count > 0)
             {
                 string ultimoId = lista[0].strId_doc;
-                // Cortar "DOC" y parsear el número
                 if (int.TryParse(ultimoId.Substring(3), out int num))
                     siguiente = num + 1;
             }
-            return $"{prefijo}{siguiente:D3}"; // Retorna DOC001, DOC002...
+            return $"{prefijo}{siguiente:D3}"; 
         }
 
-        // B. Método Guardar Completo (Insertar o Actualizar)
-        // MÉTODO: GuardarDocenteCompleto
 
         public void GuardarDocenteCompleto(InvgccCategorizacionDocentes obj, string usuario, string motivo)
         {
-            // 1. SI ES NUEVO (INSERT)
             if (string.IsNullOrEmpty(obj.strId_doc))
             {
                 obj.strId_doc = GenerarNuevoIdDocente();
 
-                // CORRECCIÓN: Se agregó strCarrera_doc
                 string sqlInsert = $@"
                     INSERT INTO INVGCCCATEGORIZACION_DOCENTES
                     (strId_doc, strCedula_doc, strNombres_doc, strApellidos_doc, strFacultad_doc, strCarrera_doc, bitActivo_doc, strCategorizacion, dtFechaCategorizacion)
@@ -146,13 +126,10 @@ namespace SistemaGestionCGI.BLL
 
                 _dal.UpdateSql(sqlInsert);
 
-                // Registrar Historial Automático
                 RegistrarHistorial(obj.strId_doc, "NUEVO INGRESO", "NO EXISTÍA", obj.strCategorizacion, motivo, usuario);
             }
-            // 2. SI YA EXISTE (UPDATE)
             else
             {
-                // CORRECCIÓN: Se agregó strCarrera_doc al Update
                 string sqlUpdateDatos = $@"
                     UPDATE INVGCCCATEGORIZACION_DOCENTES SET
                         strCedula_doc = '{obj.strCedula_doc}',
@@ -169,11 +146,10 @@ namespace SistemaGestionCGI.BLL
         }
 
         // ==========================================
-        // MÉTODOS PRIVADOS (AYUDANTES)
+        // MÉTODOS PRIVADOS
         // ==========================================
         private void RegistrarHistorial(string idDoc, string accion, string anterior, string nuevo, string motivo, string usuario)
         {
-            // Insertamos el registro de auditoría
             string sql = $@"
                 INSERT INTO INVGCCCATEGORIZACION_DOCENTES_HISTORIAL
                 (fkId_doc, dtFecha, strAccion, strValorAnterior, strValorNuevo, strMotivo, strUsuario)

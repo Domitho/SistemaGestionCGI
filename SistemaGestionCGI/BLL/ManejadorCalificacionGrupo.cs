@@ -54,7 +54,6 @@ namespace SistemaGestionCGI.BLL
 
             _dal.InsertSql(sqlInsert);
 
-            // CORRECCIÓN: Se agregó la comilla simple faltante antes de {obj.strCategoria_valo}
             string sqlUpdateGrupo = $@"
                 UPDATE INVGCCGRUPO_INVESTIGACION 
                 SET strCategoria_gru = '{obj.strCategoria_valo}' 
@@ -109,13 +108,11 @@ namespace SistemaGestionCGI.BLL
 
             if (count > 0)
             {
-                // UPDATE
                 string sqlUpdate = $"UPDATE INVGCC_METRICAS SET minConsolidado = {metrica.minConsolidado} WHERE anio = {metrica.anio}";
                 _dal.UpdateSql(sqlUpdate);
             }
             else
             {
-                // INSERT MANUAL
                 string sqlInsert = $"INSERT INTO INVGCC_METRICAS (anio, minConsolidado) VALUES ({metrica.anio}, {metrica.minConsolidado})";
                 _dal.InsertSql(sqlInsert);
             }

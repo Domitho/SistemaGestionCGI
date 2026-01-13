@@ -17,7 +17,6 @@ namespace SistemaGestionCGI.BLL
 
         public List<InvgccCentroInvestigacion> ObtenerCentrosCombo()
         {
-            // Reutilizamos el modelo de Centro que creamos anteriormente
             string sql = "SELECT strId_cen, strNombre_cen FROM INVGCCCENTRO_INVESTIGACION WHERE bitActivo_cen = 1 ORDER BY strNombre_cen";
             return _dal.SelectSql<InvgccCentroInvestigacion>(sql);
         }
@@ -97,7 +96,6 @@ namespace SistemaGestionCGI.BLL
 
         public void EliminarGrupo(string id)
         {
-            // Borrado en cascada manual
             string sqlDelHistorial = $"DELETE FROM INVGCCINTEGRANTES_HISTORIAL WHERE strId_int IN (SELECT strId_int FROM INVGCCGRUPO_INTEGRANTES WHERE fkId_gru = '{id}')";
             _dal.DeleteSql(sqlDelHistorial);
 
@@ -106,7 +104,6 @@ namespace SistemaGestionCGI.BLL
 
         public List<InvgccInscripcionProyectos> ObtenerProyectosDeGrupo(string idGrupo)
         {
-            // Traemos los proyectos filtrados por la llave foránea fkId_gru
             string sql = $"SELECT * FROM INVGCCINSCRIPCION_PROYECTOS WHERE fkId_gru = '{idGrupo}' ORDER BY dtFehains_pro DESC";
             return _dal.SelectSql<InvgccInscripcionProyectos>(sql);
         }
@@ -177,7 +174,6 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sql);
         }
 
-        // Método para validar duplicidad de integrantes activos
         public string VerificarIntegranteEnOtroGrupo(string cedula)
         {
             string sql = $@"
@@ -263,7 +259,6 @@ namespace SistemaGestionCGI.BLL
                 string ultimoId = "";
                 var item = lista[0];
 
-                // Manejo robusto de dynamic
                 if (item is JObject jobj)
                     ultimoId = jobj[campoId]?.ToString();
                 else

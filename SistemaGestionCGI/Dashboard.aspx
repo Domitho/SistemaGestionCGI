@@ -4,7 +4,6 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     
     <style>
-        /* Estilos específicos para las Tarjetas KPI del Dashboard */
         .kpi-icon {
             font-size: 2.5rem;
             opacity: 0.2;
@@ -134,19 +133,15 @@
 
     <script>
         $(document).ready(function () {
-            // Paleta de Colores UTC
             const utcAzul = '#312783';
             const utcVerde = '#1b9e4b';
             const utcRojo = '#d9534f';
             const utcCeleste = '#00b4ff';
 
-            // --- 1. LEER DATOS INYECTADOS DESDE EL SERVIDOR ---
-            // Usamos las variables públicas declaradas en el Code-Behind
             var rawCategorias = <%= JsonCategorias %>;
             var rawEstados = <%= JsonEstados %>;
             var rawPublicaciones = <%= JsonPublicaciones %>;
 
-            // --- 2. RENDERIZAR GRÁFICO 1: CATEGORÍAS ---
             var optionsCat = {
                 series: [{
                     name: 'Docentes',
@@ -163,7 +158,6 @@
             var chartCat = new ApexCharts(document.querySelector("#chartCategorias"), optionsCat);
             chartCat.render();
 
-            // --- 3. RENDERIZAR GRÁFICO 2: ESTADOS ---
             var optionsEst = {
                 series: rawEstados.map(function (x) { return x.value; }),
                 labels: rawEstados.map(function (x) { return x.label; }),
@@ -176,7 +170,6 @@
             var chartEst = new ApexCharts(document.querySelector("#chartEstados"), optionsEst);
             chartEst.render();
 
-            // --- 4. RENDERIZAR GRÁFICO 3: PUBLICACIONES ---
             var optionsPub = {
                 series: [{
                     name: 'Cantidad',

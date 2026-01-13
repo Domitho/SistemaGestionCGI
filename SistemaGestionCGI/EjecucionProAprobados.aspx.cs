@@ -23,24 +23,20 @@ namespace SistemaGestionCGI
         {
             if (!IsPostBack)
             {
-                // A. Validar Sesión
                 if (Session["UsuarioLogueado"] == null)
                 {
                     Response.Redirect("Login.aspx");
                     return;
                 }
 
-                // B. Cargar Datos Iniciales
                 CargarGrillaEjecucion();
 
-                // C. Verificar redirección de equipo
                 string idTeamRedirect = Request.QueryString["idTeam"];
                 if (!string.IsNullOrEmpty(idTeamRedirect) && int.TryParse(idTeamRedirect, out int idTeam))
                 {
                     CargarEquipo(idTeam);
                 }
 
-                // D. Mostrar Mensajes Flash
                 if (Session["TempMsg"] != null)
                 {
                     Msg(Session["TempMsg"].ToString(), Session["TempTipo"].ToString());
@@ -172,6 +168,7 @@ namespace SistemaGestionCGI
                 case "Informes":
                     hfIdEjecucionInforme.Value = id.ToString();
                     CargarInformes(id);
+                    ConfigurarBotonesFaseFinal(id);
                     ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalInf", "AbrirModalInformes();", true);
                     break;
                 case "Eliminar":
@@ -491,65 +488,69 @@ namespace SistemaGestionCGI
         // Evento para el Botón 1: Abrir Modal de Cierre
         protected void btnInformeCierre_Click(object sender, EventArgs e)
         {
-            try
+            string idEjecucionStr = hfIdEjecucionInforme.Value;
+
+            if (!string.IsNullOrEmpty(idEjecucionStr) && int.TryParse(idEjecucionStr, out int idEjec))
             {
-                // 1. Obtener ID del HiddenField (hfIdEjecucionInforme)
-                string idEjecucionStr = hfIdEjecucionInforme.Value;
+                var proyecto = _manejador.ObtenerEjecucionPorId(idEjec);
+                string estado = proyecto.strEstado_ejec.ToUpper();
+                bool tieneArchivo = !string.IsNullOrEmpty(proyecto.strInforme_Cierre);
 
-                if (!string.IsNullOrEmpty(idEjecucionStr) && int.TryParse(idEjecucionStr, out int idEjec))
+                // --- LÓGICA DE ESTADOS DEL MODAL ---
+
+                if (estado == "CIERRE APROBADO")
                 {
-                    // 2. Consultar datos actuales del proyecto para ver si ya tiene archivo
-                    var proyecto = _manejador.ObtenerEjecucionPorId(idEjec);
+                    // CASO 1: YA ESTÁ APROBADO (Modo solo lectura bloqueado)
+                    pnlCierreBloqueado.Visible = true;       // Mensaje verde grande
+                    divAlertaCierre.Visible = false;         // Ocultar alerta amarilla
+                    pnlCargaCierre.Visible = false;          // Ocultar Dropzone (No se puede subir más)
+                    btnGuardarCierre.Visible = false;        // Ocultar botón guardar
+                    btnAprobarCierre.Visible = false;        // Ocultar botón aprobar (ya lo está)
 
-                    if (proyecto != null && !string.IsNullOrEmpty(proyecto.strInforme_Cierre))
-                    {
-                        // === MODO EDICIÓN (Ya existe archivo) ===
-                        pnlArchivoCierreActual.Visible = true;
-
-                        // Mostrar nombre limpio del archivo
-                        // Asumiendo que guardas ruta tipo: "~/Repositorio/CIERRE_123456_NombreOriginal.pdf"
-                        string nombreArchivo = Path.GetFileName(proyecto.strInforme_Cierre);
-
-                        // (Opcional) Si quieres quitar el prefijo "CIERRE_Ticks_" para que se vea bonito:
-                        int indexGuion = nombreArchivo.IndexOf('_', nombreArchivo.IndexOf('_') + 1); // Busca el segundo guion
-                        if (indexGuion > 0 && indexGuion + 1 < nombreArchivo.Length)
-                            lblNombreArchivoCierre.Text = nombreArchivo.Substring(indexGuion + 1);
-                        else
-                            lblNombreArchivoCierre.Text = nombreArchivo;
-
-                        // Configurar link de descarga/vista
-                        lnkVerCierreActual.HRef = ResolveUrl(proyecto.strInforme_Cierre);
-
-                        // Cambiar textos para contexto de "Sustitución"
-                        lblTituloInputCierre.InnerText = "Sustituir Documento";
-                        litBtnCierreTexto.Text = "Actualizar y Enviar a Revisión";
-                        lblTextoDropzoneCierre.InnerText = "Arrastra el NUEVO archivo para reemplazar el actual";
-                    }
-                    else
-                    {
-                        // === MODO NUEVO (No existe archivo) ===
-                        pnlArchivoCierreActual.Visible = false;
-                        lblNombreArchivoCierre.Text = "";
-                        lnkVerCierreActual.HRef = "#";
-
-                        // Textos por defecto
-                        lblTituloInputCierre.InnerText = "Documento de Cierre (PDF Firmado)";
-                        litBtnCierreTexto.Text = "Enviar a Revisión";
-                        lblTextoDropzoneCierre.InnerText = "Subir Informe de Cierre";
-                    }
-
-                    // 3. Abrir el Modal
-                    ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalCierre",
-                        "new bootstrap.Modal(document.getElementById('modalSubirCierre')).show();", true);
+                    // Mostrar archivo para descargar
+                    pnlArchivoCierreActual.Visible = true;
+                    lblNombreArchivoCierre.Text = Path.GetFileName(proyecto.strInforme_Cierre);
+                    lnkVerCierreActual.HRef = ResolveUrl(proyecto.strInforme_Cierre);
                 }
                 else
                 {
-                    Msg("No se ha identificado el proyecto.", "ee");
+                    // CASO 2: AÚN NO APROBADO (Permite edición)
+                    pnlCierreBloqueado.Visible = false;
+                    divAlertaCierre.Visible = true;
+                    pnlCargaCierre.Visible = true;
+                    btnGuardarCierre.Visible = true;
+
+                    // Configurar visualización del archivo actual
+                    if (tieneArchivo)
+                    {
+                        pnlArchivoCierreActual.Visible = true;
+                        lblNombreArchivoCierre.Text = Path.GetFileName(proyecto.strInforme_Cierre);
+                        lnkVerCierreActual.HRef = ResolveUrl(proyecto.strInforme_Cierre);
+
+                        lblTituloInputCierre.InnerText = "Sustituir Documento";
+                        litBtnCierreTexto.Text = "Actualizar Archivo";
+
+                        if (estado == "EN REVISION")
+                        {
+                            btnAprobarCierre.Visible = true; // <--- AQUÍ APARECE EL BOTÓN
+                        }
+                        else
+                        {
+                            btnAprobarCierre.Visible = false;
+                        }
+                    }
+                    else
+                    {
+                        // Modo Limpio
+                        pnlArchivoCierreActual.Visible = false;
+                        btnAprobarCierre.Visible = false;
+                        lblTituloInputCierre.InnerText = "Documento de Cierre";
+                        litBtnCierreTexto.Text = "Enviar a Revisión";
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Msg("Error al preparar carga: " + ex.Message, "ee");
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalCierre",
+                    "new bootstrap.Modal(document.getElementById('modalSubirCierre')).show();", true);
             }
         }
 
@@ -602,15 +603,114 @@ namespace SistemaGestionCGI
             }
         }
 
+        protected void btnAprobarCierre_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (int.TryParse(hfIdEjecucionInforme.Value, out int idEjec))
+                {
+                    string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
+
+                    // 1. Llamar al BLL para aprobar
+                    _manejador.AprobarCierre(idEjec, usuario);
+
+                    // 2. Feedback
+                    Msg("Documento APROBADO correctamente. Se ha habilitado la fase final.", "ss");
+
+                    // 3. Cerrar todo y recargar
+                    ScriptManager.RegisterStartupScript(this, GetType(), "CloseAllApprove",
+                        "bootstrap.Modal.getInstance(document.getElementById('modalSubirCierre')).hide(); $('#modalInformes').modal('hide');", true);
+
+                    // 4. Recargar grilla (Esto actualizará el método ConfigurarBotonesFaseFinal automáticamente)
+                    CargarGrillaEjecucion();
+                }
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al aprobar: " + ex.Message, "ee");
+            }
+        }
+
         // Evento para el Botón 2
+        // 1. Abrir Modal Final
         protected void btnInformeFinal_Click(object sender, EventArgs e)
         {
-            string idProyecto = ViewState["IdProyectoActual"] as string;
+            string idEjecucionStr = hfIdEjecucionInforme.Value;
 
-            if (!string.IsNullOrEmpty(idProyecto))
+            if (!string.IsNullOrEmpty(idEjecucionStr) && int.TryParse(idEjecucionStr, out int idEjec))
             {
-                // LOGICA PENDIENTE
-                System.Diagnostics.Debug.WriteLine($"Click en Informe Final para: {idProyecto}");
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalFinal",
+                    "new bootstrap.Modal(document.getElementById('modalSubirFinal')).show();", true);
+            }
+        }
+
+        // 2. Guardar Final
+        protected void btnGuardarFinal_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!flpFinal.HasFile) { Msg("Debe adjuntar el informe final.", "ww"); return; }
+                if (!int.TryParse(hfIdEjecucionInforme.Value, out int idEjec)) return;
+
+                string nombreArchivo = $"FINAL_{DateTime.Now.Ticks}{Path.GetExtension(flpFinal.FileName)}";
+                string rutaGuardada = GuardarArchivoFisico(flpFinal, nombreArchivo);
+                string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
+
+                _manejador.SubirInformeFinal(idEjec, rutaGuardada, usuario);
+
+                Msg("¡Proyecto FINALIZADO con éxito!", "ss");
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "CloseAllFinal",
+                     "bootstrap.Modal.getInstance(document.getElementById('modalSubirFinal')).hide(); $('#modalInformes').modal('hide');", true);
+
+                CargarGrillaEjecucion();
+            }
+            catch (Exception ex) { Msg("Error: " + ex.Message, "ee"); }
+        }
+
+
+        private void ConfigurarBotonesFaseFinal(int idEjecucion)
+        {
+            // 1. Obtenemos datos del proyecto
+            var proyecto = _manejador.ObtenerEjecucionPorId(idEjecucion);
+
+            if (proyecto == null) return;
+
+            string estado = proyecto.strEstado_ejec.ToUpper();
+            bool tieneCierre = !string.IsNullOrEmpty(proyecto.strInforme_Cierre);
+
+            // ====================================================
+            // LÓGICA DE BLOQUEO (STATE MACHINE)
+            // ====================================================
+
+            btnInformeCierre.CssClass = "btn btn-white border shadow-sm p-3 text-start position-relative hover-lift";
+            btnInformeCierre.Enabled = true;
+
+            if (estado == "CIERRE APROBADO")
+            {
+                // DESBLOQUEADO
+                btnInformeFinal.CssClass = "btn btn-white border shadow-sm p-3 text-start hover-lift";
+                btnInformeFinal.Enabled = true;
+                btnInformeFinal.Attributes.Remove("title"); // Quitamos el tooltip de bloqueo
+            }
+            else
+            {
+                // BLOQUEADO (Si está en 'EJECUCION' o 'EN REVISION')
+                btnInformeFinal.CssClass = "btn btn-white border shadow-sm p-3 text-start hover-lift btn-locked";
+                btnInformeFinal.Enabled = false;
+                btnInformeFinal.Attributes.Add("title", "Disponible solo cuando el Informe de Cierre sea APROBADO.");
+            }
+
+            // (Opcional) Visual Feedback en el botón de Cierre si ya se subió
+            if (tieneCierre)
+            {
+                // Podríamos ponerle un borde verde o algo para indicar que ya hay algo subido
+                btnInformeCierre.Style["border-left"] = "5px solid var(--utc-verde) !important";
+            }
+            else
+            {
+                btnInformeCierre.Style["border-left"] = "5px solid var(--utc-azul) !important";
             }
         }
 

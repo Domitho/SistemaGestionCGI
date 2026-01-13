@@ -34,5 +34,9 @@ namespace SistemaGestionCGI.Models
 
         [JsonProperty("strInforme_Cierre")]
         public string strInforme_Cierre { get; set; }
+
+        [JsonProperty("strInforme_Final")]
+        public string strInforme_Final { get; set; }
+
     }
 }

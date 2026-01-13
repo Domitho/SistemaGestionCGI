@@ -31,10 +31,9 @@ namespace SistemaGestionCGI.BLL
         {
             conv.strId_conv = GenerarCodigoAlfanumerico("INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION", "strId_conv", "CONV");
 
-            // 1. Sanitización básica para evitar errores SQL por apóstrofes (O'Connor -> O''Connor)
             string nombre = conv.strNombre_conv.Replace("'", "''");
             string desc = conv.strDescripcion_conv.Replace("'", "''");
-            string archivo = conv.strArchivo_conv?.Replace("'", "''") ?? ""; // Manejo de nulos seguro
+            string archivo = conv.strArchivo_conv?.Replace("'", "''") ?? ""; 
 
             string sql = $@"
                 INSERT INTO INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION
@@ -103,7 +102,6 @@ namespace SistemaGestionCGI.BLL
             }
             catch
             {
-                // Fallback seguro
                 return prefijo + DateTime.Now.Ticks.ToString().Substring(12);
             }
         }

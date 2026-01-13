@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq; // Necesario para .FirstOrDefault()
+using System.Linq; 
 using SistemaGestionCGI.Models;
 using SistemaGestionCGI.Settings;
 
@@ -65,7 +65,6 @@ namespace SistemaGestionCGI.BLL
 
         public void EliminarEjecucion(int id)
         {
-            // Borrado en cascada manual
             _dal.DeleteSql($"DELETE FROM INVGCCEJECUCION_MIEMBROS WHERE fkId_ejec = {id}");
             _dal.DeleteSql($"DELETE FROM INVGCCEJECUCION_INFORMES WHERE fkId_ejec = {id}");
             _dal.Delete("INVGCCEJECUCION_PROYECTO", $"strId_ejec = {id}");
@@ -183,18 +182,36 @@ namespace SistemaGestionCGI.BLL
         {
             string fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
-            // 1. Preparamos el SQL de Actualización
             string sql = $@"
-        UPDATE INVGCCEJECUCION_PROYECTO 
-        SET strInforme_Cierre = '{rutaArchivo}',
-            strEstado_ejec = 'EN REVISION'
-        WHERE strId_ejec = {idEjecucion}";
+                UPDATE INVGCCEJECUCION_PROYECTO 
+                SET strInforme_Cierre = '{rutaArchivo}',
+                    strEstado_ejec = 'EN REVISION'
+                WHERE strId_ejec = {idEjecucion}";
 
-            // 2. Ejecutamos contra la BD
             _dal.UpdateSql(sql);
 
-            // 3. (Opcional pero recomendado) Dejamos rastro en el historial del proyecto/miembros
-            // Esto dependerá si quieres auditarlo, por ahora nos centramos en el requerimiento principal.
+        }
+
+        public void SubirInformeFinal(int idEjecucion, string rutaArchivo, string usuario)
+        {
+            string sql = $@"
+                UPDATE INVGCCEJECUCION_PROYECTO 
+                SET strInforme_Final = '{rutaArchivo}',
+                    strEstado_ejec = 'FINALIZADO'
+                WHERE strId_ejec = {idEjecucion}";
+
+            _dal.UpdateSql(sql);
+
+        }
+
+        public void AprobarCierre(int idEjecucion, string usuario)
+        {
+            string sql = $@"
+                UPDATE INVGCCEJECUCION_PROYECTO 
+                SET strEstado_ejec = 'CIERRE APROBADO'
+                WHERE strId_ejec = {idEjecucion}";
+
+            _dal.UpdateSql(sql);
         }
 
         // =============================================================

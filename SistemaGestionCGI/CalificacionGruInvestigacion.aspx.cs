@@ -11,7 +11,7 @@ namespace SistemaGestionCGI
 {
     public partial class CalificacionGruInvestigacion : System.Web.UI.Page
     {
-        // 1. Instancias y Constantes
+        // Instancias 
         private readonly ManejadorCalificacionGrupo _manejador = new ManejadorCalificacionGrupo();
         private const string RUTA_VIRTUAL = "~/Archivos/Calificaciones/";
 
@@ -19,18 +19,15 @@ namespace SistemaGestionCGI
         {
             if (IsPostBack) return;
 
-            // Seguridad
             if (Session["UsuarioLogueado"] == null)
             {
                 Response.Redirect("Login.aspx", true);
                 return;
             }
 
-            // Carga Inicial
             CargarCombos();
             CargarGrilla();
 
-            // Mensajes Flash
             if (Session["TempMsg"] != null)
             {
                 Msg(Session["TempMsg"].ToString(), Session["TempTipo"].ToString());
@@ -40,7 +37,7 @@ namespace SistemaGestionCGI
         }
 
         // =============================================
-        // CARGA DE DATOS Y COMBOS
+        // CARGA DE DATOS 
         // =============================================
 
         private void CargarGrilla()
@@ -58,7 +55,6 @@ namespace SistemaGestionCGI
         {
             try
             {
-                // Filtro Años
                 ddlFiltroAnio.Items.Clear();
                 ddlFiltroAnio.Items.Add(new ListItem("Todos los Años", "0"));
                 foreach (int y in _manejador.ObtenerAniosDisponibles())
@@ -66,7 +62,6 @@ namespace SistemaGestionCGI
                     ddlFiltroAnio.Items.Add(new ListItem(y.ToString(), y.ToString()));
                 }
 
-                // Combo Métricas (Año actual +/- 2)
                 int currentYear = DateTime.Now.Year;
                 ddlAnioMetricas.Items.Clear();
                 for (int i = currentYear - 2; i <= currentYear + 2; i++)
@@ -117,12 +112,10 @@ namespace SistemaGestionCGI
         {
             CambiarVista(Vista.Formulario);
 
-            // Reset Formulario
             txtFechaAdd.Text = DateTime.Now.ToString("yyyy-MM-dd");
             txtPuntajeAdd.Text = "";
             txtReconocimientoAdd.Text = "";
 
-            // Cargar Años Métricas
             ddlAnioMetricaSeleccion.DataSource = _manejador.ObtenerAniosConMetricasConfiguradas();
             ddlAnioMetricaSeleccion.DataBind();
 
@@ -160,22 +153,18 @@ namespace SistemaGestionCGI
         {
             try
             {
-                // 1. Validaciones
                 if (ddlGrupoAdd.SelectedIndex <= 0) { Msg("Seleccione un grupo.", "ww"); return; }
                 if (string.IsNullOrWhiteSpace(txtFechaAdd.Text)) { Msg("Ingrese la fecha.", "ww"); return; }
 
-                // 2. CORRECCIÓN: Validación numérica segura (Evita crash)
                 if (!int.TryParse(txtPuntajeAdd.Text, out int puntaje))
                 {
                     Msg("El puntaje debe ser un número entero válido.", "ww");
                     return;
                 }
 
-                // 3. Validación de Archivo
                 if (!flpArchivoAdd.HasFile) { Msg("Debe subir el informe PDF.", "ww"); return; }
                 if (Path.GetExtension(flpArchivoAdd.FileName).ToLower() != ".pdf") { Msg("Solo se permiten archivos PDF.", "ww"); return; }
 
-                // 4. Lógica
                 int anioM = int.Parse(ddlAnioMetricaSeleccion.SelectedValue);
                 int minConsolidado = _manejador.ObtenerMinimoConsolidado(anioM);
 
@@ -187,7 +176,6 @@ namespace SistemaGestionCGI
                     strReconocimiento_valo = txtReconocimientoAdd.Text.Trim(),
                     intAnioMetrica = anioM,
                     strCategoria_valo = (puntaje >= minConsolidado) ? "CONSOLIDADO" : "EMERGENTE",
-                    // 5. CORRECCIÓN: Sintaxis de interpolación corregida (Llave de cierre agregada)
                     strInforme_valo = GuardarArchivoFisico(flpArchivoAdd, $"VAL_{DateTime.Now.Ticks}.pdf")
                 };
 
@@ -259,19 +247,15 @@ namespace SistemaGestionCGI
         {
             try
             {
-                // 1. Convertir ruta virtual (~) a física (C:\...)
                 string rutaFisica = Server.MapPath(rutaVirtual);
 
-                // 2. Verificar si existe
                 if (File.Exists(rutaFisica))
                 {
                     string nombreArchivo = Path.GetFileName(rutaFisica);
 
-                    // 3. Configurar respuesta para descargar/ver PDF
                     Response.Clear();
                     Response.Buffer = true;
                     Response.ContentType = "application/pdf";
-                    // "inline" intenta abrirlo en el navegador. Cambia a "attachment" si quieres forzar descarga.
                     Response.AddHeader("Content-Disposition", "inline; filename=" + nombreArchivo);
                     Response.TransmitFile(rutaFisica);
                     Response.Flush();
@@ -284,7 +268,6 @@ namespace SistemaGestionCGI
             }
             catch (System.Threading.ThreadAbortException)
             {
-                // Esta excepción es normal al usar Response.End(), la ignoramos.
             }
             catch (Exception ex)
             {

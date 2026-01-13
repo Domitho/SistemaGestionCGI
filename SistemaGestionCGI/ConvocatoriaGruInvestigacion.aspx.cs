@@ -11,7 +11,7 @@ namespace SistemaGestionCGI
 {
     public partial class ConvocatoriaGruInvestigacion : System.Web.UI.Page
     {
-        // 1. Instancias
+        // Instancias
         private readonly ManejadorConvocatorias _manejador = new ManejadorConvocatorias();
         private const string RUTA_CONVOCATORIAS = @"C:\UTC\CONVOCATORIAS\";
 
@@ -19,17 +19,14 @@ namespace SistemaGestionCGI
         {
             if (IsPostBack) return;
 
-            // Seguridad
             if (Session["UsuarioLogueado"] == null)
             {
                 Response.Redirect("Login.aspx");
                 return;
             }
 
-            // Carga Inicial
             CargarGrilla();
 
-            // Mensajes Flash
             if (Session["TempMsg"] != null)
             {
                 Msg(Session["TempMsg"].ToString(), Session["TempTipo"].ToString());
@@ -80,11 +77,10 @@ namespace SistemaGestionCGI
                 {
                     strNombre_conv = txtNombreAdd.Text.Trim(),
                     dtFechaini_conv = DateTime.Parse(txtFechaIniAdd.Text),
-                    strDescripcion_conv = HttpUtility.HtmlEncode(txtDescAdd.Text), // XSS Protection
+                    strDescripcion_conv = HttpUtility.HtmlEncode(txtDescAdd.Text),
                     strArchivo_conv = GuardarArchivoFisico(flpArchivoAdd, $"CONV_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivoAdd.FileName)}")
                 };
 
-                // Asignamos una fecha "vacía" para cumplir con el modelo si es requerido
                 conv.dtFechafin_conv = new DateTime(1900, 1, 1);
 
                 _manejador.GuardarConvocatoria(conv);
@@ -104,7 +100,7 @@ namespace SistemaGestionCGI
                     dtFechaini_conv = DateTime.Parse(txtFechaIniEdit.Text),
                     strDescripcion_conv = HttpUtility.HtmlEncode(txtDescEdit.Text),
                     strArchivo_conv = hfArchivoActual.Value,
-                    dtFechafin_conv = new DateTime(1900, 1, 1) // Fecha dummy segura
+                    dtFechafin_conv = new DateTime(1900, 1, 1) 
                 };
 
                 if (flpArchivoEdit.HasFile)

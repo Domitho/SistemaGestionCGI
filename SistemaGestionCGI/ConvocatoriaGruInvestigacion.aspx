@@ -234,7 +234,6 @@
 
     <script type="text/javascript">
         
-        // Configuración centralizada
         const dtConfig = {
             responsive: true,
             autoWidth: false,
@@ -245,7 +244,6 @@
             dom: "<'row align-items-center mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-end'f>><'row'<'col-sm-12'tr>><'row mt-3 align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
         };
 
-        // Función segura para UpdatePanels
         Sys.Application.add_load(function () {
             
             // Inicializar DataTables
@@ -255,14 +253,13 @@
                 $table.DataTable(dtConfig);
             }
 
-            // Inicializar FileInputs si existe la librería
+            // Inicializar FileInputs 
             if (typeof UTC_FileInput === 'function') {
                 initInput("wrapperArchivoAdd", "<%= flpArchivoAdd.ClientID %>");
                 initInput("wrapperArchivoEdit", "<%= flpArchivoEdit.ClientID %>");
             }
         });
 
-        // Helper reutilizable
         function initInput(wrapperId, inputId) {
             if (document.getElementById(wrapperId)) {
                 UTC_FileInput({
@@ -275,24 +272,22 @@
             }
         }
 
-        // Validación de Peso (8MB)
         function validarPesoArchivo(tipo) {
             var inputId = tipo === 'Add' ? '<%= flpArchivoAdd.ClientID %>' : '<%= flpArchivoEdit.ClientID %>';
             var input = document.getElementById(inputId);
 
             if (input && input.files && input.files[0]) {
                 var peso = input.files[0].size;
-                var limite = 8 * 1024 * 1024; // 8MB
+                var limite = 8 * 1024 * 1024;
                 if (peso > limite) {
                     alert('El archivo supera los 8MB permitidos.');
-                    input.value = ""; // Limpiar
+                    input.value = "";
                     return false;
                 }
             }
             return true;
         }
 
-        // Funciones Modal
         function VerPDF(url) {
             document.getElementById('framePdf').src = url;
             document.getElementById('btnDescargarDirecto').href = url;

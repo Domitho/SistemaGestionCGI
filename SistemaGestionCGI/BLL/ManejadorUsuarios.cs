@@ -13,7 +13,6 @@ namespace SistemaGestionCGI.BLL
             string userLimpio = usuario.Trim();
             string claveLimpia = clave.Trim();
 
-            // Consulta a la tabla REAL "Users"
             string sql = $@"
                 SELECT UserID, Username, Password, Role, IsActive
                 FROM Users 
@@ -31,7 +30,7 @@ namespace SistemaGestionCGI.BLL
                 }
                 else
                 {
-                    return null; // Usuario inactivo
+                    return null; 
                 }
             }
             else
