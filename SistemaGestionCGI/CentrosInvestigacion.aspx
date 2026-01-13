@@ -122,9 +122,25 @@
                 <div class="col-md-6"><label class="form-label">Área</label><asp:TextBox ID="txtArea" runat="server" CssClass="form-control" /></div>
                 <div class="col-md-6"><label class="form-label">Ubicación</label><asp:TextBox ID="txtUbicacion" runat="server" CssClass="form-control" /></div>
                 <div class="col-md-6"><label class="form-label">Fecha Aprobación</label><asp:TextBox ID="txtFechaAprobacion" runat="server" CssClass="form-control" TextMode="Date" /></div>
-                <div class="col-12"><label class="form-label">Líneas de Inv.</label><asp:TextBox ID="txtLineas" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="2" /></div>
-                <div class="col-12"><label class="form-label">Misión</label><asp:TextBox ID="txtMision" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="2" /></div>
-                <div class="col-12"><label class="form-label">Visión</label><asp:TextBox ID="txtVision" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="2" /></div>
+                <div class="col-12">
+                    <label class="form-label">Líneas de Investigación <span class="text-danger">*</span></label>
+                    <asp:DropDownList ID="ddlLineas" runat="server" CssClass="form-select">
+                        <asp:ListItem Text="-- Seleccione una Línea --" Value="" />
+                        <asp:ListItem>Análisis, conservación y aprovechamiento racional de la biodiversidad, fauna y recursos naturales para el desarrollo sustentable y la prevención de desastres naturales.</asp:ListItem>
+                        <asp:ListItem>Procesos tecnológicos, bioquímica, biomateriales, desarrollo y seguridad alimentaria.</asp:ListItem>
+                        <asp:ListItem>Producción y biotecnología animal.</asp:ListItem>
+                        <asp:ListItem>Tecnología industrial, gestión de la producción, riesgos y seguridad laboral.</asp:ListItem>
+                        <asp:ListItem>Energías alternativas y renovables, eficiencia energética y protección ambiental.</asp:ListItem>
+                        <asp:ListItem>Tecnología de la información y las comunicaciones, robótica, automatización y optimización de sistemas.</asp:ListItem>
+                        <asp:ListItem>Meteorología, hidrología, mecánica de fluidos, sistemas y obras hidráulicas.</asp:ListItem>
+                        <asp:ListItem>Administración y economía para el desarrollo sostenible de organizaciones y sociedad.</asp:ListItem>
+                        <asp:ListItem>Planificación y gestión del turismo sostenible y sustentable.</asp:ListItem>
+                        <asp:ListItem>Educación, derecho, equidad y estudio de género para el desarrollo biopsicosocial.</asp:ListItem>
+                        <asp:ListItem>Cultura, arte, diseño y comunicación para la transformación del ser humano y la sociedad.</asp:ListItem>
+                    </asp:DropDownList>
+                </div>
+                <div class="col-md-6"><label class="form-label">Misión</label><asp:TextBox ID="txtMision" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="2" /></div>
+                <div class="col-md-6"><label class="form-label">Visión</label><asp:TextBox ID="txtVision" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="2" /></div>
 
                 <asp:HiddenField ID="hfResolucionActual" runat="server" />
                 <asp:HiddenField ID="hfAceptacionActual" runat="server" />
@@ -219,6 +235,7 @@
                         <th>NOMBRE</th>
                         <th>FUNCIÓN</th>
                         <th>TIPO</th>
+                        <th>FECHA FIN</th>
                         <th>ESTADO</th>
                         <th>ACCIONES</th>
                     </tr>
@@ -231,6 +248,12 @@
                                 <td class="text-start fw-semibold text-primary"><%# Eval("NombreCompleto") %></td>
                                 <td class="text-start"><%# Eval("strFuncion_cin") %></td>
                                 <td><%# Eval("strTipo_cin") %></td>
+                                <td class="small">
+                                    <%# Eval("dtFechaFin_cin") == DBNull.Value || Eval("dtFechaFin_cin") == null 
+                                        ? "<span class='text-muted'> -- SIN FECHA FIN -- </span>" 
+                                        : Convert.ToDateTime(Eval("dtFechaFin_cin")).ToString("dd/MM/yyyy") 
+                                    %>
+                                </td>
                                 <td>
                                     <%# Convert.ToBoolean(Eval("bitActivo_cin")) 
                                         ? "<span class='badge bg-success'><i class='fa-solid fa-check me-1'></i>Activo</span>" 
@@ -282,19 +305,58 @@
             
             <div class="row g-3">
                 <div class="col-12"><h6 class="text-primary fw-bold border-bottom pb-2">Datos Personales</h6></div>
-                <div class="col-md-4"><label class="form-label">Cédula</label><asp:TextBox ID="txtCedulaInt" runat="server" CssClass="form-control" MaxLength="15"/></div>
-                <div class="col-md-4"><label class="form-label">Nombres</label><asp:TextBox ID="txtNombresInt" runat="server" CssClass="form-control"/></div>
-                <div class="col-md-4"><label class="form-label">Apellidos</label><asp:TextBox ID="txtApellidosInt" runat="server" CssClass="form-control"/></div>
-                <div class="col-md-6"><label class="form-label">Correo</label><asp:TextBox ID="txtCorreoInt" runat="server" CssClass="form-control" TextMode="Email"/></div>
-                
+    
+                <div class="col-md-4">
+                    <label class="form-label">Cédula <span class="text-danger">*</span></label>
+                    <asp:TextBox ID="txtCedulaInt" runat="server" CssClass="form-control" MaxLength="15"/>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                    <asp:TextBox ID="txtNombresInt" runat="server" CssClass="form-control"/>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                    <asp:TextBox ID="txtApellidosInt" runat="server" CssClass="form-control"/>
+                </div>
                 <div class="col-md-6">
-                    <label class="form-label">Tipo</label>
-                    <asp:DropDownList ID="ddlTipoInt" runat="server" CssClass="form-select">
-                        <asp:ListItem>Interno (UTC)</asp:ListItem>
-                        <asp:ListItem>Externo</asp:ListItem>
+                    <label class="form-label">Correo Electrónico</label>
+                    <asp:TextBox ID="txtCorreoInt" runat="server" CssClass="form-control" TextMode="Email"/>
+                </div>
+    
+                <div class="col-md-6">
+                    <label class="form-label">Tipo de Vinculación</label>
+                    <asp:DropDownList ID="ddlTipoInt" runat="server" CssClass="form-select" onchange="ToggleTipoIntegrante(this)">
+                        <asp:ListItem Text="Interno (UTC)" Value="Interno" Selected="True"/>
+                        <asp:ListItem Text="Externo" Value="Externo" />
                     </asp:DropDownList>
                 </div>
-                <div class="col-md-6"><label class="form-label">Carrera / Entidad</label><asp:TextBox ID="txtEntidadInt" runat="server" CssClass="form-control" placeholder="Carrera o Universidad de origen"/></div>
+
+                <div class="col-12 mt-3"><h6 class="text-primary fw-bold border-bottom pb-2">Datos Académicos / Institucionales</h6></div>
+
+                <div id="divIntInterno" class="col-12 row g-3 m-0 p-0">
+                    <div class="col-md-6">
+                        <label class="form-label">Carrera / Departamento</label>
+                        <asp:TextBox ID="txtCarreraInt" runat="server" CssClass="form-control" placeholder="Ej: Ingeniería en Software" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Facultad</label>
+                        <asp:DropDownList ID="ddlFacultadInt" runat="server" CssClass="form-select">
+                            <asp:ListItem Text="-- Seleccione --" Value="" />
+                            <asp:ListItem>CIENCIAS DE LA INGENIERÍA Y APLICADAS</asp:ListItem>
+                            <asp:ListItem>CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES</asp:ListItem>
+                            <asp:ListItem>CIENCIAS ADMINISTRATIVAS Y ECONÓMICAS</asp:ListItem>
+                            <asp:ListItem>CIENCIAS SOCIALES ARTES Y EDUCACIÓN</asp:ListItem>
+                            <asp:ListItem>CIENCIAS DE LA SALUD</asp:ListItem>
+                            <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
+                            <asp:ListItem>EXTENSIÓN LA MANÁ</asp:ListItem>
+                        </asp:DropDownList>
+                    </div>
+                </div>
+
+                <div id="divIntExterno" class="col-12" style="display:none;">
+                    <label class="form-label">Institución de Origen</label>
+                    <asp:TextBox ID="txtEntidadExternoInt" runat="server" CssClass="form-control" placeholder="Universidad o Empresa de procedencia..." />
+                </div>
 
                 <div class="col-12 mt-3"><h6 class="text-primary fw-bold border-bottom pb-2">Datos de Asignación</h6></div>
                 <div class="col-md-6">
@@ -709,12 +771,9 @@
             // A. Iniciar Tablas
             initTables();
 
-            // B. Iniciar TU COMPONENTE PERSONALIZADO
-            // Pasamos los IDs para que tu librería tome el control
             initMyFileInput('wrapperResolucion', '<%= flpResolucion.ClientID %>');
             initMyFileInput('wrapperAceptacion', '<%= flpAceptacion.ClientID %>');
 
-            // C. Verificar si estamos EDITANDO (Cargar visualmente los archivos existentes)
             cargarEstadoEdicion('wrapperResolucion', '<%= hfResolucionActual.ClientID %>');
             cargarEstadoEdicion('wrapperAceptacion', '<%= hfAceptacionActual.ClientID %>');
         });
@@ -723,7 +782,6 @@
         // 2. WRAPPER PARA TU COMPONENTE
         // ==========================================
         function initMyFileInput(wrapperId, inputId) {
-            // Verificamos que tu librería esté cargada
             if (typeof UTC_FileInput === 'function') {
                 UTC_FileInput({
                     wrapper: wrapperId,
@@ -740,23 +798,18 @@
         // ==========================================
         // 3. LOGICA VISUAL PARA MODO "EDITAR"
         // ==========================================
-        // Esta función "simula" que el archivo está cargado leyendo la ruta del HiddenField
         function cargarEstadoEdicion(wrapperId, hiddenFieldId) {
             var hf = document.getElementById(hiddenFieldId);
             var wrapper = document.getElementById(wrapperId);
 
             if (hf && hf.value && wrapper) {
-                // Elementos visuales de tu componente
                 var dropzone = document.getElementById(wrapperId.replace('wrapper', 'dropzone'));
                 var preview = document.getElementById(wrapperId.replace('wrapper', 'preview'));
                 var nameLabel = wrapper.querySelector('.utc-fileinput-name');
                 var removeBtn = wrapper.querySelector('.remove-btn');
 
-                // 1. Obtener nombre limpio del archivo
-                // Ej: "~/Archivos/RES_123.pdf" -> "RES_123.pdf"
                 var nombreArchivo = hf.value.split('/').pop().split('\\').pop();
 
-                // 2. Actualizar Interfaz (Igual que hace tu componente al subir)
                 if (dropzone) dropzone.style.display = 'none';
 
                 if (nameLabel) {
@@ -764,16 +817,14 @@
                     nameLabel.classList.add('text-primary', 'fw-bold');
                 }
 
-                // 3. Mostrar Previsualización Genérica o Imagen
                 if (preview) {
                     preview.style.display = 'block';
                     var esImagen = /\.(jpg|jpeg|png|gif|webp)$/i.test(nombreArchivo);
-                    var rutaWeb = hf.value.replace('~/', ''); // Quitar la virgulilla para url
+                    var rutaWeb = hf.value.replace('~/', ''); 
 
                     if (esImagen) {
                         preview.innerHTML = '<div class="text-center mt-2"><img src="' + rutaWeb + '" style="height:60px; border-radius:4px; border:1px solid #ddd;" /></div>';
                     } else {
-                        // Icono genérico para PDF/Doc
                         var icono = 'fa-file-lines';
                         if (nombreArchivo.includes('.pdf')) icono = 'fa-file-pdf text-danger';
                         if (nombreArchivo.includes('.doc')) icono = 'fa-file-word text-primary';
@@ -782,14 +833,10 @@
                     }
                 }
 
-                // 4. Mostrar botón de eliminar (Para poder limpiar y subir otro)
                 if (removeBtn) {
                     removeBtn.style.display = 'block';
-                    // Lógica simple para limpiar el campo si le dan a la X en edición
                     removeBtn.addEventListener('click', function (e) {
-                        hf.value = ''; // Borramos el hidden field
-                        // Tu componente ya manejará la limpieza del input file, 
-                        // aqui solo aseguramos que el backend sepa que se borró.
+                        hf.value = ''; 
                     });
                 }
             }
@@ -821,6 +868,21 @@
             var tipo = el.value;
             document.getElementById('divDirInterno').style.display = (tipo === "Externo") ? 'none' : 'flex';
             document.getElementById('divDirExterno').style.display = (tipo === "Externo") ? 'block' : 'none';
+        }
+
+        function ToggleTipoIntegrante(el) {
+            var tipo = el.value; 
+
+            var divInt = document.getElementById('divIntInterno');
+            var divExt = document.getElementById('divIntExterno');
+
+            if (tipo === "Externo") {
+                divInt.style.display = 'none';  
+                divExt.style.display = 'block';
+            } else {
+                divInt.style.display = 'flex'; 
+                divExt.style.display = 'none'; 
+            }
         }
 
         function imprimirReporte() {

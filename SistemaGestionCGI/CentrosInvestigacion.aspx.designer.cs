@@ -132,13 +132,13 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtFechaAprobacion;
 
         /// <summary>
-        /// Control txtLineas.
+        /// Control ddlLineas.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtLineas;
+        protected global::System.Web.UI.WebControls.DropDownList ddlLineas;
 
         /// <summary>
         /// Control txtMision.
@@ -330,13 +330,31 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.DropDownList ddlTipoInt;
 
         /// <summary>
-        /// Control txtEntidadInt.
+        /// Control txtCarreraInt.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtEntidadInt;
+        protected global::System.Web.UI.WebControls.TextBox txtCarreraInt;
+
+        /// <summary>
+        /// Control ddlFacultadInt.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlFacultadInt;
+
+        /// <summary>
+        /// Control txtEntidadExternoInt.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtEntidadExternoInt;
 
         /// <summary>
         /// Control ddlFuncionInt.

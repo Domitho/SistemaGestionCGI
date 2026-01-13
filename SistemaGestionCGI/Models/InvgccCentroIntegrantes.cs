@@ -42,6 +42,9 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("bitActivo_cin")]
         public bool bitActivo_cin { get; set; }
 
+        [JsonProperty("dtFechaFin_cin")]
+        public DateTime? dtFechaFin_cin { get; set; }
+
         public string NombreCompleto
         {
             get { return $"{strApellidos_cin} {strNombres_cin}"; }

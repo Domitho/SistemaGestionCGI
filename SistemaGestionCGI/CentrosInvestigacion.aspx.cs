@@ -140,6 +140,7 @@ namespace SistemaGestionCGI
             try
             {
                 if (string.IsNullOrWhiteSpace(txtNombre.Text)) { Msg("Nombre del centro obligatorio.", "ww"); return; }
+                if (ddlLineas.SelectedValue == "") { Msg("Seleccione una línea de investigación.", "ww"); return; }
 
                 bool hayDirectorSeleccionado = ddlDirector.SelectedValue != "" && ddlDirector.SelectedValue != "0";
                 bool hayDirectorPendiente = ViewState["DirectorPendiente"] != null;
@@ -156,7 +157,7 @@ namespace SistemaGestionCGI
                     strFacultad_cen = ddlFacultad.SelectedValue,
                     strArea_cen = txtArea.Text.Trim(),
                     strUbicacion_cen = txtUbicacion.Text.Trim(),
-                    strLineaInv_cen = txtLineas.Text.Trim(),
+                    strLineaInv_cen = ddlLineas.SelectedValue,
                     strMision_cen = txtMision.Text.Trim(),
                     strVision_cen = txtVision.Text.Trim(),
                     dtFechaAprobacion_cen = string.IsNullOrEmpty(txtFechaAprobacion.Text)
@@ -276,7 +277,16 @@ namespace SistemaGestionCGI
             txtNombre.Text = c.strNombre_cen;
             txtArea.Text = c.strArea_cen;
             txtUbicacion.Text = c.strUbicacion_cen;
-            txtLineas.Text = c.strLineaInv_cen;
+
+            if (ddlLineas.Items.FindByValue(c.strLineaInv_cen) != null)
+            {
+                ddlLineas.SelectedValue = c.strLineaInv_cen;
+            }
+            else
+            {
+                ddlLineas.SelectedIndex = 0; 
+            }
+
             txtMision.Text = c.strMision_cen;
             txtVision.Text = c.strVision_cen;
             txtFechaAprobacion.Text = c.dtFechaAprobacion_cen.ToString("yyyy-MM-dd");
@@ -318,6 +328,7 @@ namespace SistemaGestionCGI
                 }
 
                 string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
+                string tipoVinculacion = ddlTipoInt.SelectedValue; // Interno o Externo
 
                 var i = new InvgccCentroIntegrantes
                 {
@@ -327,10 +338,11 @@ namespace SistemaGestionCGI
                     strApellidos_cin = txtApellidosInt.Text.Trim(),
                     strCorreo_cin = txtCorreoInt.Text.Trim(),
                     strFuncion_cin = ddlFuncionInt.SelectedValue,
-                    strTipo_cin = ddlTipoInt.SelectedValue,
-                    strCarrera_cin = txtEntidadInt.Text.Trim(),
-                    strFacultad_cin = "",
-                    strEntidad_cin = (ddlTipoInt.SelectedValue == "Externo") ? txtEntidadInt.Text : ""
+                    strTipo_cin = tipoVinculacion,
+
+                    strCarrera_cin = (tipoVinculacion == "Interno") ? txtCarreraInt.Text.Trim() : "",
+                    strFacultad_cin = (tipoVinculacion == "Interno") ? ddlFacultadInt.SelectedValue : "",
+                    strEntidad_cin = (tipoVinculacion == "Externo") ? txtEntidadExternoInt.Text.Trim() : ""
                 };
 
                 if (string.IsNullOrEmpty(hfIdIntegrante.Value))
@@ -342,7 +354,7 @@ namespace SistemaGestionCGI
                 {
                     i.strId_cin = hfIdIntegrante.Value;
                     var original = _manejador.ObtenerIntegrantePorId(i.strId_cin);
-                    if (original != null) i.bitActivo_cin = original.bitActivo_cin; 
+                    if (original != null) i.bitActivo_cin = original.bitActivo_cin;
 
                     _manejador.ActualizarIntegrante(i);
                     _manejador.GuardarHistorial(i.strId_cin, "EDICIÓN", "Actualización de datos generales", usuario);
@@ -383,11 +395,31 @@ namespace SistemaGestionCGI
                 txtNombresInt.Text = i.strNombres_cin;
                 txtApellidosInt.Text = i.strApellidos_cin;
                 txtCorreoInt.Text = i.strCorreo_cin;
-                txtEntidadInt.Text = i.strCarrera_cin; 
-                if (ddlFuncionInt.Items.FindByValue(i.strFuncion_cin) != null) ddlFuncionInt.SelectedValue = i.strFuncion_cin;
-                if (ddlTipoInt.Items.FindByValue(i.strTipo_cin) != null) ddlTipoInt.SelectedValue = i.strTipo_cin;
+
+                if (ddlFuncionInt.Items.FindByValue(i.strFuncion_cin) != null)
+                    ddlFuncionInt.SelectedValue = i.strFuncion_cin;
+
+                if (ddlTipoInt.Items.FindByValue(i.strTipo_cin) != null)
+                    ddlTipoInt.SelectedValue = i.strTipo_cin;
+
+                if (i.strTipo_cin == "Interno")
+                {
+                    txtCarreraInt.Text = i.strCarrera_cin;
+                    if (ddlFacultadInt.Items.FindByValue(i.strFacultad_cin) != null)
+                        ddlFacultadInt.SelectedValue = i.strFacultad_cin;
+                    txtEntidadExternoInt.Text = ""; 
+                }
+                else
+                {
+                    txtEntidadExternoInt.Text = i.strEntidad_cin;
+                    txtCarreraInt.Text = "";
+                    ddlFacultadInt.SelectedIndex = 0;
+                }
 
                 CambiarVista(Vista.FormularioIntegrante);
+
+                string script = $"ToggleTipoIntegrante(document.getElementById('{ddlTipoInt.ClientID}'));";
+                ScriptManager.RegisterStartupScript(this, GetType(), "InitToggleInt", script, true);
             }
         }
 
@@ -589,7 +621,7 @@ namespace SistemaGestionCGI
         {
             hfIdCentro.Value = "";
             txtNombre.Text = ""; txtArea.Text = ""; txtUbicacion.Text = "";
-            txtLineas.Text = ""; txtMision.Text = ""; txtVision.Text = "";
+            ddlLineas.SelectedIndex = 0; txtMision.Text = ""; txtVision.Text = "";
             txtFechaAprobacion.Text = DateTime.Now.ToString("yyyy-MM-dd");
             hfResolucionActual.Value = "";
             hfAceptacionActual.Value = "";
@@ -599,14 +631,24 @@ namespace SistemaGestionCGI
             ViewState["DirectorPendiente"] = null;
         }
 
-        private void LimpiarFormInt() { 
-            hfIdIntegrante.Value = ""; 
-            txtCedulaInt.Text = ""; 
-            txtNombresInt.Text = ""; 
-            txtApellidosInt.Text = ""; 
-            txtCorreoInt.Text = ""; 
-            txtEntidadInt.Text = ""; 
-            ddlFuncionInt.SelectedIndex = 0; 
+        private void LimpiarFormInt()
+        {
+            hfIdIntegrante.Value = "";
+            txtCedulaInt.Text = "";
+            txtNombresInt.Text = "";
+            txtApellidosInt.Text = "";
+            txtCorreoInt.Text = "";
+
+            ddlTipoInt.SelectedIndex = 0; 
+
+            txtCarreraInt.Text = "";
+            ddlFacultadInt.SelectedIndex = 0;
+            txtEntidadExternoInt.Text = "";
+
+            ddlFuncionInt.SelectedIndex = 0;
+
+            string script = "document.getElementById('divIntInterno').style.display = 'flex'; document.getElementById('divIntExterno').style.display = 'none';";
+            ScriptManager.RegisterStartupScript(this, GetType(), "ResetToggleInt", script, true);
         }
 
         private void Redireccionar(string msg, string type) { 

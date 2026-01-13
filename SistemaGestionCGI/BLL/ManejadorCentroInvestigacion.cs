@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq; 
+using Newtonsoft.Json.Linq;
 using SistemaGestionCGI.Models;
 using SistemaGestionCGI.Settings;
 
@@ -26,7 +26,7 @@ namespace SistemaGestionCGI.BLL
                     (I.strNombres_cin + ' ' + I.strApellidos_cin) AS NombreDirector
                 FROM INVGCCCENTRO_INVESTIGACION C
                 LEFT JOIN INVGCCCENTRO_INVESTIGACION_INTEGRANTES I 
-                    ON C.strId_cen = I.fkId_cen AND I.strFuncion_cin = 'Director'
+                    ON C.strId_cen = I.fkId_cen AND I.strFuncion_cin = 'Director' AND I.bitActivo_cin = 1
                 ORDER BY C.strNombre_cen";
 
             return _dal.SelectSql<InvgccCentroInvestigacion>(sql);
@@ -52,7 +52,7 @@ namespace SistemaGestionCGI.BLL
                  '{centro.strArea_cen}', '{centro.strUbicacion_cen}', '{centro.strLineaInv_cen}',
                  '{centro.strMision_cen}', '{centro.strVision_cen}',
                  '{centro.dtFechaAprobacion_cen:yyyy-MM-dd}',
-                 '{centro.strResolucion_cen}', '{centro.strAceptacion_cen}', -- <CORREGIDO
+                 '{centro.strResolucion_cen}', '{centro.strAceptacion_cen}',
                  1, GETDATE())";
 
             _dal.InsertSql(sql);
@@ -71,7 +71,7 @@ namespace SistemaGestionCGI.BLL
                 strVision_cen = '{centro.strVision_cen}',
                 dtFechaAprobacion_cen = '{centro.dtFechaAprobacion_cen:yyyy-MM-dd}',
                 strResolucion_cen = '{centro.strResolucion_cen}',
-                strAceptacion_cen = '{centro.strAceptacion_cen}' -- <CORREGIDO
+                strAceptacion_cen = '{centro.strAceptacion_cen}'
                 WHERE strId_cen = '{centro.strId_cen}'";
 
             _dal.UpdateSql(sql);
@@ -79,6 +79,7 @@ namespace SistemaGestionCGI.BLL
 
         public void Eliminar(string id)
         {
+            // Baja lógica
             string sql = $"UPDATE INVGCCCENTRO_INVESTIGACION SET bitActivo_cen = 0 WHERE strId_cen = '{id}'";
             _dal.UpdateSql(sql);
         }
@@ -89,8 +90,15 @@ namespace SistemaGestionCGI.BLL
 
         public List<InvgccCentroIntegrantes> ObtenerIntegrantesPorCentro(string idCentro)
         {
+            // CORREGIDO: Se agregó dtFechaFin_cin
             string sql = $@"
-                SELECT * FROM INVGCCCENTRO_INVESTIGACION_INTEGRANTES 
+                SELECT 
+                I.strId_cin, I.fkId_cen, I.strCedula_cin, I.strNombres_cin, I.strApellidos_cin, 
+                I.strCorreo_cin, I.strFuncion_cin, I.strTipo_cin, I.strCarrera_cin, 
+                I.strFacultad_cin, I.strEntidad_cin, I.dtFechaRegistro_cin, I.bitActivo_cin,
+                I.dtFechaFin_cin, 
+                (I.strApellidos_cin + ' ' + I.strNombres_cin) as NombreCompleto
+                FROM INVGCCCENTRO_INVESTIGACION_INTEGRANTES I
                 WHERE fkId_cen = '{idCentro}' 
                 ORDER BY strApellidos_cin ASC";
 
@@ -103,20 +111,24 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<InvgccCentroIntegrantes>(sql)?.FirstOrDefault();
         }
 
-        public void GuardarIntegrante(InvgccCentroIntegrantes obj)
+        // UNIFICADO: Solo dejamos este método GuardarIntegrante
+        public void GuardarIntegrante(InvgccCentroIntegrantes obj, string usuarioLogueado)
         {
             obj.strId_cin = GenerarCodigoAlfanumerico("INVGCCCENTRO_INVESTIGACION_INTEGRANTES", "strId_cin", "CIN");
 
             string sql = $@"
                 INSERT INTO INVGCCCENTRO_INVESTIGACION_INTEGRANTES
                 (strId_cin, fkId_cen, strCedula_cin, strNombres_cin, strApellidos_cin, strCorreo_cin,
-                 strFuncion_cin, strTipo_cin, strCarrera_cin, strFacultad_cin, strEntidad_cin, bitActivo_cin)
+                 strFuncion_cin, strTipo_cin, strCarrera_cin, strFacultad_cin, strEntidad_cin, bitActivo_cin, dtFechaRegistro_cin)
                 VALUES
                 ('{obj.strId_cin}', '{obj.fkId_cen}', '{obj.strCedula_cin}', '{obj.strNombres_cin}', 
                  '{obj.strApellidos_cin}', '{obj.strCorreo_cin}', '{obj.strFuncion_cin}', '{obj.strTipo_cin}',
-                 '{obj.strCarrera_cin}', '{obj.strFacultad_cin}', '{obj.strEntidad_cin}', 1)";
+                 '{obj.strCarrera_cin}', '{obj.strFacultad_cin}', '{obj.strEntidad_cin}', 1, GETDATE())";
 
             _dal.InsertSql(sql);
+
+            // Registro automático en historial al crear
+            GuardarHistorial(obj.strId_cin, "NUEVO", "Ingreso inicial al Centro de Investigación", usuarioLogueado);
         }
 
         public void ActualizarIntegrante(InvgccCentroIntegrantes obj)
@@ -137,14 +149,33 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sql);
         }
 
-        public void EliminarIntegrante(string id)
+        public void CambiarEstadoIntegrante(string idIntegrante, string motivo, string usuario)
         {
-            string sql = $"DELETE FROM INVGCCCENTRO_INVESTIGACION_INTEGRANTES WHERE strId_cin = '{id}'";
-            _dal.DeleteSql(sql);
+            var integrante = ObtenerIntegrantePorId(idIntegrante);
+            if (integrante != null)
+            {
+                bool nuevoEstado = !integrante.bitActivo_cin;
+                int bit = nuevoEstado ? 1 : 0;
+                string accion = nuevoEstado ? "REACTIVAR" : "BAJA";
+
+                // CORREGIDO: Lógica de fecha fin
+                string sqlFecha = nuevoEstado ? "NULL" : "GETDATE()";
+
+                string sql = $@"
+                    UPDATE INVGCCCENTRO_INVESTIGACION_INTEGRANTES 
+                    SET bitActivo_cin = {bit}, 
+                        dtFechaFin_cin = {sqlFecha}
+                    WHERE strId_cin = '{idIntegrante}'";
+
+                _dal.UpdateSql(sql);
+
+                GuardarHistorial(idIntegrante, accion, motivo, usuario);
+            }
         }
 
         public InvgccCentroIntegrantes BuscarDirectorDelCentro(string idCentro)
         {
+            // Buscar solo el director ACTIVO
             string sql = $@"
                 SELECT TOP 1 * FROM INVGCCCENTRO_INVESTIGACION_INTEGRANTES 
                 WHERE fkId_cen = '{idCentro}' AND strFuncion_cin = 'Director' AND bitActivo_cin = 1";
@@ -230,44 +261,5 @@ namespace SistemaGestionCGI.BLL
 
             _dal.InsertSql(sql);
         }
-
-        // ==========================================
-        // ACTUALIZACIÓN DE MÉTODOS DE INTEGRANTES
-        // ==========================================
-        public void GuardarIntegrante(InvgccCentroIntegrantes obj, string usuarioLogueado)
-        {
-            obj.strId_cin = GenerarCodigoAlfanumerico("INVGCCCENTRO_INVESTIGACION_INTEGRANTES", "strId_cin", "CIN");
-
-            string sql = $@"
-                INSERT INTO INVGCCCENTRO_INVESTIGACION_INTEGRANTES
-                (strId_cin, fkId_cen, strCedula_cin, strNombres_cin, strApellidos_cin, strCorreo_cin,
-                 strFuncion_cin, strTipo_cin, strCarrera_cin, strFacultad_cin, strEntidad_cin, bitActivo_cin)
-                VALUES
-                ('{obj.strId_cin}', '{obj.fkId_cen}', '{obj.strCedula_cin}', '{obj.strNombres_cin}', 
-                 '{obj.strApellidos_cin}', '{obj.strCorreo_cin}', '{obj.strFuncion_cin}', '{obj.strTipo_cin}',
-                 '{obj.strCarrera_cin}', '{obj.strFacultad_cin}', '{obj.strEntidad_cin}', 1)";
-
-            _dal.InsertSql(sql);
-
-            GuardarHistorial(obj.strId_cin, "NUEVO", "Ingreso inicial al Centro de Investigación", usuarioLogueado);
-        }
-
-        public void CambiarEstadoIntegrante(string idIntegrante, string motivo, string usuario)
-        {
-            var integrante = ObtenerIntegrantePorId(idIntegrante);
-            if (integrante != null)
-            {
-                bool nuevoEstado = !integrante.bitActivo_cin;
-                int bit = nuevoEstado ? 1 : 0;
-
-                string accion = nuevoEstado ? "REACTIVAR" : "BAJA";
-
-                string sql = $"UPDATE INVGCCCENTRO_INVESTIGACION_INTEGRANTES SET bitActivo_cin = {bit} WHERE strId_cin = '{idIntegrante}'";
-                _dal.UpdateSql(sql);
-
-                GuardarHistorial(idIntegrante, accion, motivo, usuario);
-            }
-        }
-
     }
 }
