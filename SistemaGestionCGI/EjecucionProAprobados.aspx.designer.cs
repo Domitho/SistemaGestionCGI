@@ -411,6 +411,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.LinkButton btnAbrirGenerador;
 
         /// <summary>
+        /// Control btnSubirEscaneado.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlButton btnSubirEscaneado;
+
+        /// <summary>
         /// Control rptInformes.
         /// </summary>
         /// <remarks>
@@ -661,6 +670,15 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlAnchor lnkVerFinalActual;
+
+        /// <summary>
+        /// Control pnlCargaFinal.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlCargaFinal;
 
         /// <summary>
         /// Control flpFinal.

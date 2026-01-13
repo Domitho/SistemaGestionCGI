@@ -169,14 +169,15 @@ namespace SistemaGestionCGI
                     hfIdEjecucionInforme.Value = id.ToString();
                     CargarInformes(id);
 
-                    // --- SEGURIDAD DEL MODAL ---
-                    ConfigurarPermisosModalInformes(); // <--- LLAMADA AL NUEVO MÉTODO
-                                                       // ---------------------------
+                    ConfigurarPermisosModalInformes(); // Tu lógica de roles existente
+                    BloquearGestionInformes(id);
 
                     // Configurar estado de botones de cierre (si aplica)
                     if (Session["RolUsuario"]?.ToString() == "ADMINISTRADOR")
                     {
                         ConfigurarBotonesFaseFinal(id);
+                        ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalInf", "AbrirModalInformes();", true);
+                        break;
                     }
 
                     ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalInf", "AbrirModalInformes();", true);
@@ -222,6 +223,19 @@ namespace SistemaGestionCGI
                     // El Admin ve todo
                     // (No es necesario hacer nada porque Visible="true" es el default)
                 }
+
+                // Lógica de Bloqueo por Finalización
+                string estado = DataBinder.Eval(e.Item.DataItem, "strEstado_ejec").ToString();
+
+                if (estado == "FINALIZADO")
+                {
+                    if (btnEditar != null) btnEditar.Visible = false;   // Adiós edición
+                    if (btnEquipo != null) btnEquipo.Visible = false;   // Adiós gestión de equipo
+                    if (btnEliminar != null) btnEliminar.Visible = false; // Adiós eliminar
+
+                    // El botón 'btnInformes' (carpeta verde) SE QUEDA VISIBLE para ver el historial.
+                }
+
             }
         }
 
@@ -499,6 +513,13 @@ namespace SistemaGestionCGI
 
                 if (!int.TryParse(hfIdEjecucionInforme.Value, out int idEjec)) return;
 
+                var checkProy = _manejador.ObtenerEjecucionPorId(idEjec);
+                if (checkProy.strEstado_ejec == "FINALIZADO")
+                {
+                    Msg("Error: El proyecto está FINALIZADO. No se admiten cambios.", "ee");
+                    return;
+                }
+
                 var inf = new InvgccEjecucionInformes
                 {
                     fkId_ejec = idEjec,
@@ -541,7 +562,7 @@ namespace SistemaGestionCGI
 
                 // --- LÓGICA DE ESTADOS DEL MODAL ---
 
-                if (estado == "CIERRE APROBADO")
+                if (estado == "CIERRE APROBADO" || estado == "FINALIZADO")
                 {
                     // CASO 1: YA ESTÁ APROBADO (Modo solo lectura bloqueado)
                     pnlCierreBloqueado.Visible = true;       // Mensaje verde grande
@@ -679,10 +700,37 @@ namespace SistemaGestionCGI
         protected void btnInformeFinal_Click(object sender, EventArgs e)
         {
             string idEjecucionStr = hfIdEjecucionInforme.Value;
-
             if (!string.IsNullOrEmpty(idEjecucionStr) && int.TryParse(idEjecucionStr, out int idEjec))
             {
+                // 1. Obtener estado actual
+                var proyecto = _manejador.ObtenerEjecucionPorId(idEjec);
+                string estado = proyecto.strEstado_ejec.ToUpper();
+                bool tieneArchivo = !string.IsNullOrEmpty(proyecto.strInforme_Final);
 
+                // 2. Configurar Modal según estado
+                if (estado == "FINALIZADO")
+                {
+                    // MODO LECTURA (Bloqueado)
+                    pnlCargaFinal.Visible = false;      // <--- IMPORTANTE: Ver paso 2 del Frontend
+                    btnGuardarFinal.Visible = false;    // Ocultar botón guardar
+
+                    // Mostrar archivo cargado
+                    if (tieneArchivo)
+                    {
+                        pnlArchivoFinalActual.Visible = true;
+                        lblNombreArchivoFinal.Text = Path.GetFileName(proyecto.strInforme_Final);
+                        lnkVerFinalActual.HRef = ResolveUrl(proyecto.strInforme_Final);
+                    }
+                }
+                else
+                {
+                    // MODO EDICIÓN (Cierre Aprobado)
+                    pnlCargaFinal.Visible = true;
+                    btnGuardarFinal.Visible = true;
+                    pnlArchivoFinalActual.Visible = false; // Ocultamos el visualizador simple para mostrar el dropzone limpio
+                }
+
+                // 3. Abrir Modal
                 ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalFinal",
                     "new bootstrap.Modal(document.getElementById('modalSubirFinal')).show();", true);
             }
@@ -730,7 +778,7 @@ namespace SistemaGestionCGI
             btnInformeCierre.CssClass = "btn btn-white border shadow-sm p-3 text-start position-relative hover-lift";
             btnInformeCierre.Enabled = true;
 
-            if (estado == "CIERRE APROBADO")
+            if (estado == "CIERRE APROBADO" || estado == "FINALIZADO")
             {
                 // DESBLOQUEADO
                 btnInformeFinal.CssClass = "btn btn-white border shadow-sm p-3 text-start hover-lift";
@@ -754,6 +802,36 @@ namespace SistemaGestionCGI
             else
             {
                 btnInformeCierre.Style["border-left"] = "5px solid var(--utc-azul) !important";
+            }
+        }
+
+        private void BloquearGestionInformes(int idEjecucion)
+        {
+            var proyecto = _manejador.ObtenerEjecucionPorId(idEjecucion);
+            if (proyecto == null) return;
+
+            if (proyecto.strEstado_ejec == "FINALIZADO")
+            {
+                // 1. Ocultar Botones Principales (Cabecera del Modal)
+                btnAbrirGenerador.Visible = false;   // Adiós varita mágica
+                btnSubirEscaneado.Visible = false;   // Adiós subida manual
+
+                // 2. Ocultar Acciones en cada fila del Repeater (Iteramos lo que ya se cargó)
+                foreach (RepeaterItem item in rptInformes.Items)
+                {
+                    var btnEdit = item.FindControl("btnEditarInf") as LinkButton;
+                    var btnDel = item.FindControl("btnEliminarInf") as LinkButton;
+
+                    if (btnEdit != null) btnEdit.Visible = false;     // Adiós edición
+                    if (btnDel != null) btnDel.Visible = false;       // Adiós eliminación
+                }
+            }
+            else
+            {
+                // Estado Normal: Aseguramos que se vean
+                btnAbrirGenerador.Visible = true;
+                btnSubirEscaneado.Visible = true;
+                // (Los items del repeater nacen visibles por defecto en DataBind)
             }
         }
 

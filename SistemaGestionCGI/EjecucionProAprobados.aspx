@@ -89,7 +89,16 @@
                                 <td><%# Convert.ToDateTime(Eval("dtFechaini_ejec")).ToString("dd/MM/yyyy") %></td>
                                 <td><%# Eval("dtFechafin_ejec") != DBNull.Value ? Convert.ToDateTime(Eval("dtFechafin_ejec")).ToString("dd/MM/yyyy") : "-" %></td>
                                 <td>
-                                    <span class='badge bg-info text-dark'><%# Eval("strEstado_ejec") %></span>
+                                    <span class='badge rounded-pill px-3 py-2 <%# 
+                                        Eval("strEstado_ejec").ToString() == "FINALIZADO" ? "bg-danger" : 
+                                        Eval("strEstado_ejec").ToString() == "EN REVISION" ? "bg-warning text-dark" : 
+                                        Eval("strEstado_ejec").ToString() == "CIERRE APROBADO" ? "bg-orange" : 
+                                        "bg-info text-dark" 
+                                    %>' 
+                                    style='<%# Eval("strEstado_ejec").ToString() == "CIERRE APROBADO" ? "background-color: #fd7e14;" : "" %>'>
+        
+                                        <%# Eval("strEstado_ejec") %>
+                                    </span>
                                 </td>
                                 <td>
                                     <asp:LinkButton ID="btnEditar" runat="server" CommandName="Editar" CommandArgument='<%# Eval("strId_ejec") %>'
@@ -446,7 +455,7 @@
                                 <i class="fa-solid fa-wand-magic-sparkles me-2"></i> Generar Informe
                             </asp:LinkButton>
 
-                            <button type="button" class="btn-upload-modern" onclick="LimpiarYSubir()">
+                            <button type="button" id="btnSubirEscaneado" runat="server" class="btn-upload-modern" onclick="LimpiarYSubir()">
                                 <i class="fa-solid fa-cloud-arrow-up me-2"></i> Subir Escaneado
                             </button>
                         </div>
@@ -770,26 +779,29 @@
 
                     <label class="form-label fw-bold small text-secondary">Documento Final (PDF)</label>
             
-                    <div class="utc-fileinput-wrapper" id="wrapperFinal">
-                        <div class="utc-fileinput-header">
-                            <div class="utc-fileinput-icon"><i class="fa-solid fa-file-pdf text-success"></i></div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="utc-fileinput-name">Sin archivo</span>
-                                <div class="utc-fileinput-buttons d-flex gap-2">
-                                    <button type="button" class="btn btn-outline-success utc-btn-small rename-btn"><i class="fa-solid fa-pen-to-square"></i></button>
-                                    <button type="button" class="btn btn-outline-danger utc-btn-small remove-btn"><i class="fa-solid fa-xmark"></i></button>
+                    <asp:Panel ID="pnlCargaFinal" runat="server">
+                        <label class="form-label fw-bold small text-secondary">Documento Final (PDF)</label>
+                        <div class="utc-fileinput-wrapper" id="wrapperFinal">
+                            <div class="utc-fileinput-header">
+                                <div class="utc-fileinput-icon"><i class="fa-solid fa-file-pdf text-success"></i></div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="utc-fileinput-name">Sin archivo</span>
+                                    <div class="utc-fileinput-buttons d-flex gap-2">
+                                        <button type="button" class="btn btn-outline-success utc-btn-small rename-btn"><i class="fa-solid fa-pen-to-square"></i></button>
+                                        <button type="button" class="btn btn-outline-danger utc-btn-small remove-btn"><i class="fa-solid fa-xmark"></i></button>
+                                    </div>
                                 </div>
                             </div>
+                            <input type="text" class="form-control form-control-sm utc-edit-name-field" placeholder="Renombrar..." />
+                            <div class="utc-fileinput-preview" id="previewFinal"></div>
+                            <div class="utc-fileinput-loader" id="loaderFinal"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
+                            <div class="utc-dropzone" id="dropzoneFinal">
+                                <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-success"></i><br />
+                                Subir Informe Final
+                            </div>
+                            <asp:FileUpload ID="flpFinal" runat="server" CssClass="utc-fileinput-input" accept=".pdf" />
                         </div>
-                        <input type="text" class="form-control form-control-sm utc-edit-name-field" placeholder="Renombrar..." />
-                        <div class="utc-fileinput-preview" id="previewFinal"></div>
-                        <div class="utc-fileinput-loader" id="loaderFinal"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
-                        <div class="utc-dropzone" id="dropzoneFinal">
-                            <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-success"></i><br />
-                            Subir Informe Final
-                        </div>
-                        <asp:FileUpload ID="flpFinal" runat="server" CssClass="utc-fileinput-input" accept=".pdf" />
-                    </div>
+                    </asp:Panel>
             
                     <div class="d-grid gap-2 mt-4">
                         <asp:LinkButton ID="btnGuardarFinal" runat="server" 
