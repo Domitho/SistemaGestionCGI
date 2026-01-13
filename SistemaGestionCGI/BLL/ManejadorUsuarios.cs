@@ -11,32 +11,22 @@ namespace SistemaGestionCGI.BLL
         public InvgccUsuario Autenticar(string usuario, string clave)
         {
             string userLimpio = usuario.Trim();
-            string claveLimpia = clave.Trim();
+            string claveEncriptada = SeguridadHelper.EncriptarSHA256(clave.Trim());
 
             string sql = $@"
-                SELECT UserID, Username, Password, Role, IsActive
+                SELECT UserID, Username, Password, Role, IsActive 
                 FROM Users 
-                WHERE Username = '{userLimpio}' AND Password = '{claveLimpia}'";
+                WHERE Username = '{userLimpio}' 
+                AND Password = '{claveEncriptada}' 
+                AND IsActive = 1";
 
             List<InvgccUsuario> resultado = _dal.SelectSql<InvgccUsuario>(sql);
 
             if (resultado != null && resultado.Count > 0)
             {
-                var usuarioEncontrado = resultado[0];
-
-                if (usuarioEncontrado.bActivo_usu == true)
-                {
-                    return usuarioEncontrado;
-                }
-                else
-                {
-                    return null; 
-                }
+                return resultado[0];
             }
-            else
-            {
-                return null;
-            }
+            return null;
         }
 
 
@@ -58,10 +48,13 @@ namespace SistemaGestionCGI.BLL
         // 3. GUARDAR
         public void GuardarUsuario(InvgccUsuario u)
         {
+            string claveEncriptada = SeguridadHelper.EncriptarSHA256(u.strClave_usu.Trim());
+
             int activo = u.bActivo_usu ? 1 : 0;
             string sql = $@"
                 INSERT INTO Users (Username, Password, Role, IsActive)
-                VALUES ('{u.strNombre_usu.Trim()}', '{u.strClave_usu.Trim()}', '{u.strRol_usu}', {activo})";
+                VALUES ('{u.strNombre_usu.Trim()}', '{claveEncriptada}', '{u.strRol_usu}', {activo})";
+
             _dal.UpdateSql(sql);
         }
 
@@ -69,13 +62,23 @@ namespace SistemaGestionCGI.BLL
         public void ActualizarUsuario(InvgccUsuario u)
         {
             int activo = u.bActivo_usu ? 1 : 0;
-            string sql = $@"
+            string sql = "";
+
+            string passwordFinal = u.strClave_usu.Trim();
+
+            if (passwordFinal.Length != 64)
+            {
+                passwordFinal = SeguridadHelper.EncriptarSHA256(passwordFinal);
+            }
+
+            sql = $@"
                 UPDATE Users 
                 SET Username = '{u.strNombre_usu.Trim()}',
-                    Password = '{u.strClave_usu.Trim()}', 
+                    Password = '{passwordFinal}', 
                     Role = '{u.strRol_usu}',
                     IsActive = {activo}
                 WHERE UserID = {u.intId_usu}";
+
             _dal.UpdateSql(sql);
         }
 

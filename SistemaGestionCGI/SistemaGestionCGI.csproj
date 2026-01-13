@@ -204,6 +204,7 @@
     <Compile Include="BLL\ManejadorGruposInvestigacion.cs" />
     <Compile Include="BLL\ManejadorInscripcionProyectos.cs" />
     <Compile Include="BLL\ManejadorUsuarios.cs" />
+    <Compile Include="BLL\SeguridadHelper.cs" />
     <Compile Include="CalificacionGruInvestigacion.aspx.cs">
       <DependentUpon>CalificacionGruInvestigacion.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
