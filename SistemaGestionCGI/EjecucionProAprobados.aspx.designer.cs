@@ -312,6 +312,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.HiddenField hfIdMiembroEdit;
 
         /// <summary>
+        /// Control ddlTipoMiembro.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlTipoMiembro;
+
+        /// <summary>
         /// Control txtCedulaMiembro.
         /// </summary>
         /// <remarks>
@@ -319,6 +328,33 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtCedulaMiembro;
+
+        /// <summary>
+        /// Control txtNombresMiembro.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtNombresMiembro;
+
+        /// <summary>
+        /// Control txtApellidosMiembro.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtApellidosMiembro;
+
+        /// <summary>
+        /// Control txtCorreoMiembro.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtCorreoMiembro;
 
         /// <summary>
         /// Control ddlRolMiembro.
@@ -339,22 +375,22 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.DropDownList ddlFacultadMiembro;
 
         /// <summary>
-        /// Control txtNombresMiembro.
+        /// Control txtCarreraMiembro.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtNombresMiembro;
+        protected global::System.Web.UI.WebControls.TextBox txtCarreraMiembro;
 
         /// <summary>
-        /// Control txtApellidosMiembro.
+        /// Control txtEntidadMiembro.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtApellidosMiembro;
+        protected global::System.Web.UI.WebControls.TextBox txtEntidadMiembro;
 
         /// <summary>
         /// Control btnGuardarMiembro.

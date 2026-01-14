@@ -333,37 +333,78 @@ namespace SistemaGestionCGI
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(txtCedulaMiembro.Text) || string.IsNullOrWhiteSpace(txtNombresMiembro.Text))
+                // 1. VALIDACIONES BÁSICAS
+                if (string.IsNullOrWhiteSpace(txtCedulaMiembro.Text) ||
+                    string.IsNullOrWhiteSpace(txtNombresMiembro.Text) ||
+                    string.IsNullOrWhiteSpace(txtCorreoMiembro.Text))
                 {
-                    Msg("Complete los campos obligatorios.", "ww");
+                    Msg("Complete Cédula, Nombres y Correo.", "ww");
                     return;
                 }
 
+                // 2. LOGICA SEGÚN TIPO
+                string tipo = ddlTipoMiembro.SelectedValue;
+                string entidad = "";
+                string facultad = "";
+                string carrera = "";
+
+                if (tipo == "Externo")
+                {
+                    entidad = txtEntidadMiembro.Text.Trim();
+                    if (string.IsNullOrEmpty(entidad))
+                    {
+                        Msg("Debe especificar la Entidad para miembros externos.", "ww");
+                        return;
+                    }
+                    facultad = "EXTERNO"; // Valor por defecto para no dejar null en BD
+                }
+                else
+                {
+                    facultad = ddlFacultadMiembro.SelectedValue;
+                    carrera = txtCarreraMiembro.Text.Trim();
+                }
+
+                // 3. CONSTRUIR OBJETO
                 var m = new InvgccEjecucionMiembros
                 {
                     fkId_ejec = int.Parse(hfIdEjecucionEquipo.Value),
                     strCedula_miembro = txtCedulaMiembro.Text.Trim(),
-                    strNombres_miembro = txtNombresMiembro.Text.Trim(),
-                    strApellidos_miembro = txtApellidosMiembro.Text.Trim(),
+                    strNombres_miembro = txtNombresMiembro.Text.Trim().ToUpper(),
+                    strApellidos_miembro = txtApellidosMiembro.Text.Trim().ToUpper(),
+                    strCorreo_miembro = txtCorreoMiembro.Text.Trim().ToLower(), // Nuevo
+                    strTipo_miembro = tipo, // Nuevo
                     strRol_miembro = ddlRolMiembro.SelectedValue,
-                    strFacultad_miembro = ddlFacultadMiembro.SelectedValue
+
+                    // Campos Condicionales
+                    strEntidad_miembro = entidad,
+                    strFacultad_miembro = facultad,
+                    strCarrera_miembro = carrera
                 };
 
+                // 4. GUARDAR O ACTUALIZAR
                 if (string.IsNullOrEmpty(hfIdMiembroEdit.Value))
                 {
+                    // VALIDACIÓN DE DUPLICADOS (Nuevo)
+                    // Aquí deberías llamar a un método en BLL que verifique si la cédula ya existe en ESTE proyecto
+                    /* if (_manejador.ExisteMiembro(m.fkId_ejec, m.strCedula_miembro)) { Msg("Esta persona ya está registrada.", "ee"); return; } */
+
                     _manejador.GuardarMiembro(m);
-                    SetFlashMessage("Integrante agregado.", "ss");
+                    SetFlashMessage("Integrante agregado correctamente.", "ss");
                 }
                 else
                 {
                     m.strId_miembro = int.Parse(hfIdMiembroEdit.Value);
                     _manejador.ActualizarMiembro(m);
-                    SetFlashMessage("Integrante actualizado.", "ss");
+                    SetFlashMessage("Datos del integrante actualizados.", "ss");
                 }
 
+                // Redirección suave (mismo ID de team)
                 Response.Redirect($"EjecucionProAprobados.aspx?idTeam={m.fkId_ejec}", false);
             }
-            catch (Exception ex) { Msg("Error al guardar miembro: " + ex.Message, "ee"); }
+            catch (Exception ex)
+            {
+                Msg("Error al guardar: " + ex.Message, "ee");
+            }
         }
 
         protected void btnCancelarMiembro_Click(object sender, EventArgs e)

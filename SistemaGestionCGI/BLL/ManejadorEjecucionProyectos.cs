@@ -86,11 +86,16 @@ namespace SistemaGestionCGI.BLL
 
         public void GuardarMiembro(InvgccEjecucionMiembros m)
         {
+            // SE AGREGARON: strCorreo_miembro, strCarrera_miembro, strTipo_miembro, strEntidad_miembro y dtFechaInicio_miembro
             string sql = $@"
                 INSERT INTO INVGCCEJECUCION_MIEMBROS 
-                (fkId_ejec, strCedula_miembro, strNombres_miembro, strApellidos_miembro, strRol_miembro, strFacultad_miembro, bitActivo_miembro)
+                (fkId_ejec, strCedula_miembro, strNombres_miembro, strApellidos_miembro, 
+                 strRol_miembro, strFacultad_miembro, bitActivo_miembro,
+                 strCorreo_miembro, strCarrera_miembro, strTipo_miembro, strEntidad_miembro, dtFechaInicio_miembro)
                 VALUES 
-                ({m.fkId_ejec}, '{m.strCedula_miembro}', '{m.strNombres_miembro}', '{m.strApellidos_miembro}', '{m.strRol_miembro}', '{m.strFacultad_miembro}', 1)";
+                ({m.fkId_ejec}, '{m.strCedula_miembro}', '{m.strNombres_miembro}', '{m.strApellidos_miembro}', 
+                 '{m.strRol_miembro}', '{m.strFacultad_miembro}', 1,
+                 '{m.strCorreo_miembro}', '{m.strCarrera_miembro}', '{m.strTipo_miembro}', '{m.strEntidad_miembro}', GETDATE())";
 
             _dal.UpdateSql(sql);
         }
@@ -112,7 +117,11 @@ namespace SistemaGestionCGI.BLL
                     strNombres_miembro = '{obj.strNombres_miembro}',
                     strApellidos_miembro = '{obj.strApellidos_miembro}',
                     strRol_miembro = '{obj.strRol_miembro}',
-                    strFacultad_miembro = '{obj.strFacultad_miembro}'
+                    strFacultad_miembro = '{obj.strFacultad_miembro}',
+                    strCorreo_miembro = '{obj.strCorreo_miembro}',
+                    strCarrera_miembro = '{obj.strCarrera_miembro}',
+                    strTipo_miembro = '{obj.strTipo_miembro}',
+                    strEntidad_miembro = '{obj.strEntidad_miembro}'
                 WHERE strId_miembro = {obj.strId_miembro}";
 
             _dal.UpdateSql(sql);
@@ -262,10 +271,22 @@ namespace SistemaGestionCGI.BLL
         public void CambiarEstadoMiembro(int idMiembro, bool nuevoEstado, string motivo, string usuario)
         {
             int bit = nuevoEstado ? 1 : 0;
-            string sqlUpdate = $"UPDATE INVGCCEJECUCION_MIEMBROS SET bitActivo_miembro = {bit} WHERE strId_miembro = {idMiembro}";
+
+            // LÓGICA DE FECHA FIN:
+            // Si nuevoEstado es TRUE (Activo) -> Fecha Fin es NULL
+            // Si nuevoEstado es FALSE (Inactivo) -> Fecha Fin es AHORA
+            string fechaFinSql = nuevoEstado ? "NULL" : $"'{DateTime.Now:yyyy-MM-dd HH:mm:ss}'";
+
+            string sqlUpdate = $@"
+                UPDATE INVGCCEJECUCION_MIEMBROS 
+                SET bitActivo_miembro = {bit},
+                    dtFechaFin_miembro = {fechaFinSql}
+                WHERE strId_miembro = {idMiembro}";
+
             _dal.UpdateSql(sqlUpdate);
 
-            string accion = nuevoEstado ? "REACTIVACIÓN" : "BAJA";
+            // Registro en Historial
+            string accion = nuevoEstado ? "REACTIVACIÓN" : "BAJA TEMPORAL/DEFINITIVA";
             RegistrarHistorialMiembro(idMiembro, accion, motivo, usuario);
         }
 

@@ -28,5 +28,23 @@ namespace SistemaGestionCGI.Models
 
         [JsonProperty("bitActivo_miembro")]
         public bool bitActivo_miembro { get; set; }
+
+        [JsonProperty("strCorreo_miembro")]
+        public string strCorreo_miembro { get; set; }
+
+        [JsonProperty("strCarrera_miembro")]
+        public string strCarrera_miembro { get; set; }
+
+        [JsonProperty("strTipo_miembro")]
+        public string strTipo_miembro { get; set; }
+
+        [JsonProperty("strEntidad_miembro")]
+        public string strEntidad_miembro { get; set; }
+
+        [JsonProperty("dtFechaInicio_miembro")]
+        public DateTime? dtFechaInicio_miembro { get; set; }
+
+        [JsonProperty("dtFechaFin_miembro")]
+        public DateTime? dtFechaFin_miembro { get; set; }
     }
 }

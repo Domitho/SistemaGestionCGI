@@ -24,7 +24,6 @@
             --bs-bg-opacity: 0.1;
         }
 
-        /* Estilo para botón bloqueado */
         .btn-locked {
             opacity: 0.5 !important;
             pointer-events: none !important;
@@ -33,9 +32,8 @@
             position: relative;
         }
 
-        /* Icono de candado opcional */
         .btn-locked::after {
-            content: "\f023"; /* Icono FontAwesome de candado */
+            content: "\f023"; 
             font-family: "Font Awesome 6 Free";
             font-weight: 900;
             position: absolute;
@@ -296,9 +294,9 @@
                         <th>ID</th>
                         <th>CÉDULA</th>
                         <th>NOMBRES</th>
-                        <th>APELLIDOS</th>
-                        <th>FACULTAD</th>
                         <th>ROL</th>
+                        <th>INICIO</th>
+                        <th>FIN</th>
                         <th>ESTADO</th>
                         <th>ACCIONES</th>
                     </tr>
@@ -307,12 +305,31 @@
                     <asp:Repeater ID="rptMiembros" runat="server" OnItemCommand="rptMiembros_ItemCommand">
                         <ItemTemplate>
                             <tr class='<%# Convert.ToBoolean(Eval("bitActivo_miembro")) ? "" : "table-secondary text-muted" %>'>
+                        
                                 <td><%# Eval("strId_miembro") %></td>
+                        
                                 <td><%# Eval("strCedula_miembro") %></td>
-                                <td class="text-start"><%# Eval("strNombres_miembro") %></td>
-                                <td class="text-start"><%# Eval("strApellidos_miembro") %></td>
-                                <td><%# Eval("strFacultad_miembro") %></td>
+                        
+                                <td class="text-start">
+                                    <div class="fw-bold"><%# Eval("strApellidos_miembro") %> <%# Eval("strNombres_miembro") %></div>
+                                    <div class="small text-muted fst-italic">
+                                        <%# Eval("strTipo_miembro") %> - <%# Eval("strFacultad_miembro") == "EXTERNO" ? Eval("strEntidad_miembro") : Eval("strFacultad_miembro") %>
+                                    </div>
+                                </td>
+
                                 <td><%# Eval("strRol_miembro") %></td>
+
+                                <td>
+                                    <%# Eval("dtFechaInicio_miembro") == null 
+                                        ? "-" 
+                                        : Convert.ToDateTime(Eval("dtFechaInicio_miembro")).ToString("dd/MM/yyyy") %>
+                                </td>
+
+                                <td>
+                                    <%# Eval("dtFechaFin_miembro") == null 
+                                        ? "<span class='text-success fw-bold'>Vigente</span>" 
+                                        : "<span class='text-danger fw-bold'>" + Convert.ToDateTime(Eval("dtFechaFin_miembro")).ToString("dd/MM/yyyy") + "</span>" %>
+                                </td>
 
                                 <td>
                                     <%# Convert.ToBoolean(Eval("bitActivo_miembro")) 
@@ -347,6 +364,7 @@
                 </tbody>
             </table>
         </div>
+
     </asp:Panel>
 
     <asp:Panel ID="pnlFormularioMiembro" runat="server" Visible="false">
@@ -372,41 +390,72 @@
             <asp:HiddenField ID="hfIdMiembroEdit" runat="server" />
 
             <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Cédula de Identidad</label>
-                    <asp:TextBox ID="txtCedulaMiembro" runat="server" CssClass="form-control" />
+                <div class="col-12">
+                    <label class="form-label fw-bold text-primary">Tipo de Vinculación</label>
+                    <asp:DropDownList ID="ddlTipoMiembro" runat="server" CssClass="form-select" onchange="toggleTipoIntegrante()">
+                        <asp:ListItem Value="Interno" Selected="True">Interno (Docente/Estudiante UTC)</asp:ListItem>
+                        <asp:ListItem Value="Externo">Externo (Inv. Invitado / Otra Institución)</asp:ListItem>
+                    </asp:DropDownList>
                 </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Cédula / Pasaporte <span class="text-danger">*</span></label>
+                    <asp:TextBox ID="txtCedulaMiembro" runat="server" CssClass="form-control" placeholder="10 dígitos" MaxLength="15" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                    <asp:TextBox ID="txtNombresMiembro" runat="server" CssClass="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                    <asp:TextBox ID="txtApellidosMiembro" runat="server" CssClass="form-control" />
+                </div>
+    
+                <div class="col-md-6">
+                    <label class="form-label">Correo Electrónico <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fa-solid fa-envelope"></i></span>
+                        <asp:TextBox ID="txtCorreoMiembro" runat="server" CssClass="form-control" TextMode="Email" placeholder="ejemplo@utc.edu.ec" />
+                    </div>
+                </div>
+    
                 <div class="col-md-6">
                     <label class="form-label">Rol en el Proyecto</label>
                     <asp:DropDownList ID="ddlRolMiembro" runat="server" CssClass="form-select">
-                        <asp:ListItem>Investigador</asp:ListItem>
+                        <asp:ListItem>Investigador Principal</asp:ListItem>
+                        <asp:ListItem>Co-Investigador</asp:ListItem>
                         <asp:ListItem>Ayudante de Investigación</asp:ListItem>
-                        <asp:ListItem>Tesista</asp:ListItem>
+                        <asp:ListItem>Tesista de Pregrado</asp:ListItem>
+                        <asp:ListItem>Tesista de Posgrado</asp:ListItem>
                         <asp:ListItem>Técnico de Apoyo</asp:ListItem>
-                        <asp:ListItem>Externo</asp:ListItem>
                         <asp:ListItem>Director</asp:ListItem>
                     </asp:DropDownList>
                 </div>
-                <div class="col-md-12">
-                    <label class="form-label">Facultad / Extensión</label>
-                    <asp:DropDownList ID="ddlFacultadMiembro" runat="server" CssClass="form-select">
-                        <asp:ListItem Text="-- Seleccione --" Value="" />
-                        <asp:ListItem>FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
-                        <asp:ListItem>FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
-                        <asp:ListItem>FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
-                        <asp:ListItem>FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
-                        <asp:ListItem>FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
-                        <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
-                        <asp:ListItem>EXTENSION LA MANÁ</asp:ListItem>
-                    </asp:DropDownList>
+
+                <div id="divCamposInternos" class="col-12 row g-3 m-0 p-0">
+                    <div class="col-md-6">
+                        <label class="form-label">Facultad / Extensión</label>
+                        <asp:DropDownList ID="ddlFacultadMiembro" runat="server" CssClass="form-select">
+                            <asp:ListItem Text="-- Seleccione --" Value="" />
+                            <asp:ListItem>FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
+                            <asp:ListItem>FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
+                            <asp:ListItem>FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
+                            <asp:ListItem>FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
+                            <asp:ListItem>FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
+                            <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
+                            <asp:ListItem>EXTENSION LA MANÁ</asp:ListItem>
+                        </asp:DropDownList>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Carrera / Departamento</label>
+                        <asp:TextBox ID="txtCarreraMiembro" runat="server" CssClass="form-control" placeholder="Ej: Sistemas de Información" />
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Nombres</label>
-                    <asp:TextBox ID="txtNombresMiembro" runat="server" CssClass="form-control" />
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Apellidos</label>
-                    <asp:TextBox ID="txtApellidosMiembro" runat="server" CssClass="form-control" />
+
+                <div id="divCamposExternos" class="col-12" style="display:none;">
+                    <label class="form-label fw-bold">Institución / Entidad de Origen</label>
+                    <asp:TextBox ID="txtEntidadMiembro" runat="server" CssClass="form-control" placeholder="Ej: Universidad Central, SENESCYT, Empresa Privada..." />
+                    <div class="form-text">Especifique la organización a la que pertenece el investigador invitado.</div>
                 </div>
             </div>
 
@@ -1144,6 +1193,21 @@
 
             console.log("Validación exitosa o sin archivo. Continuando...");
             return true;
+        }
+
+        function toggleTipoIntegrante() {
+            var ddl = document.getElementById('<%= ddlTipoMiembro.ClientID %>');
+            var val = ddl.value;
+            var divInt = document.getElementById('divCamposInternos');
+            var divExt = document.getElementById('divCamposExternos');
+
+            if (val === 'Externo') {
+                divInt.style.display = 'none';
+                divExt.style.display = 'block';
+            } else {
+                divInt.style.display = 'flex'; 
+                divExt.style.display = 'none';
+            }
         }
 
     </script>
