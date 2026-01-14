@@ -11,9 +11,8 @@ namespace SistemaGestionCGI
 {
     public partial class ConvocatoriaGruInvestigacion : System.Web.UI.Page
     {
-        // Instancias
         private readonly ManejadorConvocatorias _manejador = new ManejadorConvocatorias();
-        private const string RUTA_CONVOCATORIAS = @"C:\UTC\CONVOCATORIAS\";
+        private const string RUTA_VIRTUAL_CONVOCATORIAS = "~/Archivos/Convocatorias/";
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -79,12 +78,15 @@ namespace SistemaGestionCGI
 
                 if (!ValidarArchivo(flpArchivoAdd.FileName)) return;
 
+                // CAMBIO 2: Uso del nuevo método de guardado virtual
+                string rutaRelativa = GuardarArchivoVirtual(flpArchivoAdd, $"CONV_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivoAdd.FileName)}");
+
                 var conv = new InvgccConvocatoriaGruInvestigacion
                 {
                     strNombre_conv = txtNombreAdd.Text.Trim(),
                     dtFechaini_conv = DateTime.Parse(txtFechaIniAdd.Text),
                     strDescripcion_conv = HttpUtility.HtmlEncode(txtDescAdd.Text),
-                    strArchivo_conv = GuardarArchivoFisico(flpArchivoAdd, $"CONV_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivoAdd.FileName)}")
+                    strArchivo_conv = rutaRelativa // Se guarda "~/Archivos/..."
                 };
 
                 conv.dtFechafin_conv = new DateTime(1900, 1, 1);
@@ -105,14 +107,16 @@ namespace SistemaGestionCGI
                     strNombre_conv = txtNombreEdit.Text.Trim(),
                     dtFechaini_conv = DateTime.Parse(txtFechaIniEdit.Text),
                     strDescripcion_conv = HttpUtility.HtmlEncode(txtDescEdit.Text),
-                    strArchivo_conv = hfArchivoActual.Value,
-                    dtFechafin_conv = new DateTime(1900, 1, 1) 
+                    strArchivo_conv = hfArchivoActual.Value, // Mantiene la ruta actual por defecto
+                    dtFechafin_conv = new DateTime(1900, 1, 1)
                 };
 
                 if (flpArchivoEdit.HasFile)
                 {
                     if (!ValidarArchivo(flpArchivoEdit.FileName)) return;
-                    conv.strArchivo_conv = GuardarArchivoFisico(flpArchivoEdit, $"CONV_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivoEdit.FileName)}");
+
+                    // CAMBIO 3: Guardado virtual en edición
+                    conv.strArchivo_conv = GuardarArchivoVirtual(flpArchivoEdit, $"CONV_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivoEdit.FileName)}");
                 }
 
                 _manejador.ActualizarConvocatoria(conv);
@@ -135,9 +139,14 @@ namespace SistemaGestionCGI
                     try
                     {
                         var obj = _manejador.ObtenerConvocatoriaPorId(id);
-                        if (obj != null && File.Exists(obj.strArchivo_conv))
+                        // CAMBIO 4: Resolución de ruta para eliminar
+                        if (obj != null && !string.IsNullOrEmpty(obj.strArchivo_conv))
                         {
-                            try { File.Delete(obj.strArchivo_conv); } catch { }
+                            string rutaFisica = ObtenerRutaFisica(obj.strArchivo_conv);
+                            if (File.Exists(rutaFisica))
+                            {
+                                try { File.Delete(rutaFisica); } catch { }
+                            }
                         }
 
                         _manejador.EliminarConvocatoria(id);
@@ -184,7 +193,7 @@ namespace SistemaGestionCGI
         protected void lbtCancelarEdit_Click(object sender, EventArgs e) => Response.Redirect("ConvocatoriaGruInvestigacion.aspx");
 
         // =============================================
-        // UTILIDADES
+        // UTILIDADES Y MANEJO DE ARCHIVOS
         // =============================================
 
         private enum Vista { Lista, Agregar, Editar }
@@ -209,16 +218,53 @@ namespace SistemaGestionCGI
             return true;
         }
 
-        private string GuardarArchivoFisico(FileUpload ctl, string nombre)
+        // CAMBIO 5: Método principal para guardar usando Server.MapPath
+        private string GuardarArchivoVirtual(FileUpload ctl, string nombreArchivo)
         {
-            if (!Directory.Exists(RUTA_CONVOCATORIAS)) Directory.CreateDirectory(RUTA_CONVOCATORIAS);
-            string ruta = Path.Combine(RUTA_CONVOCATORIAS, nombre);
-            ctl.SaveAs(ruta);
-            return ruta;
+            // 1. Obtener la ruta física del servidor basada en la ruta virtual
+            string directorioFisico = Server.MapPath(RUTA_VIRTUAL_CONVOCATORIAS);
+
+            // 2. Crear directorio si no existe (dentro de la carpeta del proyecto)
+            if (!Directory.Exists(directorioFisico))
+            {
+                Directory.CreateDirectory(directorioFisico);
+            }
+
+            // 3. Guardar el archivo físicamente
+            string rutaGuardado = Path.Combine(directorioFisico, nombreArchivo);
+            ctl.SaveAs(rutaGuardado);
+
+            // 4. RETORNAR la ruta VIRTUAL para guardar en BD (Portabilidad)
+            // Retorna algo como: "~/Archivos/Convocatorias/CONV_123456.pdf"
+            return Path.Combine(RUTA_VIRTUAL_CONVOCATORIAS, nombreArchivo).Replace("\\", "/");
         }
 
-        private void DescargarArchivo(string rutaFisica)
+        // CAMBIO 6: Helper para resolver rutas antiguas (C:\) y nuevas (~/)
+        private string ObtenerRutaFisica(string rutaBd)
         {
+            if (string.IsNullOrEmpty(rutaBd)) return "";
+
+            // Si empieza con ~ o /, es ruta virtual nueva
+            if (rutaBd.StartsWith("~") || rutaBd.StartsWith("/"))
+            {
+                return Server.MapPath(rutaBd);
+            }
+
+            // Si tiene dos puntos (C:), asumimos que es ruta física legada
+            if (rutaBd.Contains(":"))
+            {
+                return rutaBd;
+            }
+
+            // Fallback: intentar mapear asumiendo que es solo nombre de archivo
+            return Server.MapPath(Path.Combine(RUTA_VIRTUAL_CONVOCATORIAS, rutaBd));
+        }
+
+        private void DescargarArchivo(string rutaBd)
+        {
+            // Resolver la ruta real en el disco
+            string rutaFisica = ObtenerRutaFisica(rutaBd);
+
             if (File.Exists(rutaFisica))
             {
                 string nombre = Path.GetFileName(rutaFisica);
@@ -241,7 +287,7 @@ namespace SistemaGestionCGI
             }
             else
             {
-                Msg("El archivo físico no existe.", "ww");
+                Msg("El archivo no se encuentra en el servidor.", "ww");
             }
         }
 
@@ -260,7 +306,7 @@ namespace SistemaGestionCGI
                 .Replace("\\", "\\\\")
                 .Replace("'", "\\'")
                 .Replace("\"", "\\\"")
-                .Replace("\r\n", " ") 
+                .Replace("\r\n", " ")
                 .Replace("\n", " ");
 
             string titulo = type == "ss" ? "Éxito" : (type == "ee" ? "Error" : "Atención");
