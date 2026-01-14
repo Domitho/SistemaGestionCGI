@@ -200,22 +200,18 @@ namespace SistemaGestionCGI
         {
             if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
             {
-                // 1. Obtener controles
                 var btnEditar = (LinkButton)e.Item.FindControl("btnEditar");
                 var btnEquipo = (LinkButton)e.Item.FindControl("btnEquipo");
                 var btnEliminar = (LinkButton)e.Item.FindControl("btnEliminar");
                 var btnInformes = (LinkButton)e.Item.FindControl("btnInformes");
                 var litNotif = (Literal)e.Item.FindControl("litNotificacionPlazo");
 
-                // 2. Obtener datos de manera segura
-                // Usamos Trim().ToUpper() para evitar errores por espacios o minúsculas en BD
                 string estadoRaw = DataBinder.Eval(e.Item.DataItem, "strEstado_ejec")?.ToString() ?? "";
                 string estado = estadoRaw.Trim().ToUpper();
 
                 string periodo = DataBinder.Eval(e.Item.DataItem, "strPeriodo_ejec")?.ToString() ?? "";
                 string rol = Session["RolUsuario"]?.ToString() ?? "";
 
-                // Validación segura para CantidadInformes (evita crash si no existe la propiedad o es nula)
                 int cantInformes = 0;
                 try { cantInformes = Convert.ToInt32(DataBinder.Eval(e.Item.DataItem, "CantidadInformes")); } catch { }
 
@@ -261,8 +257,8 @@ namespace SistemaGestionCGI
                     if (btnEditar != null)
                     {
                         btnEditar.Enabled = false;
-                        btnEditar.CssClass += " btn-disabled-utc"; // Clase gris + cursor not-allowed
-                        btnEditar.Attributes.Add("onclick", "return false;"); // Bloqueo extra de JS
+                        btnEditar.CssClass += " btn-disabled-utc";
+                        btnEditar.Attributes.Add("onclick", "return false;");
                     }
 
                     if (btnEliminar != null)
@@ -272,7 +268,6 @@ namespace SistemaGestionCGI
                         btnEliminar.Attributes.Add("onclick", "return false;");
                     }
 
-                    // EL BOTÓN EQUIPO SE QUEDA HABILITADO PARA VER (SOLO LECTURA)
                 }
 
                 // ============================================
@@ -283,7 +278,7 @@ namespace SistemaGestionCGI
                     // El coordinador nunca edita ni elimina
                     if (btnEditar != null) btnEditar.Visible = false;
                     if (btnEliminar != null) btnEliminar.Visible = false;
-                    if (btnEquipo != null) btnEquipo.Visible = false; // O true si quieres que vean equipo
+                    if (btnEquipo != null) btnEquipo.Visible = false; 
                 }
             }
         }

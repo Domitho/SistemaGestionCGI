@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Linq; // Solo para .Sum() ligero
 using SistemaGestionCGI.Models;
 using SistemaGestionCGI.Settings;
 
@@ -10,96 +10,45 @@ namespace SistemaGestionCGI.BLL
     {
         private readonly ConnectionSqlServer _dal = ConnectionSqlServer.Instance;
 
-        // =============================================================
-        // 1. KPI - CONTEOS GENERALES
-        // =============================================================
-
-        public InvgccDashboardKPI ObtenerKPIs()
+        // 1. OBTENER CONTADORES (Optimizada: 1 sola consulta trae todo)
+        public DashboardCountersDTO ObtenerContadoresGenerales()
         {
-            return new InvgccDashboardKPI
-            {
-                Centros = ContarRegistros("INVGCCCENTRO_INESTIGACION", "strId_cent"),
-                Convocatorias = ContarRegistros("INVGCCCONVOCATORI", "strId_conv"),
-                Grupos = ContarRegistros("INVGCCGRUPO_INVESTIGACION", "strId_gru"),
-                Integrantes = ContarRegistros("INVGCCEJECUCION_MIEMBROS", "strId_miembro")
-            };
+            // Nota: Contamos (*) sin filtrar activos/inactivos según tu requerimiento #4
+            string sql = @"
+                SELECT 
+                    (SELECT COUNT(*) FROM INVGCCCENTRO_INVESTIGACION) AS TotalCentros,
+                    (SELECT COUNT(*) FROM INVGCCCENTRO_INVESTIGACION_INTEGRANTES) AS TotalIntegrantesCentros,
+                    (SELECT COUNT(*) FROM INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION) AS TotalConvocatorias,
+                    (SELECT COUNT(*) FROM INVGCCGRUPO_INVESTIGACION) AS TotalGrupos,
+                    (SELECT COUNT(*) FROM INVGCCGRUPO_INTEGRANTES) AS TotalIntegrantesGrupos,
+                    (SELECT COUNT(*) FROM INVGCCCATEGORIZACION_DOCENTES) AS TotalDocentes";
+
+            var resultado = _dal.SelectSql<DashboardCountersDTO>(sql);
+            return resultado != null && resultado.Count > 0 ? resultado[0] : new DashboardCountersDTO();
         }
 
-        private int ContarRegistros(string tabla, string campoId)
+        // 2. GRÁFICO: PROYECTOS POR ESTADO (Ejecución, Revisión, Finalizado)
+        public List<DashboardChartDTO> ObtenerProyectosPorEstado()
         {
-            try
-            {
-                string sql = $"SELECT {campoId} FROM {tabla}";
-                var lista = _dal.SelectSql<object>(sql);
-                return lista?.Count ?? 0;
-            }
-            catch { return 0; }
+            // Filtramos solo los estados que te interesan
+            string sql = @"
+                SELECT strEstado_ejec as Label, COUNT(*) as Value
+                FROM INVGCCEJECUCION_PROYECTO
+                WHERE strEstado_ejec IN ('EN EJECUCION', 'EN REVISION', 'FINALIZADO')
+                GROUP BY strEstado_ejec";
+
+            return _dal.SelectSql<DashboardChartDTO>(sql) ?? new List<DashboardChartDTO>();
         }
 
-        // =============================================================
-        // 2. GRÁFICOS (Chart.js Data)
-        // =============================================================
-
-        public List<InvgccDashboardChart> ObtenerDocentesPorCategoria()
+        // 3. GRÁFICO: DOCENTES POR CATEGORÍA
+        public List<DashboardChartDTO> ObtenerDocentesPorCategoria()
         {
-            string sql = "SELECT strCategorizacion FROM INVGCCCATEGORIA";
-            var lista = _dal.SelectSql<InvgccCategoriaMap>(sql);
+            string sql = @"
+                SELECT strCategorizacion as Label, COUNT(*) as Value
+                FROM INVGCCCATEGORIZACION_DOCENTES
+                GROUP BY strCategorizacion";
 
-            if (lista == null) return new List<InvgccDashboardChart>();
-
-            var categoriasInteres = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "PRINCIPAL 1", "PRINCIPAL 2", "PRINCIPAL 3",
-                "AGREGADO 1", "AGREGADO 2", "AUXILIAR 1"
-            };
-
-            return lista
-                .Where(x => !string.IsNullOrEmpty(x.strCategorizacion) && categoriasInteres.Contains(x.strCategorizacion))
-                .GroupBy(x => x.strCategorizacion.ToUpper())
-                .Select(g => new InvgccDashboardChart { Label = g.Key, Value = g.Count() })
-                .ToList();
-        }
-
-        public List<InvgccDashboardChart> ObtenerProyectosPorEstado()
-        {
-            string sql = "SELECT strEstado_pro FROM INVGCCINSCRIPCION_PROYECTOS";
-            var lista = _dal.SelectSql<InvgccProyectoMap>(sql);
-
-            if (lista == null) return new List<InvgccDashboardChart>();
-
-            var estadosInteres = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "APROBADO", "PENDIENTE", "NO APROBADO"
-            };
-
-            return lista
-                .Where(x => !string.IsNullOrEmpty(x.strEstado_pro))
-                .Select(x => x.strEstado_pro.Trim())
-                .Where(estado => estadosInteres.Contains(estado))
-                .GroupBy(estado => estado.ToUpper())
-                .Select(g => new InvgccDashboardChart { Label = g.Key, Value = g.Count() })
-                .ToList();
-        }
-
-        public List<InvgccDashboardChart> ObtenerPublicacionesPorTipo()
-        {
-            string sql = "SELECT strTipo_publi FROM INVGCCPUBLICACION";
-            var lista = _dal.SelectSql<InvgccPublicacionMap>(sql);
-
-            if (lista == null) return new List<InvgccDashboardChart>();
-
-            var tiposInteres = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "LIBRO", "CAPITULO DE LIBRO", "REVISTA", "MEMORIA"
-            };
-
-            return lista
-                .Where(x => !string.IsNullOrEmpty(x.strTipo_publi))
-                .Select(x => x.strTipo_publi.Trim())
-                .Where(tipo => tiposInteres.Contains(tipo))
-                .GroupBy(tipo => tipo.ToUpper())
-                .Select(g => new InvgccDashboardChart { Label = g.Key, Value = g.Count() })
-                .ToList();
+            return _dal.SelectSql<DashboardChartDTO>(sql) ?? new List<DashboardChartDTO>();
         }
     }
 }

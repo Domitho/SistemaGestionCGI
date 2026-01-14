@@ -33,6 +33,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.Label lblCentros;
 
         /// <summary>
+        /// Control lblIntegrantesCentros.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblIntegrantesCentros;
+
+        /// <summary>
         /// Control lblConvocatorias.
         /// </summary>
         /// <remarks>
@@ -42,21 +51,30 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.Label lblConvocatorias;
 
         /// <summary>
-        /// Control lblGruInv.
+        /// Control lblGrupos.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblGruInv;
+        protected global::System.Web.UI.WebControls.Label lblGrupos;
 
         /// <summary>
-        /// Control lblIntegrantes.
+        /// Control lblIntegrantesGrupos.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblIntegrantes;
+        protected global::System.Web.UI.WebControls.Label lblIntegrantesGrupos;
+
+        /// <summary>
+        /// Control lblTotalDocentes.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblTotalDocentes;
     }
 }
