@@ -49,15 +49,13 @@ namespace SistemaGestionCGI.BLL
 
         public void ActualizarEjecucion(InvgccEjecucionProyectos obj)
         {
-            string fechaFin = obj.dtFechafin_ejec.HasValue ? $"'{obj.dtFechafin_ejec.Value:yyyy-MM-dd}'" : "NULL";
-
             string sql = $@"
                 UPDATE INVGCCEJECUCION_PROYECTO SET 
                     strCoordinador_ejec = '{obj.strCoordinador_ejec}',
                     strPeriodo_ejec = '{obj.strPeriodo_ejec}',
                     dtFechaini_ejec = '{obj.dtFechaini_ejec:yyyy-MM-dd}',
-                    dtFechafin_ejec = {fechaFin}, 
                     strInforme_ejec = '{obj.strInforme_ejec}'
+                    -- Quitamos dtFechafin_ejec para que no sea editable manualmente
                 WHERE strId_ejec = {obj.strId_ejec}";
 
             _dal.UpdateSql(sql);
@@ -206,11 +204,11 @@ namespace SistemaGestionCGI.BLL
             string sql = $@"
                 UPDATE INVGCCEJECUCION_PROYECTO 
                 SET strInforme_Final = '{rutaArchivo}',
-                    strEstado_ejec = 'FINALIZADO'
+                    strEstado_ejec = 'FINALIZADO',
+                    dtFechafin_ejec = GETDATE()
                 WHERE strId_ejec = {idEjecucion}";
 
             _dal.UpdateSql(sql);
-
         }
 
         public void AprobarCierre(int idEjecucion, string usuario)
@@ -324,5 +322,26 @@ namespace SistemaGestionCGI.BLL
 
             return _dal.SelectSql<InvgccInscripcionProyectos>(sql);
         }
+
+
+        public void GuardarCiclo(DateTime fechaInicio, DateTime fechaFin)
+        {
+            string nombreCiclo = $"{fechaInicio.ToString("MMMM yyyy").ToUpper()} - {fechaFin.ToString("MMMM yyyy").ToUpper()}";
+
+            string sqlInsert = $@"
+                INSERT INTO INVGCCEJECUCION_PROYECTO_CICLOS (strNombre_ciclo, dtInicio_ciclo)
+                VALUES ('{nombreCiclo}', '{fechaInicio:yyyy-MM-dd}')";
+
+            _dal.UpdateSql(sqlInsert);
+        }
+
+        public List<dynamic> ObtenerCiclos()
+        {
+            string sql = "SELECT id_ciclo, strNombre_ciclo FROM INVGCCEJECUCION_PROYECTO_CICLOS ORDER BY dtInicio_ciclo DESC";
+
+            // Usamos _dal para mantener consistencia
+            return _dal.SelectSql<dynamic>(sql);
+        }
+
     }
 }

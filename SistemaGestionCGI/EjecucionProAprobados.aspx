@@ -43,6 +43,8 @@
             font-size: 1.2rem;
         }
 
+
+
     </style>
 
     <div id="headerEjecucion" runat="server" class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
@@ -51,6 +53,10 @@
         </h3>
 
         <div class="d-flex gap-2 mt-2 mt-md-0">
+            <button type="button" class="btn btn-outline-secondary btn-pill px-3" onclick="abrirModalCiclo()">
+                <i class="fa-solid fa-calendar-days me-2"></i> Periodos / Ciclos
+            </button>
+
             <asp:LinkButton runat="server" ID="btnNuevoEjecucion" CssClass="btn btn-primary btn-pill d-flex align-items-center" OnClick="btnNuevoEjecucion_Click">
                 <i class="fa-solid fa-plus me-2"></i> INICIAR EJECUCIÓN
             </asp:LinkButton>
@@ -157,8 +163,12 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Periodo / Ciclo</label>
-                    <asp:TextBox ID="txtPeriodoAdd" runat="server" CssClass="form-control" placeholder="Ej: Octubre 2025 - Marzo 2026" />
+                    <label class="form-label fw-bold">Periodo / Ciclo Académico</label>
+                    <asp:DropDownList ID="ddlCiclo" runat="server" CssClass="form-select shadow-sm">
+                    </asp:DropDownList>
+                    <div class="form-text small text-muted">
+                        <i class="fa-solid fa-circle-info me-1"></i> Seleccione el periodo vigente.
+                    </div>
                 </div>
 
                 <div class="col-12">
@@ -222,13 +232,14 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Fecha Fin</label>
-                    <asp:TextBox ID="txtFechaFinEdit" runat="server" CssClass="form-control" TextMode="Date" />
+                    <label class="form-label">Fecha Fin (Cierre del Proyecto)</label>
+                    <asp:TextBox ID="txtFechaFinEdit" runat="server" CssClass="form-control" 
+                        ReadOnly="true" BackColor="#e9ecef" placeholder="Se asigna al finalizar..." />
                 </div>
 
                 <div class="col-12">
                     <label class="form-label">Periodo / Ciclo</label>
-                    <asp:TextBox ID="txtPeriodoEdit" runat="server" CssClass="form-control" />
+                    <asp:TextBox ID="txtPeriodoEdit" runat="server" CssClass="form-control" ReadOnly="true"/>
                 </div>
 
                 <div class="col-12">
@@ -1018,6 +1029,68 @@
         </div>
     </div>
 
+
+    <div class="modal fade" id="modalCrearCiclo" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            
+                <div class="modal-header border-0 pb-0 pt-4 justify-content-center position-relative bg-light">
+                    <div class="text-center">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-white shadow-sm rounded-circle mb-2" style="width: 60px; height: 60px;">
+                            <i class="fa-solid fa-calendar-plus fs-3 text-primary"></i>
+                        </div>
+                        <h6 class="modal-title fw-bold text-dark mb-1">Nuevo Periodo Académico</h6>
+                        <p class="text-muted small mb-0">Configure el rango de fechas</p>
+                    </div>
+                    <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body px-4 pt-4 pb-4">
+                
+                    <div class="position-relative">
+                    
+                        <div class="position-absolute start-0 ms-4 h-100 border-start border-2 border-light" style="top: 10px; z-index: 0;"></div>
+
+                        <div class="position-relative mb-4" style="z-index: 1;">
+                            <label class="form-label fw-bold small text-secondary ms-1">Inicio del Ciclo</label>
+                            <div class="input-group shadow-sm rounded-3 overflow-hidden">
+                                <span class="input-group-text bg-white border-end-0 ps-3">
+                                    <i class="fa-regular fa-calendar-check text-success"></i>
+                                </span>
+                                <asp:TextBox ID="txtMesInicio" runat="server" TextMode="Month" CssClass="form-control border-start-0 ps-0 fw-semibold text-dark" style="background:white;"></asp:TextBox>
+                            </div>
+                        </div>
+
+                        <div class="position-relative mb-4" style="z-index: 1;">
+                            <label class="form-label fw-bold small text-secondary ms-1">Fin del Ciclo</label>
+                            <div class="input-group shadow-sm rounded-3 overflow-hidden">
+                                <span class="input-group-text bg-white border-end-0 ps-3">
+                                    <i class="fa-solid fa-flag-checkered text-danger"></i>
+                                </span>
+                                <asp:TextBox ID="txtMesFin" runat="server" TextMode="Month" CssClass="form-control border-start-0 ps-0 fw-semibold text-dark" style="background:white;"></asp:TextBox>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="d-grid mt-2">
+                        <asp:Button ID="btnGuardarCiclo" runat="server" Text="Registrar Periodo" 
+                            CssClass="btn btn-primary btn-pill fw-bold py-2 shadow-sm hover-lift" 
+                            OnClick="btnGuardarCiclo_Click" />
+                    </div>
+
+                </div>
+            
+                <div class="modal-footer bg-light border-0 py-2 justify-content-center">
+                    <small class="text-muted" style="font-size: 0.7rem;">
+                        <i class="fa-solid fa-circle-info me-1"></i> El nombre se generará automáticamente.
+                    </small>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
 
     <script type="text/javascript">
@@ -1103,6 +1176,11 @@
             }
             hf.value = txt.value;
             return true;
+        }
+
+        function abrirModalCiclo() {
+            var myModal = new bootstrap.Modal(document.getElementById('modalCrearCiclo'));
+            myModal.show();
         }
 
         function GestionarArchivoDirecto(url) {

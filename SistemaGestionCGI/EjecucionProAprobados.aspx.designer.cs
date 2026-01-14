@@ -96,13 +96,13 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtFechaIniAdd;
 
         /// <summary>
-        /// Control txtPeriodoAdd.
+        /// Control ddlCiclo.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtPeriodoAdd;
+        protected global::System.Web.UI.WebControls.DropDownList ddlCiclo;
 
         /// <summary>
         /// Control flpArchivoAdd.
@@ -859,5 +859,32 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptHistorialMiembro;
+
+        /// <summary>
+        /// Control txtMesInicio.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtMesInicio;
+
+        /// <summary>
+        /// Control txtMesFin.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtMesFin;
+
+        /// <summary>
+        /// Control btnGuardarCiclo.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnGuardarCiclo;
     }
 }

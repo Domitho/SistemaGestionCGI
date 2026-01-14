@@ -29,6 +29,7 @@ namespace SistemaGestionCGI
                     return;
                 }
 
+                CargarComboCiclos();
                 CargarGrillaEjecucion();
 
                 string idTeamRedirect = Request.QueryString["idTeam"];
@@ -78,13 +79,17 @@ namespace SistemaGestionCGI
             pnlGrilla.Visible = false;
             pnlAgregar.Visible = true;
             headerEjecucion.Visible = true;
+
             btnNuevoEjecucion.Visible = false;
             btnRegresar.Visible = true;
 
             CargarProyectosAprobados();
+            CargarComboCiclos();
+
             txtCoordinadorAdd.Text = "";
             txtFechaIniAdd.Text = DateTime.Now.ToString("yyyy-MM-dd");
-            txtPeriodoAdd.Text = "";
+
+            if (ddlCiclo.Items.Count > 0) ddlCiclo.SelectedIndex = 0;
         }
 
         protected void ddlProyectosAprobados_SelectedIndexChanged(object sender, EventArgs e)
@@ -110,7 +115,7 @@ namespace SistemaGestionCGI
                 {
                     fkId_pro = ddlProyectosAprobados.SelectedValue,
                     strCoordinador_ejec = txtCoordinadorAdd.Text.Trim(),
-                    strPeriodo_ejec = txtPeriodoAdd.Text.Trim(),
+                    strPeriodo_ejec = ddlCiclo.SelectedItem.Text,
                     dtFechaini_ejec = DateTime.Parse(txtFechaIniAdd.Text),
                     dtFechafin_ejec = null
                 };
@@ -137,8 +142,7 @@ namespace SistemaGestionCGI
                     strCoordinador_ejec = txtCoordinadorEdit.Text.Trim(),
                     dtFechaini_ejec = DateTime.Parse(txtFechaIniEdit.Text),
                     strPeriodo_ejec = txtPeriodoEdit.Text.Trim(),
-                    strInforme_ejec = hfArchivoActual.Value,
-                    dtFechafin_ejec = string.IsNullOrEmpty(txtFechaFinEdit.Text) ? (DateTime?)null : DateTime.Parse(txtFechaFinEdit.Text)
+                    strInforme_ejec = hfArchivoActual.Value
                 };
 
                 if (flpArchivoEdit.HasFile)
@@ -195,45 +199,35 @@ namespace SistemaGestionCGI
 
         protected void rptEjecucion_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
-            // Solo nos interesa filtrar las filas de datos (no el encabezado ni el pie)
             if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
             {
-                // 1. Obtener el Rol del usuario actual
                 string rol = Session["RolUsuario"]?.ToString() ?? "";
 
-                // 2. Buscar los botones en la fila actual
                 var btnEditar = (LinkButton)e.Item.FindControl("btnEditar");
                 var btnEquipo = (LinkButton)e.Item.FindControl("btnEquipo");
                 var btnEliminar = (LinkButton)e.Item.FindControl("btnEliminar");
                 var btnInformes = (LinkButton)e.Item.FindControl("btnInformes");
 
-                // 3. APLICAR LÓGICA DE SEGURIDAD
                 if (rol == "COORDINADOR")
                 {
-                    // El Coordinador NO puede editar, ni gestionar equipo, ni eliminar.
                     if (btnEditar != null) btnEditar.Visible = false;
                     if (btnEquipo != null) btnEquipo.Visible = false;
                     if (btnEliminar != null) btnEliminar.Visible = false;
 
-                    // El Coordinador SÍ puede ver informes (botón verde)
                     if (btnInformes != null) btnInformes.Visible = true;
                 }
                 else if (rol == "ADMINISTRADOR")
                 {
-                    // El Admin ve todo
-                    // (No es necesario hacer nada porque Visible="true" es el default)
                 }
 
-                // Lógica de Bloqueo por Finalización
                 string estado = DataBinder.Eval(e.Item.DataItem, "strEstado_ejec").ToString();
 
                 if (estado == "FINALIZADO")
                 {
-                    if (btnEditar != null) btnEditar.Visible = false;   // Adiós edición
-                    if (btnEquipo != null) btnEquipo.Visible = false;   // Adiós gestión de equipo
-                    if (btnEliminar != null) btnEliminar.Visible = false; // Adiós eliminar
+                    if (btnEditar != null) btnEditar.Visible = false; 
+                    if (btnEquipo != null) btnEquipo.Visible = false;
+                    if (btnEliminar != null) btnEliminar.Visible = false; 
 
-                    // El botón 'btnInformes' (carpeta verde) SE QUEDA VISIBLE para ver el historial.
                 }
 
             }
@@ -248,7 +242,7 @@ namespace SistemaGestionCGI
                 txtProyectoReadOnly.Text = obj.TituloProyecto;
                 txtCoordinadorEdit.Text = obj.strCoordinador_ejec;
                 txtFechaIniEdit.Text = obj.dtFechaini_ejec.ToString("yyyy-MM-dd");
-                txtFechaFinEdit.Text = obj.dtFechafin_ejec?.ToString("yyyy-MM-dd") ?? "";
+                txtFechaFinEdit.Text = obj.dtFechafin_ejec?.ToString("yyyy-MM-dd") ?? "En Ejecución";
                 txtPeriodoEdit.Text = obj.strPeriodo_ejec;
                 hfArchivoActual.Value = obj.strInforme_ejec;
 
@@ -498,6 +492,54 @@ namespace SistemaGestionCGI
         protected void btnVolverDeEquipo_Click(object sender, EventArgs e)
         {
             Response.Redirect("EjecucionProAprobados.aspx");
+        }
+
+
+        private void CargarComboCiclos()
+        {
+            var lista = _manejador.ObtenerCiclos();
+
+            ddlCiclo.DataSource = lista;
+            ddlCiclo.DataTextField = "strNombre_ciclo";
+            ddlCiclo.DataValueField = "id_ciclo";
+            ddlCiclo.DataBind();
+
+            ddlCiclo.Items.Insert(0, new ListItem("-- Seleccione Ciclo --", "0"));
+        }
+
+        protected void btnGuardarCiclo_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(txtMesInicio.Text) || string.IsNullOrEmpty(txtMesFin.Text))
+                {
+                    Msg("Debe seleccionar ambas fechas.", "ww");
+                    return;
+                }
+
+                DateTime inicio = DateTime.Parse(txtMesInicio.Text);
+                DateTime fin = DateTime.Parse(txtMesFin.Text);
+
+                _manejador.GuardarCiclo(inicio, fin);
+
+                CargarComboCiclos();
+
+                if (ddlCiclo.Items.Count > 1)
+                    ddlCiclo.SelectedIndex = 1;
+
+                Msg("Ciclo registrado correctamente.", "ss");
+
+                string scriptCierre = @"
+                    var el = document.getElementById('modalCrearCiclo');
+                    var modal = bootstrap.Modal.getInstance(el);
+                    if(modal){ modal.hide(); } else { new bootstrap.Modal(el).hide(); }";
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "CloseModalCiclo", scriptCierre, true);
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al crear ciclo: " + ex.Message, "ee");
+            }
         }
 
         // ==========================================
@@ -1119,8 +1161,11 @@ namespace SistemaGestionCGI
 
         private void Msg(string msg, string type)
         {
-            string cleanMsg = msg.Replace("'", "\\'").Replace("\r\n", " ").Replace("\n", " ").Replace("\\", "\\\\");
-            ScriptManager.RegisterStartupScript(this, GetType(), "alert", $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema'); }});", true);
+            string cleanMsg = msg.Replace("'", "\\'").Replace("\r\n", " ").Replace("\n", " ");
+
+            string script = $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema'); }});";
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "alert", script, true);
         }
     }
 }
