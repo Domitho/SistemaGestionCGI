@@ -17,10 +17,13 @@ namespace SistemaGestionCGI.BLL
         public List<InvgccEjecucionProyectos> ObtenerEjecuciones()
         {
             string sql = @"
-                SELECT E.*, P.strTema_pro as TituloProyecto 
+                SELECT E.*, 
+                       P.strTema_pro as TituloProyecto,
+                       (SELECT COUNT(*) FROM INVGCCEJECUCION_INFORMES I WHERE I.fkId_ejec = E.strId_ejec) as CantidadInformes
                 FROM INVGCCEJECUCION_PROYECTO E
                 INNER JOIN INVGCCINSCRIPCION_PROYECTOS P ON E.fkId_pro = P.strId_pro
                 ORDER BY E.strId_ejec DESC";
+
             return _dal.SelectSql<InvgccEjecucionProyectos>(sql);
         }
 

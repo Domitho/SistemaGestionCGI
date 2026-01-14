@@ -173,10 +173,9 @@ namespace SistemaGestionCGI
                     hfIdEjecucionInforme.Value = id.ToString();
                     CargarInformes(id);
 
-                    ConfigurarPermisosModalInformes(); // Tu lógica de roles existente
+                    ConfigurarPermisosModalInformes(); 
                     BloquearGestionInformes(id);
 
-                    // Configurar estado de botones de cierre (si aplica)
                     if (Session["RolUsuario"]?.ToString() == "ADMINISTRADOR")
                     {
                         ConfigurarBotonesFaseFinal(id);
@@ -201,35 +200,111 @@ namespace SistemaGestionCGI
         {
             if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
             {
-                string rol = Session["RolUsuario"]?.ToString() ?? "";
-
+                // 1. Obtener controles
                 var btnEditar = (LinkButton)e.Item.FindControl("btnEditar");
                 var btnEquipo = (LinkButton)e.Item.FindControl("btnEquipo");
                 var btnEliminar = (LinkButton)e.Item.FindControl("btnEliminar");
                 var btnInformes = (LinkButton)e.Item.FindControl("btnInformes");
+                var litNotif = (Literal)e.Item.FindControl("litNotificacionPlazo");
 
-                if (rol == "COORDINADOR")
+                // 2. Obtener datos de manera segura
+                // Usamos Trim().ToUpper() para evitar errores por espacios o minúsculas en BD
+                string estadoRaw = DataBinder.Eval(e.Item.DataItem, "strEstado_ejec")?.ToString() ?? "";
+                string estado = estadoRaw.Trim().ToUpper();
+
+                string periodo = DataBinder.Eval(e.Item.DataItem, "strPeriodo_ejec")?.ToString() ?? "";
+                string rol = Session["RolUsuario"]?.ToString() ?? "";
+
+                // Validación segura para CantidadInformes (evita crash si no existe la propiedad o es nula)
+                int cantInformes = 0;
+                try { cantInformes = Convert.ToInt32(DataBinder.Eval(e.Item.DataItem, "CantidadInformes")); } catch { }
+
+                // ============================================
+                // A. LÓGICA DE SEMÁFORO DE CUMPLIMIENTO
+                // ============================================
+                if (estado != "FINALIZADO" && estado != "CIERRE APROBADO" && cantInformes == 0)
                 {
-                    if (btnEditar != null) btnEditar.Visible = false;
-                    if (btnEquipo != null) btnEquipo.Visible = false;
-                    if (btnEliminar != null) btnEliminar.Visible = false;
+                    DateTime? fechaFinCiclo = ObtenerFechaFinDelTexto(periodo);
 
-                    if (btnInformes != null) btnInformes.Visible = true;
+                    if (fechaFinCiclo.HasValue)
+                    {
+                        DateTime fechaActual = DateTime.Now;
+                        DateTime fechaLimiteGracia = fechaFinCiclo.Value.AddMonths(1);
+
+                        if (fechaActual > fechaLimiteGracia)
+                        {
+                            litNotif.Text = $@"<div class='badge bg-danger text-white border border-danger shadow-sm' title='Vencido el {fechaLimiteGracia:dd/MM/yyyy}'>
+                                        <i class='fa-solid fa-circle-exclamation me-1'></i> PLAZO VENCIDO</div>";
+                        }
+                        else if (fechaActual > fechaFinCiclo.Value)
+                        {
+                            int diasRestantes = (fechaLimiteGracia - fechaActual).Days;
+                            litNotif.Text = $@"<div class='badge bg-warning text-dark border border-warning shadow-sm'>
+                                        <i class='fa-solid fa-clock me-1'></i> Restan {diasRestantes} días</div>";
+                        }
+                        else
+                        {
+                            litNotif.Text = @"<small class='text-muted'><i class='fa-solid fa-spinner me-1'></i> En curso</small>";
+                        }
+                    }
                 }
-                else if (rol == "ADMINISTRADOR")
+                else if (cantInformes > 0)
                 {
+                    litNotif.Text = @"<small class='text-success fw-bold'><i class='fa-solid fa-check-double me-1'></i> Informe al día</small>";
                 }
 
-                string estado = DataBinder.Eval(e.Item.DataItem, "strEstado_ejec").ToString();
-
+                // ============================================
+                // B. LÓGICA DE BLOQUEO VISUAL (Estado FINALIZADO)
+                // ============================================
                 if (estado == "FINALIZADO")
                 {
-                    if (btnEditar != null) btnEditar.Visible = false; 
-                    if (btnEquipo != null) btnEquipo.Visible = false;
-                    if (btnEliminar != null) btnEliminar.Visible = false; 
+                    if (btnEditar != null)
+                    {
+                        btnEditar.Enabled = false;
+                        btnEditar.CssClass += " btn-disabled-utc"; // Clase gris + cursor not-allowed
+                        btnEditar.Attributes.Add("onclick", "return false;"); // Bloqueo extra de JS
+                    }
 
+                    if (btnEliminar != null)
+                    {
+                        btnEliminar.Enabled = false;
+                        btnEliminar.CssClass += " btn-disabled-utc";
+                        btnEliminar.Attributes.Add("onclick", "return false;");
+                    }
+
+                    // EL BOTÓN EQUIPO SE QUEDA HABILITADO PARA VER (SOLO LECTURA)
                 }
 
+                // ============================================
+                // C. LÓGICA DE ROLES (COORDINADOR)
+                // ============================================
+                if (rol == "COORDINADOR")
+                {
+                    // El coordinador nunca edita ni elimina
+                    if (btnEditar != null) btnEditar.Visible = false;
+                    if (btnEliminar != null) btnEliminar.Visible = false;
+                    if (btnEquipo != null) btnEquipo.Visible = false; // O true si quieres que vean equipo
+                }
+            }
+        }
+
+        protected void rptMiembros_ItemDataBound(object sender, RepeaterItemEventArgs e)
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                bool esFinalizado = ViewState["EsProyectoFinalizado"] != null && (bool)ViewState["EsProyectoFinalizado"];
+
+                if (esFinalizado)
+                {
+                    var btnEditarM = (LinkButton)e.Item.FindControl("btnEditarM");
+                    var btnToggle = (LinkButton)e.Item.FindControl("btnToggleEstado");
+                    var btnEliminarM = (LinkButton)e.Item.FindControl("btnEliminarMiembro");
+
+                    if (btnEditarM != null) btnEditarM.Visible = false;
+                    if (btnToggle != null) btnToggle.Visible = false;
+                    if (btnEliminarM != null) btnEliminarM.Visible = false;
+
+                }
             }
         }
 
@@ -274,7 +349,6 @@ namespace SistemaGestionCGI
             CargarGrillaEjecucion();
         }
 
-        // ESTOS ERAN LOS MÉTODOS QUE FALTABAN:
         protected void btnCancelarNew_Click(object sender, EventArgs e)
         {
             btnRegresar_Click(sender, e);
@@ -285,6 +359,7 @@ namespace SistemaGestionCGI
             btnRegresar_Click(sender, e);
         }
 
+
         // ==========================================
         // 4. GESTIÓN DE EQUIPO
         // ==========================================
@@ -292,10 +367,24 @@ namespace SistemaGestionCGI
         private void CargarEquipo(int idEjecucion)
         {
             hfIdEjecucionEquipo.Value = idEjecucion.ToString();
+
+            var proyecto = _manejador.ObtenerEjecucionPorId(idEjecucion);
+
+            // CORRECCIÓN: Comparación robusta
+            string estado = proyecto.strEstado_ejec?.Trim().ToUpper() ?? "";
+            bool esFinalizado = (estado == "FINALIZADO");
+
+            // Ocultar botón "Nuevo Integrante" si está finalizado
+            btnAbrirFormMiembro.Visible = !esFinalizado;
+
+            // Guardar estado para usarlo en la tabla de miembros
+            ViewState["EsProyectoFinalizado"] = esFinalizado;
+
             pnlGrilla.Visible = false;
             headerEjecucion.Visible = false;
             pnlEquipoListado.Visible = true;
             pnlFormularioMiembro.Visible = false;
+
             RefrescarTablaMiembros();
         }
 
@@ -350,7 +439,7 @@ namespace SistemaGestionCGI
                         Msg("Debe especificar la Entidad para miembros externos.", "ww");
                         return;
                     }
-                    facultad = "EXTERNO"; // Valor por defecto para no dejar null en BD
+                    facultad = "EXTERNO"; 
                 }
                 else
                 {
@@ -378,10 +467,6 @@ namespace SistemaGestionCGI
                 // 4. GUARDAR O ACTUALIZAR
                 if (string.IsNullOrEmpty(hfIdMiembroEdit.Value))
                 {
-                    // VALIDACIÓN DE DUPLICADOS (Nuevo)
-                    // Aquí deberías llamar a un método en BLL que verifique si la cédula ya existe en ESTE proyecto
-                    /* if (_manejador.ExisteMiembro(m.fkId_ejec, m.strCedula_miembro)) { Msg("Esta persona ya está registrada.", "ee"); return; } */
-
                     _manejador.GuardarMiembro(m);
                     SetFlashMessage("Integrante agregado correctamente.", "ss");
                 }
@@ -632,7 +717,6 @@ namespace SistemaGestionCGI
         }
 
 
-        // Evento para el Botón 1: Abrir Modal de Cierre
         protected void btnInformeCierre_Click(object sender, EventArgs e)
         {
             string idEjecucionStr = hfIdEjecucionInforme.Value;
@@ -643,16 +727,14 @@ namespace SistemaGestionCGI
                 string estado = proyecto.strEstado_ejec.ToUpper();
                 bool tieneArchivo = !string.IsNullOrEmpty(proyecto.strInforme_Cierre);
 
-                // --- LÓGICA DE ESTADOS DEL MODAL ---
 
                 if (estado == "CIERRE APROBADO" || estado == "FINALIZADO")
                 {
-                    // CASO 1: YA ESTÁ APROBADO (Modo solo lectura bloqueado)
-                    pnlCierreBloqueado.Visible = true;       // Mensaje verde grande
-                    divAlertaCierre.Visible = false;         // Ocultar alerta amarilla
-                    pnlCargaCierre.Visible = false;          // Ocultar Dropzone (No se puede subir más)
-                    btnGuardarCierre.Visible = false;        // Ocultar botón guardar
-                    btnAprobarCierre.Visible = false;        // Ocultar botón aprobar (ya lo está)
+                    pnlCierreBloqueado.Visible = true;      
+                    divAlertaCierre.Visible = false;   
+                    pnlCargaCierre.Visible = false;         
+                    btnGuardarCierre.Visible = false; 
+                    btnAprobarCierre.Visible = false;   
 
                     // Mostrar archivo para descargar
                     pnlArchivoCierreActual.Visible = true;
@@ -661,13 +743,11 @@ namespace SistemaGestionCGI
                 }
                 else
                 {
-                    // CASO 2: AÚN NO APROBADO (Permite edición)
                     pnlCierreBloqueado.Visible = false;
                     divAlertaCierre.Visible = true;
                     pnlCargaCierre.Visible = true;
                     btnGuardarCierre.Visible = true;
 
-                    // Configurar visualización del archivo actual
                     if (tieneArchivo)
                     {
                         pnlArchivoCierreActual.Visible = true;
@@ -679,7 +759,7 @@ namespace SistemaGestionCGI
 
                         if (estado == "EN REVISION")
                         {
-                            btnAprobarCierre.Visible = true; // <--- AQUÍ APARECE EL BOTÓN
+                            btnAprobarCierre.Visible = true;
                         }
                         else
                         {
@@ -705,29 +785,23 @@ namespace SistemaGestionCGI
         {
             try
             {
-                // 1. Validaciones
                 if (!flpCierre.HasFile)
                 {
                     Msg("Debe adjuntar el informe de cierre.", "ww");
-                    // Reabrimos el modal si falla la validación
                     ScriptManager.RegisterStartupScript(this, GetType(), "ReopenCierre",
                         "new bootstrap.Modal(document.getElementById('modalSubirCierre')).show();", true);
                     return;
                 }
 
-                // CORREGIDO: Usamos hfIdEjecucionInforme
                 if (!int.TryParse(hfIdEjecucionInforme.Value, out int idEjec))
                 {
                     Msg("Error al identificar el proyecto.", "ee");
                     return;
                 }
 
-                // 2. Guardar Físicamente
-                // Nomenclatura: CIERRE_Ticks_Nombre.pdf
                 string nombreArchivo = $"CIERRE_{DateTime.Now.Ticks}{Path.GetExtension(flpCierre.FileName)}";
                 string rutaGuardada = GuardarArchivoFisico(flpCierre, nombreArchivo);
 
-                // 3. Lógica de Negocio (BLL)
                 string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
                 _manejador.SubirInformeCierre(idEjec, rutaGuardada, usuario);
 
@@ -737,7 +811,6 @@ namespace SistemaGestionCGI
 
                 Msg(mensaje, "ss");
 
-                // 4. Feedback y Refresco
                 ScriptManager.RegisterStartupScript(this, GetType(), "CloseAll",
                             "bootstrap.Modal.getInstance(document.getElementById('modalSubirCierre')).hide(); $('#modalInformes').modal('hide');", true);
 
@@ -758,17 +831,13 @@ namespace SistemaGestionCGI
                 {
                     string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
 
-                    // 1. Llamar al BLL para aprobar
                     _manejador.AprobarCierre(idEjec, usuario);
 
-                    // 2. Feedback
                     Msg("Documento APROBADO correctamente. Se ha habilitado la fase final.", "ss");
 
-                    // 3. Cerrar todo y recargar
                     ScriptManager.RegisterStartupScript(this, GetType(), "CloseAllApprove",
                         "bootstrap.Modal.getInstance(document.getElementById('modalSubirCierre')).hide(); $('#modalInformes').modal('hide');", true);
 
-                    // 4. Recargar grilla (Esto actualizará el método ConfigurarBotonesFaseFinal automáticamente)
                     CargarGrillaEjecucion();
                 }
             }
@@ -778,26 +847,20 @@ namespace SistemaGestionCGI
             }
         }
 
-        // Evento para el Botón 2
-        // 1. Abrir Modal Final
         protected void btnInformeFinal_Click(object sender, EventArgs e)
         {
             string idEjecucionStr = hfIdEjecucionInforme.Value;
             if (!string.IsNullOrEmpty(idEjecucionStr) && int.TryParse(idEjecucionStr, out int idEjec))
             {
-                // 1. Obtener estado actual
                 var proyecto = _manejador.ObtenerEjecucionPorId(idEjec);
                 string estado = proyecto.strEstado_ejec.ToUpper();
                 bool tieneArchivo = !string.IsNullOrEmpty(proyecto.strInforme_Final);
 
-                // 2. Configurar Modal según estado
                 if (estado == "FINALIZADO")
                 {
-                    // MODO LECTURA (Bloqueado)
-                    pnlCargaFinal.Visible = false;      // <--- IMPORTANTE: Ver paso 2 del Frontend
-                    btnGuardarFinal.Visible = false;    // Ocultar botón guardar
+                    pnlCargaFinal.Visible = false;  
+                    btnGuardarFinal.Visible = false; 
 
-                    // Mostrar archivo cargado
                     if (tieneArchivo)
                     {
                         pnlArchivoFinalActual.Visible = true;
@@ -807,13 +870,11 @@ namespace SistemaGestionCGI
                 }
                 else
                 {
-                    // MODO EDICIÓN (Cierre Aprobado)
                     pnlCargaFinal.Visible = true;
                     btnGuardarFinal.Visible = true;
-                    pnlArchivoFinalActual.Visible = false; // Ocultamos el visualizador simple para mostrar el dropzone limpio
+                    pnlArchivoFinalActual.Visible = false;
                 }
 
-                // 3. Abrir Modal
                 ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalFinal",
                     "new bootstrap.Modal(document.getElementById('modalSubirFinal')).show();", true);
             }
@@ -846,7 +907,6 @@ namespace SistemaGestionCGI
 
         private void ConfigurarBotonesFaseFinal(int idEjecucion)
         {
-            // 1. Obtenemos datos del proyecto
             var proyecto = _manejador.ObtenerEjecucionPorId(idEjecucion);
 
             if (proyecto == null) return;
@@ -863,23 +923,19 @@ namespace SistemaGestionCGI
 
             if (estado == "CIERRE APROBADO" || estado == "FINALIZADO")
             {
-                // DESBLOQUEADO
                 btnInformeFinal.CssClass = "btn btn-white border shadow-sm p-3 text-start hover-lift";
                 btnInformeFinal.Enabled = true;
-                btnInformeFinal.Attributes.Remove("title"); // Quitamos el tooltip de bloqueo
+                btnInformeFinal.Attributes.Remove("title"); 
             }
             else
             {
-                // BLOQUEADO (Si está en 'EJECUCION' o 'EN REVISION')
                 btnInformeFinal.CssClass = "btn btn-white border shadow-sm p-3 text-start hover-lift btn-locked";
                 btnInformeFinal.Enabled = false;
                 btnInformeFinal.Attributes.Add("title", "Disponible solo cuando el Informe de Cierre sea APROBADO.");
             }
 
-            // (Opcional) Visual Feedback en el botón de Cierre si ya se subió
             if (tieneCierre)
             {
-                // Podríamos ponerle un borde verde o algo para indicar que ya hay algo subido
                 btnInformeCierre.Style["border-left"] = "5px solid var(--utc-verde) !important";
             }
             else
@@ -895,28 +951,62 @@ namespace SistemaGestionCGI
 
             if (proyecto.strEstado_ejec == "FINALIZADO")
             {
-                // 1. Ocultar Botones Principales (Cabecera del Modal)
-                btnAbrirGenerador.Visible = false;   // Adiós varita mágica
-                btnSubirEscaneado.Visible = false;   // Adiós subida manual
+                btnAbrirGenerador.Visible = false;   
+                btnSubirEscaneado.Visible = false;   
 
-                // 2. Ocultar Acciones en cada fila del Repeater (Iteramos lo que ya se cargó)
                 foreach (RepeaterItem item in rptInformes.Items)
                 {
                     var btnEdit = item.FindControl("btnEditarInf") as LinkButton;
                     var btnDel = item.FindControl("btnEliminarInf") as LinkButton;
 
-                    if (btnEdit != null) btnEdit.Visible = false;     // Adiós edición
-                    if (btnDel != null) btnDel.Visible = false;       // Adiós eliminación
+                    if (btnEdit != null) btnEdit.Visible = false;
+                    if (btnDel != null) btnDel.Visible = false;       
                 }
             }
             else
             {
-                // Estado Normal: Aseguramos que se vean
                 btnAbrirGenerador.Visible = true;
                 btnSubirEscaneado.Visible = true;
-                // (Los items del repeater nacen visibles por defecto en DataBind)
             }
         }
+
+
+        private DateTime? ObtenerFechaFinDelTexto(string periodoTexto)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(periodoTexto) || !periodoTexto.Contains("-")) return null;
+
+                string parteFinal = periodoTexto.Split('-')[1].Trim(); 
+                string[] partes = parteFinal.Split(' ');
+
+                if (partes.Length < 2) return null;
+
+                string mesNombre = partes[0].ToUpper();
+                int anio = int.Parse(partes[1]);
+                int mes = 1;
+
+                switch (mesNombre)
+                {
+                    case "ENERO": mes = 1; break;
+                    case "FEBRERO": mes = 2; break;
+                    case "MARZO": mes = 3; break;
+                    case "ABRIL": mes = 4; break;
+                    case "MAYO": mes = 5; break;
+                    case "JUNIO": mes = 6; break;
+                    case "JULIO": mes = 7; break;
+                    case "AGOSTO": mes = 8; break;
+                    case "SEPTIEMBRE": mes = 9; break;
+                    case "OCTUBRE": mes = 10; break;
+                    case "NOVIEMBRE": mes = 11; break;
+                    case "DICIEMBRE": mes = 12; break;
+                }
+
+                return new DateTime(anio, mes, DateTime.DaysInMonth(anio, mes));
+            }
+            catch { return null; }
+        }
+
 
         // ==========================================
         // 6. GENERACIÓN DE REPORTES (HTML)
@@ -982,8 +1072,8 @@ namespace SistemaGestionCGI
             sb.Append($"<span class='meta-label'>Fecha Emisión</span>");
             sb.Append($"<span class='meta-value'>{DateTime.Now:dd/MM/yyyy}</span>");
             sb.Append("</div>");
-            sb.Append("</div>"); // Fin info-right
-            sb.Append("</div>"); // Fin header-info-split
+            sb.Append("</div>"); 
+            sb.Append("</div>"); 
 
             sb.Append("<div class='mt-5'></div>");
 
@@ -1019,12 +1109,12 @@ namespace SistemaGestionCGI
             sb.Append("<div class='card-item'>");
             sb.Append("<span class='label'>ESTADO ACTUAL</span>");
             string estado = miembro.bitActivo_miembro ? "ACTIVO" : "INACTIVO";
-            string colorEstado = miembro.bitActivo_miembro ? "#198754" : "#dc3545"; // Verde o Rojo
+            string colorEstado = miembro.bitActivo_miembro ? "#198754" : "#dc3545"; 
             sb.Append($"<span class='value' style='color:{colorEstado}'>{estado}</span>");
             sb.Append("</div>");
             sb.Append("</div>");
 
-            sb.Append("</div>"); // Fin Card
+            sb.Append("</div>"); 
 
             // 5. TIMELINE (LÍNEA DE TIEMPO)
             sb.Append("<div class='timeline-container'>");
@@ -1058,8 +1148,8 @@ namespace SistemaGestionCGI
                     // Firma Usuario
                     sb.Append($"<div class='user-signature'><i class='fa-solid fa-user-check'></i> Procesado por: {h.strUsuario}</div>");
 
-                    sb.Append("</div>"); // Fin timeline-body
-                    sb.Append("</div>"); // Fin timeline-content
+                    sb.Append("</div>"); 
+                    sb.Append("</div>"); 
                     sb.Append("</li>");
                 }
             }
@@ -1084,7 +1174,6 @@ namespace SistemaGestionCGI
         {
             if (int.TryParse(hfIdEjecucionInforme.Value, out int id))
             {
-                // Llamamos al método público del control
                 ucGenerador.Mostrar(id);
             }
             else
@@ -1093,13 +1182,11 @@ namespace SistemaGestionCGI
             }
         }
 
-        // GENERACION DEL DOCUMENTO
         protected void ucGenerador_InformeGuardado(object sender, EventArgs e)
         {
-            // Este evento se dispara automáticamente cuando el UserControl termina de guardar
             if (int.TryParse(hfIdEjecucionInforme.Value, out int id))
             {
-                CargarInformes(id); // Refresca la tabla de archivos
+                CargarInformes(id); 
                 Msg("Documento generado y guardado correctamente.", "ss");
             }
         }
@@ -1114,12 +1201,9 @@ namespace SistemaGestionCGI
 
             if (rol == "COORDINADOR")
             {
-                // Ocultar toda la sección inferior del modal
                 tituloEtapaFinal.Visible = false;
                 divContenedorBotonesFinales.Visible = false;
 
-                // Los botones individuales ya no importan porque ocultamos su contenedor padre,
-                // pero por seguridad también los apagamos.
                 btnInformeCierre.Visible = false;
                 btnInformeFinal.Visible = false;
             }

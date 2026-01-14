@@ -43,7 +43,36 @@
             font-size: 1.2rem;
         }
 
+        .btn-disabled-utc {
+            opacity: 0.5 !important;    
+            pointer-events: none !important;   
+            cursor: not-allowed !important;   
+            background-color: #e9ecef !important;
+            border-color: #dee2e6 !important;
+            color: #adb5bd !important;
+            box-shadow: none !important;
+        }
 
+        /* Badges dentro de la tabla */
+        .table .badge {
+            font-weight: 500;
+            font-size: 0.75rem;
+            padding: 5px 8px;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        /* Efecto de pulso para la alerta roja (Opcional, para llamar la atención) */
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(220, 53, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+        }
+
+        .badge.bg-danger {
+            animation: pulse-red 2s infinite;
+        }
 
     </style>
 
@@ -89,7 +118,13 @@
                                 <td><%# Eval("strId_ejec") %></td>
                                 <td class="text-start fw-bold text-primary"><%# Eval("TituloProyecto") %></td>
                                 <td class="text-start"><%# Eval("strCoordinador_ejec") %></td>
-                                <td><%# Eval("strPeriodo_ejec") %></td>
+                                <td class="align-middle">
+                                    <div class="fw-bold text-secondary mb-1">
+                                        <%# Eval("strPeriodo_ejec") %>
+                                    </div>
+    
+                                    <asp:Literal ID="litNotificacionPlazo" runat="server"></asp:Literal>
+                                </td>
                                 <td><%# Convert.ToDateTime(Eval("dtFechaini_ejec")).ToString("dd/MM/yyyy") %></td>
                                 <td><%# Eval("dtFechafin_ejec") != DBNull.Value ? Convert.ToDateTime(Eval("dtFechafin_ejec")).ToString("dd/MM/yyyy") : "-" %></td>
                                 <td>
@@ -239,7 +274,7 @@
 
                 <div class="col-12">
                     <label class="form-label">Periodo / Ciclo</label>
-                    <asp:TextBox ID="txtPeriodoEdit" runat="server" CssClass="form-control" ReadOnly="true"/>
+                    <asp:TextBox ID="txtPeriodoEdit" runat="server" CssClass="form-control" ReadOnly="true" BackColor="#e9ecef"/>
                 </div>
 
                 <div class="col-12">
@@ -313,7 +348,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <asp:Repeater ID="rptMiembros" runat="server" OnItemCommand="rptMiembros_ItemCommand">
+                    <asp:Repeater ID="rptMiembros" runat="server" OnItemCommand="rptMiembros_ItemCommand" OnItemDataBound="rptMiembros_ItemDataBound">
                         <ItemTemplate>
                             <tr class='<%# Convert.ToBoolean(Eval("bitActivo_miembro")) ? "" : "table-secondary text-muted" %>'>
                         

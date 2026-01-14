@@ -38,5 +38,8 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("strInforme_Final")]
         public string strInforme_Final { get; set; }
 
+        [JsonProperty("CantidadInformes")]
+        public int CantidadInformes { get; set; }
+
     }
 }
