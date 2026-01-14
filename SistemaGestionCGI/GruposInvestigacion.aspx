@@ -13,7 +13,7 @@
         .transition-hover:hover {
             transform: translateY(-2px);
             box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
-        }
+        } 
     </style>
 
     <div id="headerGrupos" runat="server" class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
