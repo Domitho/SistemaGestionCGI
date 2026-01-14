@@ -129,23 +129,24 @@ namespace SistemaGestionCGI.BLL
             integrante.strId_int = GenerarCodigoAlfanumerico("INVGCCGRUPO_INTEGRANTES", "strId_int", "I");
 
             string sql = $@"
-                INSERT INTO INVGCCGRUPO_INTEGRANTES 
-                (strId_int, fkId_gru, strCedula_int, strNombres_int, strApellidos_int, strCorreo_int, 
-                    strCarrera_int, strFuncion_int, dtFechaini_int, strObservacion_int, bitActivo_int, bitPertenece_int,
-                    strTipo_int, strFacultad_int, strEntidad_int, strCertificado_int) 
-                VALUES 
-                ('{integrante.strId_int}', '{integrante.fkId_gru}', '{integrante.strCedula_int}', '{integrante.strNombres_int}', 
-                    '{integrante.strApellidos_int}', '{integrante.strCorreo_int}', 
-                    '{integrante.strCarrera_int}', '{integrante.strFuncion_int}', '{integrante.dtFechaini_int:yyyy-MM-dd}', 
-                    '{integrante.strObservacion_int}', 1, 1,
-                    '{integrante.strTipo_int}', '{integrante.strFacultad_int}', '{integrante.strEntidad_int}', '{integrante.strCertificado_int}')";
+                INSERT INTO INVGCCGRUPO_INTEGRANTES
+                (strId_int, fkId_gru, strCedula_int, strNombres_int, strApellidos_int, strCorreo_int,
+                 strCarrera_int, strFuncion_int, dtFechaini_int, bitActivo_int,
+                 strTipo_int, strFacultad_int, strEntidad_int, strCertificado_int)
+                VALUES
+                ('{integrante.strId_int}', '{integrante.fkId_gru}', '{integrante.strCedula_int}', '{integrante.strNombres_int}',
+                 '{integrante.strApellidos_int}', '{integrante.strCorreo_int}',
+                 '{integrante.strCarrera_int}', '{integrante.strFuncion_int}', '{integrante.dtFechaini_int:yyyy-MM-dd}',
+                 1, 
+                 '{integrante.strTipo_int}', '{integrante.strFacultad_int}', '{integrante.strEntidad_int}', '{integrante.strCertificado_int}')";
 
             _dal.UpdateSql(sql);
 
             RegistrarHistorial(integrante.strId_int, "VINCULACIÓN", "Registro inicial en el grupo.", usuario);
         }
 
-        public void ActualizarIntegrante(InvgccGrupoIntegrantes integrante)
+        // Se añade el parámetro string usuario
+        public void ActualizarIntegrante(InvgccGrupoIntegrantes integrante, string usuario)
         {
             string fechaFin = (integrante.dtFechafin_int.HasValue && integrante.dtFechafin_int.Value.Year > 1900)
                 ? $"'{integrante.dtFechafin_int.Value:yyyyMMdd}'"
@@ -154,24 +155,25 @@ namespace SistemaGestionCGI.BLL
             int activo = integrante.bitActivo_int ? 1 : 0;
 
             string sql = $@"
-                UPDATE INVGCCGRUPO_INTEGRANTES SET 
+                UPDATE INVGCCGRUPO_INTEGRANTES SET
                     strCedula_int = '{integrante.strCedula_int}',
                     strNombres_int = '{integrante.strNombres_int}',
                     strApellidos_int = '{integrante.strApellidos_int}',
                     strCorreo_int = '{integrante.strCorreo_int}',
                     strCarrera_int = '{integrante.strCarrera_int}',
                     strFuncion_int = '{integrante.strFuncion_int}',
-                    dtFechaini_int = '{integrante.dtFechaini_int:yyyyMMdd}', 
+                    dtFechaini_int = '{integrante.dtFechaini_int:yyyyMMdd}',
                     dtFechafin_int = {fechaFin},
-                    strObservacion_int = '{integrante.strObservacion_int}',
                     bitActivo_int = {activo},
                     strTipo_int = '{integrante.strTipo_int}',
                     strFacultad_int = '{integrante.strFacultad_int}',
                     strEntidad_int = '{integrante.strEntidad_int}',
-                    strCertificado_int = '{integrante.strCertificado_int}' 
+                    strCertificado_int = '{integrante.strCertificado_int}'
                 WHERE strId_int = '{integrante.strId_int}'";
 
             _dal.UpdateSql(sql);
+
+            RegistrarHistorial(integrante.strId_int, "EDICIÓN", "Actualización de datos generales.", usuario);
         }
 
         public string VerificarIntegranteEnOtroGrupo(string cedula)

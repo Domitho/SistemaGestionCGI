@@ -137,20 +137,20 @@ namespace SistemaGestionCGI.BLL
                 INSERT INTO INVGCCGRUPO_INTEGRANTES 
                 (
                     strId_int, strCedula_int, strApellidos_int, strNombres_int, 
-                    strCorreo_int, strCarrera_int, strFuncion_int, strObservacion_int, 
-                    strTipo_int, fkId_gru, bitActivo_int, dtFechaini_int, bitPertenece_int,
+                    strCorreo_int, strCarrera_int, strFuncion_int, 
+                    strTipo_int, fkId_gru, bitActivo_int, dtFechaini_int, 
                     strEntidad_int, 
-                    strFacultad_int,     -- FALTABA ESTA COLUMNA
-                    strCertificado_int   -- FALTABA ESTA COLUMNA
+                    strFacultad_int, 
+                    strCertificado_int 
                 ) 
                 VALUES 
                 (
                     '{nuevoId}', '{intg.strCedula_int}', '{intg.strApellidos_int}', '{intg.strNombres_int}', 
-                    '{intg.strCorreo_int}', '{intg.strCarrera_int}', '{intg.strFuncion_int}', '{intg.strObservacion_int}', 
-                    '{intg.strTipo_int}', '{intg.fkId_gru}', 1, GETDATE(), 1,
+                    '{intg.strCorreo_int}', '{intg.strCarrera_int}', '{intg.strFuncion_int}', 
+                    '{intg.strTipo_int}', '{intg.fkId_gru}', 1, GETDATE(), 
                     '{intg.strEntidad_int}', 
-                    '{intg.strFacultad_int}',    -- Ahora sí se guardará la Facultad
-                    '{intg.strCertificado_int}'  -- Ahora sí se guardará el Archivo
+                    '{intg.strFacultad_int}', 
+                    '{intg.strCertificado_int}'
                 )";
 
             _dal.UpdateSql(sql);

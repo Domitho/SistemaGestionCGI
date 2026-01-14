@@ -420,15 +420,6 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox dtFechaIniInt;
 
         /// <summary>
-        /// Control txtObservacionInt.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtObservacionInt;
-
-        /// <summary>
         /// Control btnGuardarInt.
         /// </summary>
         /// <remarks>
@@ -456,13 +447,22 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl lblGrupoTitulo;
 
         /// <summary>
-        /// Control gvProyectosDetalle.
+        /// Control rptProyectosDetalle.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvProyectosDetalle;
+        protected global::System.Web.UI.WebControls.Repeater rptProyectosDetalle;
+
+        /// <summary>
+        /// Control pnlSinProyectos.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlSinProyectos;
 
         /// <summary>
         /// Control modalHistorial.

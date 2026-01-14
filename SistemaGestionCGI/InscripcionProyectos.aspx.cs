@@ -144,7 +144,6 @@ namespace SistemaGestionCGI
                     return;
                 }
 
-                // Construcción limpia del objeto
                 var nuevo = new InvgccGrupoIntegrantes
                 {
                     fkId_gru = ddlGrupo.SelectedValue,
@@ -153,7 +152,6 @@ namespace SistemaGestionCGI
                     strApellidos_int = txtApellidosInt.Text.Trim(),
                     strCorreo_int = txtCorreoInt.Text.Trim(),
                     strFuncion_int = ddlFuncionIntModal.SelectedValue,
-                    strObservacion_int = txtObservacionInt.Text.Trim(),
                     strTipo_int = ddlTipoInt.SelectedValue
                 };
 
@@ -195,7 +193,7 @@ namespace SistemaGestionCGI
                 if (item != null) item.Selected = true;
 
                 txtCedulaInt.Text = ""; txtNombresInt.Text = ""; txtApellidosInt.Text = "";
-                txtCorreoInt.Text = ""; txtCarreraInt.Text = ""; ddlFuncionIntModal.SelectedIndex = 0; txtObservacionInt.Text = "";
+                txtCorreoInt.Text = ""; txtCarreraInt.Text = ""; ddlFuncionIntModal.SelectedIndex = 0;
                 ddlFacultadInt.SelectedIndex = 0;
 
                 Msg("Integrante registrado y seleccionado.", "ss");

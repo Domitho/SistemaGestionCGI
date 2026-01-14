@@ -270,7 +270,6 @@ namespace SistemaGestionCGI
                     strFuncion_int = ddlFuncionInt.SelectedValue,
                     strTipo_int = ddlTipoInt.SelectedValue,
                     dtFechaini_int = !string.IsNullOrEmpty(dtFechaIniInt.Text) ? DateTime.Parse(dtFechaIniInt.Text) : DateTime.Now,
-                    strObservacion_int = txtObservacionInt.Text.Trim(),
                     strCertificado_int = hfCertificadoIntActual.Value
                 };
 
@@ -285,7 +284,7 @@ namespace SistemaGestionCGI
                     i.strCarrera_int = null;
                     i.strFacultad_int = null;
                 }
-                else 
+                else
                 {
                     i.strEntidad_int = null;
                     i.strCarrera_int = txtCarreraInt.Text.Trim();
@@ -298,9 +297,10 @@ namespace SistemaGestionCGI
                     i.strCertificado_int = GuardarArchivoFisico(flpCertificadoInt, "CERTIFICADOS", nombre);
                 }
 
+                string usuario = Session["UsuarioLogueado"]?.ToString() ?? "Sistema";
+
                 if (string.IsNullOrEmpty(hfIdIntEdit.Value))
                 {
-                    string usuario = Session["UsuarioLogueado"]?.ToString() ?? "Sistema";
                     _manejador.GuardarIntegrante(i, usuario);
                     SetFlashMessage("Integrante agregado correctamente.", "ss");
                 }
@@ -308,13 +308,14 @@ namespace SistemaGestionCGI
                 {
                     i.strId_int = hfIdIntEdit.Value;
                     var original = _manejador.ObtenerIntegrantePorId(i.strId_int);
+
                     if (original != null)
                     {
                         i.dtFechafin_int = original.dtFechafin_int;
                         i.bitActivo_int = original.bitActivo_int;
                     }
 
-                    _manejador.ActualizarIntegrante(i);
+                    _manejador.ActualizarIntegrante(i, usuario);
                     SetFlashMessage("Datos del integrante actualizados.", "ss");
                 }
 
@@ -369,7 +370,6 @@ namespace SistemaGestionCGI
             txtApellidosInt.Text = i.strApellidos_int;
             txtCorreoInt.Text = i.strCorreo_int;
             dtFechaIniInt.Text = i.dtFechaini_int.ToString("yyyy-MM-dd");
-            txtObservacionInt.Text = i.strObservacion_int;
 
             if (ddlFuncionInt.Items.FindByValue(i.strFuncion_int) != null)
                 ddlFuncionInt.SelectedValue = i.strFuncion_int;
@@ -415,10 +415,22 @@ namespace SistemaGestionCGI
                 var lista = _manejador.ObtenerProyectosDeGrupo(idGrupo);
                 var grupo = _manejador.ObtenerGrupoPorId(idGrupo);
 
-                gvProyectosDetalle.DataSource = lista;
-                gvProyectosDetalle.DataBind();
+                if (grupo != null)
+                    lblGrupoTitulo.InnerText = $"PORTAFOLIO: {grupo.strNombre_gru}";
 
-                if (grupo != null) lblGrupoTitulo.InnerText = $"PORTAFOLIO: {grupo.strNombre_gru}";
+                if (lista != null && lista.Count > 0)
+                {
+                    rptProyectosDetalle.DataSource = lista;
+                    rptProyectosDetalle.DataBind();
+
+                    rptProyectosDetalle.Visible = true;
+                    pnlSinProyectos.Visible = false; 
+                }
+                else
+                {
+                    rptProyectosDetalle.Visible = false;
+                    pnlSinProyectos.Visible = true;
+                }
 
                 ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalProy",
                     "var m = new bootstrap.Modal(document.getElementById('modalProyectosDetalle')); m.show();", true);
@@ -612,7 +624,6 @@ namespace SistemaGestionCGI
             ddlTipoInt.SelectedIndex = 0;
             ddlFacultadInt.SelectedIndex = 0;
             dtFechaIniInt.Text = DateTime.Now.ToString("yyyy-MM-dd");
-            txtObservacionInt.Text = "";
             hfCertificadoIntActual.Value = "";
         }
 

@@ -478,10 +478,6 @@
                             </div>
                             <div class="form-text small">Obligatorio para Investigadores Principales.</div>
                         </div>
-                        <div class="col-12">
-                            <label class="form-label">Observación</label>
-                            <asp:TextBox ID="txtObservacionInt" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="2" />
-                        </div>
                     </div>
                 </div>
                 <div class="modal-footer border-0 bg-light justify-content-center">

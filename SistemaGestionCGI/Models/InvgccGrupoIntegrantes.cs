@@ -8,9 +8,6 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("strId_int")]
         public string strId_int { get; set; }
 
-        [JsonProperty("bitPertenece_int")]
-        public bool bitPertenece_int { get; set; }
-
         [JsonProperty("strCedula_int")]
         public string strCedula_int { get; set; }
 
@@ -31,9 +28,6 @@ namespace SistemaGestionCGI.Models
 
         [JsonProperty("dtFechafin_int")]
         public DateTime? dtFechafin_int { get; set; }
-
-        [JsonProperty("strObservacion_int")]
-        public string strObservacion_int { get; set; }
 
         [JsonProperty("fkId_gru")]
         public string fkId_gru { get; set; }

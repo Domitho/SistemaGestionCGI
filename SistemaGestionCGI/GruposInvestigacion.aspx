@@ -6,6 +6,16 @@
     <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/modal-historial-reporte.css" rel="stylesheet" />
 
+    <style>
+        .transition-hover {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .transition-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+        }
+    </style>
+
     <div id="headerGrupos" runat="server" class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
         <h3 class="utc-title mb-0">
             <i class="fa-solid fa-people-group me-2"></i> GRUPOS DE INVESTIGACIÓN
@@ -354,7 +364,6 @@
                 </div>
                 
                 <div class="col-md-6"><label class="form-label">Fecha Inicio</label><asp:TextBox ID="dtFechaIniInt" runat="server" CssClass="form-control" TextMode="Date" /></div>
-                <div class="col-12"><label class="form-label">Observaciones</label><asp:TextBox ID="txtObservacionInt" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="2" /></div>
             </div>
 
             <div class="d-flex justify-content-center gap-3 mt-4">
@@ -368,39 +377,123 @@
         </div>
     </asp:Panel>
 
-    <div class="modal fade" id="modalProyectosDetalle" tabindex="-1" aria-hidden="true" ClientIDMode="Static">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content shadow-utc border-0 rounded-4">
-                <div class="modal-header bg-utc text-white">
-                    <h5 class="modal-title w-100 text-center"><i class="fa-solid fa-list-check me-2"></i> Proyectos Asociados</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body bg-light">
-                    <h6 class="text-primary fw-bold text-center mb-3 text-uppercase border-bottom pb-2" id="lblGrupoTitulo" runat="server">Grupo Seleccionado</h6>
-                    <div class="table-responsive bg-white rounded shadow-sm p-3 border">
-                        <asp:GridView ID="gvProyectosDetalle" runat="server" AutoGenerateColumns="false" 
-                            CssClass="table table-hover table-modal table-borderless align-middle mb-0 text-center"
-                            GridLines="Horizontal"
-                            EmptyDataText="<div class='text-center p-4 text-muted'><i class='fa-solid fa-folder-open fa-3x mb-3 text-secondary opacity-50'></i><br>Este grupo aún no tiene proyectos registrados.</div>">
-                            <Columns>
-                                <asp:BoundField DataField="strId_pro" HeaderText="ID" ItemStyle-CssClass="fw-bold small text-muted" />
-                                <asp:BoundField DataField="strTema_pro" HeaderText="Tema del Proyecto" ItemStyle-CssClass="text-start fw-semibold text-dark" />
-                                <asp:TemplateField HeaderText="Estado">
-                                    <ItemTemplate>
-                                        <span class='<%# 
-                                            Eval("strEstado_pro").ToString() == "Aprobado" ? "badge bg-success rounded-pill" : 
-                                            Eval("strEstado_pro").ToString() == "Rechazado" ? "badge bg-danger rounded-pill" : 
-                                            "badge bg-warning text-dark rounded-pill" %>'>
-                                            <%# Eval("strEstado_pro") %>
-                                        </span>
-                                    </ItemTemplate>
-                                </asp:TemplateField>
-                            </Columns>
-                        </asp:GridView>
+    <div class="modal fade" id="modalProyectosDetalle" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            
+                <div class="modal-header utc-header py-3">
+                    <div class="d-flex align-items-center w-100">
+                        <i class="fa-solid fa-briefcase text-white fs-4 me-3"></i>
+                        <div>
+                            <h5 class="modal-title text-white fw-bold mb-0" id="lblGrupoTitulo" runat="server">
+                                PORTAFOLIO DE PROYECTOS
+                            </h5>
+                            <small class="text-white-50">Historial de vinculación académica</small>
+                        </div>
                     </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-footer border-0 justify-content-center pb-3">
-                    <button type="button" class="btn btn-outline-secondary btn-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+
+                <div class="modal-body bg-light p-4">
+                
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body p-0 overflow-hidden">
+                            <div class="table-responsive">
+                                <div class="container-fluid p-0">
+                                    <div class="d-flex flex-column gap-3">
+        
+                                        <asp:Repeater ID="rptProyectosDetalle" runat="server">
+                                            <ItemTemplate>
+                                                <div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-0 transition-hover">
+                                                    <div class="card-body p-0 d-flex">
+                        
+                                                        <div class='<%# "flex-shrink-0 " + (
+                                                                Eval("strEstado_pro").ToString() == "Aprobado" ? "bg-success" : 
+                                                                Eval("strEstado_pro").ToString() == "Rechazado" ? "bg-danger" : 
+                                                                "bg-warning"
+                                                            ) %>' style="width: 6px;">
+                                                        </div>
+
+                                                        <div class="p-3 w-100 d-flex flex-column flex-lg-row align-items-center gap-3">
+                            
+                                                            <div class="d-flex align-items-center justify-content-center rounded-circle bg-primary bg-opacity-10 text-primary flex-shrink-0" 
+                                                                 style="width: 45px; height: 45px;">
+                                                                <i class="fa-solid fa-folder-open fs-5"></i>
+                                                            </div>
+
+                                                            <div class="flex-grow-1 text-center text-lg-start w-100">
+                                                                <h6 class="mb-1 fw-bold text-dark text-uppercase" style="font-size: 0.95rem; letter-spacing: 0.5px;">
+                                                                    <%# Eval("strTema_pro") %>
+                                                                </h6>
+                                                                <div class="d-flex flex-wrap justify-content-center justify-content-lg-start gap-3 small text-muted">
+                                                                    <span>
+                                                                        <i class="fa-solid fa-user-tie me-1 text-primary"></i>
+                                                                        <%# Eval("strCoordinador_pro") %>
+                                                                    </span>
+                                                                    <span class="d-none d-lg-block">|</span>
+                                                                    <span>
+                                                                        <i class="fa-regular fa-clock me-1"></i>
+                                                                        <%# Eval("strDuracion_pro") %>
+                                                                    </span>
+                                                                    <span class="d-none d-lg-block">|</span>
+                                                                    <span>
+                                                                        <i class="fa-regular fa-calendar-check me-1"></i>
+                                                                        <%# Convert.ToDateTime(Eval("dtFehains_pro")).ToString("dd MMM yyyy") %>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="d-flex align-items-center gap-3 mt-2 mt-lg-0">
+                                                                <div class="text-end">
+                                                                    <span class='<%# "badge rounded-pill px-3 py-2 " + (
+                                                                            Eval("strEstado_pro").ToString() == "Aprobado" ? "bg-success" : 
+                                                                            Eval("strEstado_pro").ToString() == "Rechazado" ? "bg-danger" : 
+                                                                            "bg-warning text-dark"
+                                                                        ) %>'>
+                                                                        <%# Eval("strEstado_pro") %>
+                                                                    </span>
+                                                                    <div class="small fw-bold text-secondary mt-1" 
+                                                                         style='<%# Eval("intPuntaje_pro") == DBNull.Value ? "display:none;" : "" %>'>
+                                                                        Puntaje: <span class="text-dark"><%# Eval("intPuntaje_pro") %></span>
+                                                                    </div>
+                                                                </div>
+
+                                                                <asp:LinkButton ID="btnVerArchivoPro" runat="server" 
+                                                                    CommandArgument='<%# Eval("strArchivo_pro") %>'
+                                                                    CssClass="btn btn-outline-primary btn-sm rounded-circle d-flex align-items-center justify-content-center"
+                                                                    Style="width: 40px; height: 40px;"
+                                                                    Visible='<%# !string.IsNullOrEmpty(Eval("strArchivo_pro").ToString()) %>'
+                                                                    ToolTip="Ver Documento Adjunto">
+                                                                    <i class="fa-solid fa-file-pdf fs-6"></i>
+                                                                </asp:LinkButton>
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+
+                                        <asp:Panel ID="pnlSinProyectos" runat="server" Visible="false" CssClass="text-center py-5">
+                                            <div class="mb-3 text-muted opacity-50">
+                                                <i class="fa-solid fa-folder-open fa-3x"></i>
+                                            </div>
+                                            <h6 class="text-muted fw-bold">Sin Historial de Proyectos</h6>
+                                            <p class="small text-secondary">Este grupo no tiene proyectos vinculados actualmente.</p>
+                                        </asp:Panel>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            
+                <div class="modal-footer bg-light border-top-0">
+                    <button type="button" class="btn btn-secondary btn-pill px-4" data-bs-dismiss="modal">
+                        Cerrar
+                    </button>
                 </div>
             </div>
         </div>
