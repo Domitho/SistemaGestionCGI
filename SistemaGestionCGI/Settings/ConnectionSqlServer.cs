@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
@@ -18,7 +19,15 @@ namespace SistemaGestionCGI.Settings
 
         private string CreateConnectionString()
         {
+            string connConfig = ConfigurationManager.ConnectionStrings["ConexionUTC"]?.ConnectionString;
+
+            if (!string.IsNullOrEmpty(connConfig))
+            {
+                return connConfig;
+            }
+
             string baseConn = @"server=DESKTOP-A925LIU\SQLEXPRESS2019;database=INVESTIGACION;INTEGRATED SECURITY=true";
+
             return (string.IsNullOrEmpty(Server) || string.IsNullOrEmpty(Database))
                 ? baseConn
                 : string.Format("server={0};database={1};INTEGRATED SECURITY=true", Server, Database);

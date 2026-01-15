@@ -1,0 +1,322 @@
+﻿/* =======================================================
+   🎓 UTC ESTILO INSTITUCIONAL - REFINADO Y OPTIMIZADO
+   ======================================================= */
+
+/* ===== VARIABLES ===== */
+:root {
+    --utc-azul: #312783;
+    --utc-azul-oscuro: #241d66;
+    --utc-verde: #1b9e4b;
+    --utc-gris-claro: #f5f6fa;
+    --utc-rojo: #d9534f;
+    --utc-celeste-info: #00b4ff;
+}
+
+/* =======================================================
+   ESTRUCTURA GLOBAL Y BODY (Refinado)
+   ======================================================= */
+body {
+    /* Fuente elegante y tamaño compacto */
+    font-family: 'Varela Round', sans-serif !important;
+    font-size: 0.85rem !important; /* Aprox 13.6px - Toque refinado */
+    line-height: 1.5;
+    background-color: #f3f4fa !important;
+    color: #495057; /* Gris oscuro suave */
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.container, .container-fluid {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.container-fluid {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* =======================================================
+   TIPOGRAFÍA Y TÍTULOS (Proporcionados)
+   ======================================================= */
+h1, h2, h3, h4, h5, h6, .utc-title, .utc-subtitle {
+    font-weight: 700 !important;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+/* Ajuste de tamaños para que no se vean gigantes */
+h3, .h3 {
+    font-size: 1.5rem !important;
+}
+
+h4, .h4 {
+    font-size: 1.25rem !important;
+}
+
+h5, .h5 {
+    font-size: 1.1rem !important;
+}
+
+.utc-title {
+    color: var(--utc-azul) !important;
+    text-transform: uppercase;
+    font-size: 1.15rem !important; /* Tamaño controlado y elegante */
+    margin-bottom: 0 !important;
+}
+
+.utc-subtitle {
+    color: var(--utc-azul);
+    font-weight: 600;
+    font-size: 1.05rem !important;
+}
+
+/* =======================================================
+   CONTROLES DE FORMULARIO (Ajuste fino)
+   ======================================================= */
+.form-control,
+.form-select,
+.btn {
+    font-size: 0.85rem !important; /* Coherencia con el texto */
+    border-radius: 8px !important;
+}
+
+.form-control, .form-select {
+    border-color: #ccc !important;
+    padding: 0.4rem 0.8rem; /* Padding más sutil */
+}
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--utc-azul) !important;
+        box-shadow: 0 0 0 0.15rem rgba(49, 39, 131, 0.25) !important;
+    }
+
+.form-label {
+    color: var(--utc-azul);
+    font-weight: 600;
+    font-size: 0.85rem !important;
+    margin-bottom: 0.3rem;
+}
+
+/* =======================================================
+   BOTONES (Estilos UTC)
+   ======================================================= */
+.btn-pill {
+    border-radius: 50rem !important;
+    padding: 8px 20px !important; /* Ligeramente más compacto */
+    font-weight: 600 !important;
+    box-shadow: 0 2px 4px rgba(49, 39, 131, 0.15);
+    transition: all 0.2s ease-in-out;
+}
+
+    .btn-pill:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(49, 39, 131, 0.25);
+    }
+
+.btn-primary {
+    background-color: var(--utc-azul) !important;
+    border: none !important;
+    color: #fff !important;
+}
+
+    .btn-primary:hover {
+        background-color: var(--utc-azul-oscuro) !important;
+    }
+
+.btn-outline-primary {
+    border: 1.5px solid var(--utc-azul) !important; /* Borde más fino */
+    color: var(--utc-azul) !important;
+    background-color: #fff !important;
+}
+
+    .btn-outline-primary:hover {
+        background-color: var(--utc-azul) !important;
+        color: #fff !important;
+    }
+
+.btn-success {
+    background-color: var(--utc-verde) !important;
+    border: none !important;
+    color: #fff !important;
+}
+
+.btn-danger {
+    background-color: var(--utc-rojo) !important;
+    border: none !important;
+    color: #fff !important;
+}
+
+.btn-secondary {
+    background-color: #6c757d !important;
+    border: none !important;
+    color: #fff !important;
+}
+
+/* =======================================================
+   Botones de Acción (Iconos) - CORREGIDO
+   ======================================================= */
+/* Agregamos .rounded-circle aquí para forzar el círculo */
+.btn-ver,
+.btn-eliminar,
+.btn-warning.btn-sm,
+.btn-primary.btn-sm,
+.rounded-circle {
+    width: 32px;
+    height: 32px;
+    padding: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem !important;
+    border-radius: 50% !important;
+}
+
+.btn-ver {
+    background-color: var(--utc-celeste-info) !important;
+    border: none !important;
+    color: #fff !important;
+}
+
+    .btn-ver:hover {
+        background-color: #0191d1 !important;
+    }
+
+.btn-eliminar {
+    background-color: #dc3545 !important;
+    border: none !important;
+    color: #fff !important;
+}
+
+    .btn-eliminar:hover {
+        background-color: #b52a36 !important;
+    }
+
+/* =======================================================
+   PANELES Y TARJETAS
+   ======================================================= */
+.form-stack {
+    background-color: #fff !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+    padding: 2rem 2.5rem; /* Espaciado interno ajustado */
+    box-shadow: 0 4px 12px rgba(49, 39, 131, 0.12) !important;
+}
+
+.shadow-utc, .card, .table-responsive, .header-utc-line {
+    background-color: #ffffff !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+    box-shadow: 0 4px 12px rgba(49, 39, 131, 0.12) !important;
+    width: 100% !important;
+}
+
+#containerDiv {
+    width: calc(100% - 30px) !important;
+    margin: 10px auto !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.utc-container {
+    padding: 20px 25px !important;
+    background-color: #ffffff !important;
+    border: 1px solid rgba(49, 39, 131, 0.18) !important;
+}
+
+/* =======================================================
+   TABLAS (Refinadas)
+   ======================================================= */
+.table-utc, table.dataTable {
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 10px;
+    overflow: hidden;
+    font-size: 0.85rem !important; /* Texto de tabla más pequeño */
+}
+
+    .table-utc thead th, table.dataTable thead th {
+        background: linear-gradient(90deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%) !important;
+        color: #fff !important;
+        text-transform: uppercase !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.5px;
+        border-color: var(--utc-azul) !important;
+        padding: 10px 8px !important; /* Menos padding vertical */
+        font-size: 0.8rem !important;
+    }
+
+    .table-utc tbody td, table.dataTable tbody td {
+        padding: 8px 10px; /* Celdas más compactas */
+        vertical-align: middle;
+    }
+
+    table.dataTable tbody tr:nth-child(even) {
+        background-color: #eef1ff !important;
+    }
+
+    table.dataTable tbody tr:hover {
+        background-color: #d9e0ff !important;
+        cursor: pointer;
+    }
+
+/* =======================================================
+   NAVBAR Y HEADER
+   ======================================================= */
+.utc-header {
+    background: linear-gradient(90deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%) !important;
+    color: #fff !important;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    padding: 15px 25px !important; /* Header más compacto */
+}
+
+.utc-navbar {
+    /* 🔥 Aquí aplicamos el color real para quitar el style inline del Master */
+    background-color: var(--utc-azul-oscuro) !important;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    border-bottom: 2px solid var(--utc-azul);
+    font-size: 0.85rem;
+}
+
+    .utc-navbar .nav-link {
+        color: rgba(255, 255, 255, 0.9) !important;
+        font-weight: 600;
+        padding: 6px 12px !important;
+        border-radius: 20px;
+        transition: all 0.25s ease-in-out;
+    }
+
+        .utc-navbar .nav-link:hover,
+        .utc-navbar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.15) !important;
+            color: #fff !important;
+        }
+
+/* =======================================================
+   RESPONSIVE
+   ======================================================= */
+@media (max-width: 768px) {
+    .utc-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .utc-header-user {
+        margin-top: 10px;
+    }
+
+    .utc-container {
+        padding: 15px !important;
+    }
+
+    /* En móvil permitimos que la fuente crezca un poco para legibilidad */
+    body {
+        font-size: 0.9rem !important;
+    }
+}
