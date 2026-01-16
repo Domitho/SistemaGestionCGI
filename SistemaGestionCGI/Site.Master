@@ -81,7 +81,7 @@
                 <nav id="navbarDiv" runat="server" class="navbar navbar-expand-lg navbar-dark utc-navbar mt-0 rounded-bottom shadow-sm">
                     <div class="container-fluid">
                         <a class="navbar-brand fw-bold" href="#">UTC</a>
-                        
+        
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#mainNavbar" aria-controls="mainNavbar"
                                 aria-expanded="false" aria-label="Toggle navigation">
@@ -90,7 +90,7 @@
 
                         <div class="collapse navbar-collapse" id="mainNavbar">
                             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                                
+                
                                 <li class="nav-item">
                                     <a class="nav-link px-3" href="Dashboard.aspx" id="lnkMenuDashboard" runat="server">
                                         <i class="fa-solid fa-chart-line me-2"></i> Dashboard
@@ -103,48 +103,31 @@
                                     </a>
                                 </li>
 
-                                <li class="nav-item">
-                                    <a class="nav-link px-3" href="ConvocatoriaGruInvestigacion.aspx" id="lnkMenuConvocatorias" runat="server">
-                                        <i class="fa-solid fa-bullhorn me-2"></i> Convocatorias
-                                    </a>
-                                </li>
-
-                                <li class="nav-item">
-                                    <a class="nav-link px-3" href="InscripcionProyectos.aspx" id="lnkMenuInscripcion" runat="server">
-                                        <i class="fa-solid fa-file-contract me-2"></i> Inscripción
-                                    </a>
-                                </li>
-
-                                <li class="nav-item">
-                                    <a class="nav-link px-3" href="GruposInvestigacion.aspx" id="lnkMenuGrupos" runat="server">
+                                <li class="nav-item dropdown" id="liDropdownGrupos" runat="server">
+                                    <a class="nav-link dropdown-toggle px-3" href="#" id="navbarDropdownGrupos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="fa-solid fa-people-group me-2"></i> Grupos Inv.
                                     </a>
+                                    <ul class="dropdown-menu shadow-utc border-0" style="width: auto !important; min-width: 260px;" aria-labelledby="navbarDropdownGrupos">
+                                        <li><a class="dropdown-item" href="ConvocatoriaGruInvestigacion.aspx" id="lnkMenuConvocatorias" runat="server"><i class="fa-solid fa-bullhorn me-2 text-primary"></i>Convocatorias</a></li>
+                                        <li><a class="dropdown-item" href="CentrosInvestigacion.aspx" id="lnkMenuCentros" runat="server"><i class="fa-solid fa-building-columns me-2 text-primary"></i>Centros Inv.</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="GruposInvestigacion.aspx" id="lnkMenuGrupos" runat="server"><i class="fa-solid fa-people-group me-2 text-primary"></i>Grupos Investigación</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="CalificacionGruInvestigacion.aspx" id="lnkMenuCalificacion" runat="server"><i class="fa-solid fa-star me-2 text-warning"></i>Calificación Grupos</a></li>
+                                        <li><a class="dropdown-item" href="CategorizacionDocentes.aspx" id="lnkMenuCategorizacion" runat="server"><i class="fa-solid fa-id-card me-2 text-primary"></i>Categorización</a></li>
+                                    </ul>
                                 </li>
 
-                                <li class="nav-item">
-                                    <a class="nav-link px-3" href="CentrosInvestigacion.aspx" id="lnkMenuCentros" runat="server">
-                                        <i class="fa-solid fa-building-columns me-2"></i> Centros Inv.
+                                <li class="nav-item dropdown" id="liDropdownProyectos" runat="server">
+                                    <a class="nav-link dropdown-toggle px-3" href="#" id="navbarDropdownProyectos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa-solid fa-folder-open me-2"></i> Proyectos Inv.
                                     </a>
+    
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-utc border-0" style="width: auto !important; min-width: 260px;" aria-labelledby="navbarDropdownProyectos">
+                                        <li><a class="dropdown-item" href="InscripcionProyectos.aspx" id="lnkMenuInscripcion" runat="server"><i class="fa-solid fa-file-contract me-2 text-primary"></i>Inscripción Proyectos</a></li>
+                                        <li><a class="dropdown-item" href="EjecucionProAprobados.aspx" id="lnkMenuEjecucion" runat="server"><i class="fa-solid fa-person-digging me-2 text-primary"></i>Ejecución Proyectos</a></li>
+                                    </ul>
                                 </li>
-
-                                <li class="nav-item">
-                                    <a class="nav-link px-3" href="CategorizacionDocentes.aspx" id="lnkMenuCategorizacion" runat="server">
-                                        <i class="fa-solid fa-id-card me-2"></i> Categorización
-                                    </a>
-                                </li>
-
-                                <li class="nav-item">
-                                    <a class="nav-link px-3" href="CalificacionGruInvestigacion.aspx" id="lnkMenuCalificacion" runat="server">
-                                        <i class="fa-solid fa-star me-2"></i> Calificación
-                                    </a>
-                                </li>
-
-                                <li class="nav-item">
-                                    <a class="nav-link px-3" href="EjecucionProAprobados.aspx" id="lnkMenuEjecucion" runat="server">
-                                        <i class="fa-solid fa-person-digging me-2"></i> Ejecución
-                                    </a>
-                                </li>
-
                             </ul>
                         </div>
                     </div>
@@ -187,4 +170,4 @@
         }
     </script>
 </body>
-</html>
+</html> 

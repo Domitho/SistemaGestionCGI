@@ -24,6 +24,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl headerEjecucion;
 
         /// <summary>
+        /// Control btnGestionarCiclos.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlButton btnGestionarCiclos;
+
+        /// <summary>
         /// Control btnNuevoEjecucion.
         /// </summary>
         /// <remarks>

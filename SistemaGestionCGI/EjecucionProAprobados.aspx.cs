@@ -12,12 +12,11 @@ namespace SistemaGestionCGI
 {
     public partial class EjecucionProAprobados : System.Web.UI.Page
     {
-        // ==========================================
-        // 1. INSTANCIAS Y VARIABLES GLOBALES
-        // ==========================================
+        // INSTANCIAS Y VARIABLES GLOBALES
         private readonly ManejadorEjecucionProyectos _manejador = new ManejadorEjecucionProyectos();
         private readonly ManejadorInscripcionProyectos _manejadorProyectos = new ManejadorInscripcionProyectos();
         private const string RUTA_VIRTUAL_ARCHIVOS = "~/RepositorioUTC/EjecucionInformes/";
+        private bool EsAdmin => Session["RolUsuario"]?.ToString() == "ADMINISTRADOR";
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -29,6 +28,7 @@ namespace SistemaGestionCGI
                     return;
                 }
 
+                AplicarSeguridadRoles();
                 CargarComboCiclos();
                 CargarGrillaEjecucion();
 
@@ -44,6 +44,20 @@ namespace SistemaGestionCGI
                     Session["TempMsg"] = null;
                     Session["TempTipo"] = null;
                 }
+            }
+        }
+
+        private void AplicarSeguridadRoles()
+        {
+            if (!EsAdmin)
+            {
+                btnNuevoEjecucion.Visible = false;
+                btnGestionarCiclos.Visible = false;
+            }
+            else
+            {
+                btnNuevoEjecucion.Visible = true;
+                btnGestionarCiclos.Visible = true;
             }
         }
 
@@ -201,84 +215,30 @@ namespace SistemaGestionCGI
             if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
             {
                 var btnEditar = (LinkButton)e.Item.FindControl("btnEditar");
-                var btnEquipo = (LinkButton)e.Item.FindControl("btnEquipo");
                 var btnEliminar = (LinkButton)e.Item.FindControl("btnEliminar");
-                var btnInformes = (LinkButton)e.Item.FindControl("btnInformes");
-                var litNotif = (Literal)e.Item.FindControl("litNotificacionPlazo");
+                var btnEquipo = (LinkButton)e.Item.FindControl("btnEquipo");
 
-                string estadoRaw = DataBinder.Eval(e.Item.DataItem, "strEstado_ejec")?.ToString() ?? "";
-                string estado = estadoRaw.Trim().ToUpper();
+                string estado = DataBinder.Eval(e.Item.DataItem, "strEstado_ejec")?.ToString().ToUpper().Trim() ?? "";
 
-                string periodo = DataBinder.Eval(e.Item.DataItem, "strPeriodo_ejec")?.ToString() ?? "";
-                string rol = Session["RolUsuario"]?.ToString() ?? "";
-
-                int cantInformes = 0;
-                try { cantInformes = Convert.ToInt32(DataBinder.Eval(e.Item.DataItem, "CantidadInformes")); } catch { }
-
-                // ============================================
-                // A. LÓGICA DE SEMÁFORO DE CUMPLIMIENTO
-                // ============================================
-                if (estado != "FINALIZADO" && estado != "CIERRE APROBADO" && cantInformes == 0)
+                if (!EsAdmin)
                 {
-                    DateTime? fechaFinCiclo = ObtenerFechaFinDelTexto(periodo);
+                    if (btnEditar != null) btnEditar.Visible = false;
+                    if (btnEliminar != null) btnEliminar.Visible = false;
 
-                    if (fechaFinCiclo.HasValue)
-                    {
-                        DateTime fechaActual = DateTime.Now;
-                        DateTime fechaLimiteGracia = fechaFinCiclo.Value.AddMonths(1);
-
-                        if (fechaActual > fechaLimiteGracia)
-                        {
-                            litNotif.Text = $@"<div class='badge bg-danger text-white border border-danger shadow-sm' title='Vencido el {fechaLimiteGracia:dd/MM/yyyy}'>
-                                        <i class='fa-solid fa-circle-exclamation me-1'></i> PLAZO VENCIDO</div>";
-                        }
-                        else if (fechaActual > fechaFinCiclo.Value)
-                        {
-                            int diasRestantes = (fechaLimiteGracia - fechaActual).Days;
-                            litNotif.Text = $@"<div class='badge bg-warning text-dark border border-warning shadow-sm'>
-                                        <i class='fa-solid fa-clock me-1'></i> Restan {diasRestantes} días</div>";
-                        }
-                        else
-                        {
-                            litNotif.Text = @"<small class='text-muted'><i class='fa-solid fa-spinner me-1'></i> En curso</small>";
-                        }
-                    }
+                    if (btnEquipo != null) btnEquipo.Visible = true;
                 }
-                else if (cantInformes > 0)
-                {
-                    litNotif.Text = @"<small class='text-success fw-bold'><i class='fa-solid fa-check-double me-1'></i> Informe al día</small>";
-                }
-
-                // ============================================
-                // B. LÓGICA DE BLOQUEO VISUAL (Estado FINALIZADO)
-                // ============================================
-                if (estado == "FINALIZADO")
+                else if (estado == "FINALIZADO")
                 {
                     if (btnEditar != null)
                     {
                         btnEditar.Enabled = false;
                         btnEditar.CssClass += " btn-disabled-utc";
-                        btnEditar.Attributes.Add("onclick", "return false;");
                     }
-
                     if (btnEliminar != null)
                     {
                         btnEliminar.Enabled = false;
                         btnEliminar.CssClass += " btn-disabled-utc";
-                        btnEliminar.Attributes.Add("onclick", "return false;");
                     }
-
-                }
-
-                // ============================================
-                // C. LÓGICA DE ROLES (COORDINADOR)
-                // ============================================
-                if (rol == "COORDINADOR")
-                {
-                    // El coordinador nunca edita ni elimina
-                    if (btnEditar != null) btnEditar.Visible = false;
-                    if (btnEliminar != null) btnEliminar.Visible = false;
-                    if (btnEquipo != null) btnEquipo.Visible = false; 
                 }
             }
         }
@@ -365,14 +325,11 @@ namespace SistemaGestionCGI
 
             var proyecto = _manejador.ObtenerEjecucionPorId(idEjecucion);
 
-            // CORRECCIÓN: Comparación robusta
             string estado = proyecto.strEstado_ejec?.Trim().ToUpper() ?? "";
             bool esFinalizado = (estado == "FINALIZADO");
 
-            // Ocultar botón "Nuevo Integrante" si está finalizado
-            btnAbrirFormMiembro.Visible = !esFinalizado;
+            btnAbrirFormMiembro.Visible = EsAdmin && !esFinalizado;
 
-            // Guardar estado para usarlo en la tabla de miembros
             ViewState["EsProyectoFinalizado"] = esFinalizado;
 
             pnlGrilla.Visible = false;
