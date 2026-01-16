@@ -153,9 +153,12 @@
                                         <i class="fa-solid fa-folder-open"></i>
                                     </asp:LinkButton>
 
-                                    <asp:LinkButton ID="btnEliminar" runat="server" CommandName="Eliminar" CommandArgument='<%# Eval("strId_ejec") %>'
-                                        CssClass="btn btn-eliminar btn-sm rounded-circle"
-                                        OnClientClick="return confirm('¿Está seguro de eliminar este registro y su equipo?');" ToolTip="Eliminar">
+                                    <asp:LinkButton ID="btnEliminar" runat="server" 
+                                        CommandName="Eliminar" 
+                                        CommandArgument='<%# Eval("strId_ejec") %>' 
+                                        CssClass="btn btn-sm btn-outline-danger" 
+                                        ToolTip="Eliminar Registro"
+                                        OnClientClick="return confirmarEliminar(this, '¿Desea eliminar esta ejecución de proyecto?');">
                                         <i class="fa-solid fa-trash"></i>
                                     </asp:LinkButton>
                                 </td>

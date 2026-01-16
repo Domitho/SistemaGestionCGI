@@ -37,13 +37,6 @@ namespace SistemaGestionCGI
                 {
                     CargarEquipo(idTeam);
                 }
-
-                if (Session["TempMsg"] != null)
-                {
-                    Msg(Session["TempMsg"].ToString(), Session["TempTipo"].ToString());
-                    Session["TempMsg"] = null;
-                    Session["TempTipo"] = null;
-                }
             }
         }
 

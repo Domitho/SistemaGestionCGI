@@ -41,15 +41,26 @@ namespace SistemaGestionCGI
                     Session["RolUsuario"] = usuarioLogueado.strRol_usu;
                     Session["UserId"] = usuarioLogueado.intId_usu;
 
-                    if (usuarioLogueado.strRol_usu == "COORDINADOR")
+                    // Normalizamos el rol a mayúsculas para comparaciones seguras
+                    string rol = usuarioLogueado.strRol_usu.Trim().ToUpper();
+
+                    // 1. LÓGICA DE BIENVENIDA
+                    if (rol == "ADMINISTRADOR" || rol == "COORDINADOR")
                     {
-                        Response.Redirect("EjecucionProAprobados.aspx");
+                        // Activamos la alerta de bienvenida para el Master Page
+                        Session["TempMsg"] = "Bienvenido";
+                        Session["TempTipo"] = "welcome";
+                    }
+
+                    // 2. REDIRECCIÓN SEGÚN ROL (Usamos la variable 'rol' normalizada)
+                    if (rol == "COORDINADOR")
+                    {
+                        Response.Redirect("EjecucionProAprobados.aspx", false);
                     }
                     else
                     {
-                        Response.Redirect("Dashboard.aspx"); 
+                        Response.Redirect("Dashboard.aspx", false);
                     }
-
                 }
                 else
                 {
