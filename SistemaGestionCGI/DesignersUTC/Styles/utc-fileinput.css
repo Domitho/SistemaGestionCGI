@@ -2,8 +2,10 @@
    VARIABLES UTC
 ============================================================ */
 :root {
-    --utc-azul: #233C7B;
-    --utc-azul-oscuro: #162653;
+    /*--utc-azul: #233C7B;
+    --utc-azul-oscuro: #162653;*/
+    --utc-azul: #312783;
+    --utc-azul-oscuro: #241d66;
     --utc-celeste: #4BA3F7;
     --utc-bg-light: #f8f9fa;
 }

@@ -1,26 +1,34 @@
 ﻿/* =======================================================
-   🎓 UTC ESTILO INSTITUCIONAL - REFINADO Y OPTIMIZADO
+   🎓 UTC ESTILO INSTITUCIONAL - FULL DESIGN
+   Archivo: utc-full-design.css
+   Descripción: Estilos globales, layout, navbar y componentes base.
    ======================================================= */
 
-/* ===== VARIABLES ===== */
+/* ============================
+   1. VARIABLES GLOBALES
+   ============================ */
 :root {
+    /* COLORES PRINCIPALES */
     --utc-azul: #312783;
-    --utc-azul-oscuro: #241d66;
+    --utc-azul-oscuro: #241d66; /* Azul Institucional Oscuro (Usado en Navbar) */
+    /* COLORES DE ESTADO */
     --utc-verde: #1b9e4b;
-    --utc-gris-claro: #f5f6fa;
     --utc-rojo: #d9534f;
     --utc-celeste-info: #00b4ff;
+    --utc-celeste: #4BA3F7;
+    /* FONDOS */
+    --utc-bg-light: #f8f9fa;
+    --utc-gris-claro: #f5f6fa;
 }
 
-/* =======================================================
-   ESTRUCTURA GLOBAL Y BODY (Refinado)
-   ======================================================= */
+/* ============================
+   2. ESTRUCTURA GLOBAL Y BODY
+   ============================ */
 body {
-    /* Fuente elegante y tamaño compacto */
     font-family: 'Varela Round', sans-serif !important;
-    font-size: 0.85rem !important; /* Aprox 13.6px - Toque refinado */
+    font-size: 0.85rem !important; /* Aprox 13.6px */
     line-height: 1.5;
-    background-color: #f3f4fa !important;
+    background-color: var(--utc-gris-claro) !important;
     color: #495057; /* Gris oscuro suave */
     margin: 0 !important;
     padding: 0 !important;
@@ -39,16 +47,15 @@ body {
     padding-right: 1rem;
 }
 
-/* =======================================================
-   TIPOGRAFÍA Y TÍTULOS (Proporcionados)
-   ======================================================= */
+/* ============================
+   3. TIPOGRAFÍA Y TÍTULOS
+   ============================ */
 h1, h2, h3, h4, h5, h6, .utc-title, .utc-subtitle {
     font-weight: 700 !important;
     letter-spacing: 0.5px;
     margin-bottom: 0.5rem;
 }
 
-/* Ajuste de tamaños para que no se vean gigantes */
 h3, .h3 {
     font-size: 1.5rem !important;
 }
@@ -64,7 +71,7 @@ h5, .h5 {
 .utc-title {
     color: var(--utc-azul) !important;
     text-transform: uppercase;
-    font-size: 1.15rem !important; /* Tamaño controlado y elegante */
+    font-size: 1.15rem !important;
     margin-bottom: 0 !important;
 }
 
@@ -74,19 +81,17 @@ h5, .h5 {
     font-size: 1.05rem !important;
 }
 
-/* =======================================================
-   CONTROLES DE FORMULARIO (Ajuste fino)
-   ======================================================= */
-.form-control,
-.form-select,
-.btn {
-    font-size: 0.85rem !important; /* Coherencia con el texto */
+/* ============================
+   4. CONTROLES DE FORMULARIO
+   ============================ */
+.form-control, .form-select, .btn {
+    font-size: 0.85rem !important;
     border-radius: 8px !important;
 }
 
 .form-control, .form-select {
     border-color: #ccc !important;
-    padding: 0.4rem 0.8rem; /* Padding más sutil */
+    padding: 0.4rem 0.8rem;
 }
 
     .form-control:focus, .form-select:focus {
@@ -101,12 +106,12 @@ h5, .h5 {
     margin-bottom: 0.3rem;
 }
 
-/* =======================================================
-   BOTONES (Estilos UTC)
-   ======================================================= */
+/* ============================
+   5. BOTONES
+   ============================ */
 .btn-pill {
     border-radius: 50rem !important;
-    padding: 8px 20px !important; /* Ligeramente más compacto */
+    padding: 8px 20px !important;
     font-weight: 600 !important;
     box-shadow: 0 2px 4px rgba(49, 39, 131, 0.15);
     transition: all 0.2s ease-in-out;
@@ -128,7 +133,7 @@ h5, .h5 {
     }
 
 .btn-outline-primary {
-    border: 1.5px solid var(--utc-azul) !important; /* Borde más fino */
+    border: 1.5px solid var(--utc-azul) !important;
     color: var(--utc-azul) !important;
     background-color: #fff !important;
 }
@@ -156,15 +161,8 @@ h5, .h5 {
     color: #fff !important;
 }
 
-/* =======================================================
-   Botones de Acción (Iconos) - CORREGIDO
-   ======================================================= */
-/* Agregamos .rounded-circle aquí para forzar el círculo */
-.btn-ver,
-.btn-eliminar,
-.btn-warning.btn-sm,
-.btn-primary.btn-sm,
-.rounded-circle {
+/* Botones de Acción (Iconos Circulares) */
+.btn-ver, .btn-eliminar, .btn-warning.btn-sm, .btn-primary.btn-sm, .rounded-circle {
     width: 32px;
     height: 32px;
     padding: 0 !important;
@@ -195,14 +193,14 @@ h5, .h5 {
         background-color: #b52a36 !important;
     }
 
-/* =======================================================
-   PANELES Y TARJETAS
-   ======================================================= */
+/* ============================
+   6. PANELES Y TARJETAS
+   ============================ */
 .form-stack {
     background-color: #fff !important;
     border-radius: 12px !important;
     border: 1px solid rgba(0, 0, 0, 0.05) !important;
-    padding: 2rem 2.5rem; /* Espaciado interno ajustado */
+    padding: 2rem 2.5rem;
     box-shadow: 0 4px 12px rgba(49, 39, 131, 0.12) !important;
 }
 
@@ -229,14 +227,14 @@ h5, .h5 {
     border: 1px solid rgba(49, 39, 131, 0.18) !important;
 }
 
-/* =======================================================
-   TABLAS (Refinadas)
-   ======================================================= */
+/* ============================
+   7. TABLAS
+   ============================ */
 .table-utc, table.dataTable {
     border: 1px solid #e0e0e0 !important;
     border-radius: 10px;
     overflow: hidden;
-    font-size: 0.85rem !important; /* Texto de tabla más pequeño */
+    font-size: 0.85rem !important;
 }
 
     .table-utc thead th, table.dataTable thead th {
@@ -246,12 +244,12 @@ h5, .h5 {
         font-weight: 600 !important;
         letter-spacing: 0.5px;
         border-color: var(--utc-azul) !important;
-        padding: 10px 8px !important; /* Menos padding vertical */
+        padding: 10px 8px !important;
         font-size: 0.8rem !important;
     }
 
     .table-utc tbody td, table.dataTable tbody td {
-        padding: 8px 10px; /* Celdas más compactas */
+        padding: 8px 10px;
         vertical-align: middle;
     }
 
@@ -264,43 +262,98 @@ h5, .h5 {
         cursor: pointer;
     }
 
-/* =======================================================
-   NAVBAR Y HEADER
-   ======================================================= */
+/* ============================
+   8. HEADER Y NAVBAR (#241D66)
+   ============================ */
+/* Header Institucional (Degradado) */
 .utc-header {
     background: linear-gradient(90deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%) !important;
     color: #fff !important;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
-    padding: 15px 25px !important; /* Header más compacto */
+    padding: 15px 25px !important;
 }
 
+/* Barra de Navegación */
 .utc-navbar {
-    /* 🔥 Aquí aplicamos el color real para quitar el style inline del Master */
-    background-color: var(--utc-azul-oscuro) !important;
-    padding-top: 0.5rem !important;
-    padding-bottom: 0.5rem !important;
-    border-bottom: 2px solid var(--utc-azul);
+    background-color: #241D66 !important; /* Color Navy Solicitado */
+    padding-top: 0.3rem !important;
+    padding-bottom: 0.3rem !important;
+    /* Línea blanca semitransparente superior */
+    border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    border-radius: 0 0 12px 12px !important;
     font-size: 0.85rem;
 }
 
+    /* Enlaces del Menú */
     .utc-navbar .nav-link {
         color: rgba(255, 255, 255, 0.9) !important;
         font-weight: 600;
-        padding: 6px 12px !important;
+        padding: 8px 16px !important;
         border-radius: 20px;
+        margin: 0 4px;
         transition: all 0.25s ease-in-out;
     }
 
+        /* Efecto Hover */
         .utc-navbar .nav-link:hover,
         .utc-navbar .nav-link.active {
             background-color: rgba(255, 255, 255, 0.15) !important;
             color: #fff !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
-/* =======================================================
-   RESPONSIVE
-   ======================================================= */
+        /* Iconos del Menú */
+        .utc-navbar .nav-link i {
+            transition: transform 0.3s ease;
+            color: #4ba3f7; /* Celeste UTC */
+            margin-right: 6px;
+        }
+
+        .utc-navbar .nav-link:hover i {
+            transform: scale(1.15);
+            color: #fff;
+        }
+
+/* Toggler Móvil (Color blanco) */
+.navbar-toggler-icon {
+    filter: invert(1);
+}
+
+.navbar-toggler {
+    border-color: rgba(255,255,255,0.3) !important;
+}
+
+/* Menús Desplegables (Dropdowns) */
+.dropdown-menu.shadow-utc {
+    border: none !important;
+    border-top: 3px solid var(--utc-verde) !important; /* Línea Institucional Verde */
+    border-radius: 0 0 8px 8px !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2) !important;
+    margin-top: 0px !important;
+    background-color: #fff !important;
+}
+
+.dropdown-item {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    color: #555;
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+    .dropdown-item:hover {
+        background-color: #f4f7fa;
+        color: var(--utc-azul);
+        border-left: 3px solid var(--utc-azul);
+        padding-left: 25px;
+    }
+
+/* ============================
+   9. RESPONSIVE
+   ============================ */
 @media (max-width: 768px) {
     .utc-header {
         flex-direction: column;
@@ -315,7 +368,6 @@ h5, .h5 {
         padding: 15px !important;
     }
 
-    /* En móvil permitimos que la fuente crezca un poco para legibilidad */
     body {
         font-size: 0.9rem !important;
     }

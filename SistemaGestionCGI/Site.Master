@@ -35,11 +35,9 @@
             };
             var validTypes = ['success', 'info', 'warning', 'error'];
             if (!validTypes.includes(type)) type = 'info';
-            // Compatibilidad con tus códigos
             if (type === 'ee') type = 'error';
             if (type === 'ss') type = 'success';
             if (type === 'ww') type = 'warning';
-
             toastr[type](msg, title || 'Sistema UTC');
         }
     </script>
@@ -52,96 +50,95 @@
 
         <asp:ScriptManager ID="ScriptManager" runat="server"/>
 
-        <div id="containerDiv" runat="server" class="utc-container shadow-utc mx-auto my-3 bg-white rounded d-flex flex-column flex-grow-1">
+        <div id="containerDiv" runat="server" class="utc-container container-fluid mx-auto my-3 d-flex flex-column flex-grow-1" style="max-width: 1400px;">
             
-            <header>
-                <div class="utc-header d-flex justify-content-between align-items-center flex-wrap p-3 rounded-top">
-                    
+            <header class="shadow-sm rounded-3 bg-white">
+                <div class="utc-header d-flex justify-content-between align-items-center flex-wrap">
                     <div class="utc-header-logo">
-                        <img width="220" src="https://aplicaciones.utc.edu.ec/sigutc/img/bnUTC.png" alt="UTC Logo" class="img-fluid" />
+                        <img width="200" src="https://aplicaciones.utc.edu.ec/sigutc/img/bnUTC.png" alt="UTC Logo" class="img-fluid" />
                     </div>
 
                     <div class="utc-header-title text-center flex-grow-1 mx-3 d-none d-md-block">
-                        <h5 class="m-0 fw-bold text-white text-uppercase tracking-wide">
-                            SISTEMA INTEGRADO DE GESTIÓN
+                        <h5 class="m-0 fw-bold text-white text-uppercase tracking-wide" style="letter-spacing: 2px; opacity: 0.9;">
+                            Sistema Integrado de Gestión
                         </h5>
                     </div>
 
                     <div class="text-end text-white utc-header-user">
-                        <small class="d-block text-white-50">BIENVENIDO</small>
-                        <asp:Label runat="server" ID="lblNombre" CssClass="fw-bold d-block text-truncate" style="max-width: 150px;"></asp:Label>
+                        <small class="d-block text-white-50" style="font-size: 0.75rem;">BIENVENIDO!</small>
+                        <asp:Label runat="server" ID="lblNombre" CssClass="fw-bold d-block text-truncate" style="max-width: 150px; font-size: 0.9rem;"></asp:Label>
                         <asp:Button ID="btnCerrarSesion" runat="server"
                                     OnClick="btnCerrarSesion_Click"
                                     Text="Cerrar Sesión"
                                     CausesValidation="false"
-                                    CssClass="btn btn-outline-light btn-sm mt-2 rounded-pill px-3" />
+                                    CssClass="btn btn-outline-light btn-sm mt-2 rounded-pill px-3 py-1" style="font-size: 0.75rem;" />
                     </div>
                 </div>
 
-                <nav id="navbarDiv" runat="server" class="navbar navbar-expand-lg navbar-dark utc-navbar mt-0 rounded-bottom shadow-sm">
+                <nav id="navbarDiv" runat="server" class="navbar navbar-expand-lg navbar-dark utc-navbar">
                     <div class="container-fluid">
-                        <a class="navbar-brand fw-bold" href="#">UTC</a>
-        
-                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#mainNavbar" aria-controls="mainNavbar"
                                 aria-expanded="false" aria-label="Toggle navigation">
                             <span class="navbar-toggler-icon"></span>
                         </button>
 
                         <div class="collapse navbar-collapse" id="mainNavbar">
-                            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                
+                            <ul class="navbar-nav w-100 justify-content-end mb-2 mb-lg-0">
+                                
                                 <li class="nav-item">
-                                    <a class="nav-link px-3" href="Dashboard.aspx" id="lnkMenuDashboard" runat="server">
-                                        <i class="fa-solid fa-chart-line me-2"></i> Dashboard
+                                    <a class="nav-link" href="Dashboard.aspx" id="lnkMenuDashboard" runat="server">
+                                        <i class="fa-solid fa-chart-line"></i> Dashboard
                                     </a>
                                 </li>
 
                                 <li class="nav-item">
-                                    <a class="nav-link px-3" href="GestionUsuarios.aspx" id="lnkMenuUsuarios" runat="server">
-                                        <i class="fa-solid fa-users-gear me-2"></i> Usuarios
+                                    <a class="nav-link" href="GestionUsuarios.aspx" id="lnkMenuUsuarios" runat="server">
+                                        <i class="fa-solid fa-users-gear"></i> Usuarios
                                     </a>
                                 </li>
 
                                 <li class="nav-item dropdown" id="liDropdownGrupos" runat="server">
-                                    <a class="nav-link dropdown-toggle px-3" href="#" id="navbarDropdownGrupos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fa-solid fa-people-group me-2"></i> Grupos Inv.
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownGrupos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa-solid fa-people-group"></i> Grupos Investigación
                                     </a>
-                                    <ul class="dropdown-menu shadow-utc border-0" style="width: auto !important; min-width: 260px;" aria-labelledby="navbarDropdownGrupos">
-                                        <li><a class="dropdown-item" href="ConvocatoriaGruInvestigacion.aspx" id="lnkMenuConvocatorias" runat="server"><i class="fa-solid fa-bullhorn me-2 text-primary"></i>Convocatorias</a></li>
-                                        <li><a class="dropdown-item" href="CentrosInvestigacion.aspx" id="lnkMenuCentros" runat="server"><i class="fa-solid fa-building-columns me-2 text-primary"></i>Centros Inv.</a></li>
+                                    <ul class="dropdown-menu shadow-utc border-0" style="width: auto !important; min-width: 240px;" aria-labelledby="navbarDropdownGrupos">
+                                        <li><a class="dropdown-item" href="ConvocatoriaGruInvestigacion.aspx" id="lnkMenuConvocatorias" runat="server"><i class="fa-solid fa-bullhorn text-primary"></i> Convocatorias</a></li>
+                                        <li><a class="dropdown-item" href="CentrosInvestigacion.aspx" id="lnkMenuCentros" runat="server"><i class="fa-solid fa-building-columns text-primary"></i> Centros Investigación</a></li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="GruposInvestigacion.aspx" id="lnkMenuGrupos" runat="server"><i class="fa-solid fa-people-group me-2 text-primary"></i>Grupos Investigación</a></li>
+                                        <li><a class="dropdown-item" href="GruposInvestigacion.aspx" id="lnkMenuGrupos" runat="server"><i class="fa-solid fa-people-group text-primary"></i> Grupos Investigación</a></li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="CalificacionGruInvestigacion.aspx" id="lnkMenuCalificacion" runat="server"><i class="fa-solid fa-star me-2 text-warning"></i>Calificación Grupos</a></li>
-                                        <li><a class="dropdown-item" href="CategorizacionDocentes.aspx" id="lnkMenuCategorizacion" runat="server"><i class="fa-solid fa-id-card me-2 text-primary"></i>Categorización</a></li>
+                                        <li><a class="dropdown-item" href="CalificacionGruInvestigacion.aspx" id="lnkMenuCalificacion" runat="server"><i class="fa-solid fa-star text-warning"></i> Calificación Grupos</a></li>
+                                        <li><a class="dropdown-item" href="CategorizacionDocentes.aspx" id="lnkMenuCategorizacion" runat="server"><i class="fa-solid fa-id-card text-primary"></i> Categorización Docentes</a></li>
                                     </ul>
                                 </li>
 
                                 <li class="nav-item dropdown" id="liDropdownProyectos" runat="server">
-                                    <a class="nav-link dropdown-toggle px-3" href="#" id="navbarDropdownProyectos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fa-solid fa-folder-open me-2"></i> Proyectos Inv.
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownProyectos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa-solid fa-folder-open"></i> Proyectos Inv.
                                     </a>
-    
-                                    <ul class="dropdown-menu dropdown-menu-end shadow-utc border-0" style="width: auto !important; min-width: 260px;" aria-labelledby="navbarDropdownProyectos">
-                                        <li><a class="dropdown-item" href="InscripcionProyectos.aspx" id="lnkMenuInscripcion" runat="server"><i class="fa-solid fa-file-contract me-2 text-primary"></i>Inscripción Proyectos</a></li>
-                                        <li><a class="dropdown-item" href="EjecucionProAprobados.aspx" id="lnkMenuEjecucion" runat="server"><i class="fa-solid fa-person-digging me-2 text-primary"></i>Ejecución Proyectos</a></li>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-utc border-0" style="width: auto !important; min-width: 240px;" aria-labelledby="navbarDropdownProyectos">
+                                        <li><a class="dropdown-item" href="InscripcionProyectos.aspx" id="lnkMenuInscripcion" runat="server"><i class="fa-solid fa-file-contract text-primary"></i> Inscripción Proyectos</a></li>
+                                        <li><a class="dropdown-item" href="EjecucionProAprobados.aspx" id="lnkMenuEjecucion" runat="server"><i class="fa-solid fa-person-digging text-primary"></i> Ejecución Proyectos</a></li>
                                     </ul>
                                 </li>
+
                             </ul>
                         </div>
                     </div>
                 </nav>
             </header>
 
-            <main class="p-4 flex-grow-1" style="min-height: 600px;">
-                <asp:ContentPlaceHolder ID="MainContent" runat="server">
-                </asp:ContentPlaceHolder>
+            <main class="p-4 flex-grow-1 py-3">
+                <div class="utc-content-wrapper">
+                    <asp:ContentPlaceHolder ID="MainContent" runat="server">
+                    </asp:ContentPlaceHolder>
+                </div>
             </main>
 
-            <footer id="footerDiv" runat="server" class="text-center py-3 mt-auto border-top bg-light rounded-bottom">
+            <footer id="footerDiv" runat="server" class="text-center py-3 mt-auto border-top bg-white rounded-3 shadow-sm">
                 <p class="text-muted small m-0">
-                    © <script>document.write(new Date().getFullYear())</script> Powered by Sistemas de Información UTC
+                    © <script>document.write(new Date().getFullYear())</script> <strong>Universidad Técnica de Cotopaxi</strong> | Dirección de Investigación
                 </p>
                 <asp:Label ID="lblFecha" runat="server" Visible="false"></asp:Label>
             </footer>
@@ -170,4 +167,4 @@
         }
     </script>
 </body>
-</html> 
+</html>
