@@ -101,8 +101,8 @@ namespace SistemaGestionCGI
                     strSublineasinv_gru = ddlSublineaInv.SelectedValue,
 
                     dtFechacrea_gru = !string.IsNullOrEmpty(txtFechaCreaGru.Text)
-                                      ? DateTime.Parse(txtFechaCreaGru.Text)
-                                      : DateTime.Now,
+                                    ? DateTime.Parse(txtFechaCreaGru.Text)
+                                    : DateTime.Now,
 
                     strFoto_gru = hfFotoActual.Value,
                     strArchivo_gru = hfArchivoActual.Value
@@ -120,19 +120,52 @@ namespace SistemaGestionCGI
                     g.strArchivo_gru = GuardarArchivoFisico(flpArchivoGrupo, "DOCUMENTOS", nombre);
                 }
 
+                string usuario = Session["UsuarioLogueado"]?.ToString() ?? "Sistema";
+
+
                 if (string.IsNullOrEmpty(hfIdGrupo.Value))
                 {
-                    _manejador.GuardarGrupo(g);
-                    Redireccionar("Grupo creado exitosamente.", "ss");
+                    if (!string.IsNullOrEmpty(hfCoordCedula.Value))
+                    {
+                        var coord = new InvgccGrupoIntegrantes
+                        {
+                            strNombres_int = hfCoordNombre.Value,
+                            strApellidos_int = hfCoordApellidos.Value,
+                            strCedula_int = hfCoordCedula.Value,
+                            strCorreo_int = hfCoordCorreo.Value,
+                            strCarrera_int = hfCoordCarrera.Value,
+                            strFacultad_int = hfCoordFacultad.Value,
+                            strCertificado_int = hfCoordArchivo.Value,
+
+                            strFuncion_int = "INVESTIGADOR PRINCIPAL",
+                            strTipo_int = "INTERNO",
+                            bitActivo_int = true,
+                            dtFechaini_int = DateTime.Now
+                        };
+
+                        _manejador.RegistrarGrupoConCoordinador(g, coord, usuario);
+
+                        SetFlashMessage("Grupo creado y Coordinador asignado correctamente.", "ss");
+                    }
+                    else
+                    {
+                        _manejador.GuardarGrupo(g);
+                        SetFlashMessage("Grupo creado exitosamente (Sin coordinador).", "ss");
+                    }
                 }
                 else
                 {
                     g.strId_gru = hfIdGrupo.Value;
                     _manejador.ActualizarGrupo(g);
-                    Redireccionar("Grupo actualizado exitosamente.", "ss");
+                    SetFlashMessage("Datos del grupo actualizados.", "ss");
                 }
+
+                Response.Redirect("GruposInvestigacion.aspx", false);
             }
-            catch (Exception ex) { Msg("Error al guardar: " + ex.Message, "ee"); }
+            catch (Exception ex)
+            {
+                Msg("Error al guardar: " + ex.Message, "ee");
+            }
         }
 
         protected void btnRegresar_Click(object sender, EventArgs e)
@@ -213,6 +246,70 @@ namespace SistemaGestionCGI
             }
 
             CambiarVista(Vista.FormularioGrupo);
+        }
+
+        protected void btnAgregarCoordinador_Click(object sender, EventArgs e)
+        {
+            txtCedulaCoord.Text = "";
+            txtNombreCoord.Text = "";
+            txtApellidoCoord.Text = "";
+            txtCorreoCoord.Text = "";
+            txtCarreraCoord.Text = "";
+            ddlFacultadCoord.SelectedIndex = 0;
+
+            pnlFormularioGrupo.Visible = true;
+            ScriptManager.RegisterStartupScript(this, GetType(), "OpenCoord", "abrirModalCoord();", true);
+        }
+
+        protected void btnGuardarCoordModal_Click(object sender, EventArgs e)
+        {
+            pnlFormularioGrupo.Visible = true;
+
+            if (string.IsNullOrWhiteSpace(txtCedulaCoord.Text) ||
+                string.IsNullOrWhiteSpace(txtNombreCoord.Text) ||
+                string.IsNullOrWhiteSpace(txtApellidoCoord.Text))
+            {
+                Msg("Complete los datos obligatorios del coordinador.", "ww");
+                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpen", "abrirModalCoord();", true);
+                return;
+            }
+
+            if (!flpArchivoCoord.HasFile)
+            {
+                Msg("Debe subir el certificado o resolución.", "ww");
+                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpen", "abrirModalCoord();", true);
+                return;
+            }
+
+            try
+            {
+                string nombreArchivo = "CERT_" + DateTime.Now.Ticks + "_" + flpArchivoCoord.FileName;
+
+                string rutaVirtual = "~/RepositorioUTC/Certificados/";
+                string rutaFisicaCarpeta = Server.MapPath(rutaVirtual);
+
+                if (!Directory.Exists(rutaFisicaCarpeta))
+                    Directory.CreateDirectory(rutaFisicaCarpeta);
+
+                string rutaCompleta = Path.Combine(rutaFisicaCarpeta, nombreArchivo);
+                flpArchivoCoord.SaveAs(rutaCompleta);
+
+                hfCoordArchivo.Value = Path.Combine(rutaVirtual, nombreArchivo).Replace("\\", "/");
+
+                hfCoordNombre.Value = txtNombreCoord.Text.Trim();
+                hfCoordApellidos.Value = txtApellidoCoord.Text.Trim();
+                hfCoordCedula.Value = txtCedulaCoord.Text.Trim();
+                hfCoordCorreo.Value = txtCorreoCoord.Text.Trim();
+                hfCoordCarrera.Value = txtCarreraCoord.Text.Trim();
+                hfCoordFacultad.Value = ddlFacultadCoord.SelectedValue;
+
+                txtCoordinadorGru.Text = $"{txtApellidoCoord.Text} {txtNombreCoord.Text}";
+
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al procesar coordinador: " + ex.Message, "ee");
+            }
         }
 
         // =============================================

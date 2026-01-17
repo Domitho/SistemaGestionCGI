@@ -97,6 +97,15 @@
             <asp:HiddenField ID="hfFotoActual" runat="server" />
             <asp:HiddenField ID="hfArchivoActual" runat="server" />
 
+            <asp:HiddenField ID="hfCoordNombre" runat="server" />
+            <asp:HiddenField ID="hfCoordCedula" runat="server" />
+            <asp:HiddenField ID="hfCoordArchivo" runat="server" />
+
+            <asp:HiddenField ID="hfCoordApellidos" runat="server" />
+            <asp:HiddenField ID="hfCoordCorreo" runat="server" />
+            <asp:HiddenField ID="hfCoordCarrera" runat="server" />
+            <asp:HiddenField ID="hfCoordFacultad" runat="server" />
+
             <div class="row g-3">
                 <div class="col-12">
                     <label class="form-label">Centro de Investigación</label>
@@ -108,9 +117,15 @@
                     <asp:TextBox ID="txtNombreGru" runat="server" CssClass="form-control" autocomplete="off" />
                 </div>
             
-                <div class="col-12">
-                    <label class="form-label">Coordinador</label>
-                    <asp:TextBox ID="txtCoordinadorGru" runat="server" CssClass="form-control" autocomplete="off" />
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Coordinador (Inv. Principal)</label>
+                    <div class="input-group">
+                        <asp:TextBox ID="txtCoordinadorGru" runat="server" CssClass="form-control" ReadOnly="true" placeholder="Asigne el coordinador..."></asp:TextBox>
+        
+                        <asp:LinkButton ID="btnAgregarCoordinador" runat="server" CssClass="btn btn-outline-primary" OnClick="btnAgregarCoordinador_Click">
+                            <i class="fa-solid fa-user-plus"></i> Agregar
+                        </asp:LinkButton>
+                    </div>
                 </div>
             
                 <div class="col-md-6">
@@ -335,9 +350,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Función</label>
                     <asp:DropDownList ID="ddlFuncionInt" runat="server" CssClass="form-select" onchange="ToggleFuncionIntegrante(this)">
-                        <asp:ListItem Value="Investigador Principal">Investigador Principal</asp:ListItem>
                         <asp:ListItem Value="Miembro Investigador" Selected="True">Miembro Investigador</asp:ListItem>
-                        <asp:ListItem Value="Coordinador">Coordinador</asp:ListItem>
                     </asp:DropDownList>
                 </div>
 
@@ -591,7 +604,7 @@
                 </div>
                 <div class="modal-body p-4" style="background: white; min-height: 500px;">
                     <div id="arealmpresion" class="report-paper" runat="server" ClientIDMode="Static">
-                        <div class="header-hero-banner">
+                        <div class="header-hero-banner"> 
                             <img src="https://aplicaciones.utc.edu.ec/sigutc/img/bnUTC.png" alt="UTC Logo" />
                         </div>
                         <div class="header-info-split">
@@ -711,6 +724,86 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalCoordinador" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-primary">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fa-solid fa-user-check me-2"></i> Asignar Coordinador</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="alert alert-info small shadow-sm">
+                        <i class="fa-solid fa-circle-info me-2"></i> El coordinador será registrado automáticamente como <strong>Investigador Principal</strong>.
+                    </div>
+                
+                    <div class="row g-3">
+                        <div class="col-12"><h6 class="text-primary fw-bold border-bottom pb-2">Datos Personales</h6></div>
+                    
+                        <div class="col-md-4">
+                            <label class="form-label">Cédula <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtCedulaCoord" runat="server" CssClass="form-control" MaxLength="15" autocomplete="off"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtNombreCoord" runat="server" CssClass="form-control" autocomplete="off"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtApellidoCoord" runat="server" CssClass="form-control" autocomplete="off"/>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Correo Institucional <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtCorreoCoord" runat="server" CssClass="form-control" TextMode="Email" autocomplete="off"/>
+                        </div>
+
+                        <div class="col-12 mt-3"><h6 class="text-primary fw-bold border-bottom pb-2">Datos Académicos</h6></div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Facultad / Extensión</label>
+                            <asp:DropDownList ID="ddlFacultadCoord" runat="server" CssClass="form-select">
+                                <asp:ListItem Text="-- Seleccione --" Value="" />
+                                <asp:ListItem>FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
+                                <asp:ListItem>FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
+                                <asp:ListItem>FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
+                                <asp:ListItem>FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
+                                <asp:ListItem>FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
+                                <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
+                                <asp:ListItem>EXTENSION LA MANÁ</asp:ListItem>
+                            </asp:DropDownList>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Carrera / Departamento</label>
+                            <asp:TextBox ID="txtCarreraCoord" runat="server" CssClass="form-control" autocomplete="off"/>
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <label class="form-label fw-bold text-danger">Certificado / Resolución (PDF) *</label>
+                            <div class="utc-fileinput-wrapper" id="wrapperArchivoCoord">
+                                <div class="utc-fileinput-header">
+                                    <div class="utc-fileinput-icon"><i class="fa-solid fa-file-contract"></i></div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="utc-fileinput-name">Sin archivo seleccionado</span>
+                                        <div class="utc-fileinput-buttons d-flex gap-2">
+                                            <button type="button" class="btn btn-outline-danger utc-btn-small remove-btn"><i class="fa-solid fa-xmark"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="text" class="form-control form-control-sm utc-edit-name-field d-none" />
+                                <div class="utc-fileinput-preview" id="previewArchivoCoord"></div>
+                                <div class="utc-fileinput-loader" id="loaderArchivoCoord"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
+                                <div class="utc-dropzone" id="dropzoneArchivoCoord"><i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-primary"></i><br />Arrastra el PDF aquí</div>
+                                <asp:FileUpload ID="flpArchivoCoord" runat="server" CssClass="utc-fileinput-input" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-center bg-light border-0">
+                    <asp:Button ID="btnGuardarCoordModal" runat="server" Text="Confirmar y Asignar" CssClass="btn btn-primary btn-pill px-5 shadow-sm" OnClick="btnGuardarCoordModal_Click" />
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
     <script type="text/javascript">
         const dtConfig = {
@@ -729,6 +822,14 @@
             if (typeof UTC_FileInput === 'function') {
                 initFileInput('wrapperArchivoGrupo', '<%= flpArchivoGrupo.ClientID %>');
                 initFileInput('wrapperCertificadoInt', '<%= flpCertificadoInt.ClientID %>');
+
+                if (document.getElementById('wrapperArchivoCoord')) {
+                    UTC_FileInput({
+                        wrapper: "wrapperArchivoCoord", dropzone: "dropzoneArchivoCoord",
+                        preview: "previewArchivoCoord", loader: "loaderArchivoCoord",
+                        input: "<%= flpArchivoCoord.ClientID %>"
+                    });
+                }
             }
         });
 
@@ -801,6 +902,16 @@
         function AbrirModalEstado() {
             var el = document.getElementById('modalEstadoInt');
             if (el) { var modal = bootstrap.Modal.getOrCreateInstance(el); modal.show(); }
+        }
+
+        function abrirModalCoord() {
+            var myModal = new bootstrap.Modal(document.getElementById('modalCoordinador'));
+            myModal.show();
+        }
+        function cerrarModalCoord() {
+            var el = document.getElementById('modalCoordinador');
+            var modal = bootstrap.Modal.getInstance(el);
+            if (modal) modal.hide();
         }
 
         function imprimirReporte() {
