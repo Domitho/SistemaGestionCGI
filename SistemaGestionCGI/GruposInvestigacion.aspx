@@ -726,40 +726,74 @@
 
     <div class="modal fade" id="modalCoordinador" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content border-primary">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title"><i class="fa-solid fa-user-check me-2"></i> Asignar Coordinador</h5>
+            <div class="modal-content border-0 shadow-utc rounded-4">
+            
+                <div class="modal-header bg-utc text-white py-3">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fa-solid fa-user-tie me-2"></i> Asignar Coordinador
+                    </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-4">
-                    <div class="alert alert-info small shadow-sm">
-                        <i class="fa-solid fa-circle-info me-2"></i> El coordinador será registrado automáticamente como <strong>Investigador Principal</strong>.
-                    </div>
+
+                <div class="modal-body bg-white p-4">
                 
+                    <div class="alert alert-light border-0 shadow-sm border-start border-4 border-primary mb-4">
+                        <div class="d-flex">
+                            <i class="fa-solid fa-circle-info text-primary fs-5 me-3 mt-1"></i>
+                            <div>
+                                <strong class="text-primary">Investigador Principal</strong><br />
+                                <small class="text-muted">Este integrante asumirá la máxima autoridad del grupo automáticamente.</small>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row g-3">
-                        <div class="col-12"><h6 class="text-primary fw-bold border-bottom pb-2">Datos Personales</h6></div>
                     
-                        <div class="col-md-4">
-                            <label class="form-label">Cédula <span class="text-danger">*</span></label>
-                            <asp:TextBox ID="txtCedulaCoord" runat="server" CssClass="form-control" MaxLength="15" autocomplete="off"/>
+                        <div class="col-12 mb-2">
+                            <h6 class="text-primary fw-bold border-bottom pb-2">
+                                <span class="pe-3">1. Datos Personales</span>
+                            </h6>
                         </div>
+
                         <div class="col-md-4">
-                            <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                            <label class="form-label small fw-bold text-secondary">Cédula <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtCedulaCoord" runat="server" CssClass="form-control" MaxLength="10" placeholder="050xxxxxxx" autocomplete="off"/>
+                            <asp:RequiredFieldValidator ID="rfvCedula" runat="server" ControlToValidate="txtCedulaCoord"
+                                ErrorMessage="Requerido" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-secondary">Nombres <span class="text-danger">*</span></label>
                             <asp:TextBox ID="txtNombreCoord" runat="server" CssClass="form-control" autocomplete="off"/>
+                            <asp:RequiredFieldValidator ID="rfvNombre" runat="server" ControlToValidate="txtNombreCoord"
+                                ErrorMessage="Requerido" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" />
                         </div>
+
                         <div class="col-md-4">
-                            <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                            <label class="form-label small fw-bold text-secondary">Apellidos <span class="text-danger">*</span></label>
                             <asp:TextBox ID="txtApellidoCoord" runat="server" CssClass="form-control" autocomplete="off"/>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Correo Institucional <span class="text-danger">*</span></label>
-                            <asp:TextBox ID="txtCorreoCoord" runat="server" CssClass="form-control" TextMode="Email" autocomplete="off"/>
+                            <asp:RequiredFieldValidator ID="rfvApellido" runat="server" ControlToValidate="txtApellidoCoord"
+                                ErrorMessage="Requerido" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" />
                         </div>
 
-                        <div class="col-12 mt-3"><h6 class="text-primary fw-bold border-bottom pb-2">Datos Académicos</h6></div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold text-secondary">Correo Institucional <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-envelope"></i></span>
+                                <asp:TextBox ID="txtCorreoCoord" runat="server" CssClass="form-control border-start-0 ps-0" TextMode="Email" placeholder="usuario@utc.edu.ec" autocomplete="off"/>
+                            </div>
+                            <asp:RequiredFieldValidator ID="rfvCorreo" runat="server" ControlToValidate="txtCorreoCoord"
+                                ErrorMessage="Correo inválido" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" />
+                        </div>
+
+                        <div class="col-12 mt-4 mb-2">
+                             <h6 class="text-primary fw-bold border-bottom pb-2">
+                                <span class="pe-3">2. Datos Institucionales</span>
+                            </h6>
+                        </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Facultad / Extensión</label>
+                            <label class="form-label small fw-bold text-secondary">Facultad / Extensión</label>
                             <asp:DropDownList ID="ddlFacultadCoord" runat="server" CssClass="form-select">
                                 <asp:ListItem Text="-- Seleccione --" Value="" />
                                 <asp:ListItem>FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
@@ -770,35 +804,52 @@
                                 <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
                                 <asp:ListItem>EXTENSION LA MANÁ</asp:ListItem>
                             </asp:DropDownList>
+                            <asp:RequiredFieldValidator ID="rfvFacultad" runat="server" ControlToValidate="ddlFacultadCoord"
+                                ErrorMessage="Seleccione Facultad" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" />
                         </div>
+
                         <div class="col-md-6">
-                            <label class="form-label">Carrera / Departamento</label>
+                            <label class="form-label small fw-bold text-secondary">Carrera / Departamento</label>
                             <asp:TextBox ID="txtCarreraCoord" runat="server" CssClass="form-control" autocomplete="off"/>
+                            <asp:RequiredFieldValidator ID="rfvCarrera" runat="server" ControlToValidate="txtCarreraCoord"
+                                ErrorMessage="Requerido" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" />
                         </div>
 
                         <div class="col-12 mt-4">
-                            <label class="form-label fw-bold text-danger">Certificado / Resolución (PDF) *</label>
-                            <div class="utc-fileinput-wrapper" id="wrapperArchivoCoord">
-                                <div class="utc-fileinput-header">
-                                    <div class="utc-fileinput-icon"><i class="fa-solid fa-file-contract"></i></div>
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="utc-fileinput-name">Sin archivo seleccionado</span>
-                                        <div class="utc-fileinput-buttons d-flex gap-2">
-                                            <button type="button" class="btn btn-outline-danger utc-btn-small remove-btn"><i class="fa-solid fa-xmark"></i></button>
+                            <div class="p-3 bg-light rounded-3 border">
+                                <label class="form-label fw-bold text-danger small mb-2">
+                                    <i class="fa-solid fa-file-contract me-1"></i> Resolución de Designación (PDF) *
+                                </label>
+                            
+                                <div class="utc-fileinput-wrapper" id="wrapperArchivoCoord">
+                                    <div class="utc-fileinput-header">
+                                        <div class="utc-fileinput-icon"><i class="fa-solid fa-file-pdf"></i></div>
+                                        <div class="d-flex justify-content-between align-items-center mb-2 w-100">
+                                            <span class="utc-fileinput-name">Sin archivo seleccionado</span>
+                                            <div class="utc-fileinput-buttons">
+                                                <button type="button" class="btn btn-outline-danger utc-btn-small remove-btn"><i class="fa-solid fa-xmark"></i></button>
+                                            </div>
                                         </div>
                                     </div>
+                                    <div class="utc-fileinput-preview" id="previewArchivoCoord"></div>
+                                    <div class="utc-fileinput-loader" id="loaderArchivoCoord"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
+                                    <div class="utc-dropzone" id="dropzoneArchivoCoord">
+                                        <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-primary"></i><br />
+                                        <span class="small text-muted">Clic para subir PDF</span>
+                                    </div>
+                                    <asp:FileUpload ID="flpArchivoCoord" runat="server" CssClass="utc-fileinput-input" />
                                 </div>
-                                <input type="text" class="form-control form-control-sm utc-edit-name-field d-none" />
-                                <div class="utc-fileinput-preview" id="previewArchivoCoord"></div>
-                                <div class="utc-fileinput-loader" id="loaderArchivoCoord"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
-                                <div class="utc-dropzone" id="dropzoneArchivoCoord"><i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-primary"></i><br />Arrastra el PDF aquí</div>
-                                <asp:FileUpload ID="flpArchivoCoord" runat="server" CssClass="utc-fileinput-input" />
                             </div>
                         </div>
+
                     </div>
                 </div>
-                <div class="modal-footer justify-content-center bg-light border-0">
-                    <asp:Button ID="btnGuardarCoordModal" runat="server" Text="Confirmar y Asignar" CssClass="btn btn-primary btn-pill px-5 shadow-sm" OnClick="btnGuardarCoordModal_Click" />
+
+                <div class="modal-footer border-top-0 justify-content-center pb-4 pt-0">
+                    <asp:LinkButton ID="btnGuardarCoordModal" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow-sm fw-bold" 
+                        OnClick="btnGuardarCoordModal_Click" ValidationGroup="Coord">
+                        <i class="fa-solid fa-check me-2"></i> CONFIRMAR ASIGNACIÓN
+                    </asp:LinkButton>
                 </div>
             </div>
         </div>
@@ -905,13 +956,19 @@
         }
 
         function abrirModalCoord() {
-            var myModal = new bootstrap.Modal(document.getElementById('modalCoordinador'));
-            myModal.show();
+            var el = document.getElementById('modalCoordinador');
+            if (el) {
+                var modal = bootstrap.Modal.getOrCreateInstance(el);
+                modal.show();
+            }
         }
+
         function cerrarModalCoord() {
             var el = document.getElementById('modalCoordinador');
-            var modal = bootstrap.Modal.getInstance(el);
-            if (modal) modal.hide();
+            if (el) {
+                var modal = bootstrap.Modal.getInstance(el);
+                if (modal) modal.hide();
+            }
         }
 
         function imprimirReporte() {

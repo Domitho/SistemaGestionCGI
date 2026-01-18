@@ -111,8 +111,13 @@ namespace SistemaGestionCGI.BLL
         public void RegistrarGrupoConCoordinador(InvgccGrupoInvestigacion grupo, InvgccGrupoIntegrantes coordinador, string usuario)
         {
             grupo.strId_gru = GenerarCodigoAlfanumerico("INVGCCGRUPO_INVESTIGACION", "strId_gru", "G");
+            coordinador.fkId_gru = grupo.strId_gru;
+
+            coordinador.strId_int = GenerarCodigoAlfanumerico("INVGCCGRUPO_INTEGRANTES", "strId_int", "I");
 
             string valorCentro = string.IsNullOrEmpty(grupo.fkId_cen) ? "NULL" : $"'{grupo.fkId_cen}'";
+            string fechaHoy = DateTime.Now.ToString("yyyy-MM-dd");
+            string fechaHist = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
             string sqlGrupo = $@"
                 INSERT INTO INVGCCGRUPO_INVESTIGACION
@@ -123,12 +128,7 @@ namespace SistemaGestionCGI.BLL
                 ('{grupo.strId_gru}', '{grupo.strNombre_gru}', '{grupo.strCoordinador_gru}', 
                  '{grupo.dtFechacrea_gru:yyyy-MM-dd HH:mm:ss}', '{grupo.strCategoria_gru}', 
                  '{grupo.strLineasinv_gru}', '{grupo.strSublineasinv_gru}', 
-                 '{grupo.strArchivo_gru}', '{grupo.strFoto_gru}', {valorCentro})";
-
-            coordinador.fkId_gru = grupo.strId_gru; 
-            coordinador.strId_int = GenerarCodigoAlfanumerico("INVGCCGRUPO_INTEGRANTES", "strId_int", "I");
-
-            string fechaHoy = DateTime.Now.ToString("yyyy-MM-dd");
+                 '{grupo.strArchivo_gru}', '{grupo.strFoto_gru}', {valorCentro});";
 
             string sqlCoord = $@"
                 INSERT INTO INVGCCGRUPO_INTEGRANTES
@@ -140,19 +140,28 @@ namespace SistemaGestionCGI.BLL
                  '{coordinador.strApellidos_int}', '{coordinador.strCorreo_int}',
                  '{coordinador.strCarrera_int}', '{coordinador.strFuncion_int}', '{fechaHoy}',
                  1, 
-                 '{coordinador.strTipo_int}', '{coordinador.strFacultad_int}', '{coordinador.strEntidad_int}', '{coordinador.strCertificado_int}')";
+                 '{coordinador.strTipo_int}', '{coordinador.strFacultad_int}', '{coordinador.strEntidad_int}', '{coordinador.strCertificado_int}');";
 
-            // 3. PREPARAR HISTORIAL
-            string fechaHist = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             string sqlHist = $@"
                 INSERT INTO INVGCCINTEGRANTES_HISTORIAL 
                 (strId_int, dtFecha, strAccion, strMotivo, strUsuario) 
                 VALUES 
-                ('{coordinador.strId_int}', '{fechaHist}', 'VINCULACIÓN', 'Coordinador Inicial del Grupo', '{usuario}')";
+                ('{coordinador.strId_int}', '{fechaHist}', 'VINCULACIÓN', 'Coordinador Inicial del Grupo', '{usuario}');";
 
-            _dal.InsertSql(sqlGrupo);   
-            _dal.UpdateSql(sqlCoord);   
-            _dal.UpdateSql(sqlHist);     
+            string sqlFinal = $@"
+                BEGIN TRANSACTION;
+                BEGIN TRY
+                    {sqlGrupo}
+                    {sqlCoord}
+                    {sqlHist}
+                    COMMIT TRANSACTION;
+                END TRY
+                BEGIN CATCH
+                    ROLLBACK TRANSACTION;
+                    THROW; -- Re-lanza el error para que C# lo capture
+                END CATCH";
+
+            _dal.InsertSql(sqlFinal);
         }
 
         // =============================================================

@@ -258,6 +258,7 @@ namespace SistemaGestionCGI
             ddlFacultadCoord.SelectedIndex = 0;
 
             pnlFormularioGrupo.Visible = true;
+
             ScriptManager.RegisterStartupScript(this, GetType(), "OpenCoord", "abrirModalCoord();", true);
         }
 
@@ -265,50 +266,35 @@ namespace SistemaGestionCGI
         {
             pnlFormularioGrupo.Visible = true;
 
-            if (string.IsNullOrWhiteSpace(txtCedulaCoord.Text) ||
-                string.IsNullOrWhiteSpace(txtNombreCoord.Text) ||
-                string.IsNullOrWhiteSpace(txtApellidoCoord.Text))
-            {
-                Msg("Complete los datos obligatorios del coordinador.", "ww");
-                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpen", "abrirModalCoord();", true);
-                return;
-            }
-
             if (!flpArchivoCoord.HasFile)
             {
-                Msg("Debe subir el certificado o resolución.", "ww");
-                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpen", "abrirModalCoord();", true);
+                Msg("El documento de resolución es obligatorio.", "ww");
+                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenModal", "abrirModalCoord();", true);
                 return;
             }
 
             try
             {
                 string nombreArchivo = "CERT_" + DateTime.Now.Ticks + "_" + flpArchivoCoord.FileName;
+                string rutaFinal = GuardarArchivoFisico(flpArchivoCoord, "CERTIFICADOS", nombreArchivo);
 
-                string rutaVirtual = "~/RepositorioUTC/Certificados/";
-                string rutaFisicaCarpeta = Server.MapPath(rutaVirtual);
-
-                if (!Directory.Exists(rutaFisicaCarpeta))
-                    Directory.CreateDirectory(rutaFisicaCarpeta);
-
-                string rutaCompleta = Path.Combine(rutaFisicaCarpeta, nombreArchivo);
-                flpArchivoCoord.SaveAs(rutaCompleta);
-
-                hfCoordArchivo.Value = Path.Combine(rutaVirtual, nombreArchivo).Replace("\\", "/");
-
-                hfCoordNombre.Value = txtNombreCoord.Text.Trim();
-                hfCoordApellidos.Value = txtApellidoCoord.Text.Trim();
+                hfCoordArchivo.Value = rutaFinal;
+                hfCoordNombre.Value = txtNombreCoord.Text.ToUpper().Trim();
+                hfCoordApellidos.Value = txtApellidoCoord.Text.ToUpper().Trim();
                 hfCoordCedula.Value = txtCedulaCoord.Text.Trim();
-                hfCoordCorreo.Value = txtCorreoCoord.Text.Trim();
-                hfCoordCarrera.Value = txtCarreraCoord.Text.Trim();
+                hfCoordCorreo.Value = txtCorreoCoord.Text.ToLower().Trim();
+                hfCoordCarrera.Value = txtCarreraCoord.Text.ToUpper().Trim();
                 hfCoordFacultad.Value = ddlFacultadCoord.SelectedValue;
 
-                txtCoordinadorGru.Text = $"{txtApellidoCoord.Text} {txtNombreCoord.Text}";
+                txtCoordinadorGru.Text = $"{txtApellidoCoord.Text.ToUpper()} {txtNombreCoord.Text.ToUpper()}";
 
+                ScriptManager.RegisterStartupScript(this, GetType(), "CloseModal", "cerrarModalCoord();", true);
+                Msg("Coordinador asignado temporalmente. Guarde el grupo para finalizar.", "ss");
             }
             catch (Exception ex)
             {
-                Msg("Error al procesar coordinador: " + ex.Message, "ee");
+                Msg("Error al procesar archivo: " + ex.Message, "ee");
+                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenError", "abrirModalCoord();", true);
             }
         }
 
