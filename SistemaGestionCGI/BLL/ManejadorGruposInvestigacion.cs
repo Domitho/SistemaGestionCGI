@@ -188,15 +188,30 @@ namespace SistemaGestionCGI.BLL
 
             string sql = $@"
                 INSERT INTO INVGCCGRUPO_INTEGRANTES
-                (strId_int, fkId_gru, strCedula_int, strNombres_int, strApellidos_int, strCorreo_int,
-                 strCarrera_int, strFuncion_int, dtFechaini_int, bitActivo_int,
-                 strTipo_int, strFacultad_int, strEntidad_int, strCertificado_int)
+                (
+                    strId_int, fkId_gru, strCedula_int, strNombres_int, strApellidos_int, 
+                    strCorreo_int, strCarrera_int, strFuncion_int, dtFechaini_int, bitActivo_int, 
+                    strTipo_int, strFacultad_int, strEntidad_int, strCertificado_int, 
+                    fkId_docente_origen  -- <--- 1. AGREGADO AQUÍ
+                ) 
                 VALUES
-                ('{integrante.strId_int}', '{integrante.fkId_gru}', '{integrante.strCedula_int}', '{integrante.strNombres_int}',
-                 '{integrante.strApellidos_int}', '{integrante.strCorreo_int}',
-                 '{integrante.strCarrera_int}', '{integrante.strFuncion_int}', '{integrante.dtFechaini_int:yyyy-MM-dd}',
-                 1, 
-                 '{integrante.strTipo_int}', '{integrante.strFacultad_int}', '{integrante.strEntidad_int}', '{integrante.strCertificado_int}')";
+                (
+                    '{integrante.strId_int}', 
+                    '{integrante.fkId_gru}', 
+                    '{integrante.strCedula_int}', 
+                    '{integrante.strNombres_int}',
+                    '{integrante.strApellidos_int}', 
+                    '{integrante.strCorreo_int}',
+                    {(string.IsNullOrEmpty(integrante.strCarrera_int) ? "NULL" : $"'{integrante.strCarrera_int}'")},
+                    '{integrante.strFuncion_int}', 
+                    '{integrante.dtFechaini_int:yyyy-MM-dd}',
+                    1,
+                    '{integrante.strTipo_int}',
+                    {(string.IsNullOrEmpty(integrante.strFacultad_int) ? "NULL" : $"'{integrante.strFacultad_int}'")},
+                    {(string.IsNullOrEmpty(integrante.strEntidad_int) ? "NULL" : $"'{integrante.strEntidad_int}'")},
+                    {(string.IsNullOrEmpty(integrante.strCertificado_int) ? "NULL" : $"'{integrante.strCertificado_int}'")},
+                    {(string.IsNullOrEmpty(integrante.fkId_docente_origen) ? "NULL" : $"'{integrante.fkId_docente_origen}'")}
+                )";
 
             _dal.UpdateSql(sql);
 
@@ -217,15 +232,17 @@ namespace SistemaGestionCGI.BLL
                     strNombres_int = '{integrante.strNombres_int}',
                     strApellidos_int = '{integrante.strApellidos_int}',
                     strCorreo_int = '{integrante.strCorreo_int}',
-                    strCarrera_int = '{integrante.strCarrera_int}',
+                    strCarrera_int = {(string.IsNullOrEmpty(integrante.strCarrera_int) ? "NULL" : $"'{integrante.strCarrera_int}'")},
                     strFuncion_int = '{integrante.strFuncion_int}',
-                    dtFechaini_int = '{integrante.dtFechaini_int:yyyyMMdd}',
-                    dtFechafin_int = {fechaFin},
-                    bitActivo_int = {activo},
+                    dtFechaini_int = '{integrante.dtFechaini_int:yyyy-MM-dd}',
                     strTipo_int = '{integrante.strTipo_int}',
-                    strFacultad_int = '{integrante.strFacultad_int}',
-                    strEntidad_int = '{integrante.strEntidad_int}',
-                    strCertificado_int = '{integrante.strCertificado_int}'
+                    strFacultad_int = {(string.IsNullOrEmpty(integrante.strFacultad_int) ? "NULL" : $"'{integrante.strFacultad_int}'")},
+                    strEntidad_int = {(string.IsNullOrEmpty(integrante.strEntidad_int) ? "NULL" : $"'{integrante.strEntidad_int}'")},
+            
+                    strCertificado_int = {(string.IsNullOrEmpty(integrante.strCertificado_int) ? "strCertificado_int" : $"'{integrante.strCertificado_int}'")},
+
+                    fkId_docente_origen = {(string.IsNullOrEmpty(integrante.fkId_docente_origen) ? "NULL" : $"'{integrante.fkId_docente_origen}'")}
+
                 WHERE strId_int = '{integrante.strId_int}'";
 
             _dal.UpdateSql(sql);
@@ -261,7 +278,13 @@ namespace SistemaGestionCGI.BLL
 
         public dynamic ObtenerDocenteCategorizado(string cedula)
         {
-            string sql = $"SELECT TOP 1 * FROM INVGCCCATEGORIZACION_DOCENTES WHERE strCedula_doc = '{cedula}' AND bitActivo_doc = 1";
+            string sql = $@"
+                SELECT TOP 1 
+                    strId_doc, strCedula_doc, strNombres_doc, strApellidos_doc, 
+                    strFacultad_doc, strCarrera_doc, strCertificado_doc 
+                FROM INVGCCCATEGORIZACION_DOCENTES 
+                WHERE strCedula_doc = '{cedula}' AND bitActivo_doc = 1";
+
             var resultado = _dal.SelectSql<dynamic>(sql);
             return (resultado != null && resultado.Count > 0) ? resultado[0] : null;
         }

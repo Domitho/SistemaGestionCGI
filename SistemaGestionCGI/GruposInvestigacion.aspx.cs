@@ -258,6 +258,10 @@ namespace SistemaGestionCGI
             ddlFacultadCoord.SelectedIndex = 0;
             ddlTipoCoord.SelectedIndex = 0;
 
+            pnlCargaArchivo.Visible = true;
+            pnlArchivoRecuperado.Visible = false;
+            hfCoordArchivo.Value = "";
+
             hfCoordIdDocente.Value = "";
 
             pnlFormularioGrupo.Visible = true;
@@ -268,30 +272,44 @@ namespace SistemaGestionCGI
         {
             pnlFormularioGrupo.Visible = true;
 
-            if (!flpArchivoCoord.HasFile)
+            if (pnlCargaArchivo.Visible && !flpArchivoCoord.HasFile)
             {
                 Msg("Adjunte la resolución (PDF).", "ww");
                 ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenF", "abrirModalCoord(); toggleTipoCoordinador();", true);
                 return;
             }
 
+            bool subioNuevo = flpArchivoCoord.HasFile;
+            bool tienePrevio = !string.IsNullOrEmpty(hfCoordArchivo.Value);
+
+            if (!subioNuevo && !tienePrevio)
+            {
+                Msg("El documento de resolución es obligatorio. Súbalo o busque un docente con certificado.", "ww");
+                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenF", "abrirModalCoord(); toggleTipoCoordinador();", true);
+                return;
+            }
+
+
             try
             {
                 string tipo = ddlTipoCoord.SelectedValue;
 
-                // Guardar Archivo
-                string nombreArchivo = "CERT_" + DateTime.Now.Ticks + "_" + flpArchivoCoord.FileName;
-                string rutaFinal = GuardarArchivoFisico(flpArchivoCoord, "CERTIFICADOS", nombreArchivo);
+                string rutaFinal = hfCoordArchivo.Value;
 
-                // Llenar HiddenFields Comunes
+                if (subioNuevo)
+                {
+                    string nombreArchivo = "CERT_" + DateTime.Now.Ticks + "_" + flpArchivoCoord.FileName;
+                    rutaFinal = GuardarArchivoFisico(flpArchivoCoord, "CERTIFICADOS", nombreArchivo);
+                }
+
                 hfCoordArchivo.Value = rutaFinal;
+
                 hfCoordNombre.Value = txtNombreCoord.Text.ToUpper().Trim();
                 hfCoordApellidos.Value = txtApellidoCoord.Text.ToUpper().Trim();
                 hfCoordCedula.Value = txtCedulaCoord.Text.Trim();
                 hfCoordCorreo.Value = txtCorreoCoord.Text.ToLower().Trim();
                 hfCoordTipo.Value = tipo;
 
-                // Lógica Específica
                 if (tipo == "Externo")
                 {
                     if (string.IsNullOrEmpty(txtEntidadCoord.Text)) throw new Exception("Ingrese la entidad externa.");
@@ -299,7 +317,7 @@ namespace SistemaGestionCGI
                     hfCoordEntidad.Value = txtEntidadCoord.Text.ToUpper().Trim();
                     hfCoordFacultad.Value = "";
                     hfCoordCarrera.Value = "";
-                    hfCoordIdDocente.Value = ""; // Externo no tiene ID Docente
+                    hfCoordIdDocente.Value = "";
                 }
                 else
                 {
@@ -307,15 +325,17 @@ namespace SistemaGestionCGI
                     hfCoordFacultad.Value = ddlFacultadCoord.SelectedValue;
                     hfCoordEntidad.Value = "";
 
-                    // Si es "Interno Manual", nos aseguramos que ID Docente vaya vacío para no romper la FK
                     if (tipo == "Interno") hfCoordIdDocente.Value = "";
                 }
 
-                // Feedback
                 txtCoordinadorGru.Text = $"{txtApellidoCoord.Text} {txtNombreCoord.Text}";
 
                 ScriptManager.RegisterStartupScript(this, GetType(), "Close", "cerrarModalCoord();", true);
-                Msg("Coordinador asignado.", "ss");
+
+                if (tienePrevio && !subioNuevo)
+                    Msg("Coordinador asignado (Certificado recuperado).", "ss");
+                else
+                    Msg("Coordinador asignado correctamente.", "ss");
             }
             catch (Exception ex)
             {
@@ -332,37 +352,79 @@ namespace SistemaGestionCGI
 
             try
             {
-                // Llamada a la BLL
                 dynamic docente = _manejador.ObtenerDocenteCategorizado(cedula);
 
                 if (docente != null)
                 {
-                    // Usamos Reflection seguro para leer propiedades dinámicas
                     txtCedulaCoord.Text = GetProp(docente, "strCedula_doc");
                     txtNombreCoord.Text = GetProp(docente, "strNombres_doc");
                     txtApellidoCoord.Text = GetProp(docente, "strApellidos_doc");
                     txtCarreraCoord.Text = GetProp(docente, "strCarrera_doc");
+                    hfCoordIdDocente.Value = GetProp(docente, "strId_doc");
 
                     string fac = GetProp(docente, "strFacultad_doc");
                     if (ddlFacultadCoord.Items.FindByValue(fac) != null)
                         ddlFacultadCoord.SelectedValue = fac;
 
-                    // GUARDAMOS EL ID DEL DOCENTE EN HIDDENFIELD
-                    hfCoordIdDocente.Value = GetProp(docente, "strId_doc");
+                    string rutaCert = GetProp(docente, "strCertificado_doc");
 
-                    Msg("Docente encontrado.", "ss");
+                    if (!string.IsNullOrEmpty(rutaCert))
+                    {
+                        hfCoordArchivo.Value = rutaCert; 
+
+                        lnkVerArchivo.NavigateUrl = ResolveUrl(rutaCert);
+
+                        pnlCargaArchivo.Visible = false;     
+                        pnlArchivoRecuperado.Visible = true;  
+
+                        Msg("Docente y Certificado encontrados.", "ss");
+                    }
+                    else
+                    {
+                        hfCoordArchivo.Value = "";
+                        pnlCargaArchivo.Visible = true;
+                        pnlArchivoRecuperado.Visible = false;
+                        Msg("Docente encontrado (Sin certificado adjunto).", "ii");
+                    }
                 }
                 else
                 {
                     Msg("Docente no encontrado.", "ww");
-                    hfCoordIdDocente.Value = ""; // Limpiar si no encuentra
+                    LimpiarCoordParcial(); 
                 }
             }
-            catch (Exception ex) { Msg("Error búsqueda: " + ex.Message, "ee"); }
+            catch (Exception ex) { Msg("Error: " + ex.Message, "ee"); }
             finally
             {
-                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenBusc", "abrirModalCoord(); toggleTipoCoordinador();", true);
+                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenB", "abrirModalCoord(); toggleTipoCoordinador();", true);
             }
+        }
+
+        protected void btnCambiarArchivo_Click(object sender, EventArgs e)
+        {
+            pnlFormularioGrupo.Visible = true;
+
+            hfCoordArchivo.Value = "";
+
+            pnlCargaArchivo.Visible = true;
+            pnlArchivoRecuperado.Visible = false;
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenChange", "abrirModalCoord(); toggleTipoCoordinador();", true);
+        }
+
+        private void LimpiarCoordParcial()
+        {
+            txtNombreCoord.Text = "";
+            txtApellidoCoord.Text = "";
+            txtCarreraCoord.Text = "";
+            txtCorreoCoord.Text = "";
+            ddlFacultadCoord.SelectedIndex = 0;
+
+            hfCoordIdDocente.Value = "";
+            hfCoordArchivo.Value = "";
+
+            pnlCargaArchivo.Visible = true;
+            pnlArchivoRecuperado.Visible = false;
         }
 
         private string GetProp(object obj, string propName)
@@ -370,11 +432,9 @@ namespace SistemaGestionCGI
             if (obj == null) return "";
             try
             {
-                // Opción A: Si el DAL devuelve un JObject (Newtonsoft)
                 if (obj is Newtonsoft.Json.Linq.JObject jobj)
                     return jobj[propName]?.ToString() ?? "";
 
-                // Opción B: Si es un objeto estándar (Reflection)
                 return obj.GetType().GetProperty(propName)?.GetValue(obj, null)?.ToString() ?? "";
             }
             catch
@@ -418,6 +478,7 @@ namespace SistemaGestionCGI
                     return;
                 }
 
+                // Validación de Integridad: No permitir duplicados si es nuevo
                 if (string.IsNullOrEmpty(hfIdIntEdit.Value))
                 {
                     string grupoExistente = _manejador.VerificarIntegranteEnOtroGrupo(txtCedulaInt.Text.Trim());
@@ -435,12 +496,16 @@ namespace SistemaGestionCGI
                     strNombres_int = txtNombresInt.Text.Trim(),
                     strApellidos_int = txtApellidosInt.Text.Trim(),
                     strCorreo_int = txtCorreoInt.Text.Trim(),
-                    strFuncion_int = ddlFuncionInt.SelectedValue,
+
+                    strFuncion_int = txtFuncionInt.Text, // <--- Correcto: Leemos del TextBox
+
                     strTipo_int = ddlTipoInt.SelectedValue,
                     dtFechaini_int = !string.IsNullOrEmpty(dtFechaIniInt.Text) ? DateTime.Parse(dtFechaIniInt.Text) : DateTime.Now,
-                    strCertificado_int = hfCertificadoIntActual.Value
+                    strCertificado_int = null,
+                    bitActivo_int = true
                 };
 
+                // --- LÓGICA DE TIPO (Externo / Docente / Interno) ---
                 if (i.strTipo_int == "Externo")
                 {
                     if (string.IsNullOrWhiteSpace(txtEntidadInt.Text))
@@ -451,18 +516,26 @@ namespace SistemaGestionCGI
                     i.strEntidad_int = txtEntidadInt.Text.Trim();
                     i.strCarrera_int = null;
                     i.strFacultad_int = null;
+                    i.strCertificado_int = null;
+                    i.fkId_docente_origen = null;
                 }
-                else
+                else if (i.strTipo_int == "Docente")
                 {
                     i.strEntidad_int = null;
                     i.strCarrera_int = txtCarreraInt.Text.Trim();
                     i.strFacultad_int = ddlFacultadInt.SelectedValue;
-                }
 
-                if (flpCertificadoInt.HasFile)
+                    // Vinculación Automática
+                    i.strCertificado_int = hfCertificadoIntVinculado.Value;
+                    i.fkId_docente_origen = hfIdDocenteInt.Value;
+                }
+                else // Interno
                 {
-                    string nombre = $"CERT_{DateTime.Now.Ticks}{Path.GetExtension(flpCertificadoInt.FileName)}";
-                    i.strCertificado_int = GuardarArchivoFisico(flpCertificadoInt, "CERTIFICADOS", nombre);
+                    i.strEntidad_int = null;
+                    i.strCarrera_int = txtCarreraInt.Text.Trim();
+                    i.strFacultad_int = ddlFacultadInt.SelectedValue;
+                    i.strCertificado_int = null;
+                    i.fkId_docente_origen = null;
                 }
 
                 string usuario = Session["UsuarioLogueado"]?.ToString() ?? "Sistema";
@@ -470,21 +543,13 @@ namespace SistemaGestionCGI
                 if (string.IsNullOrEmpty(hfIdIntEdit.Value))
                 {
                     _manejador.GuardarIntegrante(i, usuario);
-                    SetFlashMessage("Integrante agregado correctamente.", "ss");
+                    SetFlashMessage("Integrante agregado.", "ss");
                 }
                 else
                 {
                     i.strId_int = hfIdIntEdit.Value;
-                    var original = _manejador.ObtenerIntegrantePorId(i.strId_int);
-
-                    if (original != null)
-                    {
-                        i.dtFechafin_int = original.dtFechafin_int;
-                        i.bitActivo_int = original.bitActivo_int;
-                    }
-
                     _manejador.ActualizarIntegrante(i, usuario);
-                    SetFlashMessage("Datos del integrante actualizados.", "ss");
+                    SetFlashMessage("Integrante actualizado.", "ss");
                 }
 
                 Response.Redirect($"GruposInvestigacion.aspx?idGrupo={hfGrupoIdActual.Value}", false);
@@ -539,13 +604,16 @@ namespace SistemaGestionCGI
             txtCorreoInt.Text = i.strCorreo_int;
             dtFechaIniInt.Text = i.dtFechaini_int.ToString("yyyy-MM-dd");
 
-            if (ddlFuncionInt.Items.FindByValue(i.strFuncion_int) != null)
-                ddlFuncionInt.SelectedValue = i.strFuncion_int;
+            txtFuncionInt.Text = i.strFuncion_int;
 
-            hfCertificadoIntActual.Value = i.strCertificado_int;
+            hfCertificadoIntVinculado.Value = i.strCertificado_int;
+            hfIdDocenteInt.Value = i.fkId_docente_origen;
 
             if (ddlTipoInt.Items.FindByValue(i.strTipo_int) != null)
                 ddlTipoInt.SelectedValue = i.strTipo_int;
+
+            ddlTipoInt.Enabled = false;
+            ddlTipoInt.CssClass = "form-select shadow-sm border-primary bg-light";
 
             if (i.strTipo_int == "Externo")
             {
@@ -570,6 +638,55 @@ namespace SistemaGestionCGI
         protected void btnVolverGrupos_Click(object sender, EventArgs e)
         {
             Response.Redirect("GruposInvestigacion.aspx");
+        }
+
+        protected void btnBuscarDocenteInt_Click(object sender, EventArgs e)
+        {
+            string cedula = txtBuscarCedulaInt.Text.Trim();
+            if (string.IsNullOrEmpty(cedula)) return;
+
+            try
+            {
+                dynamic docente = _manejador.ObtenerDocenteCategorizado(cedula);
+
+                if (docente != null)
+                {
+                    // Llenar datos
+                    txtCedulaInt.Text = GetProp(docente, "strCedula_doc");
+                    txtNombresInt.Text = GetProp(docente, "strNombres_doc");
+                    txtApellidosInt.Text = GetProp(docente, "strApellidos_doc");
+                    txtCarreraInt.Text = GetProp(docente, "strCarrera_doc");
+
+                    string fac = GetProp(docente, "strFacultad_doc");
+                    if (ddlFacultadInt.Items.FindByValue(fac) != null)
+                        ddlFacultadInt.SelectedValue = fac;
+
+                    // VINCULACIÓN: ID y Archivo
+                    hfIdDocenteInt.Value = GetProp(docente, "strId_doc");
+
+                    // Aquí está la magia: Copiamos la ruta del archivo si existe
+                    string rutaCert = GetProp(docente, "strCertificado_doc");
+                    hfCertificadoIntVinculado.Value = rutaCert; // Puede estar vacía si el docente no tiene
+
+                    // Feedback visual
+                    if (!string.IsNullOrEmpty(rutaCert))
+                        Msg("Docente encontrado. Certificado vinculado.", "ss");
+                    else
+                        Msg("Docente encontrado (Sin certificado).", "ii");
+                }
+                else
+                {
+                    Msg("Docente no encontrado.", "ww");
+                    // Limpiar datos parciales
+                    txtNombresInt.Text = ""; txtApellidosInt.Text = "";
+                    hfIdDocenteInt.Value = ""; hfCertificadoIntVinculado.Value = "";
+                }
+            }
+            catch (Exception ex) { Msg("Error búsqueda: " + ex.Message, "ee"); }
+
+            // Mantener la UI correcta
+            string script = "var ddl = document.getElementById('" + ddlTipoInt.ClientID + "'); if(ddl) ToggleTipoIntegranteForm(ddl);";
+            ScriptManager.RegisterStartupScript(this, GetType(), "ReInitInt", script, true);
         }
 
         // =============================================
@@ -787,12 +904,21 @@ namespace SistemaGestionCGI
         {
             hfIdIntEdit.Value = "";
             lblTituloFormInt.Text = "Nuevo Integrante";
+
             txtCedulaInt.Text = ""; txtNombresInt.Text = ""; txtApellidosInt.Text = "";
             txtCorreoInt.Text = ""; txtEntidadInt.Text = ""; txtCarreraInt.Text = "";
+
             ddlTipoInt.SelectedIndex = 0;
+            ddlTipoInt.Enabled = true; 
+            ddlTipoInt.CssClass = "form-select shadow-sm border-primary"; 
+
             ddlFacultadInt.SelectedIndex = 0;
             dtFechaIniInt.Text = DateTime.Now.ToString("yyyy-MM-dd");
-            hfCertificadoIntActual.Value = "";
+
+            hfCertificadoIntVinculado.Value = "";
+            hfIdDocenteInt.Value = "";
+
+            txtFuncionInt.Text = "Miembro Investigador";
         }
 
         private string GuardarArchivoFisico(FileUpload control, string subCarpeta, string nombre)
