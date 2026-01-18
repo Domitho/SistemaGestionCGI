@@ -133,14 +133,17 @@ namespace SistemaGestionCGI
                             strApellidos_int = hfCoordApellidos.Value,
                             strCedula_int = hfCoordCedula.Value,
                             strCorreo_int = hfCoordCorreo.Value,
-                            strCarrera_int = hfCoordCarrera.Value,
-                            strFacultad_int = hfCoordFacultad.Value,
+
+                            strTipo_int = hfCoordTipo.Value, 
+                            strEntidad_int = string.IsNullOrEmpty(hfCoordEntidad.Value) ? null : hfCoordEntidad.Value, // Nuevo
+                            strFacultad_int = string.IsNullOrEmpty(hfCoordFacultad.Value) ? null : hfCoordFacultad.Value,
+                            strCarrera_int = string.IsNullOrEmpty(hfCoordCarrera.Value) ? null : hfCoordCarrera.Value,
+
                             strCertificado_int = hfCoordArchivo.Value,
+                            fkId_docente_origen = string.IsNullOrEmpty(hfCoordIdDocente.Value) ? null : hfCoordIdDocente.Value, // Nuevo FK
 
                             strFuncion_int = "INVESTIGADOR PRINCIPAL",
-                            strTipo_int = "INTERNO",
-                            bitActivo_int = true,
-                            dtFechaini_int = DateTime.Now
+                            bitActivo_int = true
                         };
 
                         _manejador.RegistrarGrupoConCoordinador(g, coord, usuario);
@@ -250,16 +253,15 @@ namespace SistemaGestionCGI
 
         protected void btnAgregarCoordinador_Click(object sender, EventArgs e)
         {
-            txtCedulaCoord.Text = "";
-            txtNombreCoord.Text = "";
-            txtApellidoCoord.Text = "";
-            txtCorreoCoord.Text = "";
-            txtCarreraCoord.Text = "";
+            txtCedulaCoord.Text = ""; txtNombreCoord.Text = ""; txtApellidoCoord.Text = "";
+            txtCorreoCoord.Text = ""; txtCarreraCoord.Text = ""; txtEntidadCoord.Text = "";
             ddlFacultadCoord.SelectedIndex = 0;
+            ddlTipoCoord.SelectedIndex = 0;
+
+            hfCoordIdDocente.Value = "";
 
             pnlFormularioGrupo.Visible = true;
-
-            ScriptManager.RegisterStartupScript(this, GetType(), "OpenCoord", "abrirModalCoord();", true);
+            ScriptManager.RegisterStartupScript(this, GetType(), "Open", "abrirModalCoord(); toggleTipoCoordinador();", true);
         }
 
         protected void btnGuardarCoordModal_Click(object sender, EventArgs e)
@@ -268,33 +270,116 @@ namespace SistemaGestionCGI
 
             if (!flpArchivoCoord.HasFile)
             {
-                Msg("El documento de resolución es obligatorio.", "ww");
-                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenModal", "abrirModalCoord();", true);
+                Msg("Adjunte la resolución (PDF).", "ww");
+                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenF", "abrirModalCoord(); toggleTipoCoordinador();", true);
                 return;
             }
 
             try
             {
+                string tipo = ddlTipoCoord.SelectedValue;
+
+                // Guardar Archivo
                 string nombreArchivo = "CERT_" + DateTime.Now.Ticks + "_" + flpArchivoCoord.FileName;
                 string rutaFinal = GuardarArchivoFisico(flpArchivoCoord, "CERTIFICADOS", nombreArchivo);
 
+                // Llenar HiddenFields Comunes
                 hfCoordArchivo.Value = rutaFinal;
                 hfCoordNombre.Value = txtNombreCoord.Text.ToUpper().Trim();
                 hfCoordApellidos.Value = txtApellidoCoord.Text.ToUpper().Trim();
                 hfCoordCedula.Value = txtCedulaCoord.Text.Trim();
                 hfCoordCorreo.Value = txtCorreoCoord.Text.ToLower().Trim();
-                hfCoordCarrera.Value = txtCarreraCoord.Text.ToUpper().Trim();
-                hfCoordFacultad.Value = ddlFacultadCoord.SelectedValue;
+                hfCoordTipo.Value = tipo;
 
-                txtCoordinadorGru.Text = $"{txtApellidoCoord.Text.ToUpper()} {txtNombreCoord.Text.ToUpper()}";
+                // Lógica Específica
+                if (tipo == "Externo")
+                {
+                    if (string.IsNullOrEmpty(txtEntidadCoord.Text)) throw new Exception("Ingrese la entidad externa.");
 
-                ScriptManager.RegisterStartupScript(this, GetType(), "CloseModal", "cerrarModalCoord();", true);
-                Msg("Coordinador asignado temporalmente. Guarde el grupo para finalizar.", "ss");
+                    hfCoordEntidad.Value = txtEntidadCoord.Text.ToUpper().Trim();
+                    hfCoordFacultad.Value = "";
+                    hfCoordCarrera.Value = "";
+                    hfCoordIdDocente.Value = ""; // Externo no tiene ID Docente
+                }
+                else
+                {
+                    hfCoordCarrera.Value = txtCarreraCoord.Text.ToUpper().Trim();
+                    hfCoordFacultad.Value = ddlFacultadCoord.SelectedValue;
+                    hfCoordEntidad.Value = "";
+
+                    // Si es "Interno Manual", nos aseguramos que ID Docente vaya vacío para no romper la FK
+                    if (tipo == "Interno") hfCoordIdDocente.Value = "";
+                }
+
+                // Feedback
+                txtCoordinadorGru.Text = $"{txtApellidoCoord.Text} {txtNombreCoord.Text}";
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "Close", "cerrarModalCoord();", true);
+                Msg("Coordinador asignado.", "ss");
             }
             catch (Exception ex)
             {
-                Msg("Error al procesar archivo: " + ex.Message, "ee");
-                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenError", "abrirModalCoord();", true);
+                Msg(ex.Message, "ee");
+                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenE", "abrirModalCoord(); toggleTipoCoordinador();", true);
+            }
+        }
+
+        protected void btnBuscarDocente_Click(object sender, EventArgs e)
+        {
+            pnlFormularioGrupo.Visible = true;
+            string cedula = txtBuscarCedulaDoc.Text.Trim();
+            if (string.IsNullOrEmpty(cedula)) return;
+
+            try
+            {
+                // Llamada a la BLL
+                dynamic docente = _manejador.ObtenerDocenteCategorizado(cedula);
+
+                if (docente != null)
+                {
+                    // Usamos Reflection seguro para leer propiedades dinámicas
+                    txtCedulaCoord.Text = GetProp(docente, "strCedula_doc");
+                    txtNombreCoord.Text = GetProp(docente, "strNombres_doc");
+                    txtApellidoCoord.Text = GetProp(docente, "strApellidos_doc");
+                    txtCarreraCoord.Text = GetProp(docente, "strCarrera_doc");
+
+                    string fac = GetProp(docente, "strFacultad_doc");
+                    if (ddlFacultadCoord.Items.FindByValue(fac) != null)
+                        ddlFacultadCoord.SelectedValue = fac;
+
+                    // GUARDAMOS EL ID DEL DOCENTE EN HIDDENFIELD
+                    hfCoordIdDocente.Value = GetProp(docente, "strId_doc");
+
+                    Msg("Docente encontrado.", "ss");
+                }
+                else
+                {
+                    Msg("Docente no encontrado.", "ww");
+                    hfCoordIdDocente.Value = ""; // Limpiar si no encuentra
+                }
+            }
+            catch (Exception ex) { Msg("Error búsqueda: " + ex.Message, "ee"); }
+            finally
+            {
+                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenBusc", "abrirModalCoord(); toggleTipoCoordinador();", true);
+            }
+        }
+
+        private string GetProp(object obj, string propName)
+        {
+            if (obj == null) return "";
+            try
+            {
+                // Opción A: Si el DAL devuelve un JObject (Newtonsoft)
+                if (obj is Newtonsoft.Json.Linq.JObject jobj)
+                    return jobj[propName]?.ToString() ?? "";
+
+                // Opción B: Si es un objeto estándar (Reflection)
+                return obj.GetType().GetProperty(propName)?.GetValue(obj, null)?.ToString() ?? "";
+            }
+            catch
+            {
+                return "";
             }
         }
 

@@ -134,13 +134,15 @@ namespace SistemaGestionCGI.BLL
                 INSERT INTO INVGCCGRUPO_INTEGRANTES
                 (strId_int, fkId_gru, strCedula_int, strNombres_int, strApellidos_int, strCorreo_int,
                  strCarrera_int, strFuncion_int, dtFechaini_int, bitActivo_int, 
-                 strTipo_int, strFacultad_int, strEntidad_int, strCertificado_int)
+                 strTipo_int, strFacultad_int, strEntidad_int, strCertificado_int, fkId_docente_origen) -- <--- AGREGADO
                 VALUES
                 ('{coordinador.strId_int}', '{coordinador.fkId_gru}', '{coordinador.strCedula_int}', '{coordinador.strNombres_int}',
                  '{coordinador.strApellidos_int}', '{coordinador.strCorreo_int}',
-                 '{coordinador.strCarrera_int}', '{coordinador.strFuncion_int}', '{fechaHoy}',
+                 '{coordinador.strCarrera_int}', '{coordinador.strFuncion_int}', '{DateTime.Now:yyyy-MM-dd}',
                  1, 
-                 '{coordinador.strTipo_int}', '{coordinador.strFacultad_int}', '{coordinador.strEntidad_int}', '{coordinador.strCertificado_int}');";
+                 '{coordinador.strTipo_int}', '{coordinador.strFacultad_int}', '{coordinador.strEntidad_int}', '{coordinador.strCertificado_int}',
+                 {(string.IsNullOrEmpty(coordinador.fkId_docente_origen) ? "NULL" : $"'{coordinador.fkId_docente_origen}'")} -- <--- AGREGADO
+                );";
 
             string sqlHist = $@"
                 INSERT INTO INVGCCINTEGRANTES_HISTORIAL 
@@ -201,7 +203,6 @@ namespace SistemaGestionCGI.BLL
             RegistrarHistorial(integrante.strId_int, "VINCULACIÓN", "Registro inicial en el grupo.", usuario);
         }
 
-        // Se añade el parámetro string usuario
         public void ActualizarIntegrante(InvgccGrupoIntegrantes integrante, string usuario)
         {
             string fechaFin = (integrante.dtFechafin_int.HasValue && integrante.dtFechafin_int.Value.Year > 1900)
@@ -256,6 +257,13 @@ namespace SistemaGestionCGI.BLL
             }
 
             return null; 
+        }
+
+        public dynamic ObtenerDocenteCategorizado(string cedula)
+        {
+            string sql = $"SELECT TOP 1 * FROM INVGCCCATEGORIZACION_DOCENTES WHERE strCedula_doc = '{cedula}' AND bitActivo_doc = 1";
+            var resultado = _dal.SelectSql<dynamic>(sql);
+            return (resultado != null && resultado.Count > 0) ? resultado[0] : null;
         }
 
         // =============================================================

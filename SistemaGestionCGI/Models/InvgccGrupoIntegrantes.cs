@@ -50,6 +50,9 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("strCertificado_int")]
         public string strCertificado_int { get; set; }
 
+        [JsonProperty("fkId_docente_origen")]
+        public string fkId_docente_origen { get; set; }
+
         [JsonProperty("NombreCompleto")]
         public string NombreCompleto { get; set; }
     }
