@@ -57,6 +57,15 @@
                                 <td><%# Eval("dtFechaCategorizacion") == null ? "-" : Convert.ToDateTime(Eval("dtFechaCategorizacion")).ToString("dd/MM/yyyy") %></td>
                                 
                                 <td>
+                                    <asp:LinkButton ID="btnVerCertificado" runat="server" 
+                                        CommandName="VerCertificado" 
+                                        CommandArgument='<%# Eval("strCertificado_doc") %>'
+                                        Visible='<%# !string.IsNullOrEmpty(Eval("strCertificado_doc") as string) %>'
+                                        CssClass="btn btn-success btn-sm rounded-circle me-1" 
+                                        ToolTip="Ver Certificado de Categorización">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </asp:LinkButton>
+
                                     <asp:LinkButton ID="btnEditar" runat="server" CommandName="editar" CommandArgument='<%# Eval("strId_doc") %>'
                                         CssClass="btn btn-warning btn-sm rounded-circle me-1" ToolTip="Asignar o Cambiar Categoría">
                                         <i class="fa-solid fa-pen-to-square"></i>
@@ -104,20 +113,6 @@
                     <label class="form-label">Apellidos <span class="text-danger">*</span></label>
                     <asp:TextBox ID="txtApellidos" runat="server" CssClass="form-control" placeholder="Apellidos del docente" />
                 </div>
-                
-                <div class="col-md-6">
-                    <label class="form-label">Facultad <span class="text-danger">*</span></label>
-                    <asp:DropDownList ID="ddlFacultad" runat="server" CssClass="form-select">
-                        <asp:ListItem Text="-- Seleccione --" Value="" />
-                        <asp:ListItem Value="CIYA">CIENCIAS DE LA INGENIERÍA Y APLICADAS (CIYA)</asp:ListItem>
-                        <asp:ListItem Value="CAREN">CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
-                        <asp:ListItem Value="CAYE">CIENCIAS ADMINISTRATIVAS Y ECONÓMICAS (CAYE)</asp:ListItem>
-                        <asp:ListItem Value="CSAYE">CIENCIAS SOCIALES, ARTES Y EDUCACIÓN (CSAYE)</asp:ListItem>
-                        <asp:ListItem Value="SALUD">CIENCIAS DE LA SALUD</asp:ListItem>
-                        <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
-                        <asp:ListItem Value="LAMANA">EXTENSIÓN LA MANÁ</asp:ListItem>
-                    </asp:DropDownList>
-                </div>
 
                 <div class="col-md-6">
                     <label class="form-label">Carrera <span class="text-danger">*</span></label>
@@ -132,6 +127,20 @@
                         <asp:ListItem Value="CONTABILIDAD">CONTABILIDAD Y AUDITORÍA</asp:ListItem>
                         <asp:ListItem Value="ENFERMERIA">ENFERMERÍA</asp:ListItem>
                         <asp:ListItem Value="OTRA">OTRA</asp:ListItem>
+                    </asp:DropDownList>
+                </div>
+                
+                <div class="col-12">
+                    <label class="form-label">Facultad <span class="text-danger">*</span></label>
+                    <asp:DropDownList ID="ddlFacultad" runat="server" CssClass="form-select">
+                        <asp:ListItem Text="-- Seleccione --" Value="" />
+                        <asp:ListItem Value="CIYA">CIENCIAS DE LA INGENIERÍA Y APLICADAS (CIYA)</asp:ListItem>
+                        <asp:ListItem Value="CAREN">CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
+                        <asp:ListItem Value="CAYE">CIENCIAS ADMINISTRATIVAS Y ECONÓMICAS (CAYE)</asp:ListItem>
+                        <asp:ListItem Value="CSAYE">CIENCIAS SOCIALES, ARTES Y EDUCACIÓN (CSAYE)</asp:ListItem>
+                        <asp:ListItem Value="SALUD">CIENCIAS DE LA SALUD</asp:ListItem>
+                        <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
+                        <asp:ListItem Value="LAMANA">EXTENSIÓN LA MANÁ</asp:ListItem>
                     </asp:DropDownList>
                 </div>
 
@@ -158,6 +167,47 @@
                     <label class="form-label">Fecha Resolución <span class="text-danger">*</span></label>
                     <asp:TextBox ID="txtFecha" runat="server" TextMode="Date" CssClass="form-control" />
                 </div>
+
+                <div class="col-12 mt-4">
+                    <label class="form-label fw-semibold text-primary">
+                        <i class="fa-solid fa-certificate me-1"></i> Certificado de Categorización (PDF)
+                    </label>
+    
+                    <asp:HiddenField ID="hfCertificadoActual" runat="server" ClientIDMode="Static" />
+
+                    <div class="utc-fileinput-wrapper" id="wrapperCertificado">
+                        <div class="utc-fileinput-header">
+                            <div class="utc-fileinput-icon"><i class="fa-solid fa-file-contract"></i></div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="utc-fileinput-name">Sin archivo seleccionado</span>
+                                <div class="utc-fileinput-buttons d-flex gap-2">
+                                    <button type="button" class="btn btn-outline-primary utc-btn-small rename-btn">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger utc-btn-small remove-btn">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+        
+                        <input type="text" class="form-control form-control-sm utc-edit-name-field" placeholder="Renombrar..." />
+        
+                        <div class="utc-fileinput-preview" id="previewCertificado"></div>
+        
+                        <div class="utc-fileinput-loader" id="loaderCertificado">
+                            <i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...
+                        </div>
+        
+                        <div class="utc-dropzone" id="dropzoneCertificado">
+                            <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-primary"></i><br />
+                            Arrastra el certificado aquí o haz clic
+                        </div>
+
+                        <asp:FileUpload ID="flpCertificado" runat="server" CssClass="utc-fileinput-input" />
+                    </div>
+                </div>
+
             </div>
 
             <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
@@ -372,6 +422,7 @@
     </div>
 
     <%-- SCRIPTS --%>
+    <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {
             $('#tablaDocentes').DataTable({
@@ -380,6 +431,25 @@
                 dom: "<'row align-items-center mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-end'f>><'row'<'col-sm-12'tr>><'row mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
             });
         });
+
+        Sys.Application.add_load(function () {
+            if (typeof UTC_FileInput === 'function') {
+                initFileInput('wrapperCertificado', '<%= flpCertificado.ClientID %>');
+            }
+        });
+
+        function initFileInput(wrapperId, inputId) {
+            var wrapper = document.getElementById(wrapperId);
+            if (wrapper) {
+                UTC_FileInput({
+                    wrapper: wrapperId,
+                    dropzone: wrapperId.replace('wrapper', 'dropzone'),
+                    preview: wrapperId.replace('wrapper', 'preview'),
+                    loader: wrapperId.replace('wrapper', 'loader'),
+                    input: inputId
+                });
+            }
+        }
 
         function imprimirReporte() {
             var contenido = document.getElementById("arealmpresion").innerHTML;

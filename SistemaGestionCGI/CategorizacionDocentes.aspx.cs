@@ -3,6 +3,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using SistemaGestionCGI.BLL;
 using SistemaGestionCGI.Models;
+using System.IO;
 
 namespace SistemaGestionCGI
 {
@@ -59,6 +60,7 @@ namespace SistemaGestionCGI
                 txtCedula.Text = docente.strCedula_doc;
                 txtNombres.Text = docente.strNombres_doc;
                 txtApellidos.Text = docente.strApellidos_doc;
+                hfCertificadoActual.Value = docente.strCertificado_doc;
 
                 SeleccionarCombo(ddlFacultad, docente.strFacultad_doc);
                 SeleccionarCombo(ddlCarrera, docente.strCarrera_doc);
@@ -120,27 +122,30 @@ namespace SistemaGestionCGI
         // ==========================================
         protected void rptDatos_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
-            string idDocente = e.CommandArgument.ToString();
+            string argumento = e.CommandArgument.ToString();
 
             switch (e.CommandName)
             {
+                case "VerCertificado":
+                    VisualizarArchivo(argumento);
+                    break;
                 case "editar":
-                    CargarFormulario(idDocente);
+                    CargarFormulario(argumento);
                     break;
 
                 case "historial":
-                    CargarHistorial(idDocente);
+                    CargarHistorial(argumento);
                     break;
 
                 case "ReporteIndividual":
-                    GenerarVistaPrevia(idDocente);
+                    GenerarVistaPrevia(argumento);
                     break;
 
                 case "eliminar":
                     try
                     {
                         string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
-                        _manejador.EliminarCategorizacion(idDocente, usuario, "Eliminación directa desde listado");
+                        _manejador.EliminarCategorizacion(argumento, usuario, "Eliminación directa desde listado");
 
                         Redireccionar("Se ha quitado la categoría correctamente.", "ss");
                     }
@@ -200,8 +205,16 @@ namespace SistemaGestionCGI
                     strCarrera_doc = ddlCarrera.SelectedValue,
                     strCategorizacion = ddlCategoria.SelectedValue,
 
-                    dtFechaCategorizacion = DateTime.Parse(txtFecha.Text)
+                    dtFechaCategorizacion = DateTime.Parse(txtFecha.Text),
+
+                    strCertificado_doc = hfCertificadoActual.Value
                 };
+
+                if (flpCertificado.HasFile)
+                {
+                    string nombreBase = $"CERT_{obj.strCedula_doc}";
+                    obj.strCertificado_doc = GuardarArchivoFisico(flpCertificado, nombreBase);
+                }
 
                 string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
 
@@ -224,6 +237,68 @@ namespace SistemaGestionCGI
         // ==========================================
         // UTILIDADES Y MENSAJES (TOAST)
         // ==========================================
+
+        private string GuardarArchivoFisico(FileUpload control, string nombreBase)
+        {
+            if (control.HasFile)
+            {
+                string carpeta = Server.MapPath("~/Archivos/DocentesCertificados/");
+                if (!Directory.Exists(carpeta))
+                {
+                    Directory.CreateDirectory(carpeta);
+                }
+
+                string extension = Path.GetExtension(control.FileName);
+                string nombreArchivo = $"{nombreBase}_{DateTime.Now.Ticks}{extension}";
+                string rutaCompleta = Path.Combine(carpeta, nombreArchivo);
+
+                control.SaveAs(rutaCompleta);
+
+                return $"~/Archivos/DocentesCertificados/{nombreArchivo}";
+            }
+            return null;
+        }
+
+        private void VisualizarArchivo(string rutaRelativa)
+        {
+            if (string.IsNullOrEmpty(rutaRelativa))
+            {
+                Msg("Ruta de archivo no válida.", "ee");
+                return;
+            }
+
+            string rutaFisica = Server.MapPath(rutaRelativa);
+
+            if (File.Exists(rutaFisica))
+            {
+                try
+                {
+                    string nombreArchivo = Path.GetFileName(rutaFisica);
+
+                    Response.Clear();
+                    Response.Buffer = true;
+
+                    Response.ContentType = "application/pdf";
+
+                    Response.AddHeader("Content-Disposition", "inline; filename=" + nombreArchivo);
+
+                    // Enviamos el archivo
+                    Response.TransmitFile(rutaFisica);
+                    Response.End();
+                }
+                catch (Exception ex)
+                {
+                    if (!(ex is System.Threading.ThreadAbortException))
+                    {
+                        Msg("Error al abrir el archivo: " + ex.Message, "ee");
+                    }
+                }
+            }
+            else
+            {
+                Msg("El archivo físico no existe en el servidor.", "ww");
+            }
+        }
 
         private void GenerarVistaPrevia(string idDocente)
         {

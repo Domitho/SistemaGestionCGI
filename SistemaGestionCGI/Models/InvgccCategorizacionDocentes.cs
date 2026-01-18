@@ -5,9 +5,6 @@ namespace SistemaGestionCGI.Models
 {
     public class InvgccCategorizacionDocentes
     {
-        // ==========================================
-        // DATOS DEL DOCENTE (IDENTIFICACIÓN)
-        // ==========================================
         [JsonProperty("strId_doc")]
         public string strId_doc { get; set; }
 
@@ -29,19 +26,15 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("bitActivo_doc")]
         public bool bitActivo_doc { get; set; }
 
-        // ==========================================
-        // DATOS DE LA CATEGORÍA (UNIFICADOS)
-        // ==========================================
         [JsonProperty("strCategorizacion")]
         public string strCategorizacion { get; set; }
 
         [JsonProperty("dtFechaCategorizacion")]
         public DateTime? dtFechaCategorizacion { get; set; }
 
-        // ==========================================
-        // PROPIEDADES AUXILIARES (NO ESTÁN EN TABLA)
-        // Útiles para mostrar en Grillas o Combos
-        // ==========================================
+        [JsonProperty("strCertificado_doc")]
+        public string strCertificado_doc { get; set; }
+
         [JsonProperty("NombreCompleto")]
         public string NombreCompleto { get; set; }
     }
