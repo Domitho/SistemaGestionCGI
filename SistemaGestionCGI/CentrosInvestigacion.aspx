@@ -54,7 +54,7 @@
                                     </asp:LinkButton>
 
                                     <asp:LinkButton ID="btnEliminar" runat="server" CommandName="Eliminar" CommandArgument='<%# Eval("strId_cen") %>' 
-                                        CssClass="btn btn-eliminar btn-sm rounded-circle" OnClientClick="return confirm('¿Eliminar centro?');" ToolTip="Eliminar">
+                                        CssClass="btn btn-eliminar btn-sm rounded-circle" OnClientClick="return confirmarEliminar(this, '¿Eliminar centro?');" ToolTip="Eliminar">
                                         <i class="fa-solid fa-trash"></i>
                                     </asp:LinkButton>
                                 </td>

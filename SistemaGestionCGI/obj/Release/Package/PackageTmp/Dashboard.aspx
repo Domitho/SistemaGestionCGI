@@ -1,6 +1,7 @@
 ﻿<%@ Page Title="Dashboard Institucional" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Dashboard.aspx.cs" Inherits="SistemaGestionCGI.Dashboard" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
+
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <style>
@@ -149,17 +150,14 @@
 
     <script>
         $(document).ready(function () {
-            // Colores Institucionales (Coincidentes con CSS) [cite: 130-132]
             const utcAzul = '#312783';
             const utcVerde = '#1b9e4b';
             const utcAmarillo = '#ffc107';
             const utcRojo = '#d9534f';
 
-            // 1. Obtener datos serializados desde el Backend
             var rawDocentes = <%= JsonDocentes %>;
             var rawProyectos = <%= JsonProyectos %>;
 
-            // --- GRÁFICO 1: DOCENTES POR CATEGORÍA (Barras Horizontales) ---
             var optionsCat = {
                 series: [{
                     name: 'Docentes',

@@ -53,7 +53,6 @@
             box-shadow: none !important;
         }
 
-        /* Badges dentro de la tabla */
         .table .badge {
             font-weight: 500;
             font-size: 0.75rem;
@@ -63,7 +62,6 @@
             align-items: center;
         }
 
-        /* Efecto de pulso para la alerta roja (Opcional, para llamar la atención) */
         @keyframes pulse-red {
             0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
             70% { box-shadow: 0 0 0 6px rgba(220, 53, 69, 0); }
@@ -82,7 +80,7 @@
         </h3>
 
         <div class="d-flex gap-2 mt-2 mt-md-0">
-            <button type="button" class="btn btn-outline-secondary btn-pill px-3" onclick="abrirModalCiclo()">
+            <button type="button" id="btnGestionarCiclos" runat="server" class="btn btn-outline-secondary btn-pill px-3" onclick="abrirModalCiclo()">
                 <i class="fa-solid fa-calendar-days me-2"></i> Periodos / Ciclos
             </button>
 
@@ -126,7 +124,11 @@
                                     <asp:Literal ID="litNotificacionPlazo" runat="server"></asp:Literal>
                                 </td>
                                 <td><%# Convert.ToDateTime(Eval("dtFechaini_ejec")).ToString("dd/MM/yyyy") %></td>
-                                <td><%# Eval("dtFechafin_ejec") != DBNull.Value ? Convert.ToDateTime(Eval("dtFechafin_ejec")).ToString("dd/MM/yyyy") : "-" %></td>
+                                <td>
+                                    <%# Convert.ToDateTime(Eval("dtFechafin_ejec")).Year < 1900 ? 
+                                        "<span class='badge bg-light text-secondary border'>Vigente</span>" : 
+                                        Convert.ToDateTime(Eval("dtFechafin_ejec")).ToString("dd/MM/yyyy") %>
+                                </td>
                                 <td>
                                     <span class='badge rounded-pill px-3 py-2 <%# 
                                         Eval("strEstado_ejec").ToString() == "FINALIZADO" ? "bg-danger" : 
@@ -155,9 +157,12 @@
                                         <i class="fa-solid fa-folder-open"></i>
                                     </asp:LinkButton>
 
-                                    <asp:LinkButton ID="btnEliminar" runat="server" CommandName="Eliminar" CommandArgument='<%# Eval("strId_ejec") %>'
-                                        CssClass="btn btn-eliminar btn-sm rounded-circle"
-                                        OnClientClick="return confirm('¿Está seguro de eliminar este registro y su equipo?');" ToolTip="Eliminar">
+                                    <asp:LinkButton ID="btnEliminar" runat="server" 
+                                        CommandName="Eliminar" 
+                                        CommandArgument='<%# Eval("strId_ejec") %>' 
+                                        CssClass="btn btn-sm btn-outline-danger" 
+                                        ToolTip="Eliminar Registro"
+                                        OnClientClick="return confirmarEliminar(this, '¿Desea eliminar esta ejecución de proyecto?');">
                                         <i class="fa-solid fa-trash"></i>
                                     </asp:LinkButton>
                                 </td>

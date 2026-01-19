@@ -1,15 +1,4 @@
-﻿/* =======================================================
-   UTC FILEINPUT − VERSIÓN FINAL
-   Compatible con ASP.NET WebForms + Bootstrap 5 + PDF.js
-   Funciones:
-   - Drag & drop
-   - Vista previa imagen
-   - Vista previa PDF (profesional)
-   - Renombrar archivo
-   - Eliminar archivo
-   - Canvas centrado + zoom + navegación PDF
-========================================================= */
-
+﻿
 function UTC_FileInput(config) {
 
     /* ============================
@@ -161,6 +150,19 @@ function UTC_FileInput(config) {
        PROCESAR ARCHIVO SELECCIONADO
     ============================ */
     function handleFile(file) {
+        const extensionesPermitidas = /(\.pdf|\.doc|\.docx)$/i;
+        if (!extensionesPermitidas.exec(file.name)) {
+            if (typeof toastify === 'function') {
+                toastify('ww', 'Formato no permitido. Solo se aceptan PDF y WORD.', 'Sistema');
+            } else {
+                alert('Formato no permitido. Solo PDF y WORD.');
+            }
+
+            realInput.value = "";
+            fileNameLabel.textContent = "Ningún archivo seleccionado";
+            return; 
+        }
+
         dropzone.style.display = "none";
         loader.style.display = "block";
 
@@ -169,7 +171,7 @@ function UTC_FileInput(config) {
         setTimeout(() => {
             if (file.type.includes("pdf")) showPDF(file);
             else if (file.type.includes("image")) showImage(file);
-            else showGeneric(file);
+            else showGeneric(file); 
         }, 400);
     }
 

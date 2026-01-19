@@ -118,7 +118,7 @@
                                     </asp:LinkButton>
 
                                     <asp:LinkButton ID="btnEliminar" runat="server" CommandName="eliminar" CommandArgument='<%# Eval("strId_pro") %>'
-                                        CssClass="btn btn-eliminar btn-sm rounded-circle" OnClientClick="return confirm('¿Desea eliminar este proyecto?');" ToolTip="Eliminar">
+                                        CssClass="btn btn-eliminar btn-sm rounded-circle" OnClientClick="return confirmarEliminar(this, '¿Desea eliminar este proyecto?');" ToolTip="Eliminar">
                                         <i class="fa-solid fa-trash"></i>
                                     </asp:LinkButton>
                                 </td>

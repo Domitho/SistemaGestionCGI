@@ -71,7 +71,7 @@
                             <tr>
                                 <td><%# Eval("strId_pro") %></td>
                                 <td class="text-start"><%# Eval("strTema_pro") %></td>
-                                <td class="text-start"><%# Eval("strCoordinador_pro") %></td>
+                                <td class="text-start text-uppercase small"><%# Eval("NombreCoordinadorCompleto") %></td>
                                 <td><%# Eval("strDuracion_pro") %></td>
                                 <td><%# Convert.ToDateTime(Eval("dtFehains_pro")).ToString("dd/MM/yyyy") %></td>
                                 <td class="text-start"><%# Eval("strNombre_gru") %></td>
@@ -118,7 +118,7 @@
                                     </asp:LinkButton>
 
                                     <asp:LinkButton ID="btnEliminar" runat="server" CommandName="eliminar" CommandArgument='<%# Eval("strId_pro") %>'
-                                        CssClass="btn btn-eliminar btn-sm rounded-circle" OnClientClick="return confirm('¿Desea eliminar este proyecto?');" ToolTip="Eliminar">
+                                        CssClass="btn btn-eliminar btn-sm rounded-circle" OnClientClick="return confirmarEliminar(this, '¿Desea eliminar este proyecto?');" ToolTip="Eliminar">
                                         <i class="fa-solid fa-trash"></i>
                                     </asp:LinkButton>
                                 </td>
@@ -234,7 +234,10 @@
             </div>
 
             <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
-                <asp:LinkButton ID="btnGuardar" runat="server" CssClass="btn btn-primary btn-pill px-4" OnClick="btnGuardar_Click">
+                <asp:LinkButton ID="btnGuardar" runat="server" 
+                    CssClass="btn btn-primary btn-pill px-4" 
+                    OnClientClick="return ValidarPuntajeProyecto(false);"
+                    OnClick="btnGuardar_Click">
                     <i class="fa-solid fa-floppy-disk me-2"></i> Guardar
                 </asp:LinkButton>
                 <asp:LinkButton ID="btnCancelar" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="btnCancelar_Click" CausesValidation="false">
@@ -328,7 +331,10 @@
             </div>
 
             <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
-                <asp:LinkButton ID="btnActualizar" runat="server" CssClass="btn btn-primary btn-pill px-4" OnClick="btnActualizar_Click">
+                <asp:LinkButton ID="btnActualizar" runat="server" 
+                    CssClass="btn btn-primary btn-pill px-4" 
+                    OnClientClick="return ValidarPuntajeProyecto(true);" 
+                    OnClick="btnActualizar_Click">
                     <i class="fa-solid fa-floppy-disk me-2"></i> Actualizar
                 </asp:LinkButton>
                 <asp:LinkButton ID="btnCancelarEdit" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="btnCancelarEdit_Click" CausesValidation="false">
@@ -378,54 +384,84 @@
     </div>
 
     <%-- MODAL: NUEVO INTEGRANTE --%>
-    <div class="modal fade" id="modalNuevoIntegrante" tabindex="-1" aria-hidden="true" ClientIDMode="Static">
-        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content shadow-utc border-0 rounded-4">
-                <div class="modal-header bg-utc text-white">
-                    <h5 class="modal-title"><i class="fa-solid fa-user-plus me-2"></i> Registrar Nuevo Integrante</h5>
+    <div class="modal fade" id="modalNuevoIntegrante" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-utc rounded-4">
+            
+                <div class="modal-header bg-utc text-white py-3">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-plus me-2"></i> Nuevo Integrante</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-4">
-                    <div class="alert alert-light border-start border-primary border-4 shadow-sm small text-muted mb-4">
-                        <i class="fa-solid fa-circle-info text-primary me-2"></i> Se vinculará al grupo: <strong class="text-dark" id="lblGrupoModalJS">...</strong>
-                    </div>
 
-                    <div class="row g-3">
-                        <div class="col-12"><h6 class="text-primary fw-bold border-bottom pb-2">Datos Personales</h6></div>
+                <div class="modal-body bg-white p-4">
+                
+                    <div class="row align-items-center mb-3">
                         <div class="col-md-4">
-                            <label class="form-label">Cédula <span class="text-danger">*</span></label>
-                            <asp:TextBox ID="txtCedulaInt" runat="server" CssClass="form-control" placeholder="Ej: 050..." MaxLength="15" autocomplete="off" />
+                            <label class="form-label fw-bold text-dark mb-0">Tipo de Vinculación:</label>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Nombres <span class="text-danger">*</span></label>
-                            <asp:TextBox ID="txtNombresInt" runat="server" CssClass="form-control" autocomplete="off" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Apellidos <span class="text-danger">*</span></label>
-                            <asp:TextBox ID="txtApellidosInt" runat="server" CssClass="form-control" autocomplete="off" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Correo Electrónico</label>
-                            <asp:TextBox ID="txtCorreoInt" runat="server" CssClass="form-control" TextMode="Email" autocomplete="off" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Tipo de Integrante</label>
-                            <asp:DropDownList ID="ddlTipoInt" runat="server" CssClass="form-select" onchange="ToggleTipoIntegrante(this)">
-                                <asp:ListItem Text="Interno (UTC)" Value="Interno" Selected="True" />
-                                <asp:ListItem Text="Externo (Colaborador)" Value="Externo" />
+                        <div class="col-md-8">
+                            <asp:DropDownList ID="ddlTipoInt" runat="server" CssClass="form-select border-secondary shadow-none"
+                                onchange="ToggleTipoIntegranteModal()">
+                                <asp:ListItem Value="Interno" Selected="True">INTERNO (Estudiante / Administrativo)</asp:ListItem>
+                                <asp:ListItem Value="Docente">DOCENTE UTC (Búsqueda Automática)</asp:ListItem>
+                                <asp:ListItem Value="Externo">EXTERNO (Otra Institución)</asp:ListItem>
                             </asp:DropDownList>
                         </div>
+                    </div>
 
-                        <div class="col-12 mt-4"><h6 class="text-primary fw-bold border-bottom pb-2">Datos Académicos / Función</h6></div>
+                    <hr class="text-muted opacity-25 my-4">
 
-                        <div id="divInterno" class="col-12 row g-3 m-0 p-0" runat="server" ClientIDMode="Static">
-                            <div class="col-md-6">
-                                <label class="form-label">Carrera / Departamento</label>
-                                <asp:TextBox ID="txtCarreraInt" runat="server" CssClass="form-control" autocomplete="off" />
+                    <div id="pnlBusquedaDocente" style="display:none;" class="mb-4">
+                        <div class="bg-light p-3 rounded-3 border border-dashed">
+                            <label class="form-label fw-bold text-primary small mb-2">
+                                <i class="fa-solid fa-magnifying-glass me-1"></i> BÚSQUEDA INSTITUCIONAL
+                            </label>
+                            <div class="input-group">
+                                <asp:TextBox ID="txtBuscarCedula" runat="server" CssClass="form-control" 
+                                    placeholder="Ingrese cédula del docente..." MaxLength="10"></asp:TextBox>
+                                <asp:LinkButton ID="btnBuscarDocente" runat="server" CssClass="btn btn-primary px-4" 
+                                    OnClick="btnBuscarDocente_Click">
+                                    <i class="fa-solid fa-search"></i>
+                                </asp:LinkButton>
                             </div>
+                        </div>
+                        <hr class="text-muted opacity-25 my-4">
+                    </div>
+
+                    <div id="pnlDatosPersonales">
+                        <h6 class="text-primary fw-bold mb-3 small text-uppercase">
+                            <i class="fa-regular fa-id-card me-2"></i> Información Personal
+                        </h6>
+                    
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label small text-muted">Cédula <span class="text-danger">*</span></label>
+                                <asp:TextBox ID="txtCedulaInt" runat="server" CssClass="form-control form-control-sm bg-light" MaxLength="15" autocomplete="off"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small text-muted">Nombres <span class="text-danger">*</span></label>
+                                <asp:TextBox ID="txtNombresInt" runat="server" CssClass="form-control form-control-sm" autocomplete="off"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small text-muted">Apellidos <span class="text-danger">*</span></label>
+                                <asp:TextBox ID="txtApellidosInt" runat="server" CssClass="form-control form-control-sm" autocomplete="off"/>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small text-muted">Correo Electrónico <span class="text-danger">*</span></label>
+                                <asp:TextBox ID="txtCorreoInt" runat="server" CssClass="form-control form-control-sm" TextMode="Email" autocomplete="off"/>
+                            </div>
+                        </div>
+
+                        <hr class="text-muted opacity-25 my-4">
+
+                        <h6 class="text-primary fw-bold mb-3 small text-uppercase">
+                            <i class="fa-solid fa-building-columns me-2"></i> Afiliación y Rol
+                        </h6>
+
+                        <div id="divInternoModal" class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label class="form-label">Facultad / Extensión</label>
-                                <asp:DropDownList ID="ddlFacultadInt" runat="server" CssClass="form-select">
+                                <label class="form-label small text-muted">Facultad/Extensión</label>
+                                <asp:DropDownList ID="ddlFacultadInt" runat="server" CssClass="form-select form-select-sm">
                                     <asp:ListItem Text="-- Seleccione --" Value="" />
                                     <asp:ListItem>FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
                                     <asp:ListItem>FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
@@ -436,55 +472,48 @@
                                     <asp:ListItem>EXTENSION LA MANÁ</asp:ListItem>
                                 </asp:DropDownList>
                             </div>
-                        </div>
-
-                        <div id="divExterno" class="col-12" style="display: none;" runat="server" ClientIDMode="Static">
-                            <label class="form-label">Institución / Entidad de Origen <span class="text-danger">*</span></label>
-                            <asp:TextBox ID="txtEntidadInt" runat="server" CssClass="form-control" placeholder="Ej: Universidad Central..." autocomplete="off" />
-                        </div>
-
-                         <div class="col-md-6">
-                            <label class="form-label">Función en el Grupo</label>
-                            <asp:DropDownList ID="ddlFuncionIntModal" runat="server" CssClass="form-select" onchange="ToggleFuncionModal(this)">
-                                <asp:ListItem Value="Miembro Investigador" Selected="True">Miembro Investigador</asp:ListItem>
-                                <asp:ListItem Value="Investigador Principal">Investigador Principal</asp:ListItem>
-                                <asp:ListItem Value="Coordinador">Coordinador</asp:ListItem>
-                                <asp:ListItem Value="Estudiante">Estudiante</asp:ListItem>
-                            </asp:DropDownList>
-                        </div>
-
-                        <div class="col-12 animate__animated animate__fadeIn" id="divCertificadoModal" style="display:none;">
-                            <label class="form-label fw-semibold text-primary">
-                                <i class="fa-solid fa-certificate me-1"></i> Certificado de Categorización
-                            </label>
-    
-                            <div class="utc-fileinput-wrapper" id="wrapperCertificadoModal">
-                                <div class="utc-fileinput-header">
-                                    <div class="utc-fileinput-icon"><i class="fa-solid fa-file-contract"></i></div>
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="utc-fileinput-name">Sin archivo seleccionado</span>
-                                        <div class="utc-fileinput-buttons d-flex gap-2">
-                                            <button type="button" class="btn btn-outline-danger utc-btn-small remove-btn"><i class="fa-solid fa-xmark"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <%-- Input oculto para compatibilidad con el JS existente --%>
-                                <input type="text" class="form-control form-control-sm utc-edit-name-field d-none" />
-        
-                                <div class="utc-fileinput-preview" id="previewCertificadoModal"></div>
-                                <div class="utc-fileinput-loader" id="loaderCertificadoModal"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
-                                <div class="utc-dropzone" id="dropzoneCertificadoModal"><i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-primary"></i><br />Subir Certificado (PDF)</div>
-                                <asp:FileUpload ID="flpCertificadoModal" runat="server" CssClass="utc-fileinput-input" />
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">Carrera / Departamento</label>
+                                <asp:TextBox ID="txtCarreraInt" runat="server" CssClass="form-control form-control-sm" autocomplete="off"/>
                             </div>
-                            <div class="form-text small">Obligatorio para Investigadores Principales.</div>
                         </div>
-                    </div>
-                </div>
-                <div class="modal-footer border-0 bg-light justify-content-center">
-                    <asp:LinkButton ID="btnGuardarIntegrante" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow-sm" OnClick="btnGuardarIntegrante_Click">
-                        <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Integrante
+
+                        <div id="divExternoModal" class="row g-3 mb-4" style="display:none;">
+                            <div class="col-12">
+                                <label class="form-label small text-muted">Entidad de Origen</label>
+                                <asp:TextBox ID="txtEntidadInt" runat="server" CssClass="form-control form-control-sm" 
+                                    placeholder="Ej: Universidad Central del Ecuador" autocomplete="off"/>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <label class="form-label small text-muted fw-bold">Función Asignada</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-primary-subtle text-primary border-primary border-opacity-25">
+                                        <i class="fa-solid fa-id-badge"></i>
+                                    </span>
+                                    <asp:TextBox ID="txtFuncionDisplay" runat="server" 
+                                        CssClass="form-control bg-light text-primary fw-bold border-primary border-opacity-25" 
+                                        ReadOnly="true" Text="Miembro Investigador"></asp:TextBox>
+                                </div>
+                                <div class="form-text small text-muted mt-1">
+                                    <i class="fa-solid fa-circle-info me-1"></i> Rol definido automáticamente para proyectos.
+                                </div>
+                            </div>
+                        </div>
+
+                    </div> </div>
+
+                <div class="modal-footer border-top-0 bg-white rounded-bottom-4 py-4 justify-content-center">
+                    <asp:LinkButton ID="btnGuardarIntegrante" runat="server" 
+                        CssClass="btn btn-primary btn-pill px-5 shadow fw-bold"
+                        OnClientClick="return ValidarNuevoIntegrante();" 
+                        OnClick="btnGuardarIntegrante_Click">
+                        <i class="fa-solid fa-check me-2"></i> GUARDAR INTEGRANTE
                     </asp:LinkButton>
                 </div>
+
             </div>
         </div>
     </div>
@@ -614,7 +643,6 @@
                 UTC_FileInput({
                     wrapper: "wrapperCertificadoModal", dropzone: "dropzoneCertificadoModal",
                     preview: "previewCertificadoModal", loader: "loaderCertificadoModal",
-                    input: "<%= flpCertificadoModal.ClientID %>"
                 });
             }
 
@@ -676,17 +704,157 @@
             }
         }
 
-        // Actualiza tu función de Reset para que limpie también el dropdown nuevo
         function ResetFormularioIntegrante() {
             var ddl = document.getElementById('<%= ddlTipoInt.ClientID %>');
             if (ddl) ToggleTipoIntegrante(ddl);
-    
-            // Reset del nuevo dropdown
-            var ddlFunc = document.getElementById('<%= ddlFuncionIntModal.ClientID %>');
-            if (ddlFunc) {
-                ddlFunc.selectedIndex = 0;
-                ToggleFuncionModal(ddlFunc); // Ocultar el archivo
+        }
+
+        function ToggleTipoIntegranteModal() {
+            var ddl = document.getElementById('<%= ddlTipoInt.ClientID %>');
+            var tipo = ddl.value;
+
+            var pnlBusqueda = document.getElementById('pnlBusquedaDocente');
+            var pnlDatos = document.getElementById('pnlDatosPersonales');
+
+            var divInterno = document.getElementById('divInternoModal');
+            var divExterno = document.getElementById('divExternoModal');
+
+            var txtNombre = document.getElementById('<%= txtNombresInt.ClientID %>');
+
+            if (tipo === 'Docente') {
+                pnlBusqueda.style.display = 'block';
+
+                if (txtNombre.value.trim() === "") {
+                    pnlDatos.style.display = 'none';
+                } else {
+                    pnlDatos.style.display = 'block';
+                }
+
+            } else {
+                pnlBusqueda.style.display = 'none';
+                pnlDatos.style.display = 'block'; 
             }
+
+            if (tipo === 'Externo') {
+                divInterno.style.display = 'none';
+                divExterno.style.display = 'flex';
+            } else {
+                divInterno.style.display = 'flex';
+                divExterno.style.display = 'none';
+            }
+        }
+
+        function AbrirModalNuevoIntegrante() {
+            var el = document.getElementById('modalNuevoIntegrante');
+            var modal = bootstrap.Modal.getOrCreateInstance(el);
+            modal.show();
+            ToggleTipoIntegranteModal();
+        }
+
+    </script>
+
+    <script type="text/javascript">
+
+        // 1. Mostrar Error (Reutilizable)
+        function mostrarError(campoId, mensaje) {
+            if (typeof toastify === 'function') {
+                toastify('ww', mensaje, 'Sistema');
+            } else {
+                alert(mensaje);
+            }
+            var campo = document.getElementById(campoId);
+            if (campo) {
+                campo.classList.add('is-invalid');
+                campo.focus();
+                // Quitar rojo al escribir
+                campo.addEventListener('input', function () {
+                    this.classList.remove('is-invalid');
+                }, { once: true });
+            }
+        }
+
+        // 2. Algoritmo Cédula Ecuatoriana
+        function esCedulaValida(cedula) {
+            if (cedula.length !== 10 || isNaN(cedula)) return false;
+            var provincia = parseInt(cedula.substring(0, 2), 10);
+            if (provincia < 1 || (provincia > 24 && provincia !== 30)) return false;
+            var tercerDigito = parseInt(cedula.substring(2, 3), 10);
+            if (tercerDigito >= 6) return false;
+
+            var coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2];
+            var verificador = parseInt(cedula.substring(9, 10), 10);
+            var suma = 0;
+
+            for (var i = 0; i < 9; i++) {
+                var valor = parseInt(cedula.substring(i, i + 1), 10) * coeficientes[i];
+                suma += (valor >= 10) ? valor - 9 : valor;
+            }
+
+            var digitoCalculado = (suma % 10 === 0) ? 0 : (10 - (suma % 10));
+            return verificador === digitoCalculado;
+        }
+
+        // 3. Regex Correo
+        function esEmailValido(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        // 4. FUNCIÓN PRINCIPAL QUE LLAMA EL BOTÓN
+        function ValidarNuevoIntegrante() {
+            var idCedula = '<%= txtCedulaInt.ClientID %>';
+            var idCorreo = '<%= txtCorreoInt.ClientID %>';
+
+            var valCedula = document.getElementById(idCedula).value.trim();
+            if (!esCedulaValida(valCedula)) {
+                mostrarError(idCedula, 'La cédula ingresada no es válida.');
+                return false;
+            }
+
+            var valCorreo = document.getElementById(idCorreo).value.trim();
+            if (!esEmailValido(valCorreo)) {
+                mostrarError(idCorreo, 'El formato del correo es incorrecto.');
+                return false; 
+            }
+
+            return true; 
+        }
+
+        function ValidarPuntajeProyecto(esEdicion) {
+            var idCampo = esEdicion ? '<%= txtPuntajeEdit.ClientID %>' : '<%= txtPuntaje.ClientID %>';
+            var idTema = esEdicion ? '<%= txtTemaEdit.ClientID %>' : '<%= txtTema.ClientID %>';
+
+            var inputPuntaje = document.getElementById(idCampo);
+            var inputTema = document.getElementById(idTema);
+
+            if (inputTema && inputTema.value.trim() === "") {
+                mostrarError(idTema, 'El título del proyecto es obligatorio.');
+                return false;
+            }
+
+            if (inputPuntaje) {
+                var valor = inputPuntaje.value.trim();
+
+                if (valor !== "") {
+                    var puntaje = parseFloat(valor);
+
+                    if (isNaN(puntaje)) {
+                        mostrarError(idCampo, 'Ingrese un valor numérico válido.');
+                        return false;
+                    }
+
+                    if (puntaje < 0) {
+                        mostrarError(idCampo, 'La calificación no puede ser menor a 0.');
+                        return false;
+                    }
+
+                    if (puntaje > 150) {
+                        mostrarError(idCampo, 'La calificación no puede superar los 150 puntos.');
+                        return false;
+                    }
+                }
+            }
+
+            return true; 
         }
 
     </script>

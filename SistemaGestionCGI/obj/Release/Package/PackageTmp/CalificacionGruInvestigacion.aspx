@@ -78,7 +78,7 @@
                                 <td><%# Convert.ToDateTime(Eval("dtFecha_valo")).ToString("dd/MM/yyyy") %></td>
                                 <td>
                                     <asp:LinkButton ID="btnVer" runat="server" CommandName="Ver" CommandArgument='<%# Eval("strId_valo") %>' CssClass="btn btn-ver btn-sm rounded-circle me-1" ToolTip="Ver Informe"><i class="fa-solid fa-eye"></i></asp:LinkButton>
-                                    <asp:LinkButton ID="btnEliminar" runat="server" CommandName="Eliminar" CommandArgument='<%# Eval("strId_valo") %>' CssClass="btn btn-eliminar btn-sm rounded-circle" OnClientClick="return confirm('¿Eliminar esta calificación?');" ToolTip="Eliminar"><i class="fa-solid fa-trash"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="btnEliminar" runat="server" CommandName="Eliminar" CommandArgument='<%# Eval("strId_valo") %>' CssClass="btn btn-eliminar btn-sm rounded-circle" OnClientClick="return confirmarEliminar(this, '¿Está seguro de eliminar este proyecto? Esta acción no se puede deshacer.');" ToolTip="Eliminar"><i class="fa-solid fa-trash"></i></asp:LinkButton>
                                 </td>
                             </tr>
                         </ItemTemplate>
@@ -155,7 +155,10 @@
                 </div>
             </div>
             <div class="d-flex justify-content-center gap-3 mt-4">
-                <asp:LinkButton ID="btnGuardar" runat="server" CssClass="btn btn-primary btn-pill px-4" OnClick="btnGuardar_Click">
+                <asp:LinkButton ID="btnGuardar" runat="server" 
+                    CssClass="btn btn-primary btn-pill px-4" 
+                    OnClientClick="return ValidarCalificacion();"
+                    OnClick="btnGuardar_Click">
                     <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Calificación
                 </asp:LinkButton>
                 <asp:LinkButton ID="btnCancelarForm" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="btnRegresar_Click" CausesValidation="false">
@@ -185,7 +188,10 @@
                     </div>
                 </div>
                 <div class="modal-footer justify-content-center">
-                    <asp:LinkButton ID="btnGuardarMetricas" runat="server" CssClass="btn btn-primary btn-pill px-4" OnClick="btnGuardarMetricas_Click">
+                    <asp:LinkButton ID="btnGuardarMetricas" runat="server" 
+                        CssClass="btn btn-primary btn-pill px-4" 
+                        OnClientClick="return ValidarMetricas();"
+                        OnClick="btnGuardarMetricas_Click">
                         Guardar Configuración
                     </asp:LinkButton>
                 </div>
@@ -233,6 +239,69 @@
         function AbrirModalMetricas() {
             var el = document.getElementById('modalMetricas');
             if (el) { var modal = bootstrap.Modal.getOrCreateInstance(el); modal.show(); }
+        }
+    </script>
+
+    <script type="text/javascript">
+
+        function mostrarError(campoId, mensaje) {
+            if (typeof toastify === 'function') {
+                toastify('ww', mensaje, 'Sistema');
+            } else {
+                alert(mensaje);
+            }
+            var campo = document.getElementById(campoId);
+            if (campo) {
+                campo.classList.add('is-invalid');
+                campo.focus();
+                campo.addEventListener('input', function () {
+                    this.classList.remove('is-invalid');
+                }, { once: true });
+            }
+        }
+
+        function ValidarCalificacion() {
+            var idGrupo = '<%= ddlGrupoAdd.ClientID %>';
+            var idFecha = '<%= txtFechaAdd.ClientID %>';
+            var idPuntaje = '<%= txtPuntajeAdd.ClientID %>';
+
+            // 1. Validar Selección de Grupo
+            var grupo = document.getElementById(idGrupo);
+            if (grupo && (grupo.value === "" || grupo.value === "0")) {
+                mostrarError(idGrupo, 'Debe seleccionar un Grupo de Investigación.');
+                return false;
+            }
+
+            var inputPuntaje = document.getElementById(idPuntaje);
+            if (inputPuntaje) {
+                var valor = inputPuntaje.value.trim();
+                if (valor === "") {
+                    mostrarError(idPuntaje, 'El puntaje obtenido es obligatorio.');
+                    return false;
+                }
+                
+                var puntaje = parseFloat(valor);
+                if (isNaN(puntaje) || puntaje < 0 || puntaje > 100) {
+                    mostrarError(idPuntaje, 'La calificación debe ser un número entre 0 y 100.');
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function ValidarMetricas() {
+            var idMin = '<%= txtMinConsolidado.ClientID %>';
+            var inputMin = document.getElementById(idMin);
+
+            if (inputMin) {
+                var val = parseFloat(inputMin.value);
+                if (isNaN(val) || val < 0 || val > 100) {
+                    mostrarError(idMin, 'El puntaje de métrica debe estar entre 0 y 100.');
+                    return false;
+                }
+            }
+            return true;
         }
     </script>
 

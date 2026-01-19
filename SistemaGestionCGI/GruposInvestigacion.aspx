@@ -65,7 +65,7 @@
                                     <asp:LinkButton ID="btnVerArchivo" runat="server" CommandName="Archivo" CommandArgument='<%# Eval("strId_gru") %>' CssClass="btn btn-ver btn-sm rounded-circle me-1" ToolTip="Ver Resolución"><i class="fa-solid fa-eye"></i></asp:LinkButton>
                                     <asp:LinkButton ID="btnVerInt" runat="server" CommandName="VerIntegrantes" CommandArgument='<%# Eval("strId_gru") %>' CssClass="btn btn-primary btn-sm rounded-circle me-1 text-white" ToolTip="Gestionar Integrantes"><i class="fa-solid fa-users"></i></asp:LinkButton>
                                     <asp:LinkButton ID="btnEditar" runat="server" CommandName="Editar" CommandArgument='<%# Eval("strId_gru") %>' CssClass="btn btn-warning btn-sm rounded-circle me-1" ToolTip="Editar Grupo"><i class="fa-solid fa-pen"></i></asp:LinkButton>
-                                    <asp:LinkButton ID="btnEliminar" runat="server" CommandName="Eliminar" CommandArgument='<%# Eval("strId_gru") %>' CssClass="btn btn-eliminar btn-sm rounded-circle" OnClientClick="return confirm('¿Está seguro de eliminar este grupo?');" ToolTip="Eliminar"><i class="fa-solid fa-trash"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="btnEliminar" runat="server" CommandName="Eliminar" CommandArgument='<%# Eval("strId_gru") %>' CssClass="btn btn-eliminar btn-sm rounded-circle" OnClientClick="return confirmarEliminar(this, '¿Está seguro de eliminar este proyecto? Esta acción no se puede deshacer.');" ToolTip="Eliminar"><i class="fa-solid fa-trash"></i></asp:LinkButton>
                                 </td>
                             </tr>
                         </ItemTemplate>
@@ -251,7 +251,9 @@
                                 <td class="text-start"><%# Eval("strFuncion_int") %></td>
                                 <td><%# Convert.ToDateTime(Eval("dtFechaini_int")).ToString("dd/MM/yyyy") %></td>
                                 <td>
-                                    <%# Eval("dtFechafin_int") == DBNull.Value ? "-" : Convert.ToDateTime(Eval("dtFechafin_int")).ToString("dd/MM/yyyy") %>
+                                    <%# Convert.ToDateTime(Eval("dtFechafin_int")).Year < 1900 ? 
+                                        "<span class='badge bg-light text-secondary border'>Vigente</span>" : 
+                                        Convert.ToDateTime(Eval("dtFechafin_int")).ToString("dd/MM/yyyy") %>
                                 </td>
                                 <td>
                                     <%# Convert.ToBoolean(Eval("bitActivo_int")) 

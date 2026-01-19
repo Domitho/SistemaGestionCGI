@@ -79,7 +79,7 @@
                                     <asp:LinkButton ID="btnEliminar" runat="server" CommandName="eliminar" CommandArgument='<%# Eval("strId_doc") %>'
                                         CssClass="btn btn-eliminar btn-sm rounded-circle"
                                         Visible='<%# !string.IsNullOrEmpty(Eval("strCategorizacion")?.ToString()) %>'
-                                        OnClientClick="return confirm('¿Está seguro de QUITAR la categoría actual de este docente? Esta acción quedará registrada en el historial.');"
+                                        OnClientClick="return confirmarEliminar(this, '¿Está seguro de QUITAR la categoría actual de este docente? Esta acción quedará registrada en el historial.');"
                                         ToolTip="Quitar Categoría">
                                         <i class="fa-solid fa-trash"></i>
                                     </asp:LinkButton>

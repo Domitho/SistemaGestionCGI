@@ -124,7 +124,11 @@
                                     <asp:Literal ID="litNotificacionPlazo" runat="server"></asp:Literal>
                                 </td>
                                 <td><%# Convert.ToDateTime(Eval("dtFechaini_ejec")).ToString("dd/MM/yyyy") %></td>
-                                <td><%# Eval("dtFechafin_ejec") != DBNull.Value ? Convert.ToDateTime(Eval("dtFechafin_ejec")).ToString("dd/MM/yyyy") : "-" %></td>
+                                <td>
+                                    <%# Convert.ToDateTime(Eval("dtFechafin_ejec")).Year < 1900 ? 
+                                        "<span class='badge bg-light text-secondary border'>Vigente</span>" : 
+                                        Convert.ToDateTime(Eval("dtFechafin_ejec")).ToString("dd/MM/yyyy") %>
+                                </td>
                                 <td>
                                     <span class='badge rounded-pill px-3 py-2 <%# 
                                         Eval("strEstado_ejec").ToString() == "FINALIZADO" ? "bg-danger" : 
