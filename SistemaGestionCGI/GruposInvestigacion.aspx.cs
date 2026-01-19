@@ -312,7 +312,10 @@ namespace SistemaGestionCGI
             txtCedulaCoord.Text = ""; txtNombreCoord.Text = ""; txtApellidoCoord.Text = "";
             txtCorreoCoord.Text = ""; txtCarreraCoord.Text = ""; txtEntidadCoord.Text = "";
             ddlFacultadCoord.SelectedIndex = 0;
-            ddlTipoCoord.SelectedIndex = 0;
+
+            ddlTipoCoord.SelectedIndex = 0; 
+            pnlDatosPersonalesCoord.Style["display"] = "block";
+            btnGuardarCoordModal.Style["display"] = "inline-block";
 
             pnlCargaArchivo.Visible = true;
             pnlArchivoRecuperado.Visible = false;
@@ -404,6 +407,7 @@ namespace SistemaGestionCGI
         {
             pnlFormularioGrupo.Visible = true;
             string cedula = txtBuscarCedulaDoc.Text.Trim();
+
             if (string.IsNullOrEmpty(cedula)) return;
 
             try
@@ -412,6 +416,9 @@ namespace SistemaGestionCGI
 
                 if (docente != null)
                 {
+                    pnlDatosPersonalesCoord.Style["display"] = "block";
+                    btnGuardarCoordModal.Style["display"] = "inline-block";
+
                     txtCedulaCoord.Text = GetProp(docente, "strCedula_doc");
                     txtNombreCoord.Text = GetProp(docente, "strNombres_doc");
                     txtApellidoCoord.Text = GetProp(docente, "strApellidos_doc");
@@ -445,6 +452,9 @@ namespace SistemaGestionCGI
                 }
                 else
                 {
+                    pnlDatosPersonalesCoord.Style["display"] = "none";
+                    btnGuardarCoordModal.Style["display"] = "none";
+
                     Msg("Docente no encontrado.", "ww");
                     LimpiarCoordParcial(); 
                 }
@@ -452,7 +462,8 @@ namespace SistemaGestionCGI
             catch (Exception ex) { Msg("Error: " + ex.Message, "ee"); }
             finally
             {
-                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenB", "abrirModalCoord(); toggleTipoCoordinador();", true);
+                string script = "abrirModalCoord(); toggleTipoCoordinador();";
+                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenSearch", script, true);
             }
         }
 
@@ -472,6 +483,7 @@ namespace SistemaGestionCGI
         {
             txtNombreCoord.Text = "";
             txtApellidoCoord.Text = "";
+            txtCedulaCoord.Text = "";
             txtCarreraCoord.Text = "";
             txtCorreoCoord.Text = "";
             ddlFacultadCoord.SelectedIndex = 0;

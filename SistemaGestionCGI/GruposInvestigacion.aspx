@@ -732,7 +732,7 @@
     <div class="modal fade" id="modalCoordinador" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content border-0 shadow-utc rounded-4">
-            
+                
                 <div class="modal-header bg-utc text-white py-3">
                     <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-tie me-2"></i> Nuevo Coordinador</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -751,53 +751,80 @@
 
                 <div class="modal-body bg-white p-4">
                 
-                    <div class="mb-4">
-                        <label class="form-label fw-bold text-primary small">TIPO DE VINCULACIÓN</label>
-                        <asp:DropDownList ID="ddlTipoCoord" runat="server" CssClass="form-select border-primary shadow-sm" onchange="toggleTipoCoordinador()">
-                            <asp:ListItem Value="Interno">INTERNO (Administrativo / Otro)</asp:ListItem>
-                            <asp:ListItem Value="Docente">DOCENTE UTC (Búsqueda)</asp:ListItem>
-                            <asp:ListItem Value="Externo">EXTERNO (Otra Institución)</asp:ListItem>
-                        </asp:DropDownList>
-                    </div>
-
-                    <div id="pnlBusquedaDocente" style="display:none;" class="mb-4 p-3 bg-light rounded border border-dashed">
-                        <label class="form-label fw-bold text-secondary small">Buscar Docente por Cédula</label>
-                        <div class="input-group">
-                            <asp:TextBox ID="txtBuscarCedulaDoc" runat="server" CssClass="form-control" placeholder="Cédula..." MaxLength="10"></asp:TextBox>
-                            <asp:LinkButton ID="btnBuscarDocente" runat="server" CssClass="btn btn-primary" OnClick="btnBuscarDocente_Click" ValidationGroup="BuscarDoc">
-                                <i class="fa-solid fa-magnifying-glass me-2"></i> Buscar
-                            </asp:LinkButton>
+                    <div class="row align-items-center mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-dark mb-0">
+                                Tipo de Vinculación:
+                            </label>
+                        </div>
+                        <div class="col-md-8">
+                            <asp:DropDownList ID="ddlTipoCoord" runat="server" CssClass="form-select border-secondary shadow-none" onchange="toggleTipoCoordinador()">
+                                <asp:ListItem Value="Interno">INTERNO (Administrativo / Otro)</asp:ListItem>
+                                <asp:ListItem Value="Docente">DOCENTE UTC (Búsqueda Automática)</asp:ListItem>
+                                <asp:ListItem Value="Externo">EXTERNO (Otra Institución)</asp:ListItem>
+                            </asp:DropDownList>
                         </div>
                     </div>
 
-                    <div class="row g-3">
-                        <div class="col-12"><h6 class="text-secondary fw-bold border-bottom pb-2 small">DATOS PERSONALES</h6></div>
+                    <hr class="text-muted opacity-25 my-4">
 
-                        <div class="col-md-4">
-                            <label class="form-label small fw-bold text-secondary">Cédula <span class="text-danger">*</span></label>
-                            <asp:TextBox ID="txtCedulaCoord" runat="server" CssClass="form-control" MaxLength="15" autocomplete="off"/>
-                            <asp:RequiredFieldValidator ID="rfvCedula" runat="server" ControlToValidate="txtCedulaCoord" ErrorMessage="*" Display="Dynamic" CssClass="text-danger fw-bold" ValidationGroup="Coord" />
+                    <div id="pnlBusquedaDocente" style="display:none;" class="mb-4">
+                        <div class="bg-light p-3 rounded-3 border border-dashed">
+                            <label class="form-label fw-bold text-primary small mb-2">
+                                <i class="fa-solid fa-magnifying-glass me-1"></i> BÚSQUEDA INSTITUCIONAL
+                            </label>
+                            <div class="input-group">
+                                <asp:TextBox ID="txtBuscarCedulaDoc" runat="server" CssClass="form-control" placeholder="Ingrese cédula del docente..." MaxLength="10"></asp:TextBox>
+                                <asp:LinkButton ID="btnBuscarDocente" runat="server" CssClass="btn btn-primary px-4" OnClick="btnBuscarDocente_Click" ValidationGroup="BuscarDoc">
+                                    <i class="fa-solid fa-search"></i>
+                                </asp:LinkButton>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label small fw-bold text-secondary">Nombres <span class="text-danger">*</span></label>
-                            <asp:TextBox ID="txtNombreCoord" runat="server" CssClass="form-control" autocomplete="off"/>
-                            <asp:RequiredFieldValidator ID="rfvNombre" runat="server" ControlToValidate="txtNombreCoord" ErrorMessage="*" Display="Dynamic" CssClass="text-danger fw-bold" ValidationGroup="Coord" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label small fw-bold text-secondary">Apellidos <span class="text-danger">*</span></label>
-                            <asp:TextBox ID="txtApellidoCoord" runat="server" CssClass="form-control" autocomplete="off"/>
-                            <asp:RequiredFieldValidator ID="rfvApellido" runat="server" ControlToValidate="txtApellidoCoord" ErrorMessage="*" Display="Dynamic" CssClass="text-danger fw-bold" ValidationGroup="Coord" />
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label small fw-bold text-secondary">Correo <span class="text-danger">*</span></label>
-                            <asp:TextBox ID="txtCorreoCoord" runat="server" CssClass="form-control" TextMode="Email" autocomplete="off"/>
-                            <asp:RequiredFieldValidator ID="rfvCorreo" runat="server" ControlToValidate="txtCorreoCoord" ErrorMessage="Requerido" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" />
+                        <hr class="text-muted opacity-25 my-4">
+                    </div>
+
+                    <asp:Panel ID="pnlDatosPersonalesCoord" runat="server" style="display:none;">
+                        
+                        <h6 class="text-primary fw-bold mb-3 small text-uppercase">
+                            <i class="fa-regular fa-id-card me-2"></i> Información Personal
+                        </h6>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label small text-muted">Cédula <span class="text-danger">*</span></label>
+                                <asp:TextBox ID="txtCedulaCoord" runat="server" CssClass="form-control form-control-sm bg-light" MaxLength="15" autocomplete="off"/>
+                                <asp:RequiredFieldValidator ID="rfvCedula" runat="server" ControlToValidate="txtCedulaCoord" ErrorMessage="Requerido" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" />
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label small text-muted">Nombres <span class="text-danger">*</span></label>
+                                <asp:TextBox ID="txtNombreCoord" runat="server" CssClass="form-control form-control-sm" autocomplete="off"/>
+                                <asp:RequiredFieldValidator ID="rfvNombre" runat="server" ControlToValidate="txtNombreCoord" ErrorMessage="Requerido" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label small text-muted">Apellidos <span class="text-danger">*</span></label>
+                                <asp:TextBox ID="txtApellidoCoord" runat="server" CssClass="form-control form-control-sm" autocomplete="off"/>
+                                <asp:RequiredFieldValidator ID="rfvApellido" runat="server" ControlToValidate="txtApellidoCoord" ErrorMessage="Requerido" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" />
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small text-muted">Correo Electrónico <span class="text-danger">*</span></label>
+                                <asp:TextBox ID="txtCorreoCoord" runat="server" CssClass="form-control form-control-sm" TextMode="Email" autocomplete="off"/>
+                                <asp:RequiredFieldValidator ID="rfvCorreo" runat="server" ControlToValidate="txtCorreoCoord" ErrorMessage="Requerido" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" />
+                            </div>
                         </div>
 
-                        <div id="divInterno" class="col-12 row g-3 m-0 p-0">
-                            <div class="col-md-6 ps-0">
-                                <label class="form-label small fw-bold text-secondary">Facultad / Extensión</label>
-                                <asp:DropDownList ID="ddlFacultadCoord" runat="server" CssClass="form-select">
+                        <hr class="text-muted opacity-25 my-4">
+
+                        <h6 class="text-primary fw-bold mb-3 small text-uppercase">
+                            <i class="fa-solid fa-building-columns me-2"></i> Afiliación
+                        </h6>
+
+                        <div id="divInterno" class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">Facultad / Extensión</label>
+                                <asp:DropDownList ID="ddlFacultadCoord" runat="server" CssClass="form-select form-select-sm">
                                     <asp:ListItem Text="-- Seleccione --" Value="" />
                                     <asp:ListItem>FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
                                     <asp:ListItem>FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
@@ -809,79 +836,77 @@
                                 </asp:DropDownList>
                                 <asp:RequiredFieldValidator ID="rfvFacultad" runat="server" ControlToValidate="ddlFacultadCoord" ErrorMessage="Seleccione" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" />
                             </div>
-                            <div class="col-md-6 pe-0">
-                                <label class="form-label small fw-bold text-secondary">Carrera / Departamento</label>
-                                <asp:TextBox ID="txtCarreraCoord" runat="server" CssClass="form-control" autocomplete="off"/>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">Carrera / Departamento</label>
+                                <asp:TextBox ID="txtCarreraCoord" runat="server" CssClass="form-control form-control-sm" autocomplete="off"/>
                                 <asp:RequiredFieldValidator ID="rfvCarrera" runat="server" ControlToValidate="txtCarreraCoord" ErrorMessage="Requerido" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" />
                             </div>
                         </div>
 
-                        <div id="divExterno" class="col-12" style="display:none;">
-                            <label class="form-label small fw-bold text-secondary">Entidad de Origen <span class="text-danger">*</span></label>
-                            <asp:TextBox ID="txtEntidadCoord" runat="server" CssClass="form-control" placeholder="Ej: Universidad Central" autocomplete="off"/>
-                            <asp:RequiredFieldValidator ID="rfvEntidad" runat="server" ControlToValidate="txtEntidadCoord" ErrorMessage="Requerido" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" Enabled="false" />
-                        </div>
-
-                        <div class="col-12 mt-3">
-                            <div class="p-3 bg-light rounded-3 border">
-                                <label class="form-label fw-bold text-danger small mb-2">
-                                    <i class="fa-solid fa-file-contract me-1"></i> Resolución (PDF) *
-                                </label>
-        
-                                <asp:Panel ID="pnlCargaArchivo" runat="server">
-                                    <div class="utc-fileinput-wrapper" id="wrapperArchivoCoord">
-                                        <div class="utc-fileinput-header">
-                                            <div class="utc-fileinput-icon"><i class="fa-solid fa-file-pdf"></i></div>
-                                            <div class="d-flex justify-content-between align-items-center mb-2 w-100">
-                                                <span class="utc-fileinput-name">Sin archivo seleccionado</span>
-                                                <div class="utc-fileinput-buttons">
-                                                    <button type="button" class="btn btn-outline-danger utc-btn-small remove-btn"><i class="fa-solid fa-xmark"></i></button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="utc-fileinput-preview" id="previewArchivoCoord"></div>
-                                        <div class="utc-fileinput-loader" id="loaderArchivoCoord"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
-                                        <div class="utc-dropzone" id="dropzoneArchivoCoord">
-                                            <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-primary opacity-50"></i><br /><span class="small text-muted">Clic para subir PDF</span>
-                                        </div>
-                                        <asp:FileUpload ID="flpArchivoCoord" runat="server" CssClass="utc-fileinput-input" />
-                                    </div>
-                                </asp:Panel>
-
-                                <asp:Panel ID="pnlArchivoRecuperado" runat="server" Visible="false">
-                                    <div class="alert alert-success d-flex align-items-center justify-content-between shadow-sm border-success mb-0 p-3">
-                                        <div class="d-flex align-items-center">
-                                            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                                <i class="fa-solid fa-check"></i>
-                                            </div>
-                                            <div>
-                                                <h6 class="fw-bold mb-0 text-success">Certificado Recuperado</h6>
-                                                <small class="text-secondary">Se utilizará el documento existente.</small>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex gap-2">
-                                            <asp:HyperLink ID="lnkVerArchivo" runat="server" Target="_blank" CssClass="btn btn-sm btn-outline-success btn-pill fw-bold">
-                                                <i class="fa-solid fa-eye me-1"></i> Ver PDF
-                                            </asp:HyperLink>
-
-                                            <asp:LinkButton ID="btnCambiarArchivo" runat="server" CssClass="btn btn-sm btn-danger btn-pill" OnClick="btnCambiarArchivo_Click" ToolTip="Descartar y subir otro">
-                                                <i class="fa-solid fa-trash-can"></i>
-                                            </asp:LinkButton>
-                                        </div>
-                                    </div>
-                                </asp:Panel>
-
+                        <div id="divExterno" class="row g-3 mb-4" style="display:none;">
+                            <div class="col-12">
+                                <label class="form-label small text-muted">Entidad de Origen</label>
+                                <asp:TextBox ID="txtEntidadCoord" runat="server" CssClass="form-control form-control-sm" placeholder="Ej: Universidad Central del Ecuador" autocomplete="off"/>
+                                <asp:RequiredFieldValidator ID="rfvEntidad" runat="server" ControlToValidate="txtEntidadCoord" ErrorMessage="Requerido" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" Enabled="false" />
                             </div>
                         </div>
-                        
+
+                        <hr class="text-muted opacity-25 my-4">
+
+                        <h6 class="text-primary fw-bold mb-3 small text-uppercase">
+                            <i class="fa-solid fa-file-contract me-2"></i> Sustento Legal
+                        </h6>
+            
+                        <asp:Panel ID="pnlCargaArchivo" runat="server">
+                            <div class="utc-fileinput-wrapper p-3 border rounded-3" id="wrapperArchivoCoord">
+                                <div class="utc-fileinput-header mb-2">
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <span class="utc-fileinput-name small text-muted">Seleccione archivo PDF...</span>
+                                        <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2 remove-btn"><i class="fa-solid fa-xmark"></i></button>
+                                    </div>
+                                </div>
+                                <div class="utc-fileinput-preview" id="previewArchivoCoord"></div>
+                                <div class="utc-fileinput-loader" id="loaderArchivoCoord"><i class="fa-solid fa-spinner fa-spin me-2"></i></div>
+                                <div class="utc-dropzone mt-0 py-3 bg-light border-dashed text-center" id="dropzoneArchivoCoord">
+                                    <i class="fa-solid fa-cloud-arrow-up fa-lg text-primary mb-1"></i>
+                                    <div class="small text-muted">Clic para subir resolución</div>
+                                </div>
+                                <asp:FileUpload ID="flpArchivoCoord" runat="server" CssClass="utc-fileinput-input" />
+                            </div>
+                        </asp:Panel>
+
+                        <asp:Panel ID="pnlArchivoRecuperado" runat="server" Visible="false">
+                            <div class="d-flex align-items-center justify-content-between p-3 bg-light border rounded-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa-solid fa-file-pdf text-danger fs-4 me-3"></i>
+                                    <div>
+                                        <h6 class="fw-bold mb-0 small text-dark">Documento Vinculado</h6>
+                                        <small class="text-muted" style="font-size:0.75rem;">Archivo recuperado del sistema.</small>
+                                    </div>
+                                </div>
+                                <div>
+                                    <asp:HyperLink ID="lnkVerArchivo" runat="server" Target="_blank" CssClass="btn btn-sm btn-link text-decoration-none fw-bold">Ver</asp:HyperLink>
+                                    <asp:LinkButton ID="btnCambiarArchivo" runat="server" CssClass="btn btn-sm btn-light text-danger border" OnClick="btnCambiarArchivo_Click">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </asp:LinkButton>
+                                </div>
+                            </div>
+                        </asp:Panel>
+
+                    </asp:Panel>
+                    
+                </div>
+
+                <div class="modal-footer border-top-0 bg-white rounded-bottom-4 py-4">
+                    <div class="row w-100 m-0">
+                        <div class="col-12 text-center">
+                            <asp:LinkButton ID="btnGuardarCoordModal" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow fw-bold" OnClick="btnGuardarCoordModal_Click" ValidationGroup="Coord">
+                                <i class="fa-solid fa-check me-2"></i> ASIGNAR COORDINADOR
+                            </asp:LinkButton>
+                        </div>
                     </div>
                 </div>
 
-                <div class="modal-footer border-top-0 justify-content-center pb-4 pt-0">
-                    <asp:LinkButton ID="btnGuardarCoordModal" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow-sm fw-bold" OnClick="btnGuardarCoordModal_Click" ValidationGroup="Coord">
-                        <i class="fa-solid fa-check me-2"></i> ASIGNAR COORDINADOR
-                    </asp:LinkButton>
-                </div>
             </div>
         </div>
     </div>
@@ -1000,11 +1025,17 @@
 
         function toggleTipoCoordinador() {
             var ddl = document.getElementById('<%= ddlTipoCoord.ClientID %>');
+
             var tipo = ddl.value;
 
             var pnlBusqueda = document.getElementById('pnlBusquedaDocente');
+            var pnlDatos = document.getElementById('<%= pnlDatosPersonalesCoord.ClientID %>'); 
+            var btnGuardar = document.getElementById('<%= btnGuardarCoordModal.ClientID %>'); 
+
             var divInterno = document.getElementById('divInterno');
             var divExterno = document.getElementById('divExterno');
+
+            var txtNombre = document.getElementById('<%= txtNombreCoord.ClientID %>');
 
             var rfvFacultad = document.getElementById('<%= rfvFacultad.ClientID %>');
             var rfvCarrera = document.getElementById('<%= rfvCarrera.ClientID %>');
@@ -1012,46 +1043,83 @@
 
             if (tipo === 'Docente') {
                 pnlBusqueda.style.display = 'block';
+
+                if (txtNombre.value.trim() === "") {
+                    pnlDatos.style.display = 'none';
+                    if (btnGuardar) btnGuardar.style.display = 'none';
+                } else {
+                    pnlDatos.style.display = 'block';
+                    if (btnGuardar) btnGuardar.style.display = 'inline-block';
+                }
+
                 divInterno.style.display = 'flex';
                 divExterno.style.display = 'none';
+
+                ToggleValidadores(true);
+
             } else if (tipo === 'Externo') {
                 pnlBusqueda.style.display = 'none';
+
+                pnlDatos.style.display = 'block';
+                if (btnGuardar) btnGuardar.style.display = 'inline-block';
+
                 divInterno.style.display = 'none';
                 divExterno.style.display = 'block';
-            } else { 
+                ToggleValidadores(false);
+
+            } else {
                 pnlBusqueda.style.display = 'none';
+
+                pnlDatos.style.display = 'block';
+                if (btnGuardar) btnGuardar.style.display = 'inline-block';
+
                 divInterno.style.display = 'flex';
                 divExterno.style.display = 'none';
+
+                ToggleValidadores(true);
             }
 
-            if (typeof ValidatorEnable === 'function') {
-                if (tipo === 'Externo') {
-                    ValidatorEnable(rfvFacultad, false);
-                    ValidatorEnable(rfvCarrera, false);
-                    ValidatorEnable(rfvEntidad, true);
-                } else {
-                    ValidatorEnable(rfvFacultad, true);
-                    ValidatorEnable(rfvCarrera, true);
-                    ValidatorEnable(rfvEntidad, false);
+            function ToggleValidadores(esInterno) {
+                if (typeof ValidatorEnable === 'function') {
+                    if (esInterno) {
+                        ValidatorEnable(rfvFacultad, true);
+                        ValidatorEnable(rfvCarrera, true);
+                        ValidatorEnable(rfvEntidad, false);
+                    } else {
+                        ValidatorEnable(rfvFacultad, false);
+                        ValidatorEnable(rfvCarrera, false);
+                        ValidatorEnable(rfvEntidad, true);
+                    }
                 }
             }
         }
 
         function ToggleTipoIntegranteForm(el) {
             var tipo = el.value;
+
             var pnlBusqueda = document.getElementById('pnlBusquedaDocenteInt');
             var divInterno = document.getElementById('divInternoInt');
             var divExterno = document.getElementById('divExternoInt');
 
+            var hfEdit = document.getElementById('<%= hfIdIntEdit.ClientID %>');
+            var esEdicion = (hfEdit && hfEdit.value !== "");
+
             if (tipo === "Docente") {
-                pnlBusqueda.style.display = 'block';
+                if (esEdicion) {
+                    pnlBusqueda.style.display = 'none';
+                } else {
+                    pnlBusqueda.style.display = 'block';
+                }
+
                 divInterno.style.display = 'flex';
                 divExterno.style.display = 'none';
+
             } else if (tipo === "Externo") {
                 pnlBusqueda.style.display = 'none';
                 divInterno.style.display = 'none';
                 divExterno.style.display = 'block';
-            } else { 
+
+            } else {
                 pnlBusqueda.style.display = 'none';
                 divInterno.style.display = 'flex';
                 divExterno.style.display = 'none';
