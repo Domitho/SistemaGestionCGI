@@ -338,60 +338,62 @@
                 </div>
             </div>
         
-            <div class="row g-3">
-                <div class="col-12"><h6 class="text-primary fw-bold border-bottom pb-2">Datos Personales</h6></div>
+            <asp:Panel ID="pnlDatosPersonalesInt" runat="server">
+                <div class="row g-3">
+                    <div class="col-12"><h6 class="text-primary fw-bold border-bottom pb-2">Datos Personales</h6></div>
             
-                <div class="col-md-4"><label class="form-label">Cédula</label><asp:TextBox ID="txtCedulaInt" runat="server" CssClass="form-control" MaxLength="15" autocomplete="off"/></div>
-                <div class="col-md-4"><label class="form-label">Nombres</label><asp:TextBox ID="txtNombresInt" runat="server" CssClass="form-control" autocomplete="off" /></div>
-                <div class="col-md-4"><label class="form-label">Apellidos</label><asp:TextBox ID="txtApellidosInt" runat="server" CssClass="form-control" autocomplete="off" /></div>
-                <div class="col-md-12"><label class="form-label">Correo</label><asp:TextBox ID="txtCorreoInt" runat="server" CssClass="form-control" TextMode="Email" autocomplete="off" /></div>
+                    <div class="col-md-4"><label class="form-label">Cédula</label><asp:TextBox ID="txtCedulaInt" runat="server" CssClass="form-control" MaxLength="15" autocomplete="off"/></div>
+                    <div class="col-md-4"><label class="form-label">Nombres</label><asp:TextBox ID="txtNombresInt" runat="server" CssClass="form-control" autocomplete="off" /></div>
+                    <div class="col-md-4"><label class="form-label">Apellidos</label><asp:TextBox ID="txtApellidosInt" runat="server" CssClass="form-control" autocomplete="off" /></div>
+                    <div class="col-md-12"><label class="form-label">Correo</label><asp:TextBox ID="txtCorreoInt" runat="server" CssClass="form-control" TextMode="Email" autocomplete="off" /></div>
             
-                <div id="divInternoInt" class="col-12 row g-3 m-0 p-0">
-                    <div class="col-md-6 ps-0"><label class="form-label">Carrera / Departamento</label><asp:TextBox ID="txtCarreraInt" runat="server" CssClass="form-control" autocomplete="off" /></div>
-                    <div class="col-md-6 pe-0">
-                        <label class="form-label">Facultad / Extensión</label>
-                        <asp:DropDownList ID="ddlFacultadInt" runat="server" CssClass="form-select">
-                            <asp:ListItem Text="-- Seleccione --" Value="" />
-                            <asp:ListItem>FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
-                            <asp:ListItem>FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
-                            <asp:ListItem>FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
-                            <asp:ListItem>FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
-                            <asp:ListItem>FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
-                            <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
-                            <asp:ListItem>EXTENSION LA MANÁ</asp:ListItem>
-                        </asp:DropDownList>
+                    <div id="divInternoInt" class="col-12 row g-3 m-0 p-0">
+                        <div class="col-md-6 ps-0"><label class="form-label">Carrera / Departamento</label><asp:TextBox ID="txtCarreraInt" runat="server" CssClass="form-control" autocomplete="off" /></div>
+                        <div class="col-md-6 pe-0">
+                            <label class="form-label">Facultad / Extensión</label>
+                            <asp:DropDownList ID="ddlFacultadInt" runat="server" CssClass="form-select">
+                                <asp:ListItem Text="-- Seleccione --" Value="" />
+                                <asp:ListItem>FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
+                                <asp:ListItem>FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
+                                <asp:ListItem>FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
+                                <asp:ListItem>FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
+                                <asp:ListItem>FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
+                                <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
+                                <asp:ListItem>EXTENSION LA MANÁ</asp:ListItem>
+                            </asp:DropDownList>
+                        </div>
                     </div>
-                </div>
             
-                <div id="divExternoInt" class="col-12" style="display:none;">
-                    <label class="form-label">Institución / Entidad de Origen</label>
-                    <asp:TextBox ID="txtEntidadInt" runat="server" CssClass="form-control" placeholder="Ej: Universidad Central..." autocomplete="off" />
+                    <div id="divExternoInt" class="col-12" style="display:none;">
+                        <label class="form-label">Institución / Entidad de Origen</label>
+                        <asp:TextBox ID="txtEntidadInt" runat="server" CssClass="form-control" placeholder="Ej: Universidad Central..." autocomplete="off" />
+                    </div>
+
+                    <div class="col-12 mt-3"><h6 class="text-primary fw-bold border-bottom pb-2">Datos del Grupo</h6></div>
+            
+                    <div class="col-md-6">
+                        <label class="form-label">Función Asignada</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-primary-subtle text-primary border-primary border-opacity-25">
+                                <i class="fa-solid fa-id-badge"></i>
+                            </span>
+                            <asp:TextBox ID="txtFuncionInt" runat="server" CssClass="form-control bg-light text-primary fw-bold border-primary border-opacity-25" ReadOnly="true" Text="Miembro Investigador"></asp:TextBox>
+                        </div>
+                        <div class="form-text small text-muted"><i class="fa-solid fa-circle-info me-1"></i> Rol definido automáticamente por el sistema.</div>
+                    </div>
+            
+                    <div class="col-md-6"><label class="form-label">Fecha Inicio</label><asp:TextBox ID="dtFechaIniInt" runat="server" CssClass="form-control" TextMode="Date" /></div>
                 </div>
 
-                <div class="col-12 mt-3"><h6 class="text-primary fw-bold border-bottom pb-2">Datos del Grupo</h6></div>
-            
-                <div class="col-md-6">
-                    <label class="form-label">Función Asignada</label>
-                    <div class="input-group shadow-sm">
-                        <span class="input-group-text bg-primary-subtle text-primary border-primary border-opacity-25">
-                            <i class="fa-solid fa-id-badge"></i>
-                        </span>
-                        <asp:TextBox ID="txtFuncionInt" runat="server" CssClass="form-control bg-light text-primary fw-bold border-primary border-opacity-25" ReadOnly="true" Text="Miembro Investigador"></asp:TextBox>
-                    </div>
-                    <div class="form-text small text-muted"><i class="fa-solid fa-circle-info me-1"></i> Rol definido automáticamente por el sistema.</div>
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <asp:LinkButton ID="btnGuardarInt" runat="server" CssClass="btn btn-primary btn-pill px-4" OnClick="btnGuardarInt_Click">
+                        <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Integrante
+                    </asp:LinkButton>
+                    <asp:LinkButton ID="btnCancelarInt" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="btnCancelarInt_Click" CausesValidation="false">
+                        <i class="fa-solid fa-ban me-2"></i> Cancelar
+                    </asp:LinkButton>
                 </div>
-            
-                <div class="col-md-6"><label class="form-label">Fecha Inicio</label><asp:TextBox ID="dtFechaIniInt" runat="server" CssClass="form-control" TextMode="Date" /></div>
-            </div>
-
-            <div class="d-flex justify-content-center gap-3 mt-4">
-                <asp:LinkButton ID="btnGuardarInt" runat="server" CssClass="btn btn-primary btn-pill px-4" OnClick="btnGuardarInt_Click">
-                    <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Integrante
-                </asp:LinkButton>
-                <asp:LinkButton ID="btnCancelarInt" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="btnCancelarInt_Click" CausesValidation="false">
-                    <i class="fa-solid fa-ban me-2"></i> Cancelar
-                </asp:LinkButton>
-            </div>
+            </asp:Panel>
         </div>
     </asp:Panel>
 
@@ -1098,17 +1100,29 @@
             var tipo = el.value;
 
             var pnlBusqueda = document.getElementById('pnlBusquedaDocenteInt');
+            var pnlDatos = document.getElementById('<%= pnlDatosPersonalesInt.ClientID %>');
+
             var divInterno = document.getElementById('divInternoInt');
             var divExterno = document.getElementById('divExternoInt');
 
             var hfEdit = document.getElementById('<%= hfIdIntEdit.ClientID %>');
             var esEdicion = (hfEdit && hfEdit.value !== "");
 
+            var txtNombre = document.getElementById('<%= txtNombresInt.ClientID %>');
+
             if (tipo === "Docente") {
+
                 if (esEdicion) {
                     pnlBusqueda.style.display = 'none';
+                    pnlDatos.style.display = 'block';
                 } else {
                     pnlBusqueda.style.display = 'block';
+
+                    if (txtNombre.value.trim() === "") {
+                        pnlDatos.style.display = 'none'; 
+                    } else {
+                        pnlDatos.style.display = 'block';
+                    }
                 }
 
                 divInterno.style.display = 'flex';
@@ -1116,11 +1130,15 @@
 
             } else if (tipo === "Externo") {
                 pnlBusqueda.style.display = 'none';
+                pnlDatos.style.display = 'block';
+
                 divInterno.style.display = 'none';
                 divExterno.style.display = 'block';
 
             } else {
                 pnlBusqueda.style.display = 'none';
+                pnlDatos.style.display = 'block';
+
                 divInterno.style.display = 'flex';
                 divExterno.style.display = 'none';
             }

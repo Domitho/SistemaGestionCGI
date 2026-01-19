@@ -331,6 +331,17 @@ namespace SistemaGestionCGI
         {
             pnlFormularioGrupo.Visible = true;
 
+            string cedulaValidar = txtCedulaCoord.Text.Trim();
+            string grupoOcupado = _manejador.VerificarIntegranteEnOtroGrupo(cedulaValidar);
+
+            if (!string.IsNullOrEmpty(grupoOcupado))
+            {
+                Msg($"IMPOSIBLE VINCULAR: Esta persona ya es miembro activo del grupo '{grupoOcupado}'.", "ee");
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenDuplicado", "abrirModalCoord(); toggleTipoCoordinador();", true);
+                return;
+            }
+
             if (pnlCargaArchivo.Visible && !flpArchivoCoord.HasFile)
             {
                 Msg("Adjunte la resolución (PDF).", "ww");
@@ -412,6 +423,15 @@ namespace SistemaGestionCGI
 
             try
             {
+                string grupoOcupado = _manejador.VerificarIntegranteEnOtroGrupo(cedula);
+                if (!string.IsNullOrEmpty(grupoOcupado))
+                {
+                    Msg($"El docente existe, PERO ya pertenece al grupo '{grupoOcupado}'. No puede ser registrado dos veces.", "ww");
+
+                    LimpiarCoordParcial();
+                    return;
+                }
+
                 dynamic docente = _manejador.ObtenerDocenteCategorizado(cedula);
 
                 if (docente != null)
@@ -546,7 +566,6 @@ namespace SistemaGestionCGI
                     return;
                 }
 
-                // Validación de Integridad: No permitir duplicados si es nuevo
                 if (string.IsNullOrEmpty(hfIdIntEdit.Value))
                 {
                     string grupoExistente = _manejador.VerificarIntegranteEnOtroGrupo(txtCedulaInt.Text.Trim());
@@ -565,7 +584,7 @@ namespace SistemaGestionCGI
                     strApellidos_int = txtApellidosInt.Text.Trim(),
                     strCorreo_int = txtCorreoInt.Text.Trim(),
 
-                    strFuncion_int = txtFuncionInt.Text, // <--- Correcto: Leemos del TextBox
+                    strFuncion_int = txtFuncionInt.Text,
 
                     strTipo_int = ddlTipoInt.SelectedValue,
                     dtFechaini_int = !string.IsNullOrEmpty(dtFechaIniInt.Text) ? DateTime.Parse(dtFechaIniInt.Text) : DateTime.Now,
@@ -573,7 +592,6 @@ namespace SistemaGestionCGI
                     bitActivo_int = true
                 };
 
-                // --- LÓGICA DE TIPO (Externo / Docente / Interno) ---
                 if (i.strTipo_int == "Externo")
                 {
                     if (string.IsNullOrWhiteSpace(txtEntidadInt.Text))
@@ -593,11 +611,10 @@ namespace SistemaGestionCGI
                     i.strCarrera_int = txtCarreraInt.Text.Trim();
                     i.strFacultad_int = ddlFacultadInt.SelectedValue;
 
-                    // Vinculación Automática
                     i.strCertificado_int = hfCertificadoIntVinculado.Value;
                     i.fkId_docente_origen = hfIdDocenteInt.Value;
                 }
-                else // Interno
+                else 
                 {
                     i.strEntidad_int = null;
                     i.strCarrera_int = txtCarreraInt.Text.Trim();
@@ -715,11 +732,19 @@ namespace SistemaGestionCGI
 
             try
             {
+                string grupoOcupado = _manejador.VerificarIntegranteEnOtroGrupo(cedula);
+                if (!string.IsNullOrEmpty(grupoOcupado))
+                {
+                    Msg($"El docente existe, PERO ya pertenece al grupo '{grupoOcupado}'. No puede ser registrado dos veces.", "ww");
+
+                    LimpiarCoordParcial();
+                    return;
+                }
+
                 dynamic docente = _manejador.ObtenerDocenteCategorizado(cedula);
 
                 if (docente != null)
                 {
-                    // Llenar datos
                     txtCedulaInt.Text = GetProp(docente, "strCedula_doc");
                     txtNombresInt.Text = GetProp(docente, "strNombres_doc");
                     txtApellidosInt.Text = GetProp(docente, "strApellidos_doc");
@@ -729,32 +754,28 @@ namespace SistemaGestionCGI
                     if (ddlFacultadInt.Items.FindByValue(fac) != null)
                         ddlFacultadInt.SelectedValue = fac;
 
-                    // VINCULACIÓN: ID y Archivo
                     hfIdDocenteInt.Value = GetProp(docente, "strId_doc");
+                    hfCertificadoIntVinculado.Value = GetProp(docente, "strCertificado_doc");
 
-                    // Aquí está la magia: Copiamos la ruta del archivo si existe
-                    string rutaCert = GetProp(docente, "strCertificado_doc");
-                    hfCertificadoIntVinculado.Value = rutaCert; // Puede estar vacía si el docente no tiene
-
-                    // Feedback visual
-                    if (!string.IsNullOrEmpty(rutaCert))
-                        Msg("Docente encontrado. Certificado vinculado.", "ss");
-                    else
-                        Msg("Docente encontrado (Sin certificado).", "ii");
+                    Msg("Docente encontrado. Verifique la información.", "ss");
                 }
                 else
                 {
-                    Msg("Docente no encontrado.", "ww");
-                    // Limpiar datos parciales
-                    txtNombresInt.Text = ""; txtApellidosInt.Text = "";
-                    hfIdDocenteInt.Value = ""; hfCertificadoIntVinculado.Value = "";
+                    Msg("Docente no encontrado en la base de datos.", "ww");
+
+                    txtNombresInt.Text = "";
+                    txtApellidosInt.Text = "";
+                    txtCedulaInt.Text = "";
+                    txtCarreraInt.Text = "";
+                    hfIdDocenteInt.Value = "";
                 }
             }
             catch (Exception ex) { Msg("Error búsqueda: " + ex.Message, "ee"); }
-
-            // Mantener la UI correcta
-            string script = "var ddl = document.getElementById('" + ddlTipoInt.ClientID + "'); if(ddl) ToggleTipoIntegranteForm(ddl);";
-            ScriptManager.RegisterStartupScript(this, GetType(), "ReInitInt", script, true);
+            finally
+            {
+                string script = $"ToggleTipoIntegranteForm(document.getElementById('{ddlTipoInt.ClientID}'));";
+                ScriptManager.RegisterStartupScript(this, GetType(), "RefreshIntForm", script, true);
+            }
         }
 
         // =============================================
