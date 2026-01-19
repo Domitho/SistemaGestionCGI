@@ -136,6 +136,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Categoría</label>
                     <asp:DropDownList ID="ddlCategoriaGru" runat="server" CssClass="form-select">
+                        <asp:ListItem Value="NUEVO">EMERGENTE</asp:ListItem>
                         <asp:ListItem Value="EMERGENTE">EMERGENTE</asp:ListItem>
                         <asp:ListItem Value="CONSOLIDADO">CONSOLIDADO</asp:ListItem>
                     </asp:DropDownList>
@@ -191,13 +192,16 @@
                         <div class="utc-fileinput-preview" id="previewArchivoGrupo"></div>
                         <div class="utc-fileinput-loader" id="loaderArchivoGrupo"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
                         <div class="utc-dropzone" id="dropzoneArchivoGrupo"><i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-primary"></i><br />Arrastra archivo aquí</div>
-                        <asp:FileUpload ID="flpArchivoGrupo" runat="server" CssClass="utc-fileinput-input" />
+                        <asp:FileUpload ID="flpArchivoGrupo" runat="server" CssClass="utc-fileinput-input" accept=".pdf,.doc,.docx" />
                     </div>
                 </div>
             </div>
 
             <div class="d-flex justify-content-center gap-3 mt-5">
-                <asp:LinkButton ID="btnGuardarGrupo" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow-sm" OnClick="btnGuardarGrupo_Click">
+                <asp:LinkButton ID="btnGuardarGrupo" runat="server" 
+                    CssClass="btn btn-primary btn-pill px-5 shadow-sm" 
+                    OnClientClick="return ValidarFormularioGrupo();" 
+                    OnClick="btnGuardarGrupo_Click">
                     <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Datos
                 </asp:LinkButton>
                 <asp:LinkButton ID="btnCancelarGrupo" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="btnRegresar_Click" CausesValidation="false">
@@ -386,7 +390,10 @@
                 </div>
 
                 <div class="d-flex justify-content-center gap-3 mt-4">
-                    <asp:LinkButton ID="btnGuardarInt" runat="server" CssClass="btn btn-primary btn-pill px-4" OnClick="btnGuardarInt_Click">
+                    <asp:LinkButton ID="btnGuardarInt" runat="server" 
+                        CssClass="btn btn-primary btn-pill px-4" 
+                        OnClientClick="return ValidarFormularioIntegrante();"
+                        OnClick="btnGuardarInt_Click">
                         <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Integrante
                     </asp:LinkButton>
                     <asp:LinkButton ID="btnCancelarInt" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="btnCancelarInt_Click" CausesValidation="false">
@@ -873,7 +880,7 @@
                                     <i class="fa-solid fa-cloud-arrow-up fa-lg text-primary mb-1"></i>
                                     <div class="small text-muted">Clic para subir resolución</div>
                                 </div>
-                                <asp:FileUpload ID="flpArchivoCoord" runat="server" CssClass="utc-fileinput-input" />
+                                <asp:FileUpload ID="flpArchivoCoord" runat="server" CssClass="utc-fileinput-input" accept=".pdf,.doc,.docx" />
                             </div>
                         </asp:Panel>
 
@@ -902,7 +909,11 @@
                 <div class="modal-footer border-top-0 bg-white rounded-bottom-4 py-4">
                     <div class="row w-100 m-0">
                         <div class="col-12 text-center">
-                            <asp:LinkButton ID="btnGuardarCoordModal" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow fw-bold" OnClick="btnGuardarCoordModal_Click" ValidationGroup="Coord">
+                            <asp:LinkButton ID="btnGuardarCoordModal" runat="server" 
+                                CssClass="btn btn-primary btn-pill px-5 shadow fw-bold" 
+                                OnClientClick="if(!ValidarModalCoordinador()) return false;" 
+                                OnClick="btnGuardarCoordModal_Click" 
+                                ValidationGroup="Coord">
                                 <i class="fa-solid fa-check me-2"></i> ASIGNAR COORDINADOR
                             </asp:LinkButton>
                         </div>
@@ -1188,6 +1199,102 @@
                 ventana.print();
                 ventana.close();
             }, 500);
+        }
+    </script>
+
+    <script type="text/javascript">
+
+        function mostrarError(campoId, mensaje) {
+            if (typeof toastify === 'function') {
+                toastify('ww', mensaje, 'Sistema');
+            } else {
+                alert(mensaje);
+            }
+            var campo = document.getElementById(campoId);
+            if (campo) {
+                campo.classList.add('is-invalid');
+                campo.focus();
+                campo.addEventListener('input', function () {
+                    this.classList.remove('is-invalid');
+                }, { once: true });
+            }
+        }
+
+        function esEmailValido(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function esCedulaValida(cedula) {
+            if (cedula.length !== 10 || isNaN(cedula)) return false;
+            var provincia = parseInt(cedula.substring(0, 2), 10);
+            if (provincia < 1 || (provincia > 24 && provincia !== 30)) return false;
+            var tercerDigito = parseInt(cedula.substring(2, 3), 10);
+            if (tercerDigito >= 6) return false;
+
+            var coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2];
+            var verificador = parseInt(cedula.substring(9, 10), 10);
+            var suma = 0;
+
+            for (var i = 0; i < 9; i++) {
+                var valor = parseInt(cedula.substring(i, i + 1), 10) * coeficientes[i];
+                suma += (valor >= 10) ? valor - 9 : valor;
+            }
+
+            var digitoCalculado = (suma % 10 === 0) ? 0 : (10 - (suma % 10));
+            return verificador === digitoCalculado;
+        }
+
+        function ValidarFormularioIntegrante() {
+            var idCedula = '<%= txtCedulaInt.ClientID %>';
+        var idCorreo = '<%= txtCorreoInt.ClientID %>';
+
+            var valCedula = document.getElementById(idCedula).value.trim();
+            if (!esCedulaValida(valCedula)) {
+                mostrarError(idCedula, 'La cédula ingresada no es válida.');
+                return false; 
+            }
+
+            var valCorreo = document.getElementById(idCorreo).value.trim();
+            if (!esEmailValido(valCorreo)) {
+                mostrarError(idCorreo, 'El correo electrónico no es válido.');
+                return false; 
+            }
+
+            return true; 
+        }
+
+        function ValidarModalCoordinador() {
+            var ddlTipo = document.getElementById('<%= ddlTipoCoord.ClientID %>');
+        
+        if (ddlTipo && ddlTipo.value !== 'Docente') {
+            var idCedula = '<%= txtCedulaCoord.ClientID %>';
+            var valCedula = document.getElementById(idCedula).value.trim();
+            
+            if (!esCedulaValida(valCedula)) {
+                mostrarError(idCedula, 'La cédula del coordinador no es válida.');
+                return false;
+            }
+        }
+        return true;
+        }
+
+    function toggleTipoCoordinador() {
+        var ddl = document.getElementById('<%= ddlTipoCoord.ClientID %>');
+        if (!ddl) return;
+        var pnlBusqueda = document.getElementById('pnlBusquedaDocente');
+        var pnlDatos = document.getElementById('<%= pnlDatosPersonalesCoord.ClientID %>');
+
+            if (ddl.value === 'Docente') {
+                pnlBusqueda.style.display = 'block';
+                if (pnlDatos) pnlDatos.style.display = 'none'; 
+            } else {
+                pnlBusqueda.style.display = 'none';
+                if (pnlDatos) pnlDatos.style.display = 'block';
+            }
+        }
+
+        function ValidarFormularioGrupo() {
+            return true;
         }
     </script>
 

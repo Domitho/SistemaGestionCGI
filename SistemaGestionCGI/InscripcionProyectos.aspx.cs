@@ -14,7 +14,7 @@ namespace SistemaGestionCGI
     {
         // 1. Instancias y Constantes
         private readonly ManejadorInscripcionProyectos _manejador = new ManejadorInscripcionProyectos();
-        private const string RUTA_PROYECTOS = @"C:\UTC\PROYECTOS\";
+        private const string RUTA_VIRTUAL_PROYECTOS = "~/Archivos/InscripcionProyectos/";
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -672,17 +672,21 @@ namespace SistemaGestionCGI
 
         private string GuardarArchivoFisico(FileUpload ctl, string nombre)
         {
-            if (!Directory.Exists(RUTA_PROYECTOS)) Directory.CreateDirectory(RUTA_PROYECTOS);
-            string ruta = Path.Combine(RUTA_PROYECTOS, nombre);
-            ctl.SaveAs(ruta);
-            return ruta;
+            string rutaFolderFisica = Server.MapPath(RUTA_VIRTUAL_PROYECTOS);
+
+            if (!Directory.Exists(rutaFolderFisica)) Directory.CreateDirectory(rutaFolderFisica);
+
+            string rutaCompletaFisica = Path.Combine(rutaFolderFisica, nombre);
+            ctl.SaveAs(rutaCompletaFisica);
+
+            return Path.Combine(RUTA_VIRTUAL_PROYECTOS, nombre).Replace("\\", "/");
         }
 
         private void DescargarArchivo(string path)
         {
             if (string.IsNullOrEmpty(path)) return;
 
-            string rutaFisica = (!path.StartsWith("~") && Path.IsPathRooted(path)) ? path : Server.MapPath(path);
+            string rutaFisica = path.StartsWith("~") ? Server.MapPath(path) : path;
 
             if (File.Exists(rutaFisica))
             {
@@ -701,7 +705,7 @@ namespace SistemaGestionCGI
             }
             else
             {
-                Msg("El archivo no existe en la ruta física.", "ww");
+                Msg("El archivo no existe en el servidor.", "ww");
             }
         }
 

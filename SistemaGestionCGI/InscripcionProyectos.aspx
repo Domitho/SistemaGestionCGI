@@ -234,7 +234,10 @@
             </div>
 
             <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
-                <asp:LinkButton ID="btnGuardar" runat="server" CssClass="btn btn-primary btn-pill px-4" OnClick="btnGuardar_Click">
+                <asp:LinkButton ID="btnGuardar" runat="server" 
+                    CssClass="btn btn-primary btn-pill px-4" 
+                    OnClientClick="return ValidarPuntajeProyecto(false);"
+                    OnClick="btnGuardar_Click">
                     <i class="fa-solid fa-floppy-disk me-2"></i> Guardar
                 </asp:LinkButton>
                 <asp:LinkButton ID="btnCancelar" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="btnCancelar_Click" CausesValidation="false">
@@ -328,7 +331,10 @@
             </div>
 
             <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
-                <asp:LinkButton ID="btnActualizar" runat="server" CssClass="btn btn-primary btn-pill px-4" OnClick="btnActualizar_Click">
+                <asp:LinkButton ID="btnActualizar" runat="server" 
+                    CssClass="btn btn-primary btn-pill px-4" 
+                    OnClientClick="return ValidarPuntajeProyecto(true);" 
+                    OnClick="btnActualizar_Click">
                     <i class="fa-solid fa-floppy-disk me-2"></i> Actualizar
                 </asp:LinkButton>
                 <asp:LinkButton ID="btnCancelarEdit" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="btnCancelarEdit_Click" CausesValidation="false">
@@ -500,7 +506,9 @@
                     </div> </div>
 
                 <div class="modal-footer border-top-0 bg-white rounded-bottom-4 py-4 justify-content-center">
-                    <asp:LinkButton ID="btnGuardarIntegrante" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow fw-bold" 
+                    <asp:LinkButton ID="btnGuardarIntegrante" runat="server" 
+                        CssClass="btn btn-primary btn-pill px-5 shadow fw-bold"
+                        OnClientClick="return ValidarNuevoIntegrante();" 
                         OnClick="btnGuardarIntegrante_Click">
                         <i class="fa-solid fa-check me-2"></i> GUARDAR INTEGRANTE
                     </asp:LinkButton>
@@ -741,6 +749,112 @@
             var modal = bootstrap.Modal.getOrCreateInstance(el);
             modal.show();
             ToggleTipoIntegranteModal();
+        }
+
+    </script>
+
+    <script type="text/javascript">
+
+        // 1. Mostrar Error (Reutilizable)
+        function mostrarError(campoId, mensaje) {
+            if (typeof toastify === 'function') {
+                toastify('ww', mensaje, 'Sistema');
+            } else {
+                alert(mensaje);
+            }
+            var campo = document.getElementById(campoId);
+            if (campo) {
+                campo.classList.add('is-invalid');
+                campo.focus();
+                // Quitar rojo al escribir
+                campo.addEventListener('input', function () {
+                    this.classList.remove('is-invalid');
+                }, { once: true });
+            }
+        }
+
+        // 2. Algoritmo Cédula Ecuatoriana
+        function esCedulaValida(cedula) {
+            if (cedula.length !== 10 || isNaN(cedula)) return false;
+            var provincia = parseInt(cedula.substring(0, 2), 10);
+            if (provincia < 1 || (provincia > 24 && provincia !== 30)) return false;
+            var tercerDigito = parseInt(cedula.substring(2, 3), 10);
+            if (tercerDigito >= 6) return false;
+
+            var coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2];
+            var verificador = parseInt(cedula.substring(9, 10), 10);
+            var suma = 0;
+
+            for (var i = 0; i < 9; i++) {
+                var valor = parseInt(cedula.substring(i, i + 1), 10) * coeficientes[i];
+                suma += (valor >= 10) ? valor - 9 : valor;
+            }
+
+            var digitoCalculado = (suma % 10 === 0) ? 0 : (10 - (suma % 10));
+            return verificador === digitoCalculado;
+        }
+
+        // 3. Regex Correo
+        function esEmailValido(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        // 4. FUNCIÓN PRINCIPAL QUE LLAMA EL BOTÓN
+        function ValidarNuevoIntegrante() {
+            var idCedula = '<%= txtCedulaInt.ClientID %>';
+            var idCorreo = '<%= txtCorreoInt.ClientID %>';
+
+            var valCedula = document.getElementById(idCedula).value.trim();
+            if (!esCedulaValida(valCedula)) {
+                mostrarError(idCedula, 'La cédula ingresada no es válida.');
+                return false;
+            }
+
+            var valCorreo = document.getElementById(idCorreo).value.trim();
+            if (!esEmailValido(valCorreo)) {
+                mostrarError(idCorreo, 'El formato del correo es incorrecto.');
+                return false; 
+            }
+
+            return true; 
+        }
+
+        function ValidarPuntajeProyecto(esEdicion) {
+            var idCampo = esEdicion ? '<%= txtPuntajeEdit.ClientID %>' : '<%= txtPuntaje.ClientID %>';
+            var idTema = esEdicion ? '<%= txtTemaEdit.ClientID %>' : '<%= txtTema.ClientID %>';
+
+            var inputPuntaje = document.getElementById(idCampo);
+            var inputTema = document.getElementById(idTema);
+
+            if (inputTema && inputTema.value.trim() === "") {
+                mostrarError(idTema, 'El título del proyecto es obligatorio.');
+                return false;
+            }
+
+            if (inputPuntaje) {
+                var valor = inputPuntaje.value.trim();
+
+                if (valor !== "") {
+                    var puntaje = parseFloat(valor);
+
+                    if (isNaN(puntaje)) {
+                        mostrarError(idCampo, 'Ingrese un valor numérico válido.');
+                        return false;
+                    }
+
+                    if (puntaje < 0) {
+                        mostrarError(idCampo, 'La calificación no puede ser menor a 0.');
+                        return false;
+                    }
+
+                    if (puntaje > 150) {
+                        mostrarError(idCampo, 'La calificación no puede superar los 150 puntos.');
+                        return false;
+                    }
+                }
+            }
+
+            return true; 
         }
 
     </script>
