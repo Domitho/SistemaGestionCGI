@@ -17,14 +17,22 @@ namespace SistemaGestionCGI.BLL
         public List<InvgccInscripcionProyectos> ObtenerTodos()
         {
             string sql = @"
-                SELECT P.strId_pro, P.strTema_pro, P.strCoordinador_pro,
-                       P.strDuracion_pro, P.dtFehains_pro, P.strArchivo_pro, P.strEstado_pro, 
-                       P.fkId_conv, P.fkId_gru, 
-                       P.intPuntaje_pro, 
-                       G.strNombre_gru, C.strNombre_conv 
+                SELECT P.strId_pro, P.strTema_pro, 
+                       P.fkId_coordinador, 
+                       P.strCoordinador_pro, 
+
+                       ISNULL(
+                           (I.strApellidos_int + ' ' + I.strNombres_int + ' (' + I.strFuncion_int + ')'), 
+                           P.strCoordinador_pro
+                       ) as NombreCoordinadorCompleto,
+
+                       P.strDuracion_pro, P.dtFehains_pro, P.strEstado_pro, P.intPuntaje_pro,
+                       P.strArchivo_pro, 
+                       G.strNombre_gru, C.strNombre_conv
                 FROM INVGCCINSCRIPCION_PROYECTOS P 
                 INNER JOIN INVGCCGRUPO_INVESTIGACION G ON P.fkId_gru = G.strId_gru
                 INNER JOIN INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION C ON P.fkId_conv = C.strId_conv
+                LEFT JOIN INVGCCGRUPO_INTEGRANTES I ON P.fkId_coordinador = I.strId_int
                 ORDER BY ISNULL(P.intPuntaje_pro, -1) DESC, P.dtFehains_pro DESC";
 
             return _dal.SelectSql<InvgccInscripcionProyectos>(sql);
@@ -49,14 +57,18 @@ namespace SistemaGestionCGI.BLL
 
             string puntajeSql = pro.intPuntaje_pro.HasValue ? pro.intPuntaje_pro.Value.ToString() : "NULL";
 
+            string coordinadorSql = string.IsNullOrEmpty(pro.fkId_coordinador) ? "NULL" : $"'{pro.fkId_coordinador}'";
+
             string sql = $@"
                 INSERT INTO INVGCCINSCRIPCION_PROYECTOS 
                 (strId_pro, strTema_pro, strCoordinador_pro, strDuracion_pro, 
-                 dtFehains_pro, fkId_gru, fkId_conv, strArchivo_pro, strEstado_pro, intPuntaje_pro)
+                    dtFehains_pro, fkId_gru, fkId_conv, strArchivo_pro, strEstado_pro, intPuntaje_pro, 
+                    fkId_coordinador) -- <--- Asegúrate de incluir la columna nueva aquí
                 VALUES 
                 ('{pro.strId_pro}', '{pro.strTema_pro}', '{pro.strCoordinador_pro}',
-                 '{pro.strDuracion_pro}', '{pro.dtFehains_pro:yyyy-MM-dd}', '{pro.fkId_gru}', '{pro.fkId_conv}', 
-                 '{pro.strArchivo_pro}', '{pro.strEstado_pro}', {puntajeSql})";
+                    '{pro.strDuracion_pro}', '{pro.dtFehains_pro:yyyy-MM-dd}', '{pro.fkId_gru}', '{pro.fkId_conv}', 
+                    '{pro.strArchivo_pro}', '{pro.strEstado_pro}', {puntajeSql}, 
+                    {coordinadorSql})"; 
 
             _dal.UpdateSql(sql);
         }
@@ -64,11 +76,13 @@ namespace SistemaGestionCGI.BLL
         public void Actualizar(InvgccInscripcionProyectos pro)
         {
             string puntajeSql = pro.intPuntaje_pro.HasValue ? pro.intPuntaje_pro.Value.ToString() : "NULL";
+            string coordinadorSql = string.IsNullOrEmpty(pro.fkId_coordinador) ? "NULL" : $"'{pro.fkId_coordinador}'";
 
             string sql = $@"
                 UPDATE INVGCCINSCRIPCION_PROYECTOS SET 
                     strTema_pro = '{pro.strTema_pro}',
                     strCoordinador_pro = '{pro.strCoordinador_pro}',
+                    fkId_coordinador = {coordinadorSql}, 
                     strDuracion_pro = '{pro.strDuracion_pro}',
                     dtFehains_pro = '{pro.dtFehains_pro:yyyy-MM-dd}',
                     fkId_gru = '{pro.fkId_gru}',
@@ -96,9 +110,72 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sql);
         }
 
+        public dynamic ObtenerDocenteCategorizado(string cedula)
+        {
+            string sql = @"
+                SELECT TOP 1 
+                    strId_doc, strCedula_doc, strNombres_doc, strApellidos_doc, 
+                    strFacultad_doc, strCarrera_doc, strCertificado_doc
+                FROM INVGCCCATEGORIZACION_DOCENTES 
+                WHERE strCedula_doc = '" + cedula + "' AND bitActivo_doc = 1";
+
+            var resultado = _dal.SelectSql<dynamic>(sql);
+            return (resultado != null && resultado.Count > 0) ? resultado[0] : null;
+        }
+
+
+        public string VerificarIntegranteEnOtroGrupo(string cedula)
+        {
+            string sql = $@"
+                SELECT G.strNombre_gru 
+                FROM INVGCCGRUPO_INTEGRANTES I
+                INNER JOIN INVGCCGRUPO_INVESTIGACION G ON I.fkId_gru = G.strId_gru
+                WHERE I.strCedula_int = '{cedula}' 
+                AND I.bitActivo_int = 1
+                AND I.strTipo_int = 'Docente'";
+
+            var resultado = _dal.SelectSql<dynamic>(sql);
+
+            if (resultado != null && resultado.Count > 0)
+            {
+                try
+                {
+                    dynamic item = resultado[0];
+                    return item.strNombre_gru.ToString();
+                }
+                catch { return "OTRO GRUPO"; }
+            }
+            return null;
+        }
+
         // =============================================================
         // MÉTODOS AUXILIARES
         // =============================================================
+
+        public string GuardarIntegranteExpress(InvgccGrupoIntegrantes intg)
+        {
+            string nuevoId = GenerarNuevoIdIntegrante();
+
+            string sql = $@"
+                INSERT INTO INVGCCGRUPO_INTEGRANTES 
+                (
+                    strId_int, strCedula_int, strApellidos_int, strNombres_int, 
+                    strCorreo_int, strCarrera_int, strFuncion_int, 
+                    strTipo_int, fkId_gru, bitActivo_int, dtFechaini_int, 
+                    strEntidad_int, strFacultad_int, strCertificado_int
+                ) 
+                VALUES 
+                (
+                    '{nuevoId}', '{intg.strCedula_int}', '{intg.strApellidos_int}', '{intg.strNombres_int}', 
+                    '{intg.strCorreo_int}', '{intg.strCarrera_int}', '{intg.strFuncion_int}', 
+                    '{intg.strTipo_int}', '{intg.fkId_gru}', 1, GETDATE(), 
+                    '{intg.strEntidad_int}', '{intg.strFacultad_int}', '{intg.strCertificado_int}'
+                )";
+
+            _dal.UpdateSql(sql);
+
+            return nuevoId;
+        }
 
         public List<InvgccGrupoInvestigacion> ObtenerGruposCombo()
         {
@@ -121,39 +198,13 @@ namespace SistemaGestionCGI.BLL
         public List<InvgccGrupoIntegrantes> ObtenerIntegrantesPorGrupo(string idGrupo)
         {
             string sql = $@"
-                SELECT strId_int, (strApellidos_int + ' ' + strNombres_int) as NombreCompleto 
+                SELECT strId_int, 
+                       (strApellidos_int + ' ' + strNombres_int + ' (' + UPPER(strFuncion_int) + ')') as NombreCompleto
                 FROM INVGCCGRUPO_INTEGRANTES 
                 WHERE fkId_gru = '{idGrupo}' AND bitActivo_int = 1
                 ORDER BY strApellidos_int";
 
             return _dal.SelectSql<InvgccGrupoIntegrantes>(sql);
-        }
-
-        public void GuardarIntegranteExpress(InvgccGrupoIntegrantes intg)
-        {
-            string nuevoId = GenerarNuevoIdIntegrante();
-
-            string sql = $@"
-                INSERT INTO INVGCCGRUPO_INTEGRANTES 
-                (
-                    strId_int, strCedula_int, strApellidos_int, strNombres_int, 
-                    strCorreo_int, strCarrera_int, strFuncion_int, 
-                    strTipo_int, fkId_gru, bitActivo_int, dtFechaini_int, 
-                    strEntidad_int, 
-                    strFacultad_int, 
-                    strCertificado_int 
-                ) 
-                VALUES 
-                (
-                    '{nuevoId}', '{intg.strCedula_int}', '{intg.strApellidos_int}', '{intg.strNombres_int}', 
-                    '{intg.strCorreo_int}', '{intg.strCarrera_int}', '{intg.strFuncion_int}', 
-                    '{intg.strTipo_int}', '{intg.fkId_gru}', 1, GETDATE(), 
-                    '{intg.strEntidad_int}', 
-                    '{intg.strFacultad_int}', 
-                    '{intg.strCertificado_int}'
-                )";
-
-            _dal.UpdateSql(sql);
         }
 
         // =============================================================

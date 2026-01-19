@@ -40,5 +40,11 @@ namespace SistemaGestionCGI.Models
 
         [JsonProperty("strNombre_conv")]
         public string strNombre_conv { get; set; }
+
+        [JsonProperty("fkId_coordinador")]
+        public string fkId_coordinador { get; set; }
+
+        [JsonProperty("NombreCoordinadorCompleto")]
+        public string NombreCoordinadorCompleto { get; set; }
     }
 }

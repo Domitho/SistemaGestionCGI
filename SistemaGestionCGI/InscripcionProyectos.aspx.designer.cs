@@ -420,6 +420,33 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.LinkButton btnConfirmarEstadoPro;
 
         /// <summary>
+        /// Control ddlTipoInt.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlTipoInt;
+
+        /// <summary>
+        /// Control txtBuscarCedula.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtBuscarCedula;
+
+        /// <summary>
+        /// Control btnBuscarDocente.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnBuscarDocente;
+
+        /// <summary>
         /// Control txtCedulaInt.
         /// </summary>
         /// <remarks>
@@ -456,22 +483,13 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtCorreoInt;
 
         /// <summary>
-        /// Control ddlTipoInt.
+        /// Control ddlFacultadInt.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlTipoInt;
-
-        /// <summary>
-        /// Control divInterno.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divInterno;
+        protected global::System.Web.UI.WebControls.DropDownList ddlFacultadInt;
 
         /// <summary>
         /// Control txtCarreraInt.
@@ -483,24 +501,6 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtCarreraInt;
 
         /// <summary>
-        /// Control ddlFacultadInt.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlFacultadInt;
-
-        /// <summary>
-        /// Control divExterno.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divExterno;
-
-        /// <summary>
         /// Control txtEntidadInt.
         /// </summary>
         /// <remarks>
@@ -510,22 +510,13 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtEntidadInt;
 
         /// <summary>
-        /// Control ddlFuncionIntModal.
+        /// Control txtFuncionDisplay.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlFuncionIntModal;
-
-        /// <summary>
-        /// Control flpCertificadoModal.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.FileUpload flpCertificadoModal;
+        protected global::System.Web.UI.WebControls.TextBox txtFuncionDisplay;
 
         /// <summary>
         /// Control btnGuardarIntegrante.

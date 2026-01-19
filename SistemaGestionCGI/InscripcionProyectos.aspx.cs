@@ -5,6 +5,8 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using SistemaGestionCGI.BLL;
 using SistemaGestionCGI.Models;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace SistemaGestionCGI
 {
@@ -87,8 +89,10 @@ namespace SistemaGestionCGI
             if (!string.IsNullOrEmpty(idGrupo))
             {
                 ddl.DataSource = _manejador.ObtenerIntegrantesPorGrupo(idGrupo);
-                ddl.DataTextField = "NombreCompleto";
-                ddl.DataValueField = "NombreCompleto";
+                ddl.DataTextField = "NombreCompleto"; 
+
+                ddl.DataValueField = "strId_int";
+
                 ddl.DataBind();
             }
             ddl.Items.Insert(0, new ListItem("-- Seleccione Coordinador --", ""));
@@ -100,6 +104,8 @@ namespace SistemaGestionCGI
 
         protected void ddlGrupo_SelectedIndexChanged(object sender, EventArgs e)
         {
+            ViewState["IntegrantePendiente"] = null;
+
             string idGrupo = ddlGrupo.SelectedValue;
             CargarCoordinadores(ddlCoordinador, idGrupo);
 
@@ -133,72 +139,127 @@ namespace SistemaGestionCGI
             {
                 if (string.IsNullOrEmpty(ddlGrupo.SelectedValue))
                 {
-                    Msg("Error: No hay grupo seleccionado.", "ww");
+                    Msg("Error: Primero seleccione un Grupo.", "ww");
                     return;
                 }
-
                 if (string.IsNullOrWhiteSpace(txtNombresInt.Text) || string.IsNullOrWhiteSpace(txtCedulaInt.Text))
                 {
-                    Msg("Complete los campos obligatorios.", "ww");
-                    ScriptManager.RegisterStartupScript(this, GetType(), "reopen", "AbrirModalNuevoIntegrante();", true);
+                    Msg("Complete Cédula, Nombres y Apellidos.", "ww");
+                    ScriptManager.RegisterStartupScript(this, GetType(), "reopen", "AbrirModalNuevoIntegrante(); ToggleTipoIntegranteModal();", true);
                     return;
                 }
 
-                var nuevo = new InvgccGrupoIntegrantes
+                var integranteTemp = new InvgccGrupoIntegrantes
                 {
                     fkId_gru = ddlGrupo.SelectedValue,
                     strCedula_int = txtCedulaInt.Text.Trim(),
-                    strNombres_int = txtNombresInt.Text.Trim(),
-                    strApellidos_int = txtApellidosInt.Text.Trim(),
-                    strCorreo_int = txtCorreoInt.Text.Trim(),
-                    strFuncion_int = ddlFuncionIntModal.SelectedValue,
-                    strTipo_int = ddlTipoInt.SelectedValue
+                    strNombres_int = txtNombresInt.Text.Trim().ToUpper(),
+                    strApellidos_int = txtApellidosInt.Text.Trim().ToUpper(),
+                    strCorreo_int = txtCorreoInt.Text.Trim().ToLower(),
+                    strTipo_int = ddlTipoInt.SelectedValue,
+                    strFuncion_int = "Miembro Investigador",
+
+                    strCarrera_int = (ddlTipoInt.SelectedValue != "Externo") ? txtCarreraInt.Text.Trim().ToUpper() : null,
+                    strFacultad_int = (ddlTipoInt.SelectedValue != "Externo") ? ddlFacultadInt.SelectedValue : null,
+                    strEntidad_int = (ddlTipoInt.SelectedValue == "Externo") ? txtEntidadInt.Text.Trim().ToUpper() : null
                 };
 
-                if (nuevo.strFuncion_int == "Investigador Principal")
+                string jsonIntegrante = JsonConvert.SerializeObject(integranteTemp);
+                ViewState["IntegrantePendiente"] = jsonIntegrante;
+
+                string nombreVisual = $"{integranteTemp.strApellidos_int} {integranteTemp.strNombres_int} (NUEVO - PENDIENTE)";
+
+                ddlCoordinador.ClearSelection();
+                ListItem itemViejo = ddlCoordinador.Items.FindByValue("TEMP_NEW");
+                if (itemViejo != null) ddlCoordinador.Items.Remove(itemViejo);
+
+                ListItem itemTemp = new ListItem(nombreVisual, "TEMP_NEW");
+                itemTemp.Selected = true;
+                ddlCoordinador.Items.Add(itemTemp);
+
+                LimpiarCamposModal();
+                Msg("Integrante listo para vincular.", "ii");
+            }
+            catch (Exception ex)
+            {
+                Msg("Error: " + ex.Message, "ee");
+            }
+        }
+
+        protected void btnBuscarDocente_Click(object sender, EventArgs e)
+        {
+            string cedula = txtBuscarCedula.Text.Trim();
+            if (string.IsNullOrEmpty(cedula)) return;
+
+            try
+            {
+                string grupoOcupado = _manejador.VerificarIntegranteEnOtroGrupo(cedula);
+                if (!string.IsNullOrEmpty(grupoOcupado))
                 {
-                    if (flpCertificadoModal.HasFile)
-                    {
-                        string nombre = $"CERT_{DateTime.Now.Ticks}{Path.GetExtension(flpCertificadoModal.FileName)}";
-                        string rutaBase = @"C:\UTC\GRUPOS\CERTIFICADOS\";
-                        if (!Directory.Exists(rutaBase)) Directory.CreateDirectory(rutaBase);
+                    Msg($"El docente existe, PERO ya pertenece al grupo '{grupoOcupado}'. No puede estar en dos grupos.", "ww");
 
-                        string rutaCompleta = Path.Combine(rutaBase, nombre);
-                        flpCertificadoModal.SaveAs(rutaCompleta);
-
-                        nuevo.strCertificado_int = rutaCompleta;
-                    }
+                    LimpiarCamposModal();
+                    return; 
                 }
 
-                if (nuevo.strTipo_int == "Externo")
+                dynamic docente = _manejador.ObtenerDocenteCategorizado(cedula);
+
+                if (docente != null)
                 {
-                    nuevo.strEntidad_int = txtEntidadInt.Text.Trim();
-                    if (string.IsNullOrEmpty(nuevo.strEntidad_int))
-                    {
-                        Msg("Especifique la Institución para externos.", "ww");
-                        ScriptManager.RegisterStartupScript(this, GetType(), "reopen", "AbrirModalNuevoIntegrante(); ToggleTipoIntegrante(document.getElementById('ddlTipoInt'));", true);
-                        return;
-                    }
+                    txtCedulaInt.Text = GetProp(docente, "strCedula_doc");
+                    txtNombresInt.Text = GetProp(docente, "strNombres_doc");
+                    txtApellidosInt.Text = GetProp(docente, "strApellidos_doc");
+                    txtCorreoInt.Text = "";
+                    txtCarreraInt.Text = GetProp(docente, "strCarrera_doc");
+
+                    string fac = GetProp(docente, "strFacultad_doc");
+                    if (ddlFacultadInt.Items.FindByValue(fac) != null)
+                        ddlFacultadInt.SelectedValue = fac;
+
+                    txtNombresInt.ReadOnly = true;
+                    txtApellidosInt.ReadOnly = true;
+                    txtCarreraInt.ReadOnly = true;
+                    txtCorreoInt.ReadOnly = false;
+
+                    Msg("Docente encontrado.", "ss");
                 }
                 else
                 {
-                    nuevo.strCarrera_int = txtCarreraInt.Text.Trim();
-                    nuevo.strFacultad_int = ddlFacultadInt.SelectedValue;
+                    Msg("Docente no encontrado. Llene los datos manualmente.", "ww");
+                    txtNombresInt.Text = ""; txtApellidosInt.Text = "";
+                    txtNombresInt.ReadOnly = false;
+                    txtApellidosInt.ReadOnly = false;
                 }
-
-                _manejador.GuardarIntegranteExpress(nuevo);
-                CargarCoordinadores(ddlCoordinador, ddlGrupo.SelectedValue);
-                string nombreCompleto = $"{nuevo.strApellidos_int} {nuevo.strNombres_int}";
-                var item = ddlCoordinador.Items.FindByText(nombreCompleto);
-                if (item != null) item.Selected = true;
-
-                txtCedulaInt.Text = ""; txtNombresInt.Text = ""; txtApellidosInt.Text = "";
-                txtCorreoInt.Text = ""; txtCarreraInt.Text = ""; ddlFuncionIntModal.SelectedIndex = 0;
-                ddlFacultadInt.SelectedIndex = 0;
-
-                Msg("Integrante registrado y seleccionado.", "ss");
             }
-            catch (Exception ex) { Msg("Error al guardar integrante: " + ex.Message, "ee"); }
+            catch (Exception ex)
+            {
+                Msg("Error: " + ex.Message, "ee");
+            }
+            finally
+            {
+                string script = "AbrirModalNuevoIntegrante(); ToggleTipoIntegranteModal();";
+                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenModal", script, true);
+            }
+        }
+
+        private string GetProp(object obj, string propName)
+        {
+            if (obj == null) return "";
+            try
+            {
+                if (obj is JObject jobj)
+                    return jobj[propName]?.ToString() ?? "";
+
+                var prop = obj.GetType().GetProperty(propName);
+                if (prop != null)
+                    return prop.GetValue(obj, null)?.ToString() ?? "";
+
+                return ((dynamic)obj).GetType().GetProperty(propName)?.GetValue(obj, null)?.ToString() ?? "";
+            }
+            catch
+            {
+                return "";
+            }
         }
 
         // =============================================
@@ -226,6 +287,12 @@ namespace SistemaGestionCGI
         {
             try
             {
+                if (ddlCoordinador.SelectedIndex <= 0 || string.IsNullOrEmpty(ddlCoordinador.SelectedValue))
+                {
+                    Msg("Debe seleccionar un Coordinador válido.", "ww");
+                    return;
+                }
+
                 if (string.IsNullOrWhiteSpace(txtTema.Text) || ddlCoordinador.SelectedIndex <= 0)
                 {
                     Msg("Complete los campos obligatorios.", "ww");
@@ -240,11 +307,34 @@ namespace SistemaGestionCGI
                     return;
                 }
 
-                var nuevo = new InvgccInscripcionProyectos
+                string idCoordinadorFinal = ddlCoordinador.SelectedValue;
+
+                if (idCoordinadorFinal == "TEMP_NEW")
+                {
+                    string jsonPendiente = ViewState["IntegrantePendiente"] as string;
+
+                    if (!string.IsNullOrEmpty(jsonPendiente))
+                    {
+                        var nuevoInt = JsonConvert.DeserializeObject<InvgccGrupoIntegrantes>(jsonPendiente);
+
+                        idCoordinadorFinal = _manejador.GuardarIntegranteExpress(nuevoInt);
+
+                        ViewState["IntegrantePendiente"] = null;
+                    }
+                    else
+                    {
+                        CargarCoordinadores(ddlCoordinador, ddlGrupo.SelectedValue);
+                        Msg("La sesión del integrante temporal ha caducado...", "ww");
+                        return;
+                    }
+                }
+
+                var nuevoPro = new InvgccInscripcionProyectos
                 {
                     strTema_pro = txtTema.Text.Trim(),
-                    strCoordinador_pro = ddlCoordinador.SelectedValue,
-                    strDuracion_pro = duracionFinal,
+                    fkId_coordinador = idCoordinadorFinal,
+                    strCoordinador_pro = ddlCoordinador.SelectedItem.Text,
+                    strDuracion_pro = ConstruirDuracion(hfAnios.Value, hfMeses.Value, hfSemanas.Value, hfDias.Value),
                     dtFehains_pro = DateTime.Parse(txtFecha.Text),
                     fkId_gru = ddlGrupo.SelectedValue,
                     fkId_conv = ddlConv.SelectedValue,
@@ -254,10 +344,11 @@ namespace SistemaGestionCGI
                 if (flpArchivo.HasFile)
                 {
                     if (!ValidarExtension(flpArchivo.FileName)) return;
-                    nuevo.strArchivo_pro = GuardarArchivoFisico(flpArchivo, $"PROY_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivo.FileName)}");
+                    nuevoPro.strArchivo_pro = GuardarArchivoFisico(flpArchivo, $"PROY_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivo.FileName)}");
                 }
 
-                _manejador.Guardar(nuevo);
+                _manejador.Guardar(nuevoPro);
+
                 Redireccionar("Proyecto registrado correctamente.", "ss");
             }
             catch (Exception ex) { Msg("Error: " + ex.Message, "ee"); }
@@ -273,13 +364,14 @@ namespace SistemaGestionCGI
                 {
                     strId_pro = hfIdEdit.Value,
                     strTema_pro = txtTemaEdit.Text.Trim(),
-                    strCoordinador_pro = ddlCoordinadorEdit.SelectedValue,
+                    strCoordinador_pro = ddlCoordinadorEdit.SelectedItem.Text,
                     strDuracion_pro = duracionFinal,
                     dtFehains_pro = DateTime.Parse(txtFechaEdit.Text),
                     fkId_gru = ddlGrupoEdit.SelectedValue,
                     fkId_conv = ddlConvEdit.SelectedValue,
                     strArchivo_pro = hfArchivoActual.Value,
-                    intPuntaje_pro = int.TryParse(txtPuntajeEdit.Text, out int pt) ? (int?)pt : null
+                    intPuntaje_pro = int.TryParse(txtPuntajeEdit.Text, out int pt) ? (int?)pt : null,
+                    fkId_coordinador = ddlCoordinador.SelectedValue
                 };
 
                 if (flpArchivoEdit.HasFile)
@@ -335,14 +427,12 @@ namespace SistemaGestionCGI
             hfIdEdit.Value = pro.strId_pro;
             txtTemaEdit.Text = pro.strTema_pro;
             txtPuntajeEdit.Text = pro.intPuntaje_pro?.ToString() ?? "";
-            // --- LÓGICA DE DURACIÓN (DECONSTRUCCIÓN) ---
-            // Llenamos los HiddenFields extrayendo los números del texto guardado
+
             hfAniosEdit.Value = ExtraerNumeroDeTexto(pro.strDuracion_pro, "Año");
             hfMesesEdit.Value = ExtraerNumeroDeTexto(pro.strDuracion_pro, "Mes");
             hfSemanasEdit.Value = ExtraerNumeroDeTexto(pro.strDuracion_pro, "Semana");
-            hfDiasEdit.Value = ExtraerNumeroDeTexto(pro.strDuracion_pro, "Día"); // Ojo con la tilde, el helper busca match parcial
+            hfDiasEdit.Value = ExtraerNumeroDeTexto(pro.strDuracion_pro, "Día");
 
-            // Mostramos el texto completo en el input visible
             txtDuracionDisplayEdit.Text = pro.strDuracion_pro;
             txtFechaEdit.Text = pro.dtFehains_pro.ToString("yyyy-MM-dd");
             hfArchivoActual.Value = pro.strArchivo_pro;
@@ -354,9 +444,25 @@ namespace SistemaGestionCGI
             if (ddlGrupoEdit.Items.FindByValue(pro.fkId_gru) != null)
             {
                 ddlGrupoEdit.SelectedValue = pro.fkId_gru;
+
                 CargarCoordinadores(ddlCoordinadorEdit, pro.fkId_gru);
-                if (ddlCoordinadorEdit.Items.FindByValue(pro.strCoordinador_pro) != null)
-                    ddlCoordinadorEdit.SelectedValue = pro.strCoordinador_pro;
+
+                if (!string.IsNullOrEmpty(pro.fkId_coordinador) &&
+                    ddlCoordinadorEdit.Items.FindByValue(pro.fkId_coordinador) != null)
+                {
+                    ddlCoordinadorEdit.SelectedValue = pro.fkId_coordinador;
+                }
+                else if (!string.IsNullOrEmpty(pro.strCoordinador_pro))
+                {
+                    foreach (ListItem item in ddlCoordinadorEdit.Items)
+                    {
+                        if (item.Text.Contains(pro.strCoordinador_pro))
+                        {
+                            item.Selected = true;
+                            break;
+                        }
+                    }
+                }
             }
 
             pnlGrilla.Visible = false;
@@ -375,10 +481,10 @@ namespace SistemaGestionCGI
 
                 string temaSeguro = (pro.strTema_pro ?? "").Replace("'", "").Replace("\r", "").Replace("\n", " ");
                 string scriptInfo = $@"
-            document.getElementById('infoldPro').innerText = '{pro.strId_pro}';
-            document.getElementById('infoTemaPro').innerText = '{temaSeguro}';
-            document.getElementById('infoEstadoPro').innerText = '{pro.strEstado_pro}';
-        ";
+                    document.getElementById('infoldPro').innerText = '{pro.strId_pro}';
+                    document.getElementById('infoTemaPro').innerText = '{temaSeguro}';
+                    document.getElementById('infoEstadoPro').innerText = '{pro.strEstado_pro}';
+                ";
 
                 ddlNuevoEstado.Items.Clear();
                 ddlNuevoEstado.Enabled = true;
@@ -443,6 +549,28 @@ namespace SistemaGestionCGI
         // =============================================
         // NAVEGACIÓN Y CANCELACIÓN
         // =============================================
+
+        private void LimpiarCamposModal()
+        {
+            txtCedulaInt.Text = "";
+            txtNombresInt.Text = "";
+            txtApellidosInt.Text = "";
+            txtCorreoInt.Text = "";
+            txtCarreraInt.Text = "";
+            txtEntidadInt.Text = "";
+
+            if (ddlFacultadInt.Items.Count > 0) ddlFacultadInt.SelectedIndex = 0;
+
+        }
+
+        private void HabilitarEdicion(bool habilitar)
+        {
+            txtNombresInt.ReadOnly = !habilitar;
+            txtApellidosInt.ReadOnly = !habilitar;
+            txtCarreraInt.ReadOnly = !habilitar;
+
+            ddlFacultadInt.Enabled = habilitar;
+        }
 
         protected void btnRegresar_Click(object sender, EventArgs e)
         {
