@@ -64,14 +64,27 @@ namespace SistemaGestionCGI.BLL
 
             string sql = $@"
                 INSERT INTO INVGCCGRUPO_INVESTIGACION
-                (strId_gru, strNombre_gru, strCoordinador_gru, dtFechacrea_gru, 
-                 strCategoria_gru, strLineasinv_gru, strSublineasinv_gru, 
-                 strArchivo_gru, strFoto_gru, fkId_cen)
+                (
+                    strId_gru, strNombre_gru, fkId_cen, strCoordinador_gru, 
+                    strCategoria_gru, dtFechacrea_gru, strLineasinv_gru, 
+                    strSublineasinv_gru, strFoto_gru, strArchivo_gru
+                )
                 VALUES
-                ('{grupo.strId_gru}', '{grupo.strNombre_gru}', '{grupo.strCoordinador_gru}', 
-                 '{grupo.dtFechacrea_gru:yyyy-MM-dd HH:mm:ss}', '{grupo.strCategoria_gru}', 
-                 '{grupo.strLineasinv_gru}', '{grupo.strSublineasinv_gru}', 
-                 '{grupo.strArchivo_gru}', '{grupo.strFoto_gru}', {valorCentro})";
+                (
+                    '{grupo.strId_gru}', 
+                    '{grupo.strNombre_gru}', 
+            
+                    -- ESTA ES LA LÍNEA MÁGICA:
+                    {(string.IsNullOrEmpty(grupo.fkId_cen) ? "NULL" : $"'{grupo.fkId_cen}'")}, 
+
+                    '{grupo.strCoordinador_gru}',
+                    '{grupo.strCategoria_gru}', 
+                    '{grupo.dtFechacrea_gru:yyyy-MM-dd}', 
+                    '{grupo.strLineasinv_gru}', 
+                    '{grupo.strSublineasinv_gru}',
+                    '{grupo.strFoto_gru}', 
+                    '{grupo.strArchivo_gru}'
+                )";
 
             _dal.InsertSql(sql);
         }
@@ -88,7 +101,7 @@ namespace SistemaGestionCGI.BLL
                     strSublineasinv_gru = '{grupo.strSublineasinv_gru}',
                     strArchivo_gru = '{grupo.strArchivo_gru}',
                     strFoto_gru = '{grupo.strFoto_gru}',
-                    fkId_cen = '{grupo.fkId_cen}' -- Agregamos fkId_cen
+                    fkId_cen = {(string.IsNullOrEmpty(grupo.fkId_cen) ? "NULL" : $"'{grupo.fkId_cen}'")}
                 WHERE strId_gru = '{grupo.strId_gru}'";
 
             _dal.UpdateSql(sql);
@@ -286,6 +299,18 @@ namespace SistemaGestionCGI.BLL
                 WHERE strCedula_doc = '{cedula}' AND bitActivo_doc = 1";
 
             var resultado = _dal.SelectSql<dynamic>(sql);
+            return (resultado != null && resultado.Count > 0) ? resultado[0] : null;
+        }
+
+        public InvgccGrupoIntegrantes ObtenerInvestigadorPrincipalActivo(string idGrupo)
+        {
+            string sql = $@"
+                SELECT TOP 1 * FROM INVGCCGRUPO_INTEGRANTES 
+                WHERE fkId_gru = '{idGrupo}' 
+                  AND strFuncion_int = 'INVESTIGADOR PRINCIPAL' 
+                  AND bitActivo_int = 1";
+
+            var resultado = _dal.SelectSql<InvgccGrupoIntegrantes>(sql);
             return (resultado != null && resultado.Count > 0) ? resultado[0] : null;
         }
 

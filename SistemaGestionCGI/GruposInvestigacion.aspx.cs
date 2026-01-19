@@ -85,12 +85,14 @@ namespace SistemaGestionCGI
         {
             try
             {
+                // 1. VALIDACIÓN BÁSICA
                 if (string.IsNullOrWhiteSpace(txtNombreGru.Text))
                 {
                     Msg("El nombre del grupo es obligatorio.", "ww");
                     return;
                 }
 
+                // 2. CREACIÓN DEL OBJETO GRUPO (Datos del formulario)
                 var g = new InvgccGrupoInvestigacion
                 {
                     strNombre_gru = txtNombreGru.Text.Trim(),
@@ -99,15 +101,12 @@ namespace SistemaGestionCGI
                     strCategoria_gru = ddlCategoriaGru.SelectedValue,
                     strLineasinv_gru = ddlLineaInv.SelectedValue,
                     strSublineasinv_gru = ddlSublineaInv.SelectedValue,
-
-                    dtFechacrea_gru = !string.IsNullOrEmpty(txtFechaCreaGru.Text)
-                                    ? DateTime.Parse(txtFechaCreaGru.Text)
-                                    : DateTime.Now,
-
+                    dtFechacrea_gru = !string.IsNullOrEmpty(txtFechaCreaGru.Text) ? DateTime.Parse(txtFechaCreaGru.Text) : DateTime.Now,
                     strFoto_gru = hfFotoActual.Value,
                     strArchivo_gru = hfArchivoActual.Value
                 };
 
+                // 3. GESTIÓN DE ARCHIVOS
                 if (flpFotoGrupo.HasFile)
                 {
                     string nombre = $"FOTO_{DateTime.Now.Ticks}{Path.GetExtension(flpFotoGrupo.FileName)}";
@@ -122,9 +121,9 @@ namespace SistemaGestionCGI
 
                 string usuario = Session["UsuarioLogueado"]?.ToString() ?? "Sistema";
 
-
                 if (string.IsNullOrEmpty(hfIdGrupo.Value))
                 {
+
                     if (!string.IsNullOrEmpty(hfCoordCedula.Value))
                     {
                         var coord = new InvgccGrupoIntegrantes
@@ -133,21 +132,19 @@ namespace SistemaGestionCGI
                             strApellidos_int = hfCoordApellidos.Value,
                             strCedula_int = hfCoordCedula.Value,
                             strCorreo_int = hfCoordCorreo.Value,
-
-                            strTipo_int = hfCoordTipo.Value, 
-                            strEntidad_int = string.IsNullOrEmpty(hfCoordEntidad.Value) ? null : hfCoordEntidad.Value, // Nuevo
+                            strTipo_int = hfCoordTipo.Value,
+                            strEntidad_int = string.IsNullOrEmpty(hfCoordEntidad.Value) ? null : hfCoordEntidad.Value,
                             strFacultad_int = string.IsNullOrEmpty(hfCoordFacultad.Value) ? null : hfCoordFacultad.Value,
                             strCarrera_int = string.IsNullOrEmpty(hfCoordCarrera.Value) ? null : hfCoordCarrera.Value,
-
                             strCertificado_int = hfCoordArchivo.Value,
-                            fkId_docente_origen = string.IsNullOrEmpty(hfCoordIdDocente.Value) ? null : hfCoordIdDocente.Value, // Nuevo FK
+                            fkId_docente_origen = string.IsNullOrEmpty(hfCoordIdDocente.Value) ? null : hfCoordIdDocente.Value,
 
                             strFuncion_int = "INVESTIGADOR PRINCIPAL",
+                            dtFechaini_int = DateTime.Now,
                             bitActivo_int = true
                         };
 
                         _manejador.RegistrarGrupoConCoordinador(g, coord, usuario);
-
                         SetFlashMessage("Grupo creado y Coordinador asignado correctamente.", "ss");
                     }
                     else
@@ -158,9 +155,45 @@ namespace SistemaGestionCGI
                 }
                 else
                 {
-                    g.strId_gru = hfIdGrupo.Value;
+                    string idGrupoLimpio = hfIdGrupo.Value.Trim();
+
+                    if (string.IsNullOrEmpty(idGrupoLimpio))
+                    {
+                        Msg("Error crítico: ID de grupo perdido.", "ee"); return;
+                    }
+
+                    g.strId_gru = idGrupoLimpio;
                     _manejador.ActualizarGrupo(g);
-                    SetFlashMessage("Datos del grupo actualizados.", "ss");
+
+                    if (!string.IsNullOrEmpty(hfCoordCedula.Value))
+                    {
+                        var coord = new InvgccGrupoIntegrantes
+                        {
+                            fkId_gru = idGrupoLimpio, 
+
+                            strNombres_int = hfCoordNombre.Value,
+                            strApellidos_int = hfCoordApellidos.Value,
+                            strCedula_int = hfCoordCedula.Value,
+                            strCorreo_int = hfCoordCorreo.Value,
+                            strTipo_int = hfCoordTipo.Value,
+                            strEntidad_int = string.IsNullOrEmpty(hfCoordEntidad.Value) ? null : hfCoordEntidad.Value,
+                            strFacultad_int = string.IsNullOrEmpty(hfCoordFacultad.Value) ? null : hfCoordFacultad.Value,
+                            strCarrera_int = string.IsNullOrEmpty(hfCoordCarrera.Value) ? null : hfCoordCarrera.Value,
+                            strCertificado_int = hfCoordArchivo.Value,
+                            fkId_docente_origen = string.IsNullOrEmpty(hfCoordIdDocente.Value) ? null : hfCoordIdDocente.Value,
+
+                            strFuncion_int = "INVESTIGADOR PRINCIPAL",
+                            dtFechaini_int = DateTime.Now,
+                            bitActivo_int = true
+                        };
+
+                        _manejador.GuardarIntegrante(coord, usuario);
+                        SetFlashMessage("Grupo actualizado y Nuevo Coordinador designado.", "ss");
+                    }
+                    else
+                    {
+                        SetFlashMessage("Datos del grupo actualizados.", "ss");
+                    }
                 }
 
                 Response.Redirect("GruposInvestigacion.aspx", false);
@@ -226,7 +259,6 @@ namespace SistemaGestionCGI
             hfIdGrupo.Value = g.strId_gru;
 
             txtNombreGru.Text = g.strNombre_gru;
-            txtCoordinadorGru.Text = g.strCoordinador_gru;
             txtFechaCreaGru.Text = g.dtFechacrea_gru.ToString("yyyy-MM-dd");
 
             if (ddlCentro.Items.FindByValue(g.fkId_cen) != null)
@@ -234,6 +266,30 @@ namespace SistemaGestionCGI
 
             if (ddlCategoriaGru.Items.FindByValue(g.strCategoria_gru) != null)
                 ddlCategoriaGru.SelectedValue = g.strCategoria_gru;
+
+            // --- LOGICA DEL COORDINADOR (DIRECTOR) ---
+            // Consultamos la tabla de integrantes en tiempo real
+            var coordinadorActivo = _manejador.ObtenerInvestigadorPrincipalActivo(g.strId_gru);
+
+            if (coordinadorActivo != null)
+            {
+                // CASO A: HAY UN REY VIGENTE
+                txtCoordinadorGru.Text = $"{coordinadorActivo.strApellidos_int} {coordinadorActivo.strNombres_int}";
+                txtCoordinadorGru.CssClass = "form-control bg-light fw-bold text-success";
+
+                // Ocultamos el botón para que no puedan agregar otro encima
+                btnAgregarCoordinador.Visible = false;
+            }
+            else
+            {
+                // CASO B: EL PUESTO ESTÁ VACANTE (Lo dieron de baja en integrantes)
+                txtCoordinadorGru.Text = "SIN ASIGNAR (Requiere designación)";
+                txtCoordinadorGru.CssClass = "form-control bg-warning bg-opacity-10 text-danger fw-bold";
+
+                // Mostramos el botón para permitir nombrar uno nuevo
+                btnAgregarCoordinador.Visible = true;
+            }
+            // -----------------------------------------
 
             hfFotoActual.Value = g.strFoto_gru;
             hfArchivoActual.Value = g.strArchivo_gru;
@@ -754,8 +810,22 @@ namespace SistemaGestionCGI
                 string motivo = hfMotivoEstado.Value;
                 string usuario = Session["UsuarioLogueado"]?.ToString() ?? "Sistema";
 
-                var i = _manejador.ObtenerIntegrantePorId(idInt);
-                _manejador.CambiarEstadoIntegrante(idInt, !i.bitActivo_int, motivo, usuario);
+                var integrante = _manejador.ObtenerIntegrantePorId(idInt);
+
+                bool nuevoEstado = !integrante.bitActivo_int;
+
+                if (nuevoEstado == true && integrante.strFuncion_int == "INVESTIGADOR PRINCIPAL")
+                {
+                    var jefeActual = _manejador.ObtenerInvestigadorPrincipalActivo(integrante.fkId_gru);
+
+                    if (jefeActual != null && jefeActual.strId_int != integrante.strId_int)
+                    {
+                        Msg($"No se puede reactivar. Ya existe un Director activo: {jefeActual.strApellidos_int} {jefeActual.strNombres_int}. Primero debe dar de baja al actual.", "ww");
+                        return; 
+                    }
+                }
+
+                _manejador.CambiarEstadoIntegrante(idInt, nuevoEstado, motivo, usuario);
 
                 SetFlashMessage("Estado actualizado correctamente.", "ss");
                 Response.Redirect($"GruposInvestigacion.aspx?idGrupo={hfGrupoIdActual.Value}", false);
