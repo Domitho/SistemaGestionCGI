@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq; 
+using System.Linq;
 using SistemaGestionCGI.Models;
 using SistemaGestionCGI.Settings;
 
@@ -14,15 +14,23 @@ namespace SistemaGestionCGI.BLL
         // 1. GESTIÓN DE EJECUCIÓN
         // =============================================================
 
-        public List<InvgccEjecucionProyectos> ObtenerEjecuciones()
+        // MODIFICADO: Agregamos el parámetro opcional para el filtro
+        public List<InvgccEjecucionProyectos> ObtenerEjecuciones(string cedulaUsuario = null)
         {
             string sql = @"
                 SELECT E.*, 
                        P.strTema_pro as TituloProyecto,
                        (SELECT COUNT(*) FROM INVGCCEJECUCION_INFORMES I WHERE I.fkId_ejec = E.strId_ejec) as CantidadInformes
                 FROM INVGCCEJECUCION_PROYECTO E
-                INNER JOIN INVGCCINSCRIPCION_PROYECTOS P ON E.fkId_pro = P.strId_pro
-                ORDER BY E.strId_ejec DESC";
+                INNER JOIN INVGCCINSCRIPCION_PROYECTOS P ON E.fkId_pro = P.strId_pro ";
+
+            // AGREGADO: Lógica de filtro para Coordinadores
+            if (!string.IsNullOrEmpty(cedulaUsuario))
+            {
+                sql += $" WHERE E.strCedulaCoordinador_ejec = '{cedulaUsuario}' ";
+            }
+
+            sql += " ORDER BY E.strId_ejec DESC";
 
             return _dal.SelectSql<InvgccEjecucionProyectos>(sql);
         }
@@ -41,11 +49,28 @@ namespace SistemaGestionCGI.BLL
 
         public void GuardarEjecucion(InvgccEjecucionProyectos obj)
         {
+            // MODIFICADO: ESTO ARREGLA EL ERROR DEL JSON EN LA BASE DE DATOS
+            // Usamos una clase auxiliar para extraer el texto limpio
+            string sqlInfo = $"SELECT strCedulaCoordinador_pro FROM INVGCCINSCRIPCION_PROYECTOS WHERE strId_pro = '{obj.fkId_pro}'";
+
+            var listaTemp = _dal.SelectSql<DtoCedulaTemp>(sqlInfo);
+            string cedulaHeredada = "";
+
+            if (listaTemp != null && listaTemp.Count > 0)
+            {
+                cedulaHeredada = listaTemp[0].strCedulaCoordinador_pro;
+            }
+
+            string cedulaSql = string.IsNullOrEmpty(cedulaHeredada) ? "NULL" : $"'{cedulaHeredada}'";
+
+            // Insertamos (Asegúrate de haber ejecutado el script SQL para ampliar columnas)
             string sql = $@"
                 INSERT INTO INVGCCEJECUCION_PROYECTO 
-                (fkId_pro, strCoordinador_ejec, strPeriodo_ejec, dtFechaini_ejec, dtFechafin_ejec, strInforme_ejec, strEstado_ejec)
+                (fkId_pro, strCoordinador_ejec, strCedulaCoordinador_ejec, 
+                 strPeriodo_ejec, dtFechaini_ejec, dtFechafin_ejec, strInforme_ejec, strEstado_ejec)
                 VALUES 
-                ('{obj.fkId_pro}', '{obj.strCoordinador_ejec}', '{obj.strPeriodo_ejec}', '{obj.dtFechaini_ejec:yyyy-MM-dd}', NULL, '{obj.strInforme_ejec}', 'En Ejecución')";
+                ('{obj.fkId_pro}', '{obj.strCoordinador_ejec}', {cedulaSql}, 
+                 '{obj.strPeriodo_ejec}', '{obj.dtFechaini_ejec:yyyy-MM-dd}', NULL, '{obj.strInforme_ejec}', 'En Ejecución')";
 
             _dal.UpdateSql(sql);
         }
@@ -58,7 +83,6 @@ namespace SistemaGestionCGI.BLL
                     strPeriodo_ejec = '{obj.strPeriodo_ejec}',
                     dtFechaini_ejec = '{obj.dtFechaini_ejec:yyyy-MM-dd}',
                     strInforme_ejec = '{obj.strInforme_ejec}'
-                    -- Quitamos dtFechafin_ejec para que no sea editable manualmente
                 WHERE strId_ejec = {obj.strId_ejec}";
 
             _dal.UpdateSql(sql);
@@ -72,7 +96,7 @@ namespace SistemaGestionCGI.BLL
         }
 
         // =============================================================
-        // 2. GESTIÓN DE MIEMBROS
+        // 2. GESTIÓN DE MIEMBROS (TU CÓDIGO ORIGINAL SE MANTIENE IGUAL)
         // =============================================================
 
         public List<InvgccEjecucionMiembros> ObtenerMiembros(int idEjecucion)
@@ -87,7 +111,6 @@ namespace SistemaGestionCGI.BLL
 
         public void GuardarMiembro(InvgccEjecucionMiembros m)
         {
-            // SE AGREGARON: strCorreo_miembro, strCarrera_miembro, strTipo_miembro, strEntidad_miembro y dtFechaInicio_miembro
             string sql = $@"
                 INSERT INTO INVGCCEJECUCION_MIEMBROS 
                 (fkId_ejec, strCedula_miembro, strNombres_miembro, strApellidos_miembro, 
@@ -128,8 +151,37 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sql);
         }
 
+        public dynamic BuscarDocentePorCedula(string cedula)
+        {
+            // Validar entrada
+            if (string.IsNullOrEmpty(cedula)) return null;
+
+            // Consulta SQL a la tabla de docentes
+            string sql = string.Format(@"
+                SELECT TOP 1 
+                    strNombres_doc,  
+                    strApellidos_doc, 
+                    strCarrera_doc, 
+                    strFacultad_doc,
+                    strCedula_doc
+                FROM INVGCCCATEGORIZACION_DOCENTES 
+                WHERE strCedula_doc = '{0}' AND bitActivo_doc = 1", cedula);
+
+            // Ejecutar consulta usando tu DAL
+            // Usamos dynamic para no obligarte a crear una clase DTO extra si solo es para leer
+            var resultados = _dal.SelectSql<dynamic>(sql);
+
+            // Si hay resultados, retornamos el primero
+            if (resultados != null && resultados.Count > 0)
+            {
+                return resultados[0];
+            }
+
+            return null;
+        }
+
         // =============================================================
-        // 3. GESTIÓN DE INFORMES
+        // 3. GESTIÓN DE INFORMES (TU CÓDIGO ORIGINAL SE MANTIENE IGUAL)
         // =============================================================
 
         public List<InvgccEjecucionInformes> ObtenerInformes(int idEjecucion)
@@ -190,8 +242,6 @@ namespace SistemaGestionCGI.BLL
 
         public void SubirInformeCierre(int idEjecucion, string rutaArchivo, string usuario)
         {
-            string fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-
             string sql = $@"
                 UPDATE INVGCCEJECUCION_PROYECTO 
                 SET strInforme_Cierre = '{rutaArchivo}',
@@ -199,7 +249,6 @@ namespace SistemaGestionCGI.BLL
                 WHERE strId_ejec = {idEjecucion}";
 
             _dal.UpdateSql(sql);
-
         }
 
         public void SubirInformeFinal(int idEjecucion, string rutaArchivo, string usuario)
@@ -224,58 +273,13 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sql);
         }
 
-
-        // Versión simplificada solo para corregir el error de compilación
-        protected void txtDocCedula_TextChanged(object sender, EventArgs e)
-        {
-            // Aquí iría la lógica de búsqueda. 
-            // Por ahora lo dejamos vacío o con un comentario para que el sistema compile.
-        }
-
-        // Agrega esto dentro de la clase ManejadorEjecucionProyectos
-
-        public dynamic BuscarDocentePorCedula(string cedula)
-        {
-            // Validar entrada
-            if (string.IsNullOrEmpty(cedula)) return null;
-
-            // Consulta SQL a la tabla de docentes
-            // Usamos TOP 1 para traer solo un registro
-            string sql = string.Format(@"
-        SELECT TOP 1 
-            strNombres_doc, 
-            strApellidos_doc, 
-            strCarrera_doc, 
-            strFacultad_doc,
-            strCedula_doc
-        FROM INVGCCCATEGORIZACION_DOCENTES 
-        WHERE strCedula_doc = '{0}' AND bitActivo_doc = 1", cedula);
-
-            // Ejecutar consulta usando tu DAL (Capa de Datos)
-            // Asumo que tu DAL devuelve una lista de objetos dinámicos
-            var resultados = _dal.SelectSql<dynamic>(sql);
-
-            // Si hay resultados, retornamos el primero
-            if (resultados != null && resultados.Count > 0)
-            {
-                return resultados[0];
-            }
-
-            // Si no encuentra nada
-            return null;
-        }
-
         // =============================================================
-        // 4. GESTIÓN DE AUDITORÍA Y ESTADOS
+        // 4. GESTIÓN DE AUDITORÍA Y ESTADOS (TU CÓDIGO ORIGINAL SE MANTIENE IGUAL)
         // =============================================================
 
         public void CambiarEstadoMiembro(int idMiembro, bool nuevoEstado, string motivo, string usuario)
         {
             int bit = nuevoEstado ? 1 : 0;
-
-            // LÓGICA DE FECHA FIN:
-            // Si nuevoEstado es TRUE (Activo) -> Fecha Fin es NULL
-            // Si nuevoEstado es FALSE (Inactivo) -> Fecha Fin es AHORA
             string fechaFinSql = nuevoEstado ? "NULL" : $"'{DateTime.Now:yyyy-MM-dd HH:mm:ss}'";
 
             string sqlUpdate = $@"
@@ -286,7 +290,6 @@ namespace SistemaGestionCGI.BLL
 
             _dal.UpdateSql(sqlUpdate);
 
-            // Registro en Historial
             string accion = nuevoEstado ? "REACTIVACIÓN" : "BAJA TEMPORAL/DEFINITIVA";
             RegistrarHistorialMiembro(idMiembro, accion, motivo, usuario);
         }
@@ -312,7 +315,7 @@ namespace SistemaGestionCGI.BLL
         }
 
         // =============================================================
-        // 5. UTILIDADES
+        // 5. UTILIDADES (TU CÓDIGO ORIGINAL SE MANTIENE IGUAL)
         // =============================================================
 
         public List<InvgccInscripcionProyectos> ObtenerProyectosAprobadosSinEjecucion()
@@ -325,7 +328,6 @@ namespace SistemaGestionCGI.BLL
 
             return _dal.SelectSql<InvgccInscripcionProyectos>(sql);
         }
-
 
         public void GuardarCiclo(DateTime fechaInicio, DateTime fechaFin)
         {
@@ -341,10 +343,13 @@ namespace SistemaGestionCGI.BLL
         public List<dynamic> ObtenerCiclos()
         {
             string sql = "SELECT id_ciclo, strNombre_ciclo FROM INVGCCEJECUCION_PROYECTO_CICLOS ORDER BY dtInicio_ciclo DESC";
-
-            // Usamos _dal para mantener consistencia
             return _dal.SelectSql<dynamic>(sql);
         }
+    }
 
+    // AGREGADO: Clase auxiliar para leer la cédula limpia
+    public class DtoCedulaTemp
+    {
+        public string strCedulaCoordinador_pro { get; set; }
     }
 }

@@ -20,6 +20,9 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("Role")]
         public string strRol_usu { get; set; }
 
+        [JsonProperty("strCedula_ref")]
+        public string strCedula_ref { get; set; }
+
         [JsonProperty("IsActive")]
         public bool bActivo_usu { get; set; }
     }

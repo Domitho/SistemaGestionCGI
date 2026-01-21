@@ -123,6 +123,24 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.DropDownList ddlRol;
 
         /// <summary>
+        /// Control pnlSeleccionCoordinador.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlSeleccionCoordinador;
+
+        /// <summary>
+        /// Control ddlCandidatos.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlCandidatos;
+
+        /// <summary>
         /// Control chkActivo.
         /// </summary>
         /// <remarks>

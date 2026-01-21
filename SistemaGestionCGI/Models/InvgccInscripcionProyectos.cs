@@ -44,6 +44,9 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("fkId_coordinador")]
         public string fkId_coordinador { get; set; }
 
+        [JsonProperty("strCedulaCoordinador_pro")]
+        public string strCedulaCoordinador_pro { get; set; }
+
         [JsonProperty("NombreCoordinadorCompleto")]
         public string NombreCoordinadorCompleto { get; set; }
     }

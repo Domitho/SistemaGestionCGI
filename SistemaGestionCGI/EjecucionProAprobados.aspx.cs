@@ -17,6 +17,7 @@ namespace SistemaGestionCGI
         private readonly ManejadorInscripcionProyectos _manejadorProyectos = new ManejadorInscripcionProyectos();
         private const string RUTA_VIRTUAL_ARCHIVOS = "~/RepositorioUTC/EjecucionInformes/";
         private bool EsAdmin => Session["RolUsuario"]?.ToString() == "ADMINISTRADOR";
+        private string CedulaUsuario => Session["CedulaUsuario"]?.ToString() ?? "";
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -62,10 +63,26 @@ namespace SistemaGestionCGI
         {
             try
             {
-                rptEjecucion.DataSource = _manejador.ObtenerEjecuciones();
+                if (EsAdmin)
+                {
+                    rptEjecucion.DataSource = _manejador.ObtenerEjecuciones(null);
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(CedulaUsuario))
+                    {
+                        Msg("Error de seguridad: No se detectó su cédula en la sesión.", "ee");
+                        return;
+                    }
+                    rptEjecucion.DataSource = _manejador.ObtenerEjecuciones(CedulaUsuario);
+                }
+
                 rptEjecucion.DataBind();
             }
-            catch (Exception ex) { Msg("Error al cargar ejecuciones: " + ex.Message, "ee"); }
+            catch (Exception ex)
+            {
+                Msg("Error al cargar ejecuciones: " + ex.Message, "ee");
+            }
         }
 
         private void CargarProyectosAprobados()
@@ -180,7 +197,7 @@ namespace SistemaGestionCGI
                     hfIdEjecucionInforme.Value = id.ToString();
                     CargarInformes(id);
 
-                    ConfigurarPermisosModalInformes(); 
+                    ConfigurarPermisosModalInformes();
                     BloquearGestionInformes(id);
 
                     if (Session["RolUsuario"]?.ToString() == "ADMINISTRADOR")
@@ -384,7 +401,7 @@ namespace SistemaGestionCGI
                         Msg("Debe especificar la Entidad para miembros externos.", "ww");
                         return;
                     }
-                    facultad = "EXTERNO"; 
+                    facultad = "EXTERNO";
                 }
                 else
                 {
@@ -675,11 +692,11 @@ namespace SistemaGestionCGI
 
                 if (estado == "CIERRE APROBADO" || estado == "FINALIZADO")
                 {
-                    pnlCierreBloqueado.Visible = true;      
-                    divAlertaCierre.Visible = false;   
-                    pnlCargaCierre.Visible = false;         
-                    btnGuardarCierre.Visible = false; 
-                    btnAprobarCierre.Visible = false;   
+                    pnlCierreBloqueado.Visible = true;
+                    divAlertaCierre.Visible = false;
+                    pnlCargaCierre.Visible = false;
+                    btnGuardarCierre.Visible = false;
+                    btnAprobarCierre.Visible = false;
 
                     // Mostrar archivo para descargar
                     pnlArchivoCierreActual.Visible = true;
@@ -803,8 +820,8 @@ namespace SistemaGestionCGI
 
                 if (estado == "FINALIZADO")
                 {
-                    pnlCargaFinal.Visible = false;  
-                    btnGuardarFinal.Visible = false; 
+                    pnlCargaFinal.Visible = false;
+                    btnGuardarFinal.Visible = false;
 
                     if (tieneArchivo)
                     {
@@ -870,7 +887,7 @@ namespace SistemaGestionCGI
             {
                 btnInformeFinal.CssClass = "btn btn-white border shadow-sm p-3 text-start hover-lift";
                 btnInformeFinal.Enabled = true;
-                btnInformeFinal.Attributes.Remove("title"); 
+                btnInformeFinal.Attributes.Remove("title");
             }
             else
             {
@@ -896,8 +913,8 @@ namespace SistemaGestionCGI
 
             if (proyecto.strEstado_ejec == "FINALIZADO")
             {
-                btnAbrirGenerador.Visible = false;   
-                btnSubirEscaneado.Visible = false;   
+                btnAbrirGenerador.Visible = false;
+                btnSubirEscaneado.Visible = false;
 
                 foreach (RepeaterItem item in rptInformes.Items)
                 {
@@ -905,7 +922,7 @@ namespace SistemaGestionCGI
                     var btnDel = item.FindControl("btnEliminarInf") as LinkButton;
 
                     if (btnEdit != null) btnEdit.Visible = false;
-                    if (btnDel != null) btnDel.Visible = false;       
+                    if (btnDel != null) btnDel.Visible = false;
                 }
             }
             else
@@ -922,7 +939,7 @@ namespace SistemaGestionCGI
             {
                 if (string.IsNullOrWhiteSpace(periodoTexto) || !periodoTexto.Contains("-")) return null;
 
-                string parteFinal = periodoTexto.Split('-')[1].Trim(); 
+                string parteFinal = periodoTexto.Split('-')[1].Trim();
                 string[] partes = parteFinal.Split(' ');
 
                 if (partes.Length < 2) return null;
@@ -1017,8 +1034,8 @@ namespace SistemaGestionCGI
             sb.Append($"<span class='meta-label'>Fecha Emisión</span>");
             sb.Append($"<span class='meta-value'>{DateTime.Now:dd/MM/yyyy}</span>");
             sb.Append("</div>");
-            sb.Append("</div>"); 
-            sb.Append("</div>"); 
+            sb.Append("</div>");
+            sb.Append("</div>");
 
             sb.Append("<div class='mt-5'></div>");
 
@@ -1054,12 +1071,12 @@ namespace SistemaGestionCGI
             sb.Append("<div class='card-item'>");
             sb.Append("<span class='label'>ESTADO ACTUAL</span>");
             string estado = miembro.bitActivo_miembro ? "ACTIVO" : "INACTIVO";
-            string colorEstado = miembro.bitActivo_miembro ? "#198754" : "#dc3545"; 
+            string colorEstado = miembro.bitActivo_miembro ? "#198754" : "#dc3545";
             sb.Append($"<span class='value' style='color:{colorEstado}'>{estado}</span>");
             sb.Append("</div>");
             sb.Append("</div>");
 
-            sb.Append("</div>"); 
+            sb.Append("</div>");
 
             // 5. TIMELINE (LÍNEA DE TIEMPO)
             sb.Append("<div class='timeline-container'>");
@@ -1093,8 +1110,8 @@ namespace SistemaGestionCGI
                     // Firma Usuario
                     sb.Append($"<div class='user-signature'><i class='fa-solid fa-user-check'></i> Procesado por: {h.strUsuario}</div>");
 
-                    sb.Append("</div>"); 
-                    sb.Append("</div>"); 
+                    sb.Append("</div>");
+                    sb.Append("</div>");
                     sb.Append("</li>");
                 }
             }
@@ -1104,7 +1121,7 @@ namespace SistemaGestionCGI
             }
 
             sb.Append("</ul>");
-            sb.Append("</div>"); 
+            sb.Append("</div>");
 
             // 6. FOOTER LEGAL
             sb.Append("<div class='report-legal-footer'>");
@@ -1131,7 +1148,7 @@ namespace SistemaGestionCGI
         {
             if (int.TryParse(hfIdEjecucionInforme.Value, out int id))
             {
-                CargarInformes(id); 
+                CargarInformes(id);
                 Msg("Documento generado y guardado correctamente.", "ss");
             }
         }

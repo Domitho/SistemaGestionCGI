@@ -20,6 +20,7 @@ namespace SistemaGestionCGI.BLL
                 SELECT P.strId_pro, P.strTema_pro, 
                        P.fkId_coordinador, 
                        P.strCoordinador_pro, 
+                       P.strCedulaCoordinador_pro,
 
                        ISNULL(
                            (I.strApellidos_int + ' ' + I.strNombres_int + ' (' + I.strFuncion_int + ')'), 
@@ -42,7 +43,7 @@ namespace SistemaGestionCGI.BLL
         {
             string sql = $"SELECT * FROM INVGCCINSCRIPCION_PROYECTOS WHERE strId_pro = '{id}'";
             var lista = _dal.SelectSql<InvgccInscripcionProyectos>(sql);
-            return lista?.FirstOrDefault(); // Optimización con LINQ
+            return lista?.FirstOrDefault(); 
         }
 
         // =============================================================
@@ -56,19 +57,21 @@ namespace SistemaGestionCGI.BLL
             pro.strEstado_pro = "Pendiente";
 
             string puntajeSql = pro.intPuntaje_pro.HasValue ? pro.intPuntaje_pro.Value.ToString() : "NULL";
-
             string coordinadorSql = string.IsNullOrEmpty(pro.fkId_coordinador) ? "NULL" : $"'{pro.fkId_coordinador}'";
+
+            string cedula = ObtenerCedulaPorId(pro.fkId_coordinador);
+            string cedulaSql = string.IsNullOrEmpty(cedula) ? "NULL" : $"'{cedula}'";
 
             string sql = $@"
                 INSERT INTO INVGCCINSCRIPCION_PROYECTOS 
                 (strId_pro, strTema_pro, strCoordinador_pro, strDuracion_pro, 
                     dtFehains_pro, fkId_gru, fkId_conv, strArchivo_pro, strEstado_pro, intPuntaje_pro, 
-                    fkId_coordinador) -- <--- Asegúrate de incluir la columna nueva aquí
+                    fkId_coordinador, strCedulaCoordinador_pro) -- <--- CAMPO AGREGADO
                 VALUES 
                 ('{pro.strId_pro}', '{pro.strTema_pro}', '{pro.strCoordinador_pro}',
                     '{pro.strDuracion_pro}', '{pro.dtFehains_pro:yyyy-MM-dd}', '{pro.fkId_gru}', '{pro.fkId_conv}', 
                     '{pro.strArchivo_pro}', '{pro.strEstado_pro}', {puntajeSql}, 
-                    {coordinadorSql})"; 
+                    {coordinadorSql}, {cedulaSql})";
 
             _dal.UpdateSql(sql);
         }
@@ -78,11 +81,15 @@ namespace SistemaGestionCGI.BLL
             string puntajeSql = pro.intPuntaje_pro.HasValue ? pro.intPuntaje_pro.Value.ToString() : "NULL";
             string coordinadorSql = string.IsNullOrEmpty(pro.fkId_coordinador) ? "NULL" : $"'{pro.fkId_coordinador}'";
 
+            string cedula = ObtenerCedulaPorId(pro.fkId_coordinador);
+            string cedulaSql = string.IsNullOrEmpty(cedula) ? "NULL" : $"'{cedula}'";
+
             string sql = $@"
                 UPDATE INVGCCINSCRIPCION_PROYECTOS SET 
                     strTema_pro = '{pro.strTema_pro}',
                     strCoordinador_pro = '{pro.strCoordinador_pro}',
                     fkId_coordinador = {coordinadorSql}, 
+                    strCedulaCoordinador_pro = {cedulaSql}, -- <--- ACTUALIZAMOS CÉDULA TAMBIÉN
                     strDuracion_pro = '{pro.strDuracion_pro}',
                     dtFehains_pro = '{pro.dtFehains_pro:yyyy-MM-dd}',
                     fkId_gru = '{pro.fkId_gru}',
@@ -151,6 +158,22 @@ namespace SistemaGestionCGI.BLL
         // =============================================================
         // MÉTODOS AUXILIARES
         // =============================================================
+
+        private string ObtenerCedulaPorId(string idIntegrante)
+        {
+            if (string.IsNullOrEmpty(idIntegrante)) return null;
+
+            string sql = $"SELECT strCedula_int FROM INVGCCGRUPO_INTEGRANTES WHERE strId_int = '{idIntegrante}'";
+
+            var resultado = _dal.SelectSql<dynamic>(sql);
+
+            if (resultado != null && resultado.Count > 0)
+            {
+                try { return ((dynamic)resultado[0]).strCedula_int; }
+                catch { return null; }
+            }
+            return null;
+        }
 
         public string GuardarIntegranteExpress(InvgccGrupoIntegrantes intg)
         {

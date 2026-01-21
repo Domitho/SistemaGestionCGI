@@ -17,6 +17,10 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("strCoordinador_ejec")]
         public string strCoordinador_ejec { get; set; }
 
+        [JsonProperty("strCedulaCoordinador_ejec")]
+        public string strCedulaCoordinador_ejec { get; set; }
+
+
         [JsonProperty("strPeriodo_ejec")]
         public string strPeriodo_ejec { get; set; }
 
