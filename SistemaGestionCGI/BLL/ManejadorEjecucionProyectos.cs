@@ -14,7 +14,6 @@ namespace SistemaGestionCGI.BLL
         // 1. GESTIÓN DE EJECUCIÓN
         // =============================================================
 
-        // MODIFICADO: Agregamos el parámetro opcional para el filtro
         public List<InvgccEjecucionProyectos> ObtenerEjecuciones(string cedulaUsuario = null)
         {
             string sql = @"
@@ -24,7 +23,6 @@ namespace SistemaGestionCGI.BLL
                 FROM INVGCCEJECUCION_PROYECTO E
                 INNER JOIN INVGCCINSCRIPCION_PROYECTOS P ON E.fkId_pro = P.strId_pro ";
 
-            // AGREGADO: Lógica de filtro para Coordinadores
             if (!string.IsNullOrEmpty(cedulaUsuario))
             {
                 sql += $" WHERE E.strCedulaCoordinador_ejec = '{cedulaUsuario}' ";
@@ -49,8 +47,6 @@ namespace SistemaGestionCGI.BLL
 
         public void GuardarEjecucion(InvgccEjecucionProyectos obj)
         {
-            // MODIFICADO: ESTO ARREGLA EL ERROR DEL JSON EN LA BASE DE DATOS
-            // Usamos una clase auxiliar para extraer el texto limpio
             string sqlInfo = $"SELECT strCedulaCoordinador_pro FROM INVGCCINSCRIPCION_PROYECTOS WHERE strId_pro = '{obj.fkId_pro}'";
 
             var listaTemp = _dal.SelectSql<DtoCedulaTemp>(sqlInfo);
@@ -63,7 +59,6 @@ namespace SistemaGestionCGI.BLL
 
             string cedulaSql = string.IsNullOrEmpty(cedulaHeredada) ? "NULL" : $"'{cedulaHeredada}'";
 
-            // Insertamos (Asegúrate de haber ejecutado el script SQL para ampliar columnas)
             string sql = $@"
                 INSERT INTO INVGCCEJECUCION_PROYECTO 
                 (fkId_pro, strCoordinador_ejec, strCedulaCoordinador_ejec, 
@@ -96,7 +91,7 @@ namespace SistemaGestionCGI.BLL
         }
 
         // =============================================================
-        // 2. GESTIÓN DE MIEMBROS (TU CÓDIGO ORIGINAL SE MANTIENE IGUAL)
+        // 2. GESTIÓN DE MIEMBROS
         // =============================================================
 
         public List<InvgccEjecucionMiembros> ObtenerMiembros(int idEjecucion)
@@ -153,10 +148,8 @@ namespace SistemaGestionCGI.BLL
 
         public dynamic BuscarDocentePorCedula(string cedula)
         {
-            // Validar entrada
             if (string.IsNullOrEmpty(cedula)) return null;
 
-            // Consulta SQL a la tabla de docentes
             string sql = string.Format(@"
                 SELECT TOP 1 
                     strNombres_doc,  
@@ -167,11 +160,8 @@ namespace SistemaGestionCGI.BLL
                 FROM INVGCCCATEGORIZACION_DOCENTES 
                 WHERE strCedula_doc = '{0}' AND bitActivo_doc = 1", cedula);
 
-            // Ejecutar consulta usando tu DAL
-            // Usamos dynamic para no obligarte a crear una clase DTO extra si solo es para leer
             var resultados = _dal.SelectSql<dynamic>(sql);
 
-            // Si hay resultados, retornamos el primero
             if (resultados != null && resultados.Count > 0)
             {
                 return resultados[0];

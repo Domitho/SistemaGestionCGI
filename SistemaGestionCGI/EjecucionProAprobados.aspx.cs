@@ -17,42 +17,42 @@ namespace SistemaGestionCGI
         private readonly ManejadorInscripcionProyectos _manejadorProyectos = new ManejadorInscripcionProyectos();
         private const string RUTA_VIRTUAL_ARCHIVOS = "~/RepositorioUTC/EjecucionInformes/";
         private bool EsAdmin => Session["RolUsuario"]?.ToString() == "ADMINISTRADOR";
-        private string CedulaUsuario => Session["CedulaUsuario"]?.ToString() ?? "";
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (Session["UsuarioLogueado"] == null)
+            {
+                Response.Redirect("Login.aspx");
+                return;
+            }
+
+            if (!EsAdmin)
+            {
+                Response.Redirect("ProyectosAprobadosCoordinadores.aspx");
+                return;
+            }
+
             if (!IsPostBack)
             {
-                if (Session["UsuarioLogueado"] == null)
-                {
-                    Response.Redirect("Login.aspx");
-                    return;
-                }
-
-                AplicarSeguridadRoles();
-                CargarComboCiclos();
+                CargarCombosIniciales();
                 CargarGrillaEjecucion();
 
-                string idTeamRedirect = Request.QueryString["idTeam"];
-                if (!string.IsNullOrEmpty(idTeamRedirect) && int.TryParse(idTeamRedirect, out int idTeam))
+                if (Session["TempMsg"] != null)
                 {
-                    CargarEquipo(idTeam);
+                    Msg(Session["TempMsg"].ToString(), Session["TempTipo"].ToString());
+                    Session["TempMsg"] = null;
+                    Session["TempTipo"] = null;
                 }
             }
         }
 
-        private void AplicarSeguridadRoles()
+        private void CargarCombosIniciales()
         {
-            if (!EsAdmin)
-            {
-                btnNuevoEjecucion.Visible = false;
-                btnGestionarCiclos.Visible = false;
-            }
-            else
-            {
-                btnNuevoEjecucion.Visible = true;
-                btnGestionarCiclos.Visible = true;
-            }
+            ddlCiclo.DataSource = _manejador.ObtenerCiclos();
+            ddlCiclo.DataTextField = "strNombre_ciclo";
+            ddlCiclo.DataValueField = "id_ciclo";
+            ddlCiclo.DataBind();
+            ddlCiclo.Items.Insert(0, new ListItem("-- Seleccione Ciclo --", "0"));
         }
 
         // ==========================================
@@ -63,26 +63,10 @@ namespace SistemaGestionCGI
         {
             try
             {
-                if (EsAdmin)
-                {
-                    rptEjecucion.DataSource = _manejador.ObtenerEjecuciones(null);
-                }
-                else
-                {
-                    if (string.IsNullOrEmpty(CedulaUsuario))
-                    {
-                        Msg("Error de seguridad: No se detectó su cédula en la sesión.", "ee");
-                        return;
-                    }
-                    rptEjecucion.DataSource = _manejador.ObtenerEjecuciones(CedulaUsuario);
-                }
-
+                rptEjecucion.DataSource = _manejador.ObtenerEjecuciones(null);
                 rptEjecucion.DataBind();
             }
-            catch (Exception ex)
-            {
-                Msg("Error al cargar ejecuciones: " + ex.Message, "ee");
-            }
+            catch (Exception ex) { Msg("Error al cargar datos: " + ex.Message, "ee"); }
         }
 
         private void CargarProyectosAprobados()
@@ -107,13 +91,14 @@ namespace SistemaGestionCGI
             btnNuevoEjecucion.Visible = false;
             btnRegresar.Visible = true;
 
-            CargarProyectosAprobados();
-            CargarComboCiclos();
+            ddlProyectosAprobados.DataSource = _manejador.ObtenerProyectosAprobadosSinEjecucion();
+            ddlProyectosAprobados.DataTextField = "strTema_pro";
+            ddlProyectosAprobados.DataValueField = "strId_pro";
+            ddlProyectosAprobados.DataBind();
+            ddlProyectosAprobados.Items.Insert(0, new ListItem("-- Seleccione --", ""));
 
             txtCoordinadorAdd.Text = "";
             txtFechaIniAdd.Text = DateTime.Now.ToString("yyyy-MM-dd");
-
-            if (ddlCiclo.Items.Count > 0) ddlCiclo.SelectedIndex = 0;
         }
 
         protected void ddlProyectosAprobados_SelectedIndexChanged(object sender, EventArgs e)
@@ -194,20 +179,7 @@ namespace SistemaGestionCGI
                     CargarEquipo(id);
                     break;
                 case "Informes":
-                    hfIdEjecucionInforme.Value = id.ToString();
                     CargarInformes(id);
-
-                    ConfigurarPermisosModalInformes();
-                    BloquearGestionInformes(id);
-
-                    if (Session["RolUsuario"]?.ToString() == "ADMINISTRADOR")
-                    {
-                        ConfigurarBotonesFaseFinal(id);
-                        ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalInf", "AbrirModalInformes();", true);
-                        break;
-                    }
-
-                    ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalInf", "AbrirModalInformes();", true);
                     break;
                 case "Eliminar":
                     try
@@ -224,31 +196,22 @@ namespace SistemaGestionCGI
         {
             if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
             {
+                dynamic data = e.Item.DataItem;
+                Literal lit = (Literal)e.Item.FindControl("litNotificacionPlazo");
+
                 var btnEditar = (LinkButton)e.Item.FindControl("btnEditar");
                 var btnEliminar = (LinkButton)e.Item.FindControl("btnEliminar");
                 var btnEquipo = (LinkButton)e.Item.FindControl("btnEquipo");
 
                 string estado = DataBinder.Eval(e.Item.DataItem, "strEstado_ejec")?.ToString().ToUpper().Trim() ?? "";
 
-                if (!EsAdmin)
+                if (estado == "FINALIZADO")
                 {
-                    if (btnEditar != null) btnEditar.Visible = false;
-                    if (btnEliminar != null) btnEliminar.Visible = false;
+                    var btnEdit = (LinkButton)e.Item.FindControl("btnEditar");
+                    var btnDel = (LinkButton)e.Item.FindControl("btnEliminar");
 
-                    if (btnEquipo != null) btnEquipo.Visible = true;
-                }
-                else if (estado == "FINALIZADO")
-                {
-                    if (btnEditar != null)
-                    {
-                        btnEditar.Enabled = false;
-                        btnEditar.CssClass += " btn-disabled-utc";
-                    }
-                    if (btnEliminar != null)
-                    {
-                        btnEliminar.Enabled = false;
-                        btnEliminar.CssClass += " btn-disabled-utc";
-                    }
+                    if (btnEdit != null) { btnEdit.Enabled = false; btnEdit.CssClass += " btn-disabled-utc"; }
+                    if (btnDel != null) { btnDel.Enabled = false; btnDel.CssClass += " btn-disabled-utc"; }
                 }
             }
         }
@@ -595,8 +558,23 @@ namespace SistemaGestionCGI
 
         private void CargarInformes(int idEjecucion)
         {
-            rptInformes.DataSource = _manejador.ObtenerInformes(idEjecucion);
-            rptInformes.DataBind();
+            try
+            {
+                hfIdEjecucionInforme.Value = idEjecucion.ToString();
+
+                rptInformes.DataSource = _manejador.ObtenerInformes(idEjecucion);
+                rptInformes.DataBind();
+
+                ConfigurarBotonesFaseFinal(idEjecucion);
+                BloquearGestionInformes(idEjecucion);
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalInf",
+                    "var m = new bootstrap.Modal(document.getElementById('modalInformes')); m.show();", true);
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al cargar el repositorio: " + ex.Message, "ee");
+            }
         }
 
         protected void rptInformes_ItemCommand(object source, RepeaterCommandEventArgs e)
@@ -1159,23 +1137,10 @@ namespace SistemaGestionCGI
 
         private void ConfigurarPermisosModalInformes()
         {
-            string rol = Session["RolUsuario"]?.ToString() ?? "";
-
-            if (rol == "COORDINADOR")
-            {
-                tituloEtapaFinal.Visible = false;
-                divContenedorBotonesFinales.Visible = false;
-
-                btnInformeCierre.Visible = false;
-                btnInformeFinal.Visible = false;
-            }
-            else
-            {
-                tituloEtapaFinal.Visible = true;
-                divContenedorBotonesFinales.Visible = true;
-                btnInformeCierre.Visible = true;
-                btnInformeFinal.Visible = true;
-            }
+            tituloEtapaFinal.Visible = true;
+            divContenedorBotonesFinales.Visible = true;
+            btnInformeCierre.Visible = true;
+            btnInformeFinal.Visible = true;
         }
 
         private string GuardarArchivoFisico(FileUpload control, string nombreArchivo)

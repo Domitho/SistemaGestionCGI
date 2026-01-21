@@ -152,9 +152,12 @@
                                         <i class="fa-solid fa-users-gear"></i>
                                     </asp:LinkButton>
 
-                                    <asp:LinkButton ID="btnInformes" runat="server" CommandName="Informes" CommandArgument='<%# Eval("strId_ejec") %>'
-                                        CssClass="btn btn-success btn-sm rounded-circle me-1" ToolTip="Subir Informes/Avances">
-                                        <i class="fa-solid fa-folder-open"></i>
+                                    <asp:LinkButton ID="btnInformes" runat="server" 
+                                        CommandName="Informes" 
+                                        CommandArgument='<%# Eval("strId_ejec") %>'
+                                        CssClass="btn btn-success btn-sm rounded-circle me-1" 
+                                        ToolTip="Subir Informes/Avances"
+                                        CausesValidation="false"> <i class="fa-solid fa-folder-open"></i>
                                     </asp:LinkButton>
 
                                     <asp:LinkButton ID="btnEliminar" runat="server" 

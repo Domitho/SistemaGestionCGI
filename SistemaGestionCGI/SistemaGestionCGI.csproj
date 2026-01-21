@@ -144,6 +144,7 @@
     <Content Include="Content\bootstrap-theme.min.css.map" />
     <Content Include="Content\bootstrap-theme.css.map" />
     <Content Include="img\default-user.png" />
+    <Content Include="ProyectosAprobadosCoordinadores.aspx" />
     <Content Include="public\captcha.ashx" />
     <Content Include="public\Web.config" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
@@ -321,6 +322,13 @@
     <Compile Include="Models\InvgccMetricas.cs" />
     <Compile Include="Models\InvgccUsuario.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ProyectosAprobadosCoordinadores.aspx.cs">
+      <DependentUpon>ProyectosAprobadosCoordinadores.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ProyectosAprobadosCoordinadores.aspx.designer.cs">
+      <DependentUpon>ProyectosAprobadosCoordinadores.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Settings\ConnectionSqlServer.cs" />
     <Compile Include="Site.Master.cs">
       <DependentUpon>Site.Master</DependentUpon>
