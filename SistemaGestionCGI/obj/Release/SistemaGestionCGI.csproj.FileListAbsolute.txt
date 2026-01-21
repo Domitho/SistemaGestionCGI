@@ -145,7 +145,6 @@ C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\bin\M
 C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.xml
 C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\bin\es\System.Web.Optimization.resources.dll
 C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\bin\es\Microsoft.AspNet.FriendlyUrls.resources.dll
-C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\obj\Release\SistemaGestionCGI.csproj.AssemblyReference.cache
 C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\obj\Release\SistemaGestionCGI.csproj.CoreCompileInputs.cache
 C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\obj\Release\SistemaGestionCGI.csproj.CopyComplete
 C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\obj\Release\SistemaGestionCGI.dll

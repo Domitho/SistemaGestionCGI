@@ -5,7 +5,7 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <_PublishTargetUrl>C:\Users\Lenovo ideapad G\Desktop\Sistema_Deploy_2</_PublishTargetUrl>
-    <History>True|2026-01-19T12:54:38.4177716Z;True|2026-01-19T07:31:34.0960455-05:00;</History>
+    <History>True|2026-01-19T12:56:22.8111550Z;True|2026-01-19T07:54:38.4177716-05:00;True|2026-01-19T07:31:34.0960455-05:00;</History>
   </PropertyGroup>
   <ItemGroup>
     <File Include="About.aspx">
@@ -198,10 +198,10 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
       <publishTime>01/17/2026 11:16:58</publishTime>
     </File>
     <File Include="bin/SistemaGestionCGI.dll">
-      <publishTime>01/19/2026 07:54:25</publishTime>
+      <publishTime>01/19/2026 07:56:16</publishTime>
     </File>
     <File Include="bin/SistemaGestionCGI.pdb">
-      <publishTime>01/19/2026 07:54:25</publishTime>
+      <publishTime>01/19/2026 07:56:16</publishTime>
     </File>
     <File Include="bin/System.Web.Optimization.dll">
       <publishTime>01/17/2026 11:16:58</publishTime>
@@ -450,7 +450,7 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
       <publishTime>01/17/2026 11:16:58</publishTime>
     </File>
     <File Include="Web.config">
-      <publishTime>01/19/2026 07:54:37</publishTime>
+      <publishTime>01/19/2026 07:56:22</publishTime>
     </File>
   </ItemGroup>
 </Project>
