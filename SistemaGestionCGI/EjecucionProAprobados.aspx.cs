@@ -1201,7 +1201,6 @@ namespace SistemaGestionCGI
 
         private string ObtenerCorreoCoordinador(int idEjecucion)
         {
-            var proy = _manejador.ObtenerEjecucionPorId(idEjecucion);
             return _manejador.ObtenerEmailCoordinador(idEjecucion);
         }
 
@@ -1212,9 +1211,9 @@ namespace SistemaGestionCGI
                 var proy = _manejador.ObtenerEjecucionPorId(idEjecucion);
                 string emailDestino = ObtenerCorreoCoordinador(idEjecucion);
 
-                if (string.IsNullOrEmpty(emailDestino))
+                if (string.IsNullOrWhiteSpace(emailDestino))
                 {
-                    Msg("El coordinador no tiene un correo registrado.", "ww");
+                    Msg("El coordinador no tiene un correo registrado en la base de datos de Integrantes.", "ww");
                     return;
                 }
 
@@ -1223,6 +1222,7 @@ namespace SistemaGestionCGI
             <p>Se ha detectado que el proyecto <em>""{proy.TituloProyecto}""</em> presenta retrasos en la entrega de evidencias o informes de avance.</p>
             <p style='color: #d9534f; font-weight: bold;'>Por favor, acceda al sistema y regularice su documentación lo antes posible.</p>";
 
+                // Aquí capturamos el resultado del EmailService
                 bool enviado = SistemaGestionCGI.Utilidades.EmailService.EnviarCorreo(
                     emailDestino,
                     "ALERTA UTC: Recordatorio de Informes Pendientes",
@@ -1231,13 +1231,15 @@ namespace SistemaGestionCGI
                 );
 
                 if (enviado)
-                    Msg("Recordatorio enviado correctamente.", "ss");
+                    Msg("Recordatorio enviado correctamente a: " + emailDestino, "ss");
                 else
-                    Msg("No se pudo enviar el correo. Verifique la configuración.", "ee");
+                    // Si el EmailService devolvió false, es un problema de Gmail/Web.config
+                    Msg("Error SMTP: No se pudo conectar con el servidor de correo. Revise el Web.config.", "ee");
             }
             catch (Exception ex)
             {
-                Msg("Error al notificar: " + ex.Message, "ee");
+                // Esto captura errores de código (ej: nulos o formato)
+                Msg("Error al procesar la notificación: " + ex.Message, "ee");
             }
         }
 

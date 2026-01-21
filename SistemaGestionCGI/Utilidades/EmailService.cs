@@ -60,13 +60,13 @@ namespace SistemaGestionCGI.Utilidades
                 // 4. CONFIGURAR EL CLIENTE SMTP
                 using (SmtpClient smtp = new SmtpClient(host, port))
                 {
-                    // IMPORTANTE: El orden de estas propiedades es crítico para evitar Authentication Failed
-                    smtp.UseDefaultCredentials = false;
-                    smtp.Credentials = new NetworkCredential(user, pass);
-                    smtp.EnableSsl = ssl;
-                    smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
-                    smtp.Timeout = 20000; // 20 segundos de espera
+                    smtp.UseDefaultCredentials = false; // 1. Primero resetear credenciales
+                    smtp.Credentials = new NetworkCredential(user, pass); // 2. Asignar las tuyas
 
+                    smtp.EnableSsl = true;
+
+                    smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+                    smtp.TargetName = "STARTTLS/smtp.gmail.com"; // Ayuda a negociar la seguridad
                     smtp.Send(mail);
                 }
 
