@@ -335,6 +335,35 @@ namespace SistemaGestionCGI.BLL
             string sql = "SELECT id_ciclo, strNombre_ciclo FROM INVGCCEJECUCION_PROYECTO_CICLOS ORDER BY dtInicio_ciclo DESC";
             return _dal.SelectSql<dynamic>(sql);
         }
+
+        public string ObtenerEmailCoordinador(int idEjecucion)
+        {
+            string sql = $@"
+                SELECT TOP 1 I.strCorreo_int 
+                FROM INVGCCEJECUCION_PROYECTO E
+                INNER JOIN INVGCCGRUPO_INTEGRANTES I ON E.strCedulaCoordinador_ejec = I.strCedula_int
+                WHERE E.strId_ejec = {idEjecucion} 
+                AND I.bitActivo_int = 1
+                ORDER BY I.strId_int DESC"; 
+
+            try
+            {
+                var resultado = _dal.SelectSql<dynamic>(sql);
+
+                if (resultado != null && resultado.Count > 0)
+                {
+                    var correo = resultado[0].strCorreo_int;
+                    return correo != null ? correo.ToString().Trim() : "";
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error en ObtenerEmailCoordinador: " + ex.Message);
+            }
+
+            return "";
+        }
+
     }
 
     // AGREGADO: Clase auxiliar para leer la cédula limpia

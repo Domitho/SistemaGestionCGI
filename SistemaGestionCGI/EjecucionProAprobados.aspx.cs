@@ -172,6 +172,9 @@ namespace SistemaGestionCGI
 
             switch (e.CommandName)
             {
+                case "Notificar":
+                    EnviarRecordatorio(id);
+                    break;
                 case "Editar":
                     CargarEdicion(id);
                     break;
@@ -773,6 +776,23 @@ namespace SistemaGestionCGI
 
                     _manejador.AprobarCierre(idEjec, usuario);
 
+                    string emailDestino = ObtenerCorreoCoordinador(idEjec);
+                    if (!string.IsNullOrEmpty(emailDestino))
+                    {
+                        string cuerpo = @"
+                    <p>Estimado Investigador,</p>
+                    <p>Le informamos que su <strong>Informe de Cierre ha sido APROBADO</strong> por la Dirección de Investigación.</p>
+                    <p>El sistema ha habilitado la opción para cargar su <strong>Informe Final</strong>. Por favor, proceda con este paso para culminar el proceso.</p>
+                    <a href='https://tudominio.utc.edu.ec/Login.aspx' style='background: #198754; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Ir al Sistema</a>";
+
+                        SistemaGestionCGI.Utilidades.EmailService.EnviarCorreo(
+                            emailDestino,
+                            "Notificación UTC: Informe de Cierre Aprobado",
+                            cuerpo,
+                            "ACTUALIZACIÓN DE ESTADO"
+                        );
+                    }
+
                     Msg("Documento APROBADO correctamente. Se ha habilitado la fase final.", "ss");
 
                     ScriptManager.RegisterStartupScript(this, GetType(), "CloseAllApprove",
@@ -820,7 +840,6 @@ namespace SistemaGestionCGI
             }
         }
 
-        // 2. Guardar Final
         protected void btnGuardarFinal_Click(object sender, EventArgs e)
         {
             try
@@ -1178,5 +1197,49 @@ namespace SistemaGestionCGI
 
             ScriptManager.RegisterStartupScript(this, GetType(), "alert", script, true);
         }
+
+
+        private string ObtenerCorreoCoordinador(int idEjecucion)
+        {
+            var proy = _manejador.ObtenerEjecucionPorId(idEjecucion);
+            return _manejador.ObtenerEmailCoordinador(idEjecucion);
+        }
+
+        private void EnviarRecordatorio(int idEjecucion)
+        {
+            try
+            {
+                var proy = _manejador.ObtenerEjecucionPorId(idEjecucion);
+                string emailDestino = ObtenerCorreoCoordinador(idEjecucion);
+
+                if (string.IsNullOrEmpty(emailDestino))
+                {
+                    Msg("El coordinador no tiene un correo registrado.", "ww");
+                    return;
+                }
+
+                string cuerpo = $@"
+            <p>Estimado/a <strong>{proy.strCoordinador_ejec}</strong>,</p>
+            <p>Se ha detectado que el proyecto <em>""{proy.TituloProyecto}""</em> presenta retrasos en la entrega de evidencias o informes de avance.</p>
+            <p style='color: #d9534f; font-weight: bold;'>Por favor, acceda al sistema y regularice su documentación lo antes posible.</p>";
+
+                bool enviado = SistemaGestionCGI.Utilidades.EmailService.EnviarCorreo(
+                    emailDestino,
+                    "ALERTA UTC: Recordatorio de Informes Pendientes",
+                    cuerpo,
+                    "RECORDATORIO DE AVANCE"
+                );
+
+                if (enviado)
+                    Msg("Recordatorio enviado correctamente.", "ss");
+                else
+                    Msg("No se pudo enviar el correo. Verifique la configuración.", "ee");
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al notificar: " + ex.Message, "ee");
+            }
+        }
+
     }
 }
