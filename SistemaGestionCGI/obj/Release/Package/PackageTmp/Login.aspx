@@ -31,7 +31,7 @@
             else if (type === 'ss' || type === 'success') toastr.success(msg, title);
             else toastr.info(msg, title);
         }
-    </script>
+    </script> 
 </head>
 
 <body>

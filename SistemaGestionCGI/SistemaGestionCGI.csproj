@@ -127,6 +127,7 @@
     <Content Include="DesignersUTC\Styles\modal-historial-reporte.css" />
     <Content Include="DesignersUTC\Styles\modal-informes.css" />
     <Content Include="DesignersUTC\Styles\modal-vista-integrantes.css" />
+    <Content Include="DesignersUTC\Styles\proyectos-pro-coordinador.css" />
     <Content Include="DesignersUTC\Styles\utc-fileinput.css" />
     <Content Include="DesignersUTC\Styles\utc-full-design.css" />
     <Content Include="EjecucionProAprobados.aspx" />

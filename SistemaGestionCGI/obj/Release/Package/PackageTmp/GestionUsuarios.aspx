@@ -287,14 +287,31 @@
                                 <label class="form-label small fw-bold text-muted">Rol del Sistema</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light text-primary"><i class="fa-solid fa-id-card-clip"></i></span>
-                                    <asp:DropDownList ID="ddlRol" runat="server" CssClass="form-select shadow-none">
+        
+                                    <asp:DropDownList ID="ddlRol" runat="server" CssClass="form-select shadow-none" 
+                                        AutoPostBack="true" OnSelectedIndexChanged="ddlRol_SelectedIndexChanged">
                                         <asp:ListItem Text="-- Seleccionar Rol --" Value="" />
                                         <asp:ListItem Text="ADMINISTRADOR" Value="ADMINISTRADOR" />
                                         <asp:ListItem Text="COORDINADOR" Value="COORDINADOR" />
-                                        <%-- Puedes agregar más roles aquí --%>
                                     </asp:DropDownList>
                                 </div>
                             </div>
+
+                            <asp:Panel ID="pnlSeleccionCoordinador" runat="server" Visible="false" CssClass="mb-4 animate__animated animate__fadeIn">
+                                <div class="p-3 bg-primary bg-opacity-10 border border-primary rounded-3">
+                                    <label class="form-label fw-bold text-primary small">
+                                        <i class="fa-solid fa-link me-1"></i> Vincular con Proyecto Aprobado
+                                    </label>
+        
+                                    <asp:DropDownList ID="ddlCandidatos" runat="server" CssClass="form-select border-primary shadow-sm" 
+                                        AutoPostBack="true" OnSelectedIndexChanged="ddlCandidatos_SelectedIndexChanged">
+                                    </asp:DropDownList>
+        
+                                    <div class="form-text small text-primary mt-1">
+                                        <i class="fa-solid fa-circle-info"></i> Seleccione un coordinador de la lista para autocompletar sus datos.
+                                    </div>
+                                </div>
+                            </asp:Panel>
 
                             <div class="form-check form-switch p-3 bg-light rounded-3 border d-flex align-items-center justify-content-between">
                                 <div>
