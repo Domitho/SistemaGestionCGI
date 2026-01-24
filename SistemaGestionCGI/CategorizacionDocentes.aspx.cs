@@ -86,7 +86,7 @@ namespace SistemaGestionCGI
             if (ddl.Items.FindByValue(valor) != null)
                 ddl.SelectedValue = valor;
             else
-                ddl.SelectedIndex = 0; 
+                ddl.SelectedIndex = 0;
         }
 
         private void CargarHistorial(string idDocente)
@@ -181,6 +181,23 @@ namespace SistemaGestionCGI
         {
             try
             {
+
+                string cedulaInput = txtCedula.Text.Trim();
+                string idDocente = hfIdDocente.Value;
+                string certificadoActual = hfCertificadoActual.Value;
+
+                if (!_manejador.ValidarCedulaEcuatoriana(cedulaInput))
+                {
+                    Msg("La cédula ingresada no es válida!", "ee");
+                    return;
+                }
+
+                if (_manejador.ExisteCedula(cedulaInput, idDocente))
+                {
+                    Msg("Ya existe un docente registrado con el número de cédula: " + cedulaInput, "ww");
+                    return;
+                }
+
                 if (string.IsNullOrWhiteSpace(txtCedula.Text) ||
                     string.IsNullOrWhiteSpace(txtApellidos.Text))
                 {
@@ -210,10 +227,10 @@ namespace SistemaGestionCGI
                     strCertificado_doc = hfCertificadoActual.Value
                 };
 
-                if (flpCertificado.HasFile)
+                if (!flpCertificado.HasFile && string.IsNullOrEmpty(certificadoActual))
                 {
-                    string nombreBase = $"CERT_{obj.strCedula_doc}";
-                    obj.strCertificado_doc = GuardarArchivoFisico(flpCertificado, nombreBase);
+                    Msg("EL CERTIFICADO ES OBLIGATORIO. Por favor, suba el documento antes de guardar.", "ee");
+                    return;
                 }
 
                 string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
@@ -358,6 +375,101 @@ namespace SistemaGestionCGI
             string cleanMsg = msg.Replace("'", "").Replace("\r\n", " ");
             ScriptManager.RegisterStartupScript(this, GetType(), "toast",
                 $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema UTC'); }});", true);
+        }
+
+        // 
+
+        protected void btnValidarCedula_Click(object sender, EventArgs e)
+        {
+            string cedulaInput = txtCedula.Text.Trim();
+            string idDocente = hfIdDocente.Value;
+            string cedula = txtCedula.Text.Trim();
+
+            if (!_manejador.ValidarCedulaEcuatoriana(cedula))
+            {
+                Msg("ERROR: La cédula ingresada no es Valida!.", "ee");
+                return;
+            }
+
+            if (_manejador.ExisteCedula(cedula, idDocente))
+            {
+                Msg("Ya existe un docente registrado con el número de cédula: " + cedulaInput, "ww");
+                return;
+            }
+
+            Msg("Cédula válida y disponible para el nuevo registro.", "ss");
+        }
+
+        protected void ddlFacultad_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string facultad = ddlFacultad.SelectedValue;
+            ddlCarrera.Items.Clear();
+            ddlCarrera.Items.Add(new ListItem("-- Seleccione la Carrera --", ""));
+
+            if (string.IsNullOrEmpty(facultad)) return;
+
+            switch (facultad)
+            {
+                case "CIYA":
+                    ddlCarrera.Items.Add(new ListItem("SISTEMAS DE INFORMACIÓN", "SISTEMAS DE INFORMACIÓN"));
+                    ddlCarrera.Items.Add(new ListItem("INDUSTRIAL", "INDUSTRIAL"));
+                    ddlCarrera.Items.Add(new ListItem("ELECTROMECÁNICA", "ELECTROMECANICA"));
+                    ddlCarrera.Items.Add(new ListItem("ELECTRICIDAD", "ELECTRICIDAD"));
+                    ddlCarrera.Items.Add(new ListItem("HIDRAULICA", "HIDRAULICA"));
+                    ddlCarrera.Items.Add(new ListItem("SOFTWARE", "SOFTWARE"));
+                    break;
+
+                case "CAREN":
+                    ddlCarrera.Items.Add(new ListItem("AGRONOMÍA", "AGRONOMIA"));
+                    ddlCarrera.Items.Add(new ListItem("VETERINARIA", "VETERINARIA"));
+                    ddlCarrera.Items.Add(new ListItem("AGRONOMÍA", "AGRONOMÍA"));
+                    ddlCarrera.Items.Add(new ListItem("AMBIENTE", "AMBIENTE"));
+                    ddlCarrera.Items.Add(new ListItem("TURISMO", "TURISMO"));
+                    ddlCarrera.Items.Add(new ListItem("AGROPECUARIAS", "AGROPECUARIAS"));
+                    ddlCarrera.Items.Add(new ListItem("BIOTECNOLOGIA", "BIOTECNOLOGIA"));
+                    break;
+
+                case "CAYE":
+                    ddlCarrera.Items.Add(new ListItem("ADMINISTRACIÓN DE EMPRESAS", "ADMINISTRACIÓN DE EMPRESAS"));
+                    ddlCarrera.Items.Add(new ListItem("CONTABILIDAD", "CONTABILIDAD"));
+                    ddlCarrera.Items.Add(new ListItem("ECONOMIA", "ECONOMIA"));
+                    ddlCarrera.Items.Add(new ListItem("CONTABILIDAD", "CONTABILIDAD"));
+                    ddlCarrera.Items.Add(new ListItem("FINANZAS", "FINANZAS"));
+                    ddlCarrera.Items.Add(new ListItem("MERCADOTÉCNIA", "MERCADOTÉCNIA"));
+                    ddlCarrera.Items.Add(new ListItem("GESTIÓN DEL TALENTO HUMANO", "GESTIÓN DEL TALENTO HUMANO"));
+                    break;
+
+                case "CSAYE":
+                    ddlCarrera.Items.Add(new ListItem("DISEÑO GRAFICO", "DISEÑO GRAFICO"));
+                    ddlCarrera.Items.Add(new ListItem("DISEÑO GRAFICO INTERACTIVO", "DISEÑO GRAFICO INTERACTIVO"));
+                    ddlCarrera.Items.Add(new ListItem("COMUNICACIÓN", "COMUNICACIÓN"));
+                    ddlCarrera.Items.Add(new ListItem("TRABAJO SOCIAL", "TRABAJO SOCIAL"));
+                    ddlCarrera.Items.Add(new ListItem("ANIMACIÓN DIGITAL", "ANIMACIÓN DIGITAL"));
+                    ddlCarrera.Items.Add(new ListItem("PSICOLOGÍA SOCIAL", "PSICOLOGÍA SOCIAL"));
+                    break;
+
+                case "SALUD":
+                    ddlCarrera.Items.Add(new ListItem("ENFERMERIA", "ENFERMERIA"));    
+                    break;
+
+                case "PUJILI":
+                    ddlCarrera.Items.Add(new ListItem("EDUCACIÓN INICIAL", "EDUCACIÓN INICIAL"));
+                    ddlCarrera.Items.Add(new ListItem("EDUCACIÓN BASICA", "EDUCACIÓN BASICA"));
+                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DEL IDIOMA INGLÉS", "PEDAGOGÍA DEL IDIOMA INGLÉS"));
+                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DE LA LENGUA Y LITERATURA", "PEDAGOGÍA DE LA LENGUA Y LITERATURA"));
+                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DE LAS MATEMÁTICAS Y LA FÍSICA", "PEDAGOGÍA DE LAS MATEMÁTICAS Y LA FÍSICA"));
+                    break;
+
+                case "LAMANA":
+                    ddlCarrera.Items.Add(new ListItem("CONTABILIDAD_LM", "CONTABILIDAD_LM"));    
+                    ddlCarrera.Items.Add(new ListItem("ADMINISTRACIÓN_LM", "ADMINISTRACIÓN_LM"));    
+                    ddlCarrera.Items.Add(new ListItem("ELECTROMECÁNICA_LM", "ELECTROMECÁNICA_LM"));    
+                    ddlCarrera.Items.Add(new ListItem("SISTEMAS DE INFORMACIÓN_LM", "SISTEMAS DE INFORMACIÓN_LM"));    
+                    ddlCarrera.Items.Add(new ListItem("TURISMO_LM", "TURISMO_LM"));    
+                    ddlCarrera.Items.Add(new ListItem("AGRONOMÍA_LM", "AGRONOMÍA_LM"));    
+                    ddlCarrera.Items.Add(new ListItem("AGROINDUSTRIAS_LM", "AGROINDUSTRIAS_LM"));    
+                    break;
+            }
         }
     }
 }

@@ -53,9 +53,47 @@ namespace SistemaGestionCGI.BLL
         // ==========================================
         // 2. LÓGICA DE NEGOCIO PRINCIPAL (GUARDAR)
         // ==========================================
+
+        public bool ValidarCedulaEcuatoriana(string cedula)
+        {
+            if (string.IsNullOrEmpty(cedula) || cedula.Length != 10) return false;
+
+            if (!long.TryParse(cedula, out _)) return false;
+
+            int provincia = int.Parse(cedula.Substring(0, 2));
+            if (provincia < 1 || provincia > 24) return false;
+
+            int tercerDigito = int.Parse(cedula.Substring(2, 1));
+            if (tercerDigito > 6) return false;
+
+            int[] coeficientes = { 2, 1, 2, 1, 2, 1, 2, 1, 2 };
+            int suma = 0;
+
+            for (int i = 0; i < coeficientes.Length; i++)
+            {
+                int valor = int.Parse(cedula[i].ToString()) * coeficientes[i];
+                suma += (valor >= 10) ? valor - 9 : valor;
+            }
+
+            int digitoVerificador = int.Parse(cedula[9].ToString());
+            int superior = ((suma / 10) + 1) * 10;
+            if (suma % 10 == 0) superior = suma;
+
+            return (superior - suma) == digitoVerificador;
+        }
+
+        public bool ExisteCedula(string cedula, string idActual = "")
+        {
+            string sql = $"SELECT * FROM INVGCCCATEGORIZACION_DOCENTES WHERE strCedula_doc = '{Limpiar(cedula)}'";
+            if (!string.IsNullOrEmpty(idActual))
+                sql += $" AND strId_doc <> '{Limpiar(idActual)}'";
+
+            var lista = _dal.SelectSql<InvgccCategorizacionDocentes>(sql);
+            return lista != null && lista.Count > 0;
+        }
+
         public void GuardarDocenteCompleto(InvgccCategorizacionDocentes obj, string usuario, string motivo)
         {
-            // Sanitización preventiva de todos los campos de texto
             string cedula = Limpiar(obj.strCedula_doc);
             string nombres = Limpiar(obj.strNombres_doc);
             string apellidos = Limpiar(obj.strApellidos_doc);
@@ -81,7 +119,6 @@ namespace SistemaGestionCGI.BLL
             }
             else
             {
-                // Obtenemos datos actuales para comparar cambios de categoría
                 var actual = ObtenerPorId(obj.strId_doc);
                 string catAnterior = actual?.strCategorizacion ?? "SIN ASIGNAR";
                 string catNueva = string.IsNullOrEmpty(obj.strCategorizacion) ? "SIN ASIGNAR" : obj.strCategorizacion;
@@ -161,7 +198,6 @@ namespace SistemaGestionCGI.BLL
             return $"{prefijo}{siguiente:D3}";
         }
 
-        // Helper Crítico para evitar SQL Injection y errores con comillas simples (')
         private string Limpiar(string texto)
         {
             if (string.IsNullOrEmpty(texto)) return "";

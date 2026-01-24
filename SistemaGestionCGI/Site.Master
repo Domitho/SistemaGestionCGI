@@ -43,36 +43,31 @@
     </script>
 
     <script>
-        // Variable para evitar bucles infinitos
         var confirmacionPendiente = false;
 
         function confirmarEliminar(source, mensaje) {
-            // 1. Si ya se confirmó, dejamos pasar el evento al servidor
             if (source.dataset.confirmed === "true") {
                 return true;
             }
 
-            // 2. Detenemos el envío al servidor
             event.preventDefault();
 
-            // 3. Mostramos la alerta bonita
             Swal.fire({
                 title: '<span style="color:#312783">¿Está seguro?</span>',
                 text: mensaje || "Esta acción eliminará el registro permanentemente.",
                 icon: 'warning',
-                iconColor: '#d9534f', // Rojo UTC
+                iconColor: '#d9534f', 
                 showCancelButton: true,
-                confirmButtonColor: '#d9534f', // Rojo para el botón de borrar
-                cancelButtonColor: '#312783',  // Azul UTC para cancelar
+                confirmButtonColor: '#d9534f', 
+                cancelButtonColor: '#312783',
                 confirmButtonText: '<i class="fa-solid fa-trash"></i> Sí, eliminar',
                 cancelButtonText: 'Cancelar',
-                backdrop: `rgba(49, 39, 131, 0.1)`, // Fondo azulado tenue
+                backdrop: `rgba(49, 39, 131, 0.1)`, 
                 customClass: {
                     popup: 'shadow-lg border-0 rounded-4'
                 }
             }).then((result) => {
-                if (result.isConfirmed) {
-                    // 4. Si dice SÍ, marcamos el botón y le damos clic de nuevo
+                if (result.isConfirmed) { 
                     source.dataset.confirmed = "true";
                     source.click();
                 }

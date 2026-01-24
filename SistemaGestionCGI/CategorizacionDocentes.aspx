@@ -103,7 +103,12 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label">Cédula <span class="text-danger">*</span></label>
-                    <asp:TextBox ID="txtCedula" runat="server" CssClass="form-control" placeholder="Ingrese Cédula" />
+                    <div class="input-group">
+                        <asp:TextBox ID="txtCedula" runat="server" CssClass="form-control" placeholder="Ingrese Cédula" MaxLength="10" />
+                        <asp:LinkButton ID="btnValidarCedula" runat="server" CssClass="btn btn-primary" OnClick="btnValidarCedula_Click" CausesValidation="false">
+                            <i class="fa-solid fa-magnifying-glass"></i> Validar
+                        </asp:LinkButton>
+                    </div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Nombres <span class="text-danger">*</span></label>
@@ -114,33 +119,25 @@
                     <asp:TextBox ID="txtApellidos" runat="server" CssClass="form-control" placeholder="Apellidos del docente" />
                 </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Carrera <span class="text-danger">*</span></label>
-                    <asp:DropDownList ID="ddlCarrera" runat="server" CssClass="form-select">
-                        <asp:ListItem Text="-- Seleccione --" Value="" />
-                        <asp:ListItem Value="SISTEMAS">INGENIERÍA EN SISTEMAS DE INFORMACIÓN</asp:ListItem>
-                        <asp:ListItem Value="INDUSTRIAL">INGENIERÍA INDUSTRIAL</asp:ListItem>
-                        <asp:ListItem Value="ELECTROMECANICA">ELECTROMECÁNICA</asp:ListItem>
-                        <asp:ListItem Value="AGRONOMIA">AGRONOMÍA</asp:ListItem>
-                        <asp:ListItem Value="VETERINARIA">MEDICINA VETERINARIA</asp:ListItem>
-                        <asp:ListItem Value="ADMINISTRACION">ADMINISTRACIÓN DE EMPRESAS</asp:ListItem>
-                        <asp:ListItem Value="CONTABILIDAD">CONTABILIDAD Y AUDITORÍA</asp:ListItem>
-                        <asp:ListItem Value="ENFERMERIA">ENFERMERÍA</asp:ListItem>
-                        <asp:ListItem Value="OTRA">OTRA</asp:ListItem>
-                    </asp:DropDownList>
-                </div>
-                
                 <div class="col-12">
                     <label class="form-label">Facultad <span class="text-danger">*</span></label>
-                    <asp:DropDownList ID="ddlFacultad" runat="server" CssClass="form-select">
+                    <asp:DropDownList ID="ddlFacultad" runat="server" CssClass="form-select" 
+                        AutoPostBack="true" OnSelectedIndexChanged="ddlFacultad_SelectedIndexChanged">
                         <asp:ListItem Text="-- Seleccione --" Value="" />
                         <asp:ListItem Value="CIYA">CIENCIAS DE LA INGENIERÍA Y APLICADAS (CIYA)</asp:ListItem>
                         <asp:ListItem Value="CAREN">CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
                         <asp:ListItem Value="CAYE">CIENCIAS ADMINISTRATIVAS Y ECONÓMICAS (CAYE)</asp:ListItem>
                         <asp:ListItem Value="CSAYE">CIENCIAS SOCIALES, ARTES Y EDUCACIÓN (CSAYE)</asp:ListItem>
-                        <asp:ListItem Value="SALUD">CIENCIAS DE LA SALUD</asp:ListItem>
+                        <asp:ListItem Value="SALUD">CIENCIAS DE LA SALUD (CS)</asp:ListItem>
                         <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
                         <asp:ListItem Value="LAMANA">EXTENSIÓN LA MANÁ</asp:ListItem>
+                    </asp:DropDownList>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Carrera <span class="text-danger">*</span></label>
+                    <asp:DropDownList ID="ddlCarrera" runat="server" CssClass="form-select">
+                        <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
                     </asp:DropDownList>
                 </div>
 
@@ -170,7 +167,7 @@
 
                 <div class="col-12 mt-4">
                     <label class="form-label fw-semibold text-primary">
-                        <i class="fa-solid fa-certificate me-1"></i> Certificado de Categorización (PDF)
+                        <i class="fa-solid fa-certificate me-1"></i> Certificado de Categorización <span class="text-danger">*</span>
                     </label>
     
                     <asp:HiddenField ID="hfCertificadoActual" runat="server" ClientIDMode="Static" />
