@@ -123,6 +123,7 @@ namespace SistemaGestionCGI
         protected void rptDatos_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             string argumento = e.CommandArgument.ToString();
+            string idDocente = e.CommandArgument.ToString();
 
             switch (e.CommandName)
             {
@@ -145,14 +146,11 @@ namespace SistemaGestionCGI
                     try
                     {
                         string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
-                        _manejador.EliminarCategorizacion(argumento, usuario, "Eliminación directa desde listado");
+                        _manejador.DarDeBajaDocente(idDocente, usuario, "Registro enviado a papelera por el usuario.");
 
-                        Redireccionar("Se ha quitado la categoría correctamente.", "ss");
+                        Redireccionar("Docente enviado a la papelera correctamente.", "ss");
                     }
-                    catch (Exception ex)
-                    {
-                        Msg("Error al eliminar: " + ex.Message, "ee");
-                    }
+                    catch (Exception ex) { Msg("Error: " + ex.Message, "ee"); }
                     break;
             }
         }
@@ -449,7 +447,7 @@ namespace SistemaGestionCGI
                     break;
 
                 case "SALUD":
-                    ddlCarrera.Items.Add(new ListItem("ENFERMERIA", "ENFERMERIA"));    
+                    ddlCarrera.Items.Add(new ListItem("ENFERMERIA", "ENFERMERIA"));
                     break;
 
                 case "PUJILI":
@@ -461,15 +459,48 @@ namespace SistemaGestionCGI
                     break;
 
                 case "LAMANA":
-                    ddlCarrera.Items.Add(new ListItem("CONTABILIDAD_LM", "CONTABILIDAD_LM"));    
-                    ddlCarrera.Items.Add(new ListItem("ADMINISTRACIÓN_LM", "ADMINISTRACIÓN_LM"));    
-                    ddlCarrera.Items.Add(new ListItem("ELECTROMECÁNICA_LM", "ELECTROMECÁNICA_LM"));    
-                    ddlCarrera.Items.Add(new ListItem("SISTEMAS DE INFORMACIÓN_LM", "SISTEMAS DE INFORMACIÓN_LM"));    
-                    ddlCarrera.Items.Add(new ListItem("TURISMO_LM", "TURISMO_LM"));    
-                    ddlCarrera.Items.Add(new ListItem("AGRONOMÍA_LM", "AGRONOMÍA_LM"));    
-                    ddlCarrera.Items.Add(new ListItem("AGROINDUSTRIAS_LM", "AGROINDUSTRIAS_LM"));    
+                    ddlCarrera.Items.Add(new ListItem("CONTABILIDAD_LM", "CONTABILIDAD_LM"));
+                    ddlCarrera.Items.Add(new ListItem("ADMINISTRACIÓN_LM", "ADMINISTRACIÓN_LM"));
+                    ddlCarrera.Items.Add(new ListItem("ELECTROMECÁNICA_LM", "ELECTROMECÁNICA_LM"));
+                    ddlCarrera.Items.Add(new ListItem("SISTEMAS DE INFORMACIÓN_LM", "SISTEMAS DE INFORMACIÓN_LM"));
+                    ddlCarrera.Items.Add(new ListItem("TURISMO_LM", "TURISMO_LM"));
+                    ddlCarrera.Items.Add(new ListItem("AGRONOMÍA_LM", "AGRONOMÍA_LM"));
+                    ddlCarrera.Items.Add(new ListItem("AGROINDUSTRIAS_LM", "AGROINDUSTRIAS_LM"));
                     break;
             }
         }
+
+        protected void btnVerPapelera_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var listaInactivos = _manejador.ObtenerPapelera();
+                rptPapelera.DataSource = listaInactivos;
+                rptPapelera.DataBind();
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "OpenPapelera",
+                    "new bootstrap.Modal(document.getElementById('modalPapelera')).show();", true);
+            }
+            catch (Exception ex) { Msg("Error al cargar papelera: " + ex.Message, "ee"); }
+        }
+
+        protected void rptPapelera_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            if (e.CommandName == "restaurar")
+            {
+                string idDocente = e.CommandArgument.ToString();
+                string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
+
+                if (_manejador.RestaurarDocente(idDocente, usuario))
+                {
+                    Redireccionar("Docente restaurado con éxito.", "ss");
+                }
+                else
+                {
+                    Msg("No se puede restaurar: Ya existe un docente ACTIVO con la misma cédula.", "ww");
+                }
+            }
+        }
+
     }
 }

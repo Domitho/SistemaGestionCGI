@@ -56,18 +56,18 @@
                 title: '<span style="color:#312783">¿Está seguro?</span>',
                 text: mensaje || "Esta acción eliminará el registro permanentemente.",
                 icon: 'warning',
-                iconColor: '#d9534f', 
+                iconColor: '#d9534f',
                 showCancelButton: true,
-                confirmButtonColor: '#d9534f', 
+                confirmButtonColor: '#d9534f',
                 cancelButtonColor: '#312783',
                 confirmButtonText: '<i class="fa-solid fa-trash"></i> Sí, eliminar',
                 cancelButtonText: 'Cancelar',
-                backdrop: `rgba(49, 39, 131, 0.1)`, 
+                backdrop: `rgba(49, 39, 131, 0.1)`,
                 customClass: {
                     popup: 'shadow-lg border-0 rounded-4'
                 }
             }).then((result) => {
-                if (result.isConfirmed) { 
+                if (result.isConfirmed) {
                     source.dataset.confirmed = "true";
                     source.click();
                 }
@@ -104,7 +104,8 @@
 <body class="bg-light d-flex flex-column min-vh-100">
     <form runat="server" enctype="multipart/form-data" class="d-flex flex-column flex-grow-1">
 
-        <asp:ScriptManager ID="ScriptManager" runat="server"/>
+        <%-- Arreglo: Se agrega EnablePageMethods="true" para soportar futuras validaciones AJAX si se requiere --%>
+        <asp:ScriptManager ID="ScriptManager" runat="server" EnablePageMethods="true"/>
 
         <div id="containerDiv" runat="server" class="utc-container container-fluid mx-auto my-3 d-flex flex-column flex-grow-1" style="max-width: 1400px;">
             
@@ -208,19 +209,26 @@
 
     </form>
 
+    <%-- ARREGLO: Orden de scripts corregido para que funcionen los botones de exportación --%>
+    
+    <%-- 1. DataTables Base --%>
     <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
 
-    <script src="https://cdn.datatables.net/buttons/2.4.3/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.3/js/buttons.bootstrap5.min.js"></script>
+    <%-- 2. Librerías de Exportación (Deben ir ANTES de los botones) --%>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+    <%-- 3. Plugins de Botones y su integración con Bootstrap 5 --%>
+    <script src="https://cdn.datatables.net/buttons/2.4.3/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.3/js/buttons.bootstrap5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.3/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.3/js/buttons.print.min.js"></script>
 
+    <%-- 4. PDF Viewer --%>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         if (window['pdfjsLib']) {

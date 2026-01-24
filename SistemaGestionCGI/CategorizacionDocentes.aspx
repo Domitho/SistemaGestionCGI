@@ -1,8 +1,7 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true"
-    CodeBehind="CategorizacionDocentes.aspx.cs" Inherits="SistemaGestionCGI.CategorizacionDocentes" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="CategorizacionDocentes.aspx.cs" Inherits="SistemaGestionCGI.CategorizacionDocentes" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
-
+     
     <%-- RECURSOS DE ESTILO UTC --%>
     <link href="DesignersUTC/Styles/utc-full-design.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
@@ -14,6 +13,9 @@
             <i class="fa-solid fa-graduation-cap me-2"></i> GESTIÓN DE CATEGORIZACIÓN
         </h3>
         <div class="d-flex gap-2">
+            <asp:LinkButton runat="server" ID="btnVerPapelera" CssClass="btn btn-outline-danger btn-pill" OnClick="btnVerPapelera_Click">
+                <i class="fa-solid fa-trash-can me-2"></i> PAPELERA
+            </asp:LinkButton>
             <asp:LinkButton runat="server" ID="btnNuevo" CssClass="btn btn-primary btn-pill d-flex align-items-center"
                 OnClick="btnNuevo_Click">
                 <i class="fa-solid fa-plus me-2"></i> NUEVO DOCENTE
@@ -413,6 +415,44 @@
                         </div>
 
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalPapelera" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content rounded-4 border-0 shadow-utc">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="fa-solid fa-trash-arrow-up me-2"></i> Registros en Papelera</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-sm align-middle text-center">
+                        <thead>
+                            <tr>
+                                <th>CÉDULA</th>
+                                <th>DOCENTE</th>
+                                <th>ACCIONES</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <asp:Repeater ID="rptPapelera" runat="server" OnItemCommand="rptPapelera_ItemCommand">
+                                <ItemTemplate>
+                                    <tr>
+                                        <td><%# Eval("strCedula_doc") %></td>
+                                        <td><%# Eval("NombreCompleto") %></td>
+                                        <td>
+                                            <asp:LinkButton runat="server" CommandName="restaurar" CommandArgument='<%# Eval("strId_doc") %>' 
+                                                CssClass="btn btn-success btn-sm rounded-pill px-3">
+                                                <i class="fa-solid fa-rotate-left me-1"></i> Restaurar
+                                            </asp:LinkButton>
+                                        </td>
+                                    </tr>
+                                </ItemTemplate>
+                            </asp:Repeater>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

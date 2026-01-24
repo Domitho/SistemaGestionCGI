@@ -15,6 +15,15 @@ namespace SistemaGestionCGI
     {
 
         /// <summary>
+        /// Control btnVerPapelera.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnVerPapelera;
+
+        /// <summary>
         /// Control btnNuevo.
         /// </summary>
         /// <remarks>
@@ -283,5 +292,14 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptReporteHistorial;
+
+        /// <summary>
+        /// Control rptPapelera.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptPapelera;
     }
 }

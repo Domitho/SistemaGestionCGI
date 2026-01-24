@@ -84,7 +84,8 @@ namespace SistemaGestionCGI.BLL
 
         public bool ExisteCedula(string cedula, string idActual = "")
         {
-            string sql = $"SELECT * FROM INVGCCCATEGORIZACION_DOCENTES WHERE strCedula_doc = '{Limpiar(cedula)}'";
+            string sql = $"SELECT * FROM INVGCCCATEGORIZACION_DOCENTES WHERE strCedula_doc = '{Limpiar(cedula)}' AND bitActivo_doc = 1";
+
             if (!string.IsNullOrEmpty(idActual))
                 sql += $" AND strId_doc <> '{Limpiar(idActual)}'";
 
@@ -203,5 +204,38 @@ namespace SistemaGestionCGI.BLL
             if (string.IsNullOrEmpty(texto)) return "";
             return texto.Replace("'", "''").Trim().ToUpper();
         }
+
+        //
+        public void DarDeBajaDocente(string idDocente, string usuario, string motivo)
+        {
+            string sql = $"UPDATE INVGCCCATEGORIZACION_DOCENTES SET bitActivo_doc = 0 WHERE strId_doc = '{Limpiar(idDocente)}'";
+            _dal.UpdateSql(sql);
+
+            RegistrarHistorial(idDocente, "BAJA A PAPELERA", "ACTIVO", "INACTIVO", motivo, usuario);
+        }
+
+        public bool RestaurarDocente(string idDocente, string usuario)
+        {
+            var docente = ObtenerPorId(idDocente);
+            if (docente == null) return false;
+
+            if (ExisteCedula(docente.strCedula_doc))
+            {
+                return false;
+            }
+
+            string sql = $"UPDATE INVGCCCATEGORIZACION_DOCENTES SET bitActivo_doc = 1 WHERE strId_doc = '{Limpiar(idDocente)}'";
+            _dal.UpdateSql(sql);
+
+            RegistrarHistorial(idDocente, "RESTAURACIÓN", "INACTIVO", "ACTIVO", "Recuperado de papelera", usuario);
+            return true;
+        }
+
+        public List<InvgccCategorizacionDocentes> ObtenerPapelera()
+        {
+            string sql = "SELECT *, (strApellidos_doc + ' ' + strNombres_doc) as NombreCompleto FROM INVGCCCATEGORIZACION_DOCENTES WHERE bitActivo_doc = 0";
+            return _dal.SelectSql<InvgccCategorizacionDocentes>(sql);
+        }
+
     }
 }
