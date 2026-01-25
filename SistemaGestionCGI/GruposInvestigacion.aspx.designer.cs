@@ -456,15 +456,6 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtCorreoInt;
 
         /// <summary>
-        /// Control txtCarreraInt.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtCarreraInt;
-
-        /// <summary>
         /// Control ddlFacultadInt.
         /// </summary>
         /// <remarks>
@@ -472,6 +463,15 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlFacultadInt;
+
+        /// <summary>
+        /// Control ddlCarreraInt.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlCarreraInt;
 
         /// <summary>
         /// Control txtEntidadInt.
@@ -897,31 +897,13 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.DropDownList ddlFacultadCoord;
 
         /// <summary>
-        /// Control rfvFacultad.
+        /// Control ddlCarreraCoord.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.RequiredFieldValidator rfvFacultad;
-
-        /// <summary>
-        /// Control txtCarreraCoord.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtCarreraCoord;
-
-        /// <summary>
-        /// Control rfvCarrera.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.RequiredFieldValidator rfvCarrera;
+        protected global::System.Web.UI.WebControls.DropDownList ddlCarreraCoord;
 
         /// <summary>
         /// Control txtEntidadCoord.

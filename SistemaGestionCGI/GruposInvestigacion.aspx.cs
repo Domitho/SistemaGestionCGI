@@ -85,14 +85,12 @@ namespace SistemaGestionCGI
         {
             try
             {
-                // 1. VALIDACIÓN BÁSICA
                 if (string.IsNullOrWhiteSpace(txtNombreGru.Text))
                 {
                     Msg("El nombre del grupo es obligatorio.", "ww");
                     return;
                 }
 
-                // 2. CREACIÓN DEL OBJETO GRUPO (Datos del formulario)
                 var g = new InvgccGrupoInvestigacion
                 {
                     strNombre_gru = txtNombreGru.Text.Trim(),
@@ -106,7 +104,6 @@ namespace SistemaGestionCGI
                     strArchivo_gru = hfArchivoActual.Value
                 };
 
-                // 3. GESTIÓN DE ARCHIVOS
                 if (flpFotoGrupo.HasFile)
                 {
                     string nombre = $"FOTO_{DateTime.Now.Ticks}{Path.GetExtension(flpFotoGrupo.FileName)}";
@@ -387,7 +384,7 @@ namespace SistemaGestionCGI
                 }
                 else
                 {
-                    hfCoordCarrera.Value = txtCarreraCoord.Text.ToUpper().Trim();
+                    hfCoordCarrera.Value = ddlCarreraCoord.SelectedValue;
                     hfCoordFacultad.Value = ddlFacultadCoord.SelectedValue;
                     hfCoordEntidad.Value = "";
 
@@ -428,9 +425,9 @@ namespace SistemaGestionCGI
             txtNombreCoord.Text = "";
             txtApellidoCoord.Text = "";
             txtCedulaCoord.Text = "";
-            txtCarreraCoord.Text = "";
             txtCorreoCoord.Text = "";
             ddlFacultadCoord.SelectedIndex = 0;
+            ddlCarreraCoord.SelectedIndex = 0;
 
             hfCoordIdDocente.Value = "";
             hfCoordArchivo.Value = "";
@@ -533,7 +530,7 @@ namespace SistemaGestionCGI
                 else if (i.strTipo_int == "Docente")
                 {
                     i.strEntidad_int = null;
-                    i.strCarrera_int = txtCarreraInt.Text.Trim();
+                    i.strCarrera_int = ddlCarreraInt.SelectedValue;
                     i.strFacultad_int = ddlFacultadInt.SelectedValue;
 
                     i.strCertificado_int = hfCertificadoIntVinculado.Value;
@@ -542,7 +539,7 @@ namespace SistemaGestionCGI
                 else 
                 {
                     i.strEntidad_int = null;
-                    i.strCarrera_int = txtCarreraInt.Text.Trim();
+                    i.strCarrera_int = ddlCarreraInt.SelectedValue;
                     i.strFacultad_int = ddlFacultadInt.SelectedValue;
                     i.strCertificado_int = null;
                     i.fkId_docente_origen = null;
@@ -631,9 +628,13 @@ namespace SistemaGestionCGI
             }
             else
             {
-                txtCarreraInt.Text = i.strCarrera_int;
                 if (ddlFacultadInt.Items.FindByValue(i.strFacultad_int) != null)
                     ddlFacultadInt.SelectedValue = i.strFacultad_int;
+
+                CargarCarrerasEnCombo(ddlCarreraInt, i.strFacultad_int);
+
+                if (ddlCarreraInt.Items.FindByValue(i.strCarrera_int) != null)
+                    ddlCarreraInt.SelectedValue = i.strCarrera_int;
             }
 
             CambiarVista(Vista.FormularioIntegrante);
@@ -875,7 +876,7 @@ namespace SistemaGestionCGI
             lblTituloFormInt.Text = "Nuevo Integrante";
 
             txtCedulaInt.Text = ""; txtNombresInt.Text = ""; txtApellidosInt.Text = "";
-            txtCorreoInt.Text = ""; txtEntidadInt.Text = ""; txtCarreraInt.Text = "";
+            txtCorreoInt.Text = ""; txtEntidadInt.Text = ""; ddlCarreraInt.SelectedIndex= 0;
 
             ddlTipoInt.SelectedIndex = 0;
             ddlTipoInt.Enabled = true; 
@@ -1070,10 +1071,14 @@ namespace SistemaGestionCGI
                     txtCedulaInt.Text = docente.strCedula_doc;
                     txtNombresInt.Text = docente.strNombres_doc;
                     txtApellidosInt.Text = docente.strApellidos_doc;
-                    txtCarreraInt.Text = docente.strCarrera_doc;
+
                     txtCorreoInt.Text = !string.IsNullOrEmpty(docente.strCorreo_doc) ? docente.strCorreo_doc : "";
 
                     SeleccionarCombo(ddlFacultadInt, docente.strFacultad_doc);
+
+                    CargarCarrerasEnCombo(ddlCarreraInt, docente.strFacultad_doc);
+
+                    SeleccionarCombo(ddlCarreraInt, docente.strCarrera_doc);
 
                     hfIdDocenteInt.Value = docente.strId_doc;
                     hfCertificadoIntVinculado.Value = docente.strCertificado_doc;
@@ -1081,6 +1086,10 @@ namespace SistemaGestionCGI
                     txtCedulaInt.ReadOnly = true;
                     txtNombresInt.ReadOnly = true;
                     txtApellidosInt.ReadOnly = true;
+
+                    ddlFacultadInt.Enabled = false; 
+                    ddlCarreraInt.Enabled = false;  
+
                     txtCorreoInt.ReadOnly = true;
 
                     Msg("Docente vinculado exitosamente.", "ss");
@@ -1088,7 +1097,7 @@ namespace SistemaGestionCGI
             }
             catch (Exception ex)
             {
-                Msg("Error al vincular docente: " + ex.Message, "ee");
+                Msg("Error al vincular: " + ex.Message, "ee");
             }
             finally
             {
@@ -1116,8 +1125,8 @@ namespace SistemaGestionCGI
             txtCedulaInt.Text = "";
             txtNombresInt.Text = "";
             txtApellidosInt.Text = "";
-            txtCarreraInt.Text = "";
-            ddlFacultadInt.SelectedIndex = 0;
+            ddlFacultadInt.Enabled = true;
+            ddlCarreraInt.Enabled = true;
             hfIdDocenteInt.Value = "";
             hfCertificadoIntVinculado.Value = "";
 
@@ -1159,23 +1168,24 @@ namespace SistemaGestionCGI
                     txtCedulaCoord.Text = docente.strCedula_doc;
                     txtNombreCoord.Text = docente.strNombres_doc;
                     txtApellidoCoord.Text = docente.strApellidos_doc;
-                    txtCarreraCoord.Text = docente.strCarrera_doc;
-                    SeleccionarCombo(ddlFacultadCoord, docente.strFacultad_doc);
 
                     txtCorreoCoord.Text = !string.IsNullOrEmpty(docente.strCorreo_doc) ? docente.strCorreo_doc : "";
+
+                    SeleccionarCombo(ddlFacultadCoord, docente.strFacultad_doc);
+
+                    CargarCarrerasEnCombo(ddlCarreraCoord, docente.strFacultad_doc);
+
+                    SeleccionarCombo(ddlCarreraCoord, docente.strCarrera_doc);
+
                     hfCoordIdDocente.Value = docente.strId_doc;
 
                     string rutaCertificado = docente.strCertificado_doc;
-
                     if (!string.IsNullOrEmpty(rutaCertificado))
                     {
                         hfCoordArchivo.Value = rutaCertificado;
-
-                        pnlCargaArchivo.Visible = false;      
-                        pnlArchivoRecuperado.Visible = true;   
-
+                        pnlCargaArchivo.Visible = false;
+                        pnlArchivoRecuperado.Visible = true;
                         lnkVerArchivo.NavigateUrl = ResolveUrl(rutaCertificado);
-
                         btnCambiarArchivo.Visible = false;
                     }
                     else
@@ -1183,26 +1193,26 @@ namespace SistemaGestionCGI
                         hfCoordArchivo.Value = "";
                         pnlCargaArchivo.Visible = true;
                         pnlArchivoRecuperado.Visible = false;
-                        btnCambiarArchivo.Visible = true; 
+                        btnCambiarArchivo.Visible = true;
                     }
 
                     txtCedulaCoord.ReadOnly = true;
                     txtNombreCoord.ReadOnly = true;
                     txtApellidoCoord.ReadOnly = true;
-                    txtCarreraCoord.ReadOnly = true;
-                    txtCorreoCoord.ReadOnly = true;
-                    ddlFacultadCoord.Enabled = true;
+
+                    ddlFacultadCoord.Enabled = false;
+                    ddlCarreraCoord.Enabled = false;
+
+                    txtCorreoCoord.ReadOnly = true; 
 
                     pnlDatosPersonalesCoord.Style["display"] = "block";
-                    Msg(string.IsNullOrEmpty(rutaCertificado)
-                        ? "Datos cargados. ATENCIÓN: Este docente no tiene certificado adjunto, debe subirlo."
-                        : "Datos y Certificado vinculados correctamente.", "ss");
+                    Msg("Datos cargados correctamente.", "ss");
                 }
             }
             catch (Exception ex)
             {
                 Msg("Error: " + ex.Message, "ee");
-                LimpiarCamposCoordinador();
+                LimpiarCamposCoordinador(); 
             }
             finally
             {
@@ -1217,8 +1227,8 @@ namespace SistemaGestionCGI
             txtNombreCoord.Text = "";
             txtApellidoCoord.Text = "";
             txtCorreoCoord.Text = "";
-            txtCarreraCoord.Text = "";
             ddlFacultadCoord.SelectedIndex = 0;
+            ddlCarreraCoord.SelectedIndex = 0;
             hfCoordIdDocente.Value = "";
 
             hfCoordArchivo.Value = "";
@@ -1238,9 +1248,87 @@ namespace SistemaGestionCGI
             txtCedulaCoord.ReadOnly = bloquear;
             txtNombreCoord.ReadOnly = bloquear;
             txtApellidoCoord.ReadOnly = bloquear;
-            txtCarreraCoord.ReadOnly = bloquear;
             txtCorreoCoord.ReadOnly = bloquear;
             ddlFacultadCoord.Enabled = !bloquear;
+            ddlCarreraCoord.Enabled = !bloquear; 
+        }
+
+        //
+
+        private void CargarCarrerasEnCombo(DropDownList ddlCarrera, string facultad)
+        {
+            ddlCarrera.Items.Clear();
+            ddlCarrera.Items.Add(new ListItem("-- Seleccione Carrera --", ""));
+
+            if (string.IsNullOrEmpty(facultad)) return;
+
+            // Misma lógica que en Categorización
+            switch (facultad)
+            {
+                case "CIYA":
+                    ddlCarrera.Items.Add(new ListItem("SISTEMAS DE INFORMACIÓN", "SISTEMAS DE INFORMACIÓN"));
+                    ddlCarrera.Items.Add(new ListItem("INDUSTRIAL", "INDUSTRIAL"));
+                    ddlCarrera.Items.Add(new ListItem("ELECTROMECÁNICA", "ELECTROMECANICA"));
+                    ddlCarrera.Items.Add(new ListItem("ELECTRICIDAD", "ELECTRICIDAD"));
+                    ddlCarrera.Items.Add(new ListItem("HIDRAULICA", "HIDRAULICA"));
+                    ddlCarrera.Items.Add(new ListItem("SOFTWARE", "SOFTWARE"));
+                    break;
+                case "CAREN":
+                    ddlCarrera.Items.Add(new ListItem("AGRONOMÍA", "AGRONOMIA"));
+                    ddlCarrera.Items.Add(new ListItem("VETERINARIA", "VETERINARIA"));
+                    ddlCarrera.Items.Add(new ListItem("AMBIENTE", "AMBIENTE"));
+                    ddlCarrera.Items.Add(new ListItem("TURISMO", "TURISMO"));
+                    ddlCarrera.Items.Add(new ListItem("AGROPECUARIAS", "AGROPECUARIAS"));
+                    ddlCarrera.Items.Add(new ListItem("BIOTECNOLOGIA", "BIOTECNOLOGIA"));
+                    break;
+                case "CAYE":
+                    ddlCarrera.Items.Add(new ListItem("ADMINISTRACIÓN DE EMPRESAS", "ADMINISTRACIÓN DE EMPRESAS"));
+                    ddlCarrera.Items.Add(new ListItem("CONTABILIDAD", "CONTABILIDAD"));
+                    ddlCarrera.Items.Add(new ListItem("ECONOMIA", "ECONOMIA"));
+                    ddlCarrera.Items.Add(new ListItem("FINANZAS", "FINANZAS"));
+                    ddlCarrera.Items.Add(new ListItem("MERCADOTÉCNIA", "MERCADOTÉCNIA"));
+                    ddlCarrera.Items.Add(new ListItem("GESTIÓN DEL TALENTO HUMANO", "GESTIÓN DEL TALENTO HUMANO"));
+                    break;
+                case "CSAYE":
+                    ddlCarrera.Items.Add(new ListItem("DISEÑO GRAFICO", "DISEÑO GRAFICO"));
+                    ddlCarrera.Items.Add(new ListItem("DISEÑO GRAFICO INTERACTIVO", "DISEÑO GRAFICO INTERACTIVO"));
+                    ddlCarrera.Items.Add(new ListItem("COMUNICACIÓN", "COMUNICACIÓN"));
+                    ddlCarrera.Items.Add(new ListItem("TRABAJO SOCIAL", "TRABAJO SOCIAL"));
+                    ddlCarrera.Items.Add(new ListItem("ANIMACIÓN DIGITAL", "ANIMACIÓN DIGITAL"));
+                    ddlCarrera.Items.Add(new ListItem("PSICOLOGÍA SOCIAL", "PSICOLOGÍA SOCIAL"));
+                    break;
+                case "SALUD":
+                    ddlCarrera.Items.Add(new ListItem("ENFERMERIA", "ENFERMERIA"));
+                    break;
+                case "PUJILI":
+                    ddlCarrera.Items.Add(new ListItem("EDUCACIÓN INICIAL", "EDUCACIÓN INICIAL"));
+                    ddlCarrera.Items.Add(new ListItem("EDUCACIÓN BASICA", "EDUCACIÓN BASICA"));
+                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DEL IDIOMA INGLÉS", "PEDAGOGÍA DEL IDIOMA INGLÉS"));
+                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DE LA LENGUA Y LITERATURA", "PEDAGOGÍA DE LA LENGUA Y LITERATURA"));
+                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DE LAS MATEMÁTICAS Y LA FÍSICA", "PEDAGOGÍA DE LAS MATEMÁTICAS Y LA FÍSICA"));
+                    break;
+                case "LAMANA":
+                    ddlCarrera.Items.Add(new ListItem("CONTABILIDAD_LM", "CONTABILIDAD_LM"));
+                    ddlCarrera.Items.Add(new ListItem("ADMINISTRACIÓN_LM", "ADMINISTRACIÓN_LM"));
+                    ddlCarrera.Items.Add(new ListItem("ELECTROMECÁNICA_LM", "ELECTROMECÁNICA_LM"));
+                    ddlCarrera.Items.Add(new ListItem("SISTEMAS DE INFORMACIÓN_LM", "SISTEMAS DE INFORMACIÓN_LM"));
+                    ddlCarrera.Items.Add(new ListItem("TURISMO_LM", "TURISMO_LM"));
+                    ddlCarrera.Items.Add(new ListItem("AGRONOMÍA_LM", "AGRONOMÍA_LM"));
+                    ddlCarrera.Items.Add(new ListItem("AGROINDUSTRIAS_LM", "AGROINDUSTRIAS_LM"));
+                    break;
+            }
+        }
+
+        protected void ddlFacultadCoord_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            CargarCarrerasEnCombo(ddlCarreraCoord, ddlFacultadCoord.SelectedValue);
+            ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenC", "abrirModalCoord(); toggleTipoCoordinador();", true);
+        }
+
+        protected void ddlFacultadInt_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            CargarCarrerasEnCombo(ddlCarreraInt, ddlFacultadInt.SelectedValue);
+            ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenI", "InitFormulario();", true);
         }
 
     }

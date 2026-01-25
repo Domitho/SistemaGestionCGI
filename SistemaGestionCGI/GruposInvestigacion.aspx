@@ -119,7 +119,7 @@
                 </div>
             
                 <div class="col-md-6">
-                    <label class="form-label fw-bold">Coordinador (Inv. Principal)</label>
+                    <label class="form-label fw-bold">Coordinador</label>
                     <div class="input-group">
                         <asp:TextBox ID="txtCoordinadorGru" runat="server" CssClass="form-control" ReadOnly="true" placeholder="Asigne el coordinador..."></asp:TextBox>
         
@@ -137,7 +137,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Categoría</label>
                     <asp:DropDownList ID="ddlCategoriaGru" runat="server" CssClass="form-select">
-                        <asp:ListItem Value="NUEVO">EMERGENTE</asp:ListItem>
+                        <asp:ListItem Value="NUEVO">NUEVO</asp:ListItem>
                         <asp:ListItem Value="EMERGENTE">EMERGENTE</asp:ListItem>
                         <asp:ListItem Value="CONSOLIDADO">CONSOLIDADO</asp:ListItem>
                     </asp:DropDownList>
@@ -358,18 +358,24 @@
                     <div class="col-md-12"><label class="form-label">Correo</label><asp:TextBox ID="txtCorreoInt" runat="server" CssClass="form-control" TextMode="Email" autocomplete="off" /></div>
             
                     <div id="divInternoInt" class="col-12 row g-3 m-0 p-0">
-                        <div class="col-md-6 ps-0"><label class="form-label">Carrera / Departamento</label><asp:TextBox ID="txtCarreraInt" runat="server" CssClass="form-control" autocomplete="off" /></div>
-                        <div class="col-md-6 pe-0">
+                        <div class="col-md-6">
                             <label class="form-label">Facultad / Extensión</label>
-                            <asp:DropDownList ID="ddlFacultadInt" runat="server" CssClass="form-select">
+                            <asp:DropDownList ID="ddlFacultadInt" runat="server" CssClass="form-select"
+                                AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadInt_SelectedIndexChanged">
                                 <asp:ListItem Text="-- Seleccione --" Value="" />
-                                <asp:ListItem Value="CAREN">FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
-                                <asp:ListItem Value="CIYA">FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
-                                <asp:ListItem Value="CAYE">FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
-                                <asp:ListItem Value="CSAYE">FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
+                                <asp:ListItem Value="CAREN">FACULTAD DE CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
+                                <asp:ListItem Value="CIYA">FACULTAD DE CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
+                                <asp:ListItem Value="CAYE">FACULTAD DE CIENCIAS ADMINISTRATIVAS (CAYE)</asp:ListItem>
+                                <asp:ListItem Value="CSAYE">FACULTAD DE CIENCIAS SOCIALES (CSAYE)</asp:ListItem>
                                 <asp:ListItem Value="SALUD">FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
                                 <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
                                 <asp:ListItem Value="LAMANA">EXTENSION LA MANÁ</asp:ListItem>
+                            </asp:DropDownList>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Carrera / Departamento</label>
+                            <asp:DropDownList ID="ddlCarreraInt" runat="server" CssClass="form-select">
+                                <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
                             </asp:DropDownList>
                         </div>
                     </div>
@@ -840,22 +846,23 @@
                         <div id="divInterno" class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label class="form-label small text-muted">Facultad / Extensión</label>
-                                <asp:DropDownList ID="ddlFacultadCoord" runat="server" CssClass="form-select form-select-sm">
+                                <asp:DropDownList ID="ddlFacultadCoord" runat="server" CssClass="form-select form-select-sm" 
+                                    AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadCoord_SelectedIndexChanged">
                                     <asp:ListItem Text="-- Seleccione --" Value="" />
-                                    <asp:ListItem Value="CAREN">FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
-                                    <asp:ListItem Value="CIYA">FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
-                                    <asp:ListItem Value="CAYE">FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
-                                    <asp:ListItem Value="CSAYE">FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
+                                    <asp:ListItem Value="CAREN">FACULTAD DE CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
+                                    <asp:ListItem Value="CIYA">FACULTAD DE CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
+                                    <asp:ListItem Value="CAYE">FACULTAD DE CIENCIAS ADMINISTRATIVAS (CAYE)</asp:ListItem>
+                                    <asp:ListItem Value="CSAYE">FACULTAD DE CIENCIAS SOCIALES (CSAYE)</asp:ListItem>
                                     <asp:ListItem Value="SALUD">FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
                                     <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
                                     <asp:ListItem Value="LAMANA">EXTENSION LA MANÁ</asp:ListItem>
                                 </asp:DropDownList>
-                                <asp:RequiredFieldValidator ID="rfvFacultad" runat="server" ControlToValidate="ddlFacultadCoord" ErrorMessage="Seleccione" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" />
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label small text-muted">Carrera / Departamento</label>
-                                <asp:TextBox ID="txtCarreraCoord" runat="server" CssClass="form-control form-control-sm" autocomplete="off"/>
-                                <asp:RequiredFieldValidator ID="rfvCarrera" runat="server" ControlToValidate="txtCarreraCoord" ErrorMessage="Requerido" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" />
+                                <asp:DropDownList ID="ddlCarreraCoord" runat="server" CssClass="form-select form-select-sm">
+                                    <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
+                                </asp:DropDownList>
                             </div>
                         </div>
 
