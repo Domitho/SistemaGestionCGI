@@ -185,7 +185,9 @@ namespace SistemaGestionCGI.BLL
 
         public List<InvgccGrupoIntegrantes> ObtenerIntegrantes(string idGrupo)
         {
-            string sql = $"SELECT * FROM INVGCCGRUPO_INTEGRANTES WHERE fkId_gru = '{idGrupo}' ORDER BY strApellidos_int";
+            string sql = $@"SELECT * FROM INVGCCGRUPO_INTEGRANTES 
+                    WHERE fkId_gru = '{idGrupo}' AND bitActivo_int = 1 
+                    ORDER BY strApellidos_int";
             return _dal.SelectSql<InvgccGrupoIntegrantes>(sql);
         }
 
@@ -390,5 +392,45 @@ namespace SistemaGestionCGI.BLL
 
             return prefijo + siguienteNumero;
         }
+
+        //
+
+        // 1. Obtener solo los integrantes inactivos de un grupo específico para la papelera
+        public List<InvgccGrupoIntegrantes> ObtenerIntegrantesPapelera(string idGrupo)
+        {
+            // Filtramos explícitamente por bitActivo_int = 0
+            string sql = $@"SELECT * FROM INVGCCGRUPO_INTEGRANTES 
+                    WHERE fkId_gru = '{idGrupo}' AND bitActivo_int = 0 
+                    ORDER BY strApellidos_int";
+            return _dal.SelectSql<InvgccGrupoIntegrantes>(sql);
+        }
+
+        // 2. Restaurar integrante con validación de duplicados activos
+        public bool RestaurarIntegrante(string idIntegrante, string usuario)
+        {
+            var integrante = ObtenerIntegrantePorId(idIntegrante);
+            if (integrante == null) return false;
+
+            // VALIDACIÓN: Verificamos si la cédula ya pertenece a un integrante ACTIVO en el sistema
+            string grupoActual = VerificarIntegranteEnOtroGrupo(integrante.strCedula_int);
+
+            if (grupoActual != null)
+            {
+                // Si grupoActual no es nulo, significa que ya está activo en el grupo 'grupoActual'
+                return false;
+            }
+
+            // Restauramos el bit de activación y limpiamos la fecha de fin
+            string sql = $@"UPDATE INVGCCGRUPO_INTEGRANTES 
+                    SET bitActivo_int = 1, dtFechafin_int = NULL 
+                    WHERE strId_int = '{idIntegrante}'";
+
+            _dal.UpdateSql(sql);
+
+            // Registramos el movimiento en el historial para auditoría
+            RegistrarHistorial(idIntegrante, "RESTAURACIÓN", "Reincorporación al grupo desde papelera.", usuario);
+            return true;
+        }
+
     }
 }

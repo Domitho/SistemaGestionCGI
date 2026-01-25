@@ -432,8 +432,8 @@
                                 <i class="fa-solid fa-box-archive fs-3"></i>
                             </div>
                             <div>
-                                <h4 class="fw-bold mb-0">Archivo Pasivo de Docentes</h4>
-                                <p class="mb-0 text-white-50">Validación y restauración de expedientes categorizados</p>
+                                <h4 class="fw-bold mb-0">Papelera</h4>
+                                <p class="mb-0 text-white-50">Recuperación de registros de Docentes</p>
                             </div>
                         </div>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>

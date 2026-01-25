@@ -5,6 +5,7 @@
     <link href="DesignersUTC/Styles/utc-full-design.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/modal-historial-reporte.css" rel="stylesheet" />
+    <link href="DesignersUTC/Styles/papelera.css" rel="stylesheet" />
 
     <style>
         .transition-hover {
@@ -217,6 +218,9 @@
         <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
             <h3 class="utc-title mb-0"><i class="fa-solid fa-users me-2"></i> GESTIÓN DE INTEGRANTES</h3>
             <div class="d-flex gap-2">
+                <asp:LinkButton runat="server" ID="btnVerPapeleraInt" CssClass="btn btn-outline-danger btn-pill" OnClick="btnVerPapeleraInt_Click">
+                    <i class="fa-solid fa-trash-can me-2"></i> VER INACTIVOS
+                </asp:LinkButton>
                 <asp:LinkButton runat="server" ID="btnNuevoIntegrante" CssClass="btn btn-primary btn-pill" OnClick="btnNuevoIntegrante_Click">
                     <i class="fa-solid fa-user-plus me-2"></i> NUEVO INTEGRANTE
                 </asp:LinkButton>
@@ -922,6 +926,84 @@
                     </div>
                 </div>
 
+            </div>
+        </div>
+    </div>
+
+    <%-- MODAL PAPELERA PREMIUM: INTEGRANTES --%>
+    <div class="modal fade" id="modalPapeleraIntegrantes" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content utc-modal-premium">
+                <div class="modal-header papelera-header-premium text-white">
+                    <div class="d-flex align-items-center justify-content-between w-100">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-white text-primary rounded-4 p-3 me-4 shadow-lg">
+                                <i class="fa-solid fa-user-slash fs-3"></i>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold mb-0">Integrantes Fuera de Grupo</h4>
+                                <p class="mb-0 text-white-50">Archivo histórico de miembros inactivos</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                </div>
+
+                <div class="modal-body p-4 bg-light">
+                    <div class="row g-4">
+                        <asp:Repeater ID="rptPapeleraIntegrantes" runat="server" OnItemCommand="rptPapeleraIntegrantes_ItemCommand">
+                            <ItemTemplate>
+                                <div class="col-md-6">
+                                    <div class="integrante-trash-card shadow-sm p-4 h-100 d-flex flex-column">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <div class="status-badge-inactive fw-bold uppercase">
+                                                <i class="fa-solid fa-ban me-1"></i> INACTIVO
+                                            </div>
+                                            <span class="text-muted small fw-mono">ID: <%# Eval("strId_int") %></span>
+                                        </div>
+
+                                        <div class="d-flex align-items-center mb-4">
+                                            <div class="avatar-utc rounded-circle bg-danger text-white d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                                                <%# Eval("strApellidos_int").ToString().Substring(0,1) %>
+                                            </div>
+                                            <div>
+                                                <h5 class="mb-0 fw-bold text-dark"><%# Eval("strApellidos_int") %> <%# Eval("strNombres_int") %></h5>
+                                                <p class="mb-0 text-primary small fw-semibold"><i class="fa-solid fa-id-card me-1"></i> <%# Eval("strCedula_int") %></p>
+                                            </div>
+                                        </div>
+
+                                        <div class="bg-light rounded-3 p-3 d-flex mb-4">
+                                            <div class="flex-fill border-right pe-3">
+                                                <span class="label-mini">Función</span>
+                                                <span class="value-bold text-truncate d-block" style="max-width:150px;"><%# Eval("strFuncion_int") %></span>
+                                            </div>
+                                            <div class="flex-fill ps-3">
+                                                <span class="label-mini">Tipo / Origen</span>
+                                                <span class="value-bold text-primary"><%# Eval("strTipo_int") %></span>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-auto d-grid">
+                                            <asp:LinkButton runat="server" CommandName="restaurar" CommandArgument='<%# Eval("strId_int") %>'
+                                                CssClass="btn btn-success rounded-pill py-2 fw-bold shadow-sm">
+                                                <i class="fa-solid fa-rotate-left me-2"></i> REINCORPORAR AL GRUPO
+                                            </asp:LinkButton>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ItemTemplate>
+                            <FooterTemplate>
+                                <asp:Panel Visible='<%# rptPapeleraIntegrantes.Items.Count == 0 %>' runat="server" CssClass="w-100 py-5 text-center">
+                                    <div class="bg-white rounded-5 p-5 shadow-sm d-inline-block mx-auto">
+                                        <i class="fa-solid fa-users-check fa-4x text-success opacity-25 mb-3"></i>
+                                        <h5 class="text-muted fw-bold">Grupo Sincronizado</h5>
+                                        <p class="text-muted mb-0">No hay integrantes inactivos en este grupo.</p>
+                                    </div>
+                                </asp:Panel>
+                            </FooterTemplate>
+                        </asp:Repeater>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

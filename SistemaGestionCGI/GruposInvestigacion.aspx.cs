@@ -1099,5 +1099,61 @@ namespace SistemaGestionCGI
             string script = $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema'); }});";
             ScriptManager.RegisterStartupScript(this, GetType(), "toast", script, true);
         }
+
+        //
+
+        protected void btnVerPapeleraInt_Click(object sender, EventArgs e)
+        {
+            string idGrupo = hfGrupoIdActual.Value;
+            // Cargar solo los inactivos de este grupo específico
+            var inactivos = _manejador.ObtenerIntegrantesPapelera(idGrupo);
+            rptPapeleraIntegrantes.DataSource = inactivos;
+            rptPapeleraIntegrantes.DataBind();
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "PopTrash",
+                "new bootstrap.Modal(document.getElementById('modalPapeleraIntegrantes')).show();", true);
+        }
+
+        protected void rptPapeleraIntegrantes_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            if (e.CommandName == "restaurar")
+            {
+                try
+                {
+                    string idInt = e.CommandArgument.ToString();
+                    string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
+
+                    if (_manejador.RestaurarIntegrante(idInt, usuario))
+                    {
+                        CargarIntegrantes(hfGrupoIdActual.Value);
+                        Msg("Integrante reincorporado correctamente.", "ss");
+                    }
+                    else
+                    {
+                        Msg("No se puede restaurar: El investigador ya está ACTIVO en un grupo.", "ww");
+                    }
+                }
+                catch (Exception ex) { Msg("Error: " + ex.Message, "ee"); }
+            }
+        }
+
+        private void CargarIntegrantes(string idGrupo)
+        {
+            try
+            {
+                var lista = _manejador.ObtenerIntegrantes(idGrupo);
+                rptIntegrantes.DataSource = lista;
+                rptIntegrantes.DataBind();
+
+                pnlGrilla.Visible = false;
+                pnlIntegrantes.Visible = true;
+                hfGrupoIdActual.Value = idGrupo;
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al cargar integrantes: " + ex.Message, "ee");
+            }
+        }
+
     }
 }
