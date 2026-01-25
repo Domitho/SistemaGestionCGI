@@ -6,6 +6,7 @@
     <link href="DesignersUTC/Styles/utc-full-design.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/modal-historial-reporte.css" rel="stylesheet" />
+    <link href="DesignersUTC/Styles/papelera.css" rel="stylesheet" />
 
     <%-- ENCABEZADO PRINCIPAL --%>
     <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
@@ -420,39 +421,83 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modalPapelera" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content rounded-4 border-0 shadow-utc">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title"><i class="fa-solid fa-trash-arrow-up me-2"></i> Registros en Papelera</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    <div class="modal fade" id="modalPapelera" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content utc-modal-premium">
+            
+                <div class="modal-header papelera-header-premium text-white">
+                    <div class="d-flex align-items-center justify-content-between w-100">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-white text-primary rounded-4 p-3 me-4 shadow-lg">
+                                <i class="fa-solid fa-box-archive fs-3"></i>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold mb-0">Archivo Pasivo de Docentes</h4>
+                                <p class="mb-0 text-white-50">Validación y restauración de expedientes categorizados</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <table class="table table-sm align-middle text-center">
-                        <thead>
-                            <tr>
-                                <th>CÉDULA</th>
-                                <th>DOCENTE</th>
-                                <th>ACCIONES</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <asp:Repeater ID="rptPapelera" runat="server" OnItemCommand="rptPapelera_ItemCommand">
-                                <ItemTemplate>
-                                    <tr>
-                                        <td><%# Eval("strCedula_doc") %></td>
-                                        <td><%# Eval("NombreCompleto") %></td>
-                                        <td>
-                                            <asp:LinkButton runat="server" CommandName="restaurar" CommandArgument='<%# Eval("strId_doc") %>' 
-                                                CssClass="btn btn-success btn-sm rounded-pill px-3">
-                                                <i class="fa-solid fa-rotate-left me-1"></i> Restaurar
+
+                <div class="modal-body p-4 bg-light">
+                    <div class="row">
+                        <asp:Repeater ID="rptPapelera" runat="server" OnItemCommand="rptPapelera_ItemCommand">
+                            <ItemTemplate>
+                                <div class="col-md-6">
+                                    <div class="docente-trash-card shadow-sm p-4 h-100">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <div class="status-badge-inactive fw-bold">
+                                                <i class="fa-solid fa-circle-exclamation me-1"></i> REGISTRO INACTIVO
+                                            </div>
+                                            <span class="text-muted small fw-mono"># <%# Eval("strId_doc") %></span>
+                                        </div>
+
+                                        <div class="d-flex align-items-center mb-4">
+                                            <div class="avatar-utc rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                                                <%# Eval("strApellidos_doc").ToString().Substring(0,1) %>
+                                            </div>
+                                            <div>
+                                                <h5 class="mb-0 fw-bold text-dark"><%# Eval("NombreCompleto") %></h5>
+                                                <p class="mb-0 text-primary small fw-semibold"><i class="fa-solid fa-id-card me-1"></i> <%# Eval("strCedula_doc") %></p>
+                                            </div>
+                                        </div>
+
+                                        <div class="bg-light rounded-3 p-3 d-flex mb-4">
+                                            <div class="data-grid-item flex-fill">
+                                                <span class="label-mini">Facultad</span>
+                                                <span class="value-bold"><%# Eval("strFacultad_doc") %></span>
+                                            </div>
+                                            <div class="data-grid-item flex-fill">
+                                                <span class="label-mini">Categoría</span>
+                                                <span class="value-bold text-primary"><%# Eval("strCategorizacion") ?? "Pte. Asignar" %></span>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-auto d-grid">
+                                            <asp:LinkButton runat="server" CommandName="restaurar" CommandArgument='<%# Eval("strId_doc") %>'
+                                                CssClass="btn btn-primary rounded-pill py-2 fw-bold shadow-sm">
+                                                <i class="fa-solid fa-rotate-left me-2"></i> REINTEGRAR AL SISTEMA
                                             </asp:LinkButton>
-                                        </td>
-                                    </tr>
-                                </ItemTemplate>
-                            </asp:Repeater>
-                        </tbody>
-                    </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ItemTemplate>
+                            <FooterTemplate>
+                                <asp:Panel Visible='<%# rptPapelera.Items.Count == 0 %>' runat="server" CssClass="w-100 py-5 text-center">
+                                    <div class="bg-white rounded-5 p-5 shadow-sm d-inline-block mx-auto">
+                                        <i class="fa-solid fa-leaf fa-4x text-success opacity-25 mb-3"></i>
+                                        <h5 class="text-muted fw-bold">¡Todo está en orden!</h5>
+                                        <p class="text-muted mb-0">No hay registros inactivos para procesar.</p>
+                                    </div>
+                                </asp:Panel>
+                            </FooterTemplate>
+                        </asp:Repeater>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-white border-0 py-3 px-4">
+                    <button type="button" class="btn btn-light px-4 rounded-pill fw-bold text-muted" data-bs-dismiss="modal">SALIR</button>
                 </div>
             </div>
         </div>
