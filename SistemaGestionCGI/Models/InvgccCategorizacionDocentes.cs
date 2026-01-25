@@ -35,6 +35,9 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("strCertificado_doc")]
         public string strCertificado_doc { get; set; }
 
+        [JsonProperty("strCorreo_doc")]
+        public string strCorreo_doc { get; set; }
+
         [JsonProperty("NombreCompleto")]
         public string NombreCompleto { get; set; }
     }

@@ -18,7 +18,8 @@ namespace SistemaGestionCGI.BLL
             string sql = @"
                 SELECT 
                     strId_doc, 
-                    strCedula_doc, 
+                    strCedula_doc,
+                    strCorreo_doc,
                     strFacultad_doc, 
                     strCarrera_doc,
                     bitActivo_doc,
@@ -102,7 +103,14 @@ namespace SistemaGestionCGI.BLL
             string carrera = Limpiar(obj.strCarrera_doc);
             string categoria = Limpiar(obj.strCategorizacion);
             string fechaCat = obj.dtFechaCategorizacion.HasValue ? $"'{obj.dtFechaCategorizacion:yyyy-MM-dd}'" : "NULL";
-            string certificado = Limpiar(obj.strCertificado_doc);
+
+            string certificado = obj.strCertificado_doc;
+            if (!string.IsNullOrEmpty(certificado))
+            {
+                certificado = certificado.Replace("'", "''").Trim(); 
+            }
+
+            string correo = !string.IsNullOrEmpty(obj.strCorreo_doc) ? obj.strCorreo_doc.ToLower().Trim() : "";
 
             if (string.IsNullOrEmpty(obj.strId_doc))
             {
@@ -110,9 +118,9 @@ namespace SistemaGestionCGI.BLL
 
                 string sqlInsert = $@"
                     INSERT INTO INVGCCCATEGORIZACION_DOCENTES
-                    (strId_doc, strCedula_doc, strNombres_doc, strApellidos_doc, strFacultad_doc, strCarrera_doc, bitActivo_doc, strCategorizacion, dtFechaCategorizacion, strCertificado_doc)
+                    (strId_doc, strCedula_doc, strNombres_doc, strApellidos_doc, strFacultad_doc, strCarrera_doc, bitActivo_doc, strCategorizacion, dtFechaCategorizacion, strCertificado_doc, strCorreo_doc)
                     VALUES
-                    ('{obj.strId_doc}', '{cedula}', '{nombres}', '{apellidos}', '{facultad}', '{carrera}', 1, '{categoria}', {fechaCat}, '{certificado}')";
+                    ('{obj.strId_doc}', '{cedula}', '{nombres}', '{apellidos}', '{facultad}', '{carrera}', 1, '{categoria}', {fechaCat}, '{certificado}', '{correo}')";
 
                 _dal.UpdateSql(sqlInsert);
 
@@ -121,6 +129,12 @@ namespace SistemaGestionCGI.BLL
             else
             {
                 var actual = ObtenerPorId(obj.strId_doc);
+
+                if (string.IsNullOrEmpty(certificado) && actual != null)
+                {
+                    certificado = actual.strCertificado_doc;
+                }
+
                 string catAnterior = actual?.strCategorizacion ?? "SIN ASIGNAR";
                 string catNueva = string.IsNullOrEmpty(obj.strCategorizacion) ? "SIN ASIGNAR" : obj.strCategorizacion;
                 bool huboCambioCategoria = (catAnterior != catNueva);
@@ -128,16 +142,17 @@ namespace SistemaGestionCGI.BLL
                 string sqlUpdate = $@"
                     UPDATE INVGCCCATEGORIZACION_DOCENTES SET
                         strCedula_doc = '{cedula}',
+                        strCorreo_doc = '{correo}',
                         strNombres_doc = '{nombres}',
                         strApellidos_doc = '{apellidos}',
                         strFacultad_doc = '{facultad}',
                         strCarrera_doc = '{carrera}',
                         strCategorizacion = '{categoria}',
                         dtFechaCategorizacion = {fechaCat},
-                        strCertificado_doc = '{certificado}'
+                        strCertificado_doc = '{certificado}' 
                     WHERE strId_doc = '{obj.strId_doc}'";
 
-                _dal.UpdateSql(sqlUpdate); 
+                _dal.UpdateSql(sqlUpdate);
 
                 if (huboCambioCategoria)
                 {

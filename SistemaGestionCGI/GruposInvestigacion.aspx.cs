@@ -1071,6 +1071,7 @@ namespace SistemaGestionCGI
                     txtNombresInt.Text = docente.strNombres_doc;
                     txtApellidosInt.Text = docente.strApellidos_doc;
                     txtCarreraInt.Text = docente.strCarrera_doc;
+                    txtCorreoInt.Text = !string.IsNullOrEmpty(docente.strCorreo_doc) ? docente.strCorreo_doc : "";
 
                     SeleccionarCombo(ddlFacultadInt, docente.strFacultad_doc);
 
@@ -1080,7 +1081,7 @@ namespace SistemaGestionCGI
                     txtCedulaInt.ReadOnly = true;
                     txtNombresInt.ReadOnly = true;
                     txtApellidosInt.ReadOnly = true;
-                    txtCorreoInt.ReadOnly = false;
+                    txtCorreoInt.ReadOnly = true;
 
                     Msg("Docente vinculado exitosamente.", "ss");
                 }
@@ -1098,10 +1099,16 @@ namespace SistemaGestionCGI
 
         private void SeleccionarCombo(DropDownList ddl, string valor)
         {
-            if (ddl.Items.FindByValue(valor) != null)
-                ddl.SelectedValue = valor;
+            string valorLimpio = !string.IsNullOrEmpty(valor) ? valor.Trim() : "";
+
+            if (ddl.Items.FindByValue(valorLimpio) != null)
+            {
+                ddl.SelectedValue = valorLimpio;
+            }
             else
+            {
                 ddl.SelectedIndex = 0;
+            }
         }
 
         private void LimpiarCamposDocente()
@@ -1141,7 +1148,6 @@ namespace SistemaGestionCGI
                 if (docente != null)
                 {
                     string grupoOcupado = _manejador.VerificarIntegranteEnOtroGrupo(docente.strCedula_doc, hfIdGrupo.Value);
-
                     if (!string.IsNullOrEmpty(grupoOcupado))
                     {
                         Msg($"ERROR: El docente {docente.strApellidos_doc} ya pertenece al grupo '{grupoOcupado}'.", "ww");
@@ -1156,20 +1162,41 @@ namespace SistemaGestionCGI
                     txtCarreraCoord.Text = docente.strCarrera_doc;
                     SeleccionarCombo(ddlFacultadCoord, docente.strFacultad_doc);
 
-                    txtCorreoCoord.Text = "";
-
+                    txtCorreoCoord.Text = !string.IsNullOrEmpty(docente.strCorreo_doc) ? docente.strCorreo_doc : "";
                     hfCoordIdDocente.Value = docente.strId_doc;
+
+                    string rutaCertificado = docente.strCertificado_doc;
+
+                    if (!string.IsNullOrEmpty(rutaCertificado))
+                    {
+                        hfCoordArchivo.Value = rutaCertificado;
+
+                        pnlCargaArchivo.Visible = false;      
+                        pnlArchivoRecuperado.Visible = true;   
+
+                        lnkVerArchivo.NavigateUrl = ResolveUrl(rutaCertificado);
+
+                        btnCambiarArchivo.Visible = false;
+                    }
+                    else
+                    {
+                        hfCoordArchivo.Value = "";
+                        pnlCargaArchivo.Visible = true;
+                        pnlArchivoRecuperado.Visible = false;
+                        btnCambiarArchivo.Visible = true; 
+                    }
 
                     txtCedulaCoord.ReadOnly = true;
                     txtNombreCoord.ReadOnly = true;
                     txtApellidoCoord.ReadOnly = true;
                     txtCarreraCoord.ReadOnly = true;
-
-                    txtCorreoCoord.ReadOnly = false;
-                    ddlFacultadCoord.Enabled = false;
+                    txtCorreoCoord.ReadOnly = true;
+                    ddlFacultadCoord.Enabled = true;
 
                     pnlDatosPersonalesCoord.Style["display"] = "block";
-                    Msg("Datos cargados. Por favor ingrese el correo electrónico.", "ss");
+                    Msg(string.IsNullOrEmpty(rutaCertificado)
+                        ? "Datos cargados. ATENCIÓN: Este docente no tiene certificado adjunto, debe subirlo."
+                        : "Datos y Certificado vinculados correctamente.", "ss");
                 }
             }
             catch (Exception ex)
@@ -1194,11 +1221,15 @@ namespace SistemaGestionCGI
             ddlFacultadCoord.SelectedIndex = 0;
             hfCoordIdDocente.Value = "";
 
+            hfCoordArchivo.Value = "";
+            pnlCargaArchivo.Visible = true;  
+            pnlArchivoRecuperado.Visible = false;  
+            btnCambiarArchivo.Visible = true;      
+
             if (ddlDocentesCoord.Items.Count > 0) ddlDocentesCoord.SelectedIndex = 0;
             ddlTipoCoord.SelectedValue = "Interno";
 
             AlternarBloqueoCamposCoord(false);
-
             pnlDatosPersonalesCoord.Style["display"] = "block";
         }
 

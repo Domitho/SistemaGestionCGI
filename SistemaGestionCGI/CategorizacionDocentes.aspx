@@ -122,6 +122,11 @@
                     <asp:TextBox ID="txtApellidos" runat="server" CssClass="form-control" placeholder="Apellidos del docente" />
                 </div>
 
+                <div class="col-md-6">
+                    <label class="form-label">Correo Institucional <span class="text-danger">*</span></label>
+                    <asp:TextBox ID="txtCorreo" runat="server" CssClass="form-control" TextMode="Email" placeholder="ejemplo@utc.edu.ec"></asp:TextBox>
+                </div>
+
                 <div class="col-12">
                     <label class="form-label">Facultad <span class="text-danger">*</span></label>
                     <asp:DropDownList ID="ddlFacultad" runat="server" CssClass="form-select" 

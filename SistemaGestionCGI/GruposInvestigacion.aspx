@@ -363,13 +363,13 @@
                             <label class="form-label">Facultad / Extensión</label>
                             <asp:DropDownList ID="ddlFacultadInt" runat="server" CssClass="form-select">
                                 <asp:ListItem Text="-- Seleccione --" Value="" />
-                                <asp:ListItem>FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
-                                <asp:ListItem>FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
-                                <asp:ListItem>FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
-                                <asp:ListItem>FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
-                                <asp:ListItem>FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
-                                <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
-                                <asp:ListItem>EXTENSION LA MANÁ</asp:ListItem>
+                                <asp:ListItem Value="CAREN">FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
+                                <asp:ListItem Value="CIYA">FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
+                                <asp:ListItem Value="CAYE">FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
+                                <asp:ListItem Value="CSAYE">FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
+                                <asp:ListItem Value="SALUD">FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
+                                <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
+                                <asp:ListItem Value="LAMANA">EXTENSION LA MANÁ</asp:ListItem>
                             </asp:DropDownList>
                         </div>
                     </div>
@@ -842,13 +842,13 @@
                                 <label class="form-label small text-muted">Facultad / Extensión</label>
                                 <asp:DropDownList ID="ddlFacultadCoord" runat="server" CssClass="form-select form-select-sm">
                                     <asp:ListItem Text="-- Seleccione --" Value="" />
-                                    <asp:ListItem>FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
-                                    <asp:ListItem>FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
-                                    <asp:ListItem>FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
-                                    <asp:ListItem>FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
-                                    <asp:ListItem>FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
-                                    <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
-                                    <asp:ListItem>EXTENSION LA MANÁ</asp:ListItem>
+                                    <asp:ListItem Value="CAREN">FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
+                                    <asp:ListItem Value="CIYA">FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
+                                    <asp:ListItem Value="CAYE">FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
+                                    <asp:ListItem Value="CSAYE">FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
+                                    <asp:ListItem Value="SALUD">FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
+                                    <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
+                                    <asp:ListItem Value="LAMANA">EXTENSION LA MANÁ</asp:ListItem>
                                 </asp:DropDownList>
                                 <asp:RequiredFieldValidator ID="rfvFacultad" runat="server" ControlToValidate="ddlFacultadCoord" ErrorMessage="Seleccione" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" />
                             </div>

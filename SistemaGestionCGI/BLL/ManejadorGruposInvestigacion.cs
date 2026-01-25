@@ -436,7 +436,6 @@ namespace SistemaGestionCGI.BLL
 
         public InvgccCategorizacionDocentes ObtenerDocenteCategorizadoPorId(string id)
         {
-            // Consulta directa a la tabla de categorización para traer los datos originales
             string sql = $"SELECT * FROM INVGCCCATEGORIZACION_DOCENTES WHERE strId_doc = '{id}'";
             var lista = _dal.SelectSql<InvgccCategorizacionDocentes>(sql);
             return lista?.FirstOrDefault();
