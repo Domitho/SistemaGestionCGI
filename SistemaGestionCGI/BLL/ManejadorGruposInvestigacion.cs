@@ -265,7 +265,8 @@ namespace SistemaGestionCGI.BLL
             RegistrarHistorial(integrante.strId_int, "EDICIÓN", "Actualización de datos generales.", usuario);
         }
 
-        public string VerificarIntegranteEnOtroGrupo(string cedula)
+        // Modificamos para aceptar el segundo parámetro 'idGrupoActual'
+        public string VerificarIntegranteEnOtroGrupo(string cedula, string idGrupoActual = "")
         {
             string sql = $@"
                 SELECT G.strNombre_gru 
@@ -274,21 +275,20 @@ namespace SistemaGestionCGI.BLL
                 WHERE I.strCedula_int = '{cedula}' 
                 AND I.bitActivo_int = 1";
 
+            if (!string.IsNullOrEmpty(idGrupoActual))
+            {
+                sql += $" AND G.strId_gru <> '{idGrupoActual}'";
+            }
+
             var resultado = _dal.SelectSql<dynamic>(sql);
 
             if (resultado != null && resultado.Count > 0)
             {
-                try
-                {
-                    return ((dynamic)resultado[0]).strNombre_gru.ToString();
-                }
-                catch
-                {
-                    return "OTRO GRUPO";
-                }
+                try { return ((dynamic)resultado[0]).strNombre_gru.ToString(); }
+                catch { return "OTRO GRUPO"; }
             }
 
-            return null; 
+            return null;
         }
 
         public dynamic ObtenerDocenteCategorizado(string cedula)
@@ -395,41 +395,51 @@ namespace SistemaGestionCGI.BLL
 
         //
 
-        // 1. Obtener solo los integrantes inactivos de un grupo específico para la papelera
         public List<InvgccGrupoIntegrantes> ObtenerIntegrantesPapelera(string idGrupo)
         {
-            // Filtramos explícitamente por bitActivo_int = 0
             string sql = $@"SELECT * FROM INVGCCGRUPO_INTEGRANTES 
                     WHERE fkId_gru = '{idGrupo}' AND bitActivo_int = 0 
                     ORDER BY strApellidos_int";
             return _dal.SelectSql<InvgccGrupoIntegrantes>(sql);
         }
 
-        // 2. Restaurar integrante con validación de duplicados activos
         public bool RestaurarIntegrante(string idIntegrante, string usuario)
         {
             var integrante = ObtenerIntegrantePorId(idIntegrante);
             if (integrante == null) return false;
 
-            // VALIDACIÓN: Verificamos si la cédula ya pertenece a un integrante ACTIVO en el sistema
             string grupoActual = VerificarIntegranteEnOtroGrupo(integrante.strCedula_int);
 
             if (grupoActual != null)
             {
-                // Si grupoActual no es nulo, significa que ya está activo en el grupo 'grupoActual'
                 return false;
             }
 
-            // Restauramos el bit de activación y limpiamos la fecha de fin
             string sql = $@"UPDATE INVGCCGRUPO_INTEGRANTES 
                     SET bitActivo_int = 1, dtFechafin_int = NULL 
                     WHERE strId_int = '{idIntegrante}'";
 
             _dal.UpdateSql(sql);
 
-            // Registramos el movimiento en el historial para auditoría
             RegistrarHistorial(idIntegrante, "RESTAURACIÓN", "Reincorporación al grupo desde papelera.", usuario);
             return true;
+        }
+
+        public List<InvgccCategorizacionDocentes> ObtenerDocentesCategorizadosCombo()
+        {
+            string sql = @"SELECT strId_doc, (strApellidos_doc + ' ' + strNombres_doc) as NombreCompleto 
+                   FROM INVGCCCATEGORIZACION_DOCENTES 
+                   WHERE bitActivo_doc = 1 AND strCategorizacion IS NOT NULL 
+                   ORDER BY strApellidos_doc";
+            return _dal.SelectSql<InvgccCategorizacionDocentes>(sql);
+        }
+
+        public InvgccCategorizacionDocentes ObtenerDocenteCategorizadoPorId(string id)
+        {
+            // Consulta directa a la tabla de categorización para traer los datos originales
+            string sql = $"SELECT * FROM INVGCCCATEGORIZACION_DOCENTES WHERE strId_doc = '{id}'";
+            var lista = _dal.SelectSql<InvgccCategorizacionDocentes>(sql);
+            return lista?.FirstOrDefault();
         }
 
     }

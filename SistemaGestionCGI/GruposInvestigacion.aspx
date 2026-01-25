@@ -335,16 +335,16 @@
                 </asp:DropDownList>
             </div>
 
-            <div id="pnlBusquedaDocenteInt" style="display:none;" class="mb-4 p-3 bg-light rounded border border-dashed">
-                <label class="form-label fw-bold text-secondary small">Buscar Docente por Cédula</label>
+            <div id="pnlSeleccionDocenteInt" style="display:none;" class="mb-4 p-4 bg-primary bg-opacity-10 rounded-4 border border-primary border-opacity-25 shadow-sm">
+                <label class="form-label fw-bold text-primary small"> SELECCIONAR DOCENTE CATEGORIZADO</label>
                 <div class="input-group">
-                    <asp:TextBox ID="txtBuscarCedulaInt" runat="server" CssClass="form-control" placeholder="Ingrese cédula..." MaxLength="10"></asp:TextBox>
-                    <asp:LinkButton ID="btnBuscarDocenteInt" runat="server" CssClass="btn btn-primary" OnClick="btnBuscarDocenteInt_Click">
-                        <i class="fa-solid fa-magnifying-glass me-2"></i> Buscar
-                    </asp:LinkButton>
+                    <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-user-graduate text-primary"></i></span>
+                    <asp:DropDownList ID="ddlDocentesCategorizados" runat="server" CssClass="form-select border-start-0 shadow-none" 
+                        AutoPostBack="true" OnSelectedIndexChanged="ddlDocentesCategorizados_SelectedIndexChanged">
+                    </asp:DropDownList>
                 </div>
-                <div id="msgArchivoVinculado" class="mt-2 text-success small fw-bold" style="display:none;">
-                    <i class="fa-solid fa-link me-1"></i> Certificado de categorización vinculado correctamente.
+                <div class="form-text mt-2 small text-muted">
+                    <i class="fa-solid fa-circle-info me-1"></i> Solo aparecen docentes con categorización vigente.
                 </div>
             </div>
         
@@ -784,16 +784,17 @@
                     <hr class="text-muted opacity-25 my-4">
 
                     <div id="pnlBusquedaDocente" style="display:none;" class="mb-4">
-                        <div class="bg-light p-3 rounded-3 border border-dashed">
+                        <div class="bg-light p-3 rounded-3 border border-primary border-opacity-25">
                             <label class="form-label fw-bold text-primary small mb-2">
-                                <i class="fa-solid fa-magnifying-glass me-1"></i> BÚSQUEDA INSTITUCIONAL
+                                <i class="fa-solid fa-user-tie me-1"></i> SELECCIONAR DOCENTE UTC
                             </label>
                             <div class="input-group">
-                                <asp:TextBox ID="txtBuscarCedulaDoc" runat="server" CssClass="form-control" placeholder="Ingrese cédula del docente..." MaxLength="10"></asp:TextBox>
-                                <asp:LinkButton ID="btnBuscarDocente" runat="server" CssClass="btn btn-primary px-4" OnClick="btnBuscarDocente_Click" ValidationGroup="BuscarDoc">
-                                    <i class="fa-solid fa-search"></i>
-                                </asp:LinkButton>
+                                <span class="input-group-text bg-white text-primary"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                <asp:DropDownList ID="ddlDocentesCoord" runat="server" CssClass="form-select" 
+                                    AutoPostBack="true" OnSelectedIndexChanged="ddlDocentesCoord_SelectedIndexChanged">
+                                </asp:DropDownList>
                             </div>
+                            <div class="form-text small mt-1 text-muted">Seleccione un docente de la lista para autocompletar sus datos.</div>
                         </div>
                         <hr class="text-muted opacity-25 my-4">
                     </div>
@@ -1010,6 +1011,8 @@
 
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
     <script type="text/javascript">
+
+        // Configuración de DataTables
         const dtConfig = {
             responsive: true,
             autoWidth: false,
@@ -1019,22 +1022,32 @@
             dom: "<'row align-items-center mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-end'f>><'row'<'col-sm-12'tr>><'row mt-3 align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
         };
 
+        // Inicialización al cargar la página y tras cada PostBack (AJAX)
         Sys.Application.add_load(function () {
             initTable('#tablaGrupos');
             initTable('#tablaIntegrantes');
 
+            // Inicializar FileInput para Grupo
             if (typeof UTC_FileInput === 'function') {
                 initFileInput('wrapperArchivoGrupo', '<%= flpArchivoGrupo.ClientID %>');
 
-                if (document.getElementById('wrapperArchivoCoord')) {
-                    UTC_FileInput({
-                        wrapper: "wrapperArchivoCoord", dropzone: "dropzoneArchivoCoord",
-                        preview: "previewArchivoCoord", loader: "loaderArchivoCoord",
-                        input: "<%= flpArchivoCoord.ClientID %>"
-                    });
-                }
+            // Inicializar FileInput para Coordinador (si el modal existe en el DOM)
+            if (document.getElementById('wrapperArchivoCoord')) {
+                UTC_FileInput({
+                    wrapper: "wrapperArchivoCoord", dropzone: "dropzoneArchivoCoord",
+                    preview: "previewArchivoCoord", loader: "loaderArchivoCoord",
+                    input: "<%= flpArchivoCoord.ClientID %>"
+                });
             }
-        });
+        }
+
+        // Restaurar estado visual de los formularios tras PostBack
+        var ddlCoord = document.getElementById('<%= ddlTipoCoord.ClientID %>');
+        if (ddlCoord) toggleTipoCoordinador();
+
+        var ddlInt = document.getElementById('<%= ddlTipoInt.ClientID %>');
+        if (ddlInt) ToggleTipoIntegranteForm(ddlInt);
+    });
 
         function initTable(id) {
             const $table = $(id);
@@ -1067,43 +1080,58 @@
             }
         }
 
-        function ToggleTipoIntegrante(el) {
-            var tipo = el.value;
-            var divInterno = document.getElementById('divInterno');
-            var divExterno = document.getElementById('divExterno');
-            if (tipo === "Externo") {
-                divInterno.style.display = 'none'; divExterno.style.display = 'block';
-            } else {
-                divInterno.style.display = 'flex'; divExterno.style.display = 'none';
-            }
-        }
-
+        // ==========================================
+        // LÓGICA DE INTEGRANTES (Visual)
+        // ==========================================
         function InitFormulario() {
             var ddl = document.getElementById('<%= ddlTipoInt.ClientID %>');
+            if (ddl) ToggleTipoIntegranteForm(ddl);
+        }
 
-            if (ddl && typeof ToggleTipoIntegranteForm === 'function') {
-                ToggleTipoIntegranteForm(ddl);
-            } else if (ddl && typeof ToggleTipoIntegrante === 'function') {
-                ToggleTipoIntegrante(ddl);
+        function ToggleTipoIntegranteForm(el) {
+            if (!el) return;
+            var tipo = el.value;
+
+            var pnlSeleccion = document.getElementById('pnlSeleccionDocenteInt');
+            var pnlDatos = document.getElementById('<%= pnlDatosPersonalesInt.ClientID %>');
+
+        var divInterno = document.getElementById('divInternoInt');
+        var divExterno = document.getElementById('divExternoInt');
+
+        // Verificar si ya se seleccionó un docente (para mantener datos visibles)
+        var hfIdDoc = document.getElementById('<%= hfIdDocenteInt.ClientID %>');
+            var hayDocente = hfIdDoc && hfIdDoc.value !== "";
+
+            if (tipo === "Docente") {
+                pnlSeleccion.style.display = 'block'; // Mostrar Dropdown
+
+                // Si ya hay datos cargados, mostramos el formulario
+                if (hayDocente) {
+                    pnlDatos.style.display = 'block';
+                } else {
+                    pnlDatos.style.display = 'none'; // Ocultar hasta que seleccione
+                }
+
+                divInterno.style.display = 'flex';
+                divExterno.style.display = 'none';
+            }
+            else if (tipo === "Externo") {
+                pnlSeleccion.style.display = 'none';
+                pnlDatos.style.display = 'block';
+                divInterno.style.display = 'none';
+                divExterno.style.display = 'block';
+            }
+            else { // Interno
+                pnlSeleccion.style.display = 'none';
+                pnlDatos.style.display = 'block';
+                divInterno.style.display = 'flex';
+                divExterno.style.display = 'none';
             }
         }
 
-        function guardarMotivo() {
-            var txt = document.getElementById('txtMotivoEstado');
-            var hf = document.getElementById('<%= hfMotivoEstado.ClientID %>');
-            if (txt && hf) {
-                if (!txt.value.trim()) { alert('Ingrese un motivo'); return false; }
-                hf.value = txt.value.trim();
-                return true;
-            }
-            return false;
-        }
-
-        function AbrirModalEstado() {
-            var el = document.getElementById('modalEstadoInt');
-            if (el) { var modal = bootstrap.Modal.getOrCreateInstance(el); modal.show(); }
-        }
-
+        // ==========================================
+        // LÓGICA DE COORDINADOR (Visual)
+        // ==========================================
         function abrirModalCoord() {
             var el = document.getElementById('modalCoordinador');
             if (el) {
@@ -1122,121 +1150,178 @@
 
         function toggleTipoCoordinador() {
             var ddl = document.getElementById('<%= ddlTipoCoord.ClientID %>');
+        if (!ddl) return;
 
-            var tipo = ddl.value;
+        var tipo = ddl.value;
+        var pnlBusqueda = document.getElementById('pnlBusquedaDocente');
+        var pnlDatos = document.getElementById('<%= pnlDatosPersonalesCoord.ClientID %>');
+        var divInterno = document.getElementById('divInterno');
+        var divExterno = document.getElementById('divExterno'); // Asegúrate de tener este ID en el HTML si usas externos
 
-            var pnlBusqueda = document.getElementById('pnlBusquedaDocente');
-            var pnlDatos = document.getElementById('<%= pnlDatosPersonalesCoord.ClientID %>'); 
-            var btnGuardar = document.getElementById('<%= btnGuardarCoordModal.ClientID %>'); 
-
-            var divInterno = document.getElementById('divInterno');
-            var divExterno = document.getElementById('divExterno');
-
-            var txtNombre = document.getElementById('<%= txtNombreCoord.ClientID %>');
-
-            var rfvFacultad = document.getElementById('<%= rfvFacultad.ClientID %>');
-            var rfvCarrera = document.getElementById('<%= rfvCarrera.ClientID %>');
-            var rfvEntidad = document.getElementById('<%= rfvEntidad.ClientID %>');
+        // Verificar si ya hay un docente seleccionado (clave para corregir el bug de ocultamiento)
+        var hfIdDoc = document.getElementById('<%= hfCoordIdDocente.ClientID %>');
+            var hayDocente = hfIdDoc && hfIdDoc.value !== "";
 
             if (tipo === 'Docente') {
-                pnlBusqueda.style.display = 'block';
+                pnlBusqueda.style.display = 'block'; // Siempre ver buscador
 
-                if (txtNombre.value.trim() === "") {
-                    pnlDatos.style.display = 'none';
-                    if (btnGuardar) btnGuardar.style.display = 'none';
-                } else {
+                // CRUCIAL: Si ya cargamos datos, NO ocultar el formulario
+                if (hayDocente) {
                     pnlDatos.style.display = 'block';
-                    if (btnGuardar) btnGuardar.style.display = 'inline-block';
+                } else {
+                    pnlDatos.style.display = 'none';
                 }
 
-                divInterno.style.display = 'flex';
-                divExterno.style.display = 'none';
-
-                ToggleValidadores(true);
-
-            } else if (tipo === 'Externo') {
-                pnlBusqueda.style.display = 'none';
-
-                pnlDatos.style.display = 'block';
-                if (btnGuardar) btnGuardar.style.display = 'inline-block';
-
-                divInterno.style.display = 'none';
-                divExterno.style.display = 'block';
-                ToggleValidadores(false);
-
-            } else {
-                pnlBusqueda.style.display = 'none';
-
-                pnlDatos.style.display = 'block';
-                if (btnGuardar) btnGuardar.style.display = 'inline-block';
-
-                divInterno.style.display = 'flex';
-                divExterno.style.display = 'none';
-
-                ToggleValidadores(true);
+                if (divInterno) divInterno.style.display = 'flex';
+                if (divExterno) divExterno.style.display = 'none';
             }
-
-            function ToggleValidadores(esInterno) {
-                if (typeof ValidatorEnable === 'function') {
-                    if (esInterno) {
-                        ValidatorEnable(rfvFacultad, true);
-                        ValidatorEnable(rfvCarrera, true);
-                        ValidatorEnable(rfvEntidad, false);
-                    } else {
-                        ValidatorEnable(rfvFacultad, false);
-                        ValidatorEnable(rfvCarrera, false);
-                        ValidatorEnable(rfvEntidad, true);
-                    }
-                }
+            else if (tipo === 'Externo') {
+                pnlBusqueda.style.display = 'none';
+                pnlDatos.style.display = 'block';
+                if (divInterno) divInterno.style.display = 'none';
+                if (divExterno) divExterno.style.display = 'block';
+            }
+            else { // Interno
+                pnlBusqueda.style.display = 'none';
+                pnlDatos.style.display = 'block';
+                if (divInterno) divInterno.style.display = 'flex';
+                if (divExterno) divExterno.style.display = 'none';
             }
         }
 
-        function ToggleTipoIntegranteForm(el) {
-            var tipo = el.value;
-
-            var pnlBusqueda = document.getElementById('pnlBusquedaDocenteInt');
-            var pnlDatos = document.getElementById('<%= pnlDatosPersonalesInt.ClientID %>');
-
-            var divInterno = document.getElementById('divInternoInt');
-            var divExterno = document.getElementById('divExternoInt');
-
-            var hfEdit = document.getElementById('<%= hfIdIntEdit.ClientID %>');
-            var esEdicion = (hfEdit && hfEdit.value !== "");
-
-            var txtNombre = document.getElementById('<%= txtNombresInt.ClientID %>');
-
-            if (tipo === "Docente") {
-
-                if (esEdicion) {
-                    pnlBusqueda.style.display = 'none';
-                    pnlDatos.style.display = 'block';
-                } else {
-                    pnlBusqueda.style.display = 'block';
-
-                    if (txtNombre.value.trim() === "") {
-                        pnlDatos.style.display = 'none'; 
-                    } else {
-                        pnlDatos.style.display = 'block';
-                    }
-                }
-
-                divInterno.style.display = 'flex';
-                divExterno.style.display = 'none';
-
-            } else if (tipo === "Externo") {
-                pnlBusqueda.style.display = 'none';
-                pnlDatos.style.display = 'block';
-
-                divInterno.style.display = 'none';
-                divExterno.style.display = 'block';
-
+        // ==========================================
+        // VALIDACIONES
+        // ==========================================
+        function mostrarError(campoId, mensaje) {
+            if (typeof toastify === 'function') {
+                toastify('ww', mensaje, 'Sistema');
             } else {
-                pnlBusqueda.style.display = 'none';
-                pnlDatos.style.display = 'block';
-
-                divInterno.style.display = 'flex';
-                divExterno.style.display = 'none';
+                alert(mensaje);
             }
+            var campo = document.getElementById(campoId);
+            if (campo) {
+                campo.classList.add('is-invalid');
+                campo.focus();
+                campo.addEventListener('input', function () {
+                    this.classList.remove('is-invalid');
+                }, { once: true });
+            }
+        }
+
+        function esEmailValido(email) {
+            if (email === "") return true; // Permitir vacíos si no es obligatorio en contexto específico
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function esCedulaValida(cedula) {
+            if (cedula.length !== 10 || isNaN(cedula)) return false;
+            var provincia = parseInt(cedula.substring(0, 2), 10);
+            if (provincia < 1 || (provincia > 24 && provincia !== 30)) return false;
+            var tercerDigito = parseInt(cedula.substring(2, 3), 10);
+            if (tercerDigito >= 6) return false;
+            var coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2];
+            var verificador = parseInt(cedula.substring(9, 10), 10);
+            var suma = 0;
+            for (var i = 0; i < 9; i++) {
+                var valor = parseInt(cedula.substring(i, i + 1), 10) * coeficientes[i];
+                suma += (valor >= 10) ? valor - 9 : valor;
+            }
+            var digitoCalculado = (suma % 10 === 0) ? 0 : (10 - (suma % 10));
+            return verificador === digitoCalculado;
+        }
+
+        function ValidarFormularioIntegrante() {
+            var ddlTipo = document.getElementById('<%= ddlTipoInt.ClientID %>');
+        var idCedula = '<%= txtCedulaInt.ClientID %>';
+        var idCorreo = '<%= txtCorreoInt.ClientID %>';
+        
+        // Si es Docente y ya se cargaron los datos (readonly), validamos solo que no estén vacíos
+        if (ddlTipo && ddlTipo.value === 'Docente') {
+             var hfIdDoc = document.getElementById('<%= hfIdDocenteInt.ClientID %>');
+             if(!hfIdDoc || hfIdDoc.value === "") {
+                 toastify('ww', 'Debe seleccionar un docente de la lista.', 'Validación');
+                 return false;
+             }
+             // Validar correo obligatorio para docentes también
+             var valCorreo = document.getElementById(idCorreo).value.trim();
+             if(valCorreo === "") {
+                 mostrarError(idCorreo, 'Ingrese el correo institucional del docente.');
+                 return false;
+             }
+             return true;
+        }
+
+        // Validación estándar para Internos/Externos
+        var valCedula = document.getElementById(idCedula).value.trim();
+        if (!esCedulaValida(valCedula) && ddlTipo.value !== 'Externo') { // Externos a veces usan Pasaporte, ajustar según regla
+             mostrarError(idCedula, 'La cédula ingresada no es válida.');
+             return false;
+        }
+
+        var valCorreo = document.getElementById(idCorreo).value.trim();
+        if (!esEmailValido(valCorreo) || valCorreo === "") {
+            mostrarError(idCorreo, 'El correo electrónico es inválido o está vacío.');
+            return false;
+        }
+
+        return true;
+    }
+
+    function ValidarModalCoordinador() {
+        var ddlTipo = document.getElementById('<%= ddlTipoCoord.ClientID %>');
+        
+        if (ddlTipo && ddlTipo.value === 'Docente') {
+             var hfIdDoc = document.getElementById('<%= hfCoordIdDocente.ClientID %>');
+             if(!hfIdDoc || hfIdDoc.value === "") {
+                 toastify('ww', 'Seleccione un docente de la lista.', 'Validación');
+                 return false;
+             }
+             var email = document.getElementById('<%= txtCorreoCoord.ClientID %>').value;
+             if(email.trim() === ""){
+                 mostrarError('<%= txtCorreoCoord.ClientID %>', 'El correo es obligatorio.');
+                 return false;
+             }
+             return true;
+        }
+
+        if (ddlTipo && ddlTipo.value !== 'Docente') {
+            var idCedula = '<%= txtCedulaCoord.ClientID %>';
+            var valCedula = document.getElementById(idCedula).value.trim();
+            if (!esCedulaValida(valCedula) && ddlTipo.value !== 'Externo') {
+                mostrarError(idCedula, 'La cédula del coordinador no es válida.');
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function ValidarFormularioGrupo() {
+        // Agrega validaciones de grupo si es necesario (Nombre, Centro, etc)
+        var nombre = document.getElementById('<%= txtNombreGru.ClientID %>').value;
+        if(nombre.trim() === "") {
+            mostrarError('<%= txtNombreGru.ClientID %>', 'Ingrese el nombre del grupo.');
+            return false;
+        }
+        return true;
+    }
+
+    // ==========================================
+    // LÓGICA DE ESTADO Y REPORTE
+    // ==========================================
+    function guardarMotivo() {
+        var txt = document.getElementById('txtMotivoEstado');
+            var hf = document.getElementById('<%= hfMotivoEstado.ClientID %>');
+            if (txt && hf) {
+                if (!txt.value.trim()) { alert('Ingrese un motivo'); return false; }
+                hf.value = txt.value.trim();
+                return true;
+            }
+            return false;
+        }
+
+        function AbrirModalEstado() {
+            var el = document.getElementById('modalEstadoInt');
+            if (el) { var modal = bootstrap.Modal.getOrCreateInstance(el); modal.show(); }
         }
 
         function imprimirReporte() {
@@ -1283,102 +1368,6 @@
                 ventana.print();
                 ventana.close();
             }, 500);
-        }
-    </script>
-
-    <script type="text/javascript">
-
-        function mostrarError(campoId, mensaje) {
-            if (typeof toastify === 'function') {
-                toastify('ww', mensaje, 'Sistema');
-            } else {
-                alert(mensaje);
-            }
-            var campo = document.getElementById(campoId);
-            if (campo) {
-                campo.classList.add('is-invalid');
-                campo.focus();
-                campo.addEventListener('input', function () {
-                    this.classList.remove('is-invalid');
-                }, { once: true });
-            }
-        }
-
-        function esEmailValido(email) {
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-        }
-
-        function esCedulaValida(cedula) {
-            if (cedula.length !== 10 || isNaN(cedula)) return false;
-            var provincia = parseInt(cedula.substring(0, 2), 10);
-            if (provincia < 1 || (provincia > 24 && provincia !== 30)) return false;
-            var tercerDigito = parseInt(cedula.substring(2, 3), 10);
-            if (tercerDigito >= 6) return false;
-
-            var coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2];
-            var verificador = parseInt(cedula.substring(9, 10), 10);
-            var suma = 0;
-
-            for (var i = 0; i < 9; i++) {
-                var valor = parseInt(cedula.substring(i, i + 1), 10) * coeficientes[i];
-                suma += (valor >= 10) ? valor - 9 : valor;
-            }
-
-            var digitoCalculado = (suma % 10 === 0) ? 0 : (10 - (suma % 10));
-            return verificador === digitoCalculado;
-        }
-
-        function ValidarFormularioIntegrante() {
-            var idCedula = '<%= txtCedulaInt.ClientID %>';
-        var idCorreo = '<%= txtCorreoInt.ClientID %>';
-
-            var valCedula = document.getElementById(idCedula).value.trim();
-            if (!esCedulaValida(valCedula)) {
-                mostrarError(idCedula, 'La cédula ingresada no es válida.');
-                return false; 
-            }
-
-            var valCorreo = document.getElementById(idCorreo).value.trim();
-            if (!esEmailValido(valCorreo)) {
-                mostrarError(idCorreo, 'El correo electrónico no es válido.');
-                return false; 
-            }
-
-            return true; 
-        }
-
-        function ValidarModalCoordinador() {
-            var ddlTipo = document.getElementById('<%= ddlTipoCoord.ClientID %>');
-        
-        if (ddlTipo && ddlTipo.value !== 'Docente') {
-            var idCedula = '<%= txtCedulaCoord.ClientID %>';
-            var valCedula = document.getElementById(idCedula).value.trim();
-            
-            if (!esCedulaValida(valCedula)) {
-                mostrarError(idCedula, 'La cédula del coordinador no es válida.');
-                return false;
-            }
-        }
-        return true;
-        }
-
-    function toggleTipoCoordinador() {
-        var ddl = document.getElementById('<%= ddlTipoCoord.ClientID %>');
-        if (!ddl) return;
-        var pnlBusqueda = document.getElementById('pnlBusquedaDocente');
-        var pnlDatos = document.getElementById('<%= pnlDatosPersonalesCoord.ClientID %>');
-
-            if (ddl.value === 'Docente') {
-                pnlBusqueda.style.display = 'block';
-                if (pnlDatos) pnlDatos.style.display = 'none'; 
-            } else {
-                pnlBusqueda.style.display = 'none';
-                if (pnlDatos) pnlDatos.style.display = 'block';
-            }
-        }
-
-        function ValidarFormularioGrupo() {
-            return true;
         }
     </script>
 

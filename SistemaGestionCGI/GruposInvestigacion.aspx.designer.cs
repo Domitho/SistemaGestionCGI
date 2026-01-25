@@ -402,22 +402,13 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.DropDownList ddlTipoInt;
 
         /// <summary>
-        /// Control txtBuscarCedulaInt.
+        /// Control ddlDocentesCategorizados.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtBuscarCedulaInt;
-
-        /// <summary>
-        /// Control btnBuscarDocenteInt.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnBuscarDocenteInt;
+        protected global::System.Web.UI.WebControls.DropDownList ddlDocentesCategorizados;
 
         /// <summary>
         /// Control pnlDatosPersonalesInt.
@@ -807,22 +798,13 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.DropDownList ddlTipoCoord;
 
         /// <summary>
-        /// Control txtBuscarCedulaDoc.
+        /// Control ddlDocentesCoord.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtBuscarCedulaDoc;
-
-        /// <summary>
-        /// Control btnBuscarDocente.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnBuscarDocente;
+        protected global::System.Web.UI.WebControls.DropDownList ddlDocentesCoord;
 
         /// <summary>
         /// Control pnlDatosPersonalesCoord.
