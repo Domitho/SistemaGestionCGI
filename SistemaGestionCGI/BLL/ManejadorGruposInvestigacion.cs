@@ -25,12 +25,29 @@ namespace SistemaGestionCGI.BLL
         {
             string sql = @"
                 SELECT 
-                        G.*, 
-                        C.strNombre_cen,
-                        (SELECT COUNT(*) FROM INVGCCINSCRIPCION_PROYECTOS P WHERE P.fkId_gru = G.strId_gru) as TotalProyectos
-                    FROM INVGCCGRUPO_INVESTIGACION G
-                    LEFT JOIN INVGCCCENTRO_INVESTIGACION C ON G.fkId_cen = C.strId_cen
-                    ORDER BY TotalProyectos DESC, G.dtFechacrea_gru DESC";
+                    G.strId_gru,
+                    G.strNombre_gru,
+                    G.fkId_cen,
+                    C.strNombre_cen,
+                    G.strCategoria_gru,
+                    G.dtFechacrea_gru,
+                    G.strFoto_gru,
+                    G.strArchivo_gru,
+            
+                    ISNULL(
+                        (SELECT TOP 1 (I.strApellidos_int + ' ' + I.strNombres_int)
+                         FROM INVGCCGRUPO_INTEGRANTES I
+                         WHERE I.fkId_gru = G.strId_gru 
+                         AND I.strFuncion_int = 'INVESTIGADOR PRINCIPAL' 
+                         AND I.bitActivo_int = 1), 
+                        'SIN ASIGNAR'
+                    ) AS strCoordinador_gru, 
+
+                    (SELECT COUNT(*) FROM INVGCCINSCRIPCION_PROYECTOS P WHERE P.fkId_gru = G.strId_gru) AS TotalProyectos
+
+                FROM INVGCCGRUPO_INVESTIGACION G
+                LEFT JOIN INVGCCCENTRO_INVESTIGACION C ON G.fkId_cen = C.strId_cen
+                ORDER BY G.dtFechacrea_gru DESC";
 
             return _dal.SelectSql<InvgccGrupoInvestigacion>(sql);
         }

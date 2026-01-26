@@ -58,18 +58,63 @@ namespace SistemaGestionCGI
             if (!string.IsNullOrEmpty(idCentro))
             {
                 var integrantes = _manejador.ObtenerIntegrantesPorCentro(idCentro);
-
                 foreach (var item in integrantes)
                 {
-                    ListItem li = new ListItem(item.NombreCompleto, item.strId_cin); 
-                    ddlDirector.Items.Add(li);
+                    ddlDirector.Items.Add(new ListItem(item.NombreCompleto, item.strId_cin));
                 }
 
                 var directorActual = _manejador.BuscarDirectorDelCentro(idCentro);
-                if (directorActual != null && ddlDirector.Items.FindByValue(directorActual.strId_cin) != null)
+
+                if (directorActual != null)
                 {
-                    ddlDirector.SelectedValue = directorActual.strId_cin;
+                    if (ddlDirector.Items.FindByValue(directorActual.strId_cin) != null)
+                        ddlDirector.SelectedValue = directorActual.strId_cin;
+
+                    ConfigurarEstadoControlesDirector(true);
                 }
+                else
+                {
+                    ConfigurarEstadoControlesDirector(false);
+                }
+            }
+            else
+            {
+                ConfigurarEstadoControlesDirector(false);
+            }
+        }
+
+        private void ConfigurarEstadoControlesDirector(bool hayDirectorActivo)
+        {
+            if (hayDirectorActivo)
+            {
+
+                ddlDirector.Enabled = false;
+                ddlDirector.CssClass = "form-select border-start-0 bg-light text-dark fw-bold";
+
+                btnNuevoDirectorInput.Visible = false;
+            }
+            else
+            {
+                ddlDirector.Enabled = true;
+                ddlDirector.CssClass = "form-select border-start-0 bg-white";
+
+                btnNuevoDirectorInput.Visible = true;
+            }
+        }
+
+        private void HabilitarBotonNuevoDirector(bool habilitar)
+        {
+            if (habilitar)
+            {
+                btnNuevoDirectorInput.Disabled = false;
+                btnNuevoDirectorInput.Attributes["class"] = "btn btn-outline-primary";
+                btnNuevoDirectorInput.Attributes.Remove("title");
+            }
+            else
+            {
+                btnNuevoDirectorInput.Disabled = true;
+                btnNuevoDirectorInput.Attributes["class"] = "btn btn-outline-secondary"; // Gris visual
+                btnNuevoDirectorInput.Attributes["title"] = "Ya existe un Director activo. Para agregar uno nuevo, primero debe dar de baja al actual en la sección 'Integrantes'.";
             }
         }
 
@@ -77,54 +122,38 @@ namespace SistemaGestionCGI
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(txtCedulaDirModal.Text) || string.IsNullOrWhiteSpace(txtNombresDirModal.Text))
-                {
-                    Msg("Cédula y Nombres obligatorios.", "ww");
-                    ScriptManager.RegisterStartupScript(this, GetType(), "ReOpen", "new bootstrap.Modal(document.getElementById('modalNuevoDirector')).show();", true);
-                    return;
-                }
+                if (string.IsNullOrWhiteSpace(txtCedulaDirModal.Text)) { Msg("Cédula obligatoria", "ww"); return; }
+
+                string cedula = txtCedulaDirModal.Text.Trim();
+                if (!EsCedulaValida(cedula)) { Msg("Cédula inválida.", "ee"); return; }
+
+                var existe = _manejador.BuscarIntegranteActivoPorCedula(cedula);
+                if (existe != null) { Msg($"Esta persona ya existe en el centro {existe.fkId_cen}.", "ww"); return; }
 
                 var nuevoDir = new InvgccCentroIntegrantes
                 {
-                    fkId_cen = hfIdCentro.Value,
-                    strCedula_cin = txtCedulaDirModal.Text.Trim(),
-                    strNombres_cin = txtNombresDirModal.Text.Trim(),
-                    strApellidos_cin = txtApellidosDirModal.Text.Trim(),
-                    strCorreo_cin = txtCorreoDirModal.Text.Trim(),
+                    strCedula_cin = cedula,
+                    strNombres_cin = txtNombresDirModal.Text.ToUpper(),
+                    strApellidos_cin = txtApellidosDirModal.Text.ToUpper(),
+                    strCorreo_cin = txtCorreoDirModal.Text,
                     strTipo_cin = ddlTipoDirModal.SelectedValue,
-                    strFuncion_cin = "Director",
-                    strCarrera_cin = txtCarreraDirModal.Text.Trim(),
+                    strFuncion_cin = "Director", 
+                    strCarrera_cin = (ddlTipoDirModal.SelectedValue == "Interno") ? ddlCarreraDirModal.SelectedValue : "",
                     strFacultad_cin = ddlFacultadDirModal.SelectedValue,
                     strEntidad_cin = (ddlTipoDirModal.SelectedValue == "Externo") ? txtEntidadDirModal.Text : ""
                 };
 
-                if (string.IsNullOrEmpty(hfIdCentro.Value))
-                {
-                    ViewState["DirectorPendiente"] = nuevoDir;
+                ViewState["DirectorPendiente"] = nuevoDir;
 
-                    ddlDirector.Items.Clear();
-                    string nombreCompleto = $"{nuevoDir.strApellidos_cin} {nuevoDir.strNombres_cin}";
-                    ddlDirector.Items.Add(new ListItem(nombreCompleto + " (Por Guardar)", "-1"));
-                    ddlDirector.SelectedValue = "-1";
+                ddlDirector.Items.Clear();
+                string etiqueta = $"{nuevoDir.strApellidos_cin} {nuevoDir.strNombres_cin} (PENDIENTE)";
+                ddlDirector.Items.Add(new ListItem(etiqueta, "-1"));
+                ddlDirector.SelectedValue = "-1";
 
-                    Msg("Director asignado. Se guardará al crear el Centro.", "ii");
-                }
-                else
-                {
-                    string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
-                    _manejador.GuardarIntegrante(nuevoDir, usuario);
+                string scriptCerrar = "var m = bootstrap.Modal.getInstance(document.getElementById('modalNuevoDirector')); m.hide();";
+                ScriptManager.RegisterStartupScript(this, GetType(), "CloseModalDir", scriptCerrar, true);
 
-                    CargarCombosDirector(hfIdCentro.Value);
-
-                    var dirGuardado = _manejador.ObtenerIntegrantesPorCentro(hfIdCentro.Value)
-                                                .Find(x => x.strCedula_cin == nuevoDir.strCedula_cin);
-                    if (dirGuardado != null) ddlDirector.SelectedValue = dirGuardado.strId_cin;
-
-                    Msg("Director registrado exitosamente.", "ss");
-                }
-
-                txtCedulaDirModal.Text = ""; txtNombresDirModal.Text = ""; txtApellidosDirModal.Text = "";
-                txtCorreoDirModal.Text = ""; txtCarreraDirModal.Text = ""; txtEntidadDirModal.Text = "";
+                Msg("Director asignado temporalmente. (Guarde el Centro para confirmar)", "ii");
             }
             catch (Exception ex) { Msg("Error modal: " + ex.Message, "ee"); }
         }
@@ -133,79 +162,79 @@ namespace SistemaGestionCGI
         {
             LimpiarFormulario();
             CambiarVista(Vista.FormularioCentro);
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "InitNewFiles",
+                $"if(typeof initMyFileInput === 'function') {{ initMyFileInput('wrapperResolucion', '{flpResolucion.ClientID}'); initMyFileInput('wrapperAceptacion', '{flpAceptacion.ClientID}'); }}", true);
         }
 
         protected void btnGuardar_Click(object sender, EventArgs e)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(txtNombre.Text)) { Msg("Nombre del centro obligatorio.", "ww"); return; }
-                if (ddlLineas.SelectedValue == "") { Msg("Seleccione una línea de investigación.", "ww"); return; }
-
-                bool hayDirectorSeleccionado = ddlDirector.SelectedValue != "" && ddlDirector.SelectedValue != "0";
-                bool hayDirectorPendiente = ViewState["DirectorPendiente"] != null;
-
-                if (!hayDirectorSeleccionado && !hayDirectorPendiente)
-                {
-                    Msg("El Director es obligatorio. Seleccione uno o cree uno nuevo.", "ww");
-                    return;
-                }
+                if (string.IsNullOrWhiteSpace(txtNombre.Text)) { Msg("Nombre obligatorio.", "ww"); return; }
 
                 var centro = new InvgccCentroInvestigacion
                 {
-                    strNombre_cen = txtNombre.Text.Trim(),
+                    strId_cen = hfIdCentro.Value,
+                    strNombre_cen = txtNombre.Text,
                     strFacultad_cen = ddlFacultad.SelectedValue,
-                    strArea_cen = txtArea.Text.Trim(),
-                    strUbicacion_cen = txtUbicacion.Text.Trim(),
+                    strArea_cen = txtArea.Text,
+                    strUbicacion_cen = txtUbicacion.Text,
                     strLineaInv_cen = ddlLineas.SelectedValue,
-                    strMision_cen = txtMision.Text.Trim(),
-                    strVision_cen = txtVision.Text.Trim(),
-                    dtFechaAprobacion_cen = string.IsNullOrEmpty(txtFechaAprobacion.Text)
-                                                    ? DateTime.Now
-                                                    : DateTime.Parse(txtFechaAprobacion.Text),
-
+                    strMision_cen = txtMision.Text,
+                    strVision_cen = txtVision.Text,
+                    dtFechaAprobacion_cen = string.IsNullOrEmpty(txtFechaAprobacion.Text) ? DateTime.Now : DateTime.Parse(txtFechaAprobacion.Text),
                     strResolucion_cen = hfResolucionActual.Value,
                     strAceptacion_cen = hfAceptacionActual.Value
                 };
 
-                string rutaVirtualRes = "~/Archivos/Centros/Resoluciones/";
+                if (flpResolucion.HasFile) centro.strResolucion_cen = GuardarArchivo(flpResolucion, "RES");
+                if (flpAceptacion.HasFile) centro.strAceptacion_cen = GuardarArchivo(flpAceptacion, "ACEP");
 
-                if (flpResolucion.HasFile)
+                string idCentroFinal = _manejador.GuardarCentroCompleto(centro);
+
+                string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
+
+                if (ViewState["DirectorPendiente"] != null)
                 {
-                    // Si subió un archivo nuevo, lo guardamos y actualizamos la propiedad
-                    centro.strResolucion_cen = GuardarArchivoVirtual(flpResolucion, rutaVirtualRes, "RES");
-                }
+                    var directorPendiente = (InvgccCentroIntegrantes)ViewState["DirectorPendiente"];
 
-                // B. Documento de Aceptación
-                string rutaVirtualAce = "~/Archivos/Centros/Aceptaciones/";
-
-                if (flpAceptacion.HasFile)
-                {
-                    centro.strAceptacion_cen = GuardarArchivoVirtual(flpAceptacion, rutaVirtualAce, "ACEP");
-                }
-
-                if (string.IsNullOrEmpty(hfIdCentro.Value))
-                {
-                    _manejador.Guardar(centro);
-
-                    if (hayDirectorPendiente)
+                    var directorAntiguo = _manejador.BuscarDirectorDelCentro(idCentroFinal);
+                    if (directorAntiguo != null)
                     {
-                        var dirPendiente = (InvgccCentroIntegrantes)ViewState["DirectorPendiente"];
-                        dirPendiente.fkId_cen = centro.strId_cen; 
-
-                        string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
-                        _manejador.GuardarIntegrante(dirPendiente, usuario);
-
-                        ViewState["DirectorPendiente"] = null;
+                        directorAntiguo.strFuncion_cin = "Miembro";
+                        _manejador.ActualizarIntegrante(directorAntiguo, usuario);
                     }
-                    Redireccionar("Centro y Director registrados correctamente.", "ss");
+
+                    directorPendiente.fkId_cen = idCentroFinal;
+                    _manejador.GuardarIntegrante(directorPendiente, usuario);
+
+                    ViewState["DirectorPendiente"] = null;
                 }
                 else
                 {
-                    centro.strId_cen = hfIdCentro.Value;
-                    _manejador.Actualizar(centro);
-                    Redireccionar("Centro actualizado correctamente.", "ss");
+                    string idSeleccionado = ddlDirector.SelectedValue;
+
+                    if (!string.IsNullOrEmpty(idSeleccionado) && idSeleccionado != "-1" && idSeleccionado != "")
+                    {
+                        var directorActualEnBD = _manejador.BuscarDirectorDelCentro(idCentroFinal);
+
+                        if (directorActualEnBD != null && directorActualEnBD.strId_cin != idSeleccionado)
+                        {
+                            directorActualEnBD.strFuncion_cin = "Miembro";
+                            _manejador.ActualizarIntegrante(directorActualEnBD, usuario);
+                        }
+
+                        var nuevoDirector = _manejador.ObtenerIntegrantePorId(idSeleccionado);
+                        if (nuevoDirector != null && nuevoDirector.strFuncion_cin != "Director")
+                        {
+                            nuevoDirector.strFuncion_cin = "Director";
+                            _manejador.ActualizarIntegrante(nuevoDirector, usuario);
+                        }
+                    }
                 }
+
+                Redireccionar("Centro guardado exitosamente.", "ss");
             }
             catch (Exception ex) { Msg("Error al guardar: " + ex.Message, "ee"); }
         }
@@ -221,6 +250,13 @@ namespace SistemaGestionCGI
                     break;
                 case "Integrantes":
                     hfIdCentro.Value = id;
+
+                    hfCentroIdActual.Value = id;
+                    ViewState["IdCentroActual"] = id; 
+
+                    var centro = _manejador.ObtenerPorId(id);
+                    if (centro != null) lblNombreCentroSeleccionado.Text = centro.strNombre_cen;
+
                     CargarIntegrantes(id);
                     CambiarVista(Vista.ListaIntegrantes);
                     break;
@@ -231,40 +267,6 @@ namespace SistemaGestionCGI
                     _manejador.Eliminar(id);
                     Redireccionar("Centro eliminado.", "ss");
                     break;
-            }
-        }
-
-        // Método auxiliar para guardar usando rutas virtuales (relativas al proyecto)
-        private string GuardarArchivoVirtual(FileUpload control, string carpetaVirtual, string prefijo)
-        {
-            if (!control.HasFile) return "";
-
-            try
-            {
-                // 1. Obtener la ruta física en el servidor (Ej: C:\Inetpub\wwwroot\Sitio\Archivos\Centros\Resoluciones)
-                string rutaFisica = Server.MapPath(carpetaVirtual);
-
-                // 2. Verificar y crear el directorio si no existe
-                if (!System.IO.Directory.Exists(rutaFisica))
-                {
-                    System.IO.Directory.CreateDirectory(rutaFisica);
-                }
-
-                // 3. Generar un nombre único para evitar reemplazos (PREFIJO_TIMESTAMP.ext)
-                string extension = System.IO.Path.GetExtension(control.FileName);
-                string nombreArchivo = $"{prefijo}_{DateTime.Now.Ticks}{extension}";
-
-                // 4. Guardar el archivo físicamente
-                string rutaCompleta = System.IO.Path.Combine(rutaFisica, nombreArchivo);
-                control.SaveAs(rutaCompleta);
-
-                // 5. Retornar la ruta VIRTUAL para guardar en la BD (Ej: ~/Archivos/Centros/Resoluciones/RES_12345.pdf)
-                // Usamos '/' para asegurar compatibilidad web
-                return System.IO.Path.Combine(carpetaVirtual, nombreArchivo).Replace("\\", "/");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error al subir archivo: " + ex.Message);
             }
         }
 
@@ -279,18 +281,17 @@ namespace SistemaGestionCGI
             txtUbicacion.Text = c.strUbicacion_cen;
 
             if (ddlLineas.Items.FindByValue(c.strLineaInv_cen) != null)
-            {
                 ddlLineas.SelectedValue = c.strLineaInv_cen;
-            }
             else
-            {
-                ddlLineas.SelectedIndex = 0; 
-            }
+                ddlLineas.SelectedIndex = 0;
 
             txtMision.Text = c.strMision_cen;
             txtVision.Text = c.strVision_cen;
-            txtFechaAprobacion.Text = c.dtFechaAprobacion_cen.ToString("yyyy-MM-dd");
+
+            txtFechaAprobacion.Text = c.dtFechaAprobacion_cen != DateTime.MinValue ? c.dtFechaAprobacion_cen.ToString("yyyy-MM-dd") : "";
+
             if (ddlFacultad.Items.FindByValue(c.strFacultad_cen) != null) ddlFacultad.SelectedValue = c.strFacultad_cen;
+
             hfResolucionActual.Value = c.strResolucion_cen;
             hfAceptacionActual.Value = c.strAceptacion_cen;
 
@@ -298,8 +299,11 @@ namespace SistemaGestionCGI
 
             CambiarVista(Vista.FormularioCentro);
 
-            ScriptManager.RegisterStartupScript(this, GetType(), "InitFiles",
-                "if(typeof initFileInput === 'function') { initFileInput('wrapperResolucion', '" + flpResolucion.ClientID + "'); initFileInput('wrapperAceptacion', '" + flpAceptacion.ClientID + "'); }", true);
+            string scriptFiles = $"if(typeof initMyFileInput === 'function') {{ initMyFileInput('wrapperResolucion', '{flpResolucion.ClientID}'); initMyFileInput('wrapperAceptacion', '{flpAceptacion.ClientID}'); }}";
+
+            string scriptEstado = $"cargarEstadoEdicion('wrapperResolucion', '{hfResolucionActual.ClientID}'); cargarEstadoEdicion('wrapperAceptacion', '{hfAceptacionActual.ClientID}');";
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "InitFilesEdit", scriptFiles + scriptEstado, true);
         }
 
         // ==========================
@@ -324,47 +328,98 @@ namespace SistemaGestionCGI
             {
                 if (string.IsNullOrWhiteSpace(txtCedulaInt.Text) || string.IsNullOrWhiteSpace(txtNombresInt.Text))
                 {
-                    Msg("Cédula y Nombres obligatorios", "ww"); return;
+                    Msg("Cédula y Nombres son obligatorios.", "ww");
+                    return;
                 }
 
-                string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
-                string tipoVinculacion = ddlTipoInt.SelectedValue; // Interno o Externo
+                string cedulaIngresada = txtCedulaInt.Text.Trim();
+
+                if (!EsCedulaValida(cedulaIngresada))
+                {
+                    Msg("La cédula ingresada NO es válida (Formato incorrecto).", "ee");
+                    return;
+                }
+
+                var integranteExistente = _manejador.BuscarIntegranteActivoPorCedula(cedulaIngresada);
+
+                if (integranteExistente != null)
+                {
+                    if (string.IsNullOrEmpty(hfIdIntegrante.Value))
+                    {
+                        Msg($"La cédula {cedulaIngresada} ya está registrada en el sistema (Centro ID: {integranteExistente.fkId_cen}).", "ww");
+                        return;
+                    }
+                    else if (integranteExistente.strId_cin != hfIdIntegrante.Value)
+                    {
+                        Msg($"La cédula {cedulaIngresada} pertenece a otro integrante.", "ww");
+                        return;
+                    }
+                }
+
+                string funcionAsignar = "Miembro"; 
+
+                if (!string.IsNullOrEmpty(hfIdIntegrante.Value))
+                {
+                    var integranteActual = _manejador.ObtenerIntegrantePorId(hfIdIntegrante.Value);
+
+                    if (integranteActual != null && integranteActual.strFuncion_cin == "Director")
+                    {
+                        funcionAsignar = "Director";
+                    }
+                }
 
                 var i = new InvgccCentroIntegrantes
                 {
-                    fkId_cen = hfIdCentro.Value,
+                    fkId_cen = hfCentroIdActual.Value,
                     strCedula_cin = txtCedulaInt.Text.Trim(),
-                    strNombres_cin = txtNombresInt.Text.Trim(),
-                    strApellidos_cin = txtApellidosInt.Text.Trim(),
-                    strCorreo_cin = txtCorreoInt.Text.Trim(),
-                    strFuncion_cin = ddlFuncionInt.SelectedValue,
-                    strTipo_cin = tipoVinculacion,
+                    strNombres_cin = txtNombresInt.Text.Trim().ToUpper(),
+                    strApellidos_cin = txtApellidosInt.Text.Trim().ToUpper(),
+                    strCorreo_cin = txtCorreoInt.Text.Trim().ToLower(),
 
-                    strCarrera_cin = (tipoVinculacion == "Interno") ? txtCarreraInt.Text.Trim() : "",
-                    strFacultad_cin = (tipoVinculacion == "Interno") ? ddlFacultadInt.SelectedValue : "",
-                    strEntidad_cin = (tipoVinculacion == "Externo") ? txtEntidadExternoInt.Text.Trim() : ""
+                    strFuncion_cin = funcionAsignar, 
+
+                    strTipo_cin = ddlTipoInt.SelectedValue
                 };
+
+                if (i.strTipo_cin == "Interno")
+                {
+                    i.strFacultad_cin = ddlFacultadInt.SelectedValue;
+                    i.strCarrera_cin = ddlCarreraInt.SelectedValue;
+                    i.strEntidad_cin = "UTC";
+                }
+                else
+                {
+                    i.strEntidad_cin = txtEntidadExternoInt.Text.Trim().ToUpper();
+                    i.strFacultad_cin = "";
+                    i.strCarrera_cin = "";
+                }
+
+                string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
 
                 if (string.IsNullOrEmpty(hfIdIntegrante.Value))
                 {
                     _manejador.GuardarIntegrante(i, usuario);
-                    Msg("Integrante agregado.", "ss");
+                    Msg("Integrante registrado correctamente.", "ss");
                 }
                 else
                 {
                     i.strId_cin = hfIdIntegrante.Value;
+
                     var original = _manejador.ObtenerIntegrantePorId(i.strId_cin);
                     if (original != null) i.bitActivo_cin = original.bitActivo_cin;
 
-                    _manejador.ActualizarIntegrante(i);
-                    _manejador.GuardarHistorial(i.strId_cin, "EDICIÓN", "Actualización de datos generales", usuario);
-                    Msg("Datos actualizados.", "ss");
+                    _manejador.ActualizarIntegrante(i, usuario);
+
+                    Msg("Integrante actualizado correctamente.", "ss");
                 }
 
-                CargarIntegrantes(hfIdCentro.Value);
+                CargarIntegrantes(hfCentroIdActual.Value);
+
+                if (funcionAsignar == "Director") CargarCentros();
+
                 CambiarVista(Vista.ListaIntegrantes);
             }
-            catch (Exception ex) { Msg("Error int: " + ex.Message, "ee"); }
+            catch (Exception ex) { Msg("Error: " + ex.Message, "ee"); }
         }
 
         protected void rptIntegrantes_ItemCommand(object source, RepeaterCommandEventArgs e)
@@ -404,16 +459,23 @@ namespace SistemaGestionCGI
 
                 if (i.strTipo_cin == "Interno")
                 {
-                    txtCarreraInt.Text = i.strCarrera_cin;
                     if (ddlFacultadInt.Items.FindByValue(i.strFacultad_cin) != null)
                         ddlFacultadInt.SelectedValue = i.strFacultad_cin;
-                    txtEntidadExternoInt.Text = ""; 
+
+                    CargarCarreras(ddlCarreraInt, i.strFacultad_cin);
+
+                    if (ddlCarreraInt.Items.FindByValue(i.strCarrera_cin) != null)
+                        ddlCarreraInt.SelectedValue = i.strCarrera_cin;
+
+                    txtEntidadExternoInt.Text = "";
                 }
                 else
                 {
                     txtEntidadExternoInt.Text = i.strEntidad_cin;
-                    txtCarreraInt.Text = "";
+
                     ddlFacultadInt.SelectedIndex = 0;
+                    ddlCarreraInt.Items.Clear();
+                    ddlCarreraInt.Items.Add(new ListItem("-- Seleccione Facultad --", ""));
                 }
 
                 CambiarVista(Vista.FormularioIntegrante);
@@ -628,6 +690,7 @@ namespace SistemaGestionCGI
 
             ddlDirector.Items.Clear();
             ddlDirector.Items.Add(new ListItem("-- Sin Director Asignado --", ""));
+
             ViewState["DirectorPendiente"] = null;
         }
 
@@ -638,17 +701,13 @@ namespace SistemaGestionCGI
             txtNombresInt.Text = "";
             txtApellidosInt.Text = "";
             txtCorreoInt.Text = "";
-
-            ddlTipoInt.SelectedIndex = 0; 
-
-            txtCarreraInt.Text = "";
+            ddlTipoInt.SelectedIndex = 0;
             ddlFacultadInt.SelectedIndex = 0;
-            txtEntidadExternoInt.Text = "";
+            ddlCarreraInt.Items.Clear();
+            ddlCarreraInt.Items.Add(new ListItem("-- Seleccione Facultad Primero --", ""));
 
-            ddlFuncionInt.SelectedIndex = 0;
-
-            string script = "document.getElementById('divIntInterno').style.display = 'flex'; document.getElementById('divIntExterno').style.display = 'none';";
-            ScriptManager.RegisterStartupScript(this, GetType(), "ResetToggleInt", script, true);
+            string script = "document.getElementById('divIntInterno').style.display = 'block';";
+            ScriptManager.RegisterStartupScript(this, GetType(), "ResetDesign", script, true);
         }
 
         private void Redireccionar(string msg, string type) { 
@@ -657,5 +716,287 @@ namespace SistemaGestionCGI
             Response.Redirect("CentrosInvestigacion.aspx", false); 
         }
         private void Msg(string msg, string type) { string script = $"$(function() {{ toastify('{type}', '{msg.Replace("'", "").Replace("\r\n", "")}', 'Sistema'); }});"; ScriptManager.RegisterStartupScript(this, GetType(), "toast", script, true); }
+
+        //
+
+        private void CargarCarreras(DropDownList ddl, string facultad)
+        {
+            ddl.Items.Clear();
+            ddl.Items.Add(new ListItem("-- Seleccione --", ""));
+
+            if (string.IsNullOrEmpty(facultad)) return;
+
+            switch (facultad)
+            {
+                case "CIYA":
+                    ddl.Items.Add(new ListItem("SISTEMAS DE INFORMACIÓN", "SISTEMAS DE INFORMACIÓN"));
+                    ddl.Items.Add(new ListItem("INDUSTRIAL", "INDUSTRIAL"));
+                    ddl.Items.Add(new ListItem("ELECTROMECÁNICA", "ELECTROMECANICA")); 
+                    ddl.Items.Add(new ListItem("ELECTRICIDAD", "ELECTRICIDAD"));
+                    ddl.Items.Add(new ListItem("HIDRAULICA", "HIDRAULICA"));
+                    ddl.Items.Add(new ListItem("SOFTWARE", "SOFTWARE"));
+                    break;
+
+                case "CAREN":
+                    ddl.Items.Add(new ListItem("AGRONOMÍA", "AGRONOMIA")); 
+                    ddl.Items.Add(new ListItem("VETERINARIA", "VETERINARIA"));
+                    ddl.Items.Add(new ListItem("TURISMO", "TURISMO"));
+                    ddl.Items.Add(new ListItem("AMBIENTE", "AMBIENTE"));
+                    ddl.Items.Add(new ListItem("AGROPECUARIAS", "AGROPECUARIAS"));
+                    ddl.Items.Add(new ListItem("BIOTECNOLOGIA", "BIOTECNOLOGIA"));
+                    break;
+
+                case "CAYE":
+                    ddl.Items.Add(new ListItem("ADMINISTRACIÓN DE EMPRESAS", "ADMINISTRACIÓN DE EMPRESAS"));
+                    ddl.Items.Add(new ListItem("CONTABILIDAD", "CONTABILIDAD"));
+                    ddl.Items.Add(new ListItem("MERCADOTÉCNIA", "MERCADOTÉCNIA"));
+                    ddl.Items.Add(new ListItem("ECONOMIA", "ECONOMIA"));
+                    ddl.Items.Add(new ListItem("FINANZAS", "FINANZAS"));
+                    ddl.Items.Add(new ListItem("GESTIÓN DEL TALENTO HUMANO", "GESTIÓN DEL TALENTO HUMANO"));
+                    break;
+
+                case "CSAYE":
+                    ddl.Items.Add(new ListItem("DISEÑO GRAFICO", "DISEÑO GRAFICO"));
+                    ddl.Items.Add(new ListItem("DISEÑO GRAFICO INTERACTIVO", "DISEÑO GRAFICO INTERACTIVO"));
+                    ddl.Items.Add(new ListItem("COMUNICACIÓN", "COMUNICACIÓN"));
+                    ddl.Items.Add(new ListItem("TRABAJO SOCIAL", "TRABAJO SOCIAL"));
+                    ddl.Items.Add(new ListItem("ANIMACIÓN DIGITAL", "ANIMACIÓN DIGITAL"));
+                    ddl.Items.Add(new ListItem("PSICOLOGÍA SOCIAL", "PSICOLOGÍA SOCIAL"));
+                    break;
+
+                case "SALUD":
+                    ddl.Items.Add(new ListItem("ENFERMERIA", "ENFERMERIA"));
+                    break;
+
+                case "PUJILI":
+                    ddl.Items.Add(new ListItem("EDUCACIÓN INICIAL", "EDUCACIÓN INICIAL"));
+                    ddl.Items.Add(new ListItem("EDUCACIÓN BASICA", "EDUCACIÓN BASICA"));
+                    ddl.Items.Add(new ListItem("PEDAGOGÍA DEL IDIOMA INGLÉS", "PEDAGOGÍA DEL IDIOMA INGLÉS"));
+                    ddl.Items.Add(new ListItem("PEDAGOGÍA DE LA LENGUA Y LITERATURA", "PEDAGOGÍA DE LA LENGUA Y LITERATURA"));
+                    ddl.Items.Add(new ListItem("PEDAGOGÍA DE LAS MATEMÁTICAS Y LA FÍSICA", "PEDAGOGÍA DE LAS MATEMÁTICAS Y LA FÍSICA"));
+                    break;
+
+                case "LAMANA":
+                    ddl.Items.Add(new ListItem("CONTABILIDAD_LM", "CONTABILIDAD_LM"));
+                    ddl.Items.Add(new ListItem("ADMINISTRACIÓN_LM", "ADMINISTRACIÓN_LM"));
+                    ddl.Items.Add(new ListItem("ELECTROMECÁNICA_LM", "ELECTROMECÁNICA_LM"));
+                    ddl.Items.Add(new ListItem("SISTEMAS DE INFORMACIÓN_LM", "SISTEMAS DE INFORMACIÓN_LM"));
+                    ddl.Items.Add(new ListItem("TURISMO_LM", "TURISMO_LM"));
+                    ddl.Items.Add(new ListItem("AGRONOMÍA_LM", "AGRONOMÍA_LM"));
+                    ddl.Items.Add(new ListItem("AGROINDUSTRIAS_LM", "AGROINDUSTRIAS_LM"));
+                    break;
+            }
+        }
+
+        // Método para guardar archivos físicos en el servidor
+        private string GuardarArchivo(FileUpload control, string tipo)
+        {
+            if (!control.HasFile) return "";
+
+            try
+            {
+                string nombre = $"{tipo}_{DateTime.Now.Ticks}{System.IO.Path.GetExtension(control.FileName)}";
+                string carpetaVirtual = "~/RepositorioUTC/Centros/";
+                string carpetaFisica = Server.MapPath(carpetaVirtual);
+
+                if (!System.IO.Directory.Exists(carpetaFisica))
+                    System.IO.Directory.CreateDirectory(carpetaFisica);
+
+                control.SaveAs(System.IO.Path.Combine(carpetaFisica, nombre));
+                return $"{carpetaVirtual}{nombre}";
+            }
+            catch (Exception ex) { throw new Exception("Error al subir archivo: " + ex.Message); }
+        }
+
+        protected void ddlFacultadInt_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            CargarCarreras(ddlCarreraInt, ddlFacultadInt.SelectedValue);
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenCascada", "abrirModalInt(); toggleFormInt();", true);
+        }
+
+        protected void ddlFacultadDirModal_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            CargarCarreras(ddlCarreraDirModal, ddlFacultadDirModal.SelectedValue);
+
+            string script = "new bootstrap.Modal(document.getElementById('modalNuevoDirector')).show(); ToggleTipoDirector(document.getElementById('ddlTipoDirModal'));";
+            ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenDirCascada", script, true);
+        }
+
+        // ==========================================
+        // 5. GESTIÓN DE PAPELERA (FALTABA ESTO)
+        // ==========================================
+
+        protected void btnVerPapelera_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string idCentro = hfCentroIdActual.Value;
+
+                if (string.IsNullOrEmpty(idCentro))
+                {
+                    Msg("No se ha seleccionado el centro.", "ww");
+                    return;
+                }
+
+                var listaEliminados = _manejador.ObtenerIntegrantesPapelera(idCentro);
+
+                rptPapelera.DataSource = listaEliminados;
+                rptPapelera.DataBind();
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "OpenPapelera", "abrirModalPapelera();", true);
+            }
+            catch (Exception ex) { Msg("Error al cargar papelera: " + ex.Message, "ee"); }
+        }
+
+        protected void rptPapelera_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            if (e.CommandName == "Restaurar")
+            {
+                string idIntegrante = e.CommandArgument.ToString();
+                string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
+
+                bool restaurado = _manejador.RestaurarIntegrante(idIntegrante, usuario);
+
+                if (restaurado)
+                {
+                    Msg("Integrante restaurado exitosamente.", "ss");
+                    CargarIntegrantes(hfCentroIdActual.Value);
+
+                    btnVerPapelera_Click(null, null);
+                }
+                else
+                {
+                    Msg("No se puede restaurar: Ya existe un DIRECTOR activo en el centro.", "ww");
+                    ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenPapelera", "abrirModalPapelera();", true);
+                }
+            }
+        }
+
+        private bool EsCedulaValida(string cedula)
+        {
+            if (string.IsNullOrEmpty(cedula) || cedula.Length != 10) return false;
+            if (!long.TryParse(cedula, out _)) return false;
+
+            try
+            {
+                int provincia = int.Parse(cedula.Substring(0, 2));
+                if (!((provincia >= 1 && provincia <= 24) || provincia == 30)) return false;
+
+                int tercerDigito = int.Parse(cedula.Substring(2, 1));
+                if (tercerDigito >= 6) return false;
+
+                int[] coeficientes = { 2, 1, 2, 1, 2, 1, 2, 1, 2 };
+                int suma = 0;
+                int verificador = int.Parse(cedula.Substring(9, 1));
+
+                for (int i = 0; i < 9; i++)
+                {
+                    int digito = int.Parse(cedula.Substring(i, 1));
+                    int producto = digito * coeficientes[i];
+
+                    if (producto >= 10) producto -= 9;
+                    suma += producto;
+                }
+
+                int residuo = suma % 10;
+                int resultado = (residuo == 0) ? 0 : (10 - residuo);
+
+                return resultado == verificador;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        protected void btnValidarCedula_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string cedula = txtCedulaDirModal.Text.Trim();
+
+                if (string.IsNullOrEmpty(cedula))
+                {
+                    Msg("Ingrese un número de cédula.", "ww");
+                    MantenerModalAbierto();
+                    return;
+                }
+
+                if (!EsCedulaValida(cedula))
+                {
+                    Msg("Cédula INCORRECTA (Dígito verificador inválido).", "ee");
+                    txtCedulaDirModal.Focus();
+                    MantenerModalAbierto();
+                    return;
+                }
+
+                var existe = _manejador.BuscarIntegranteActivoPorCedula(cedula);
+                if (existe != null)
+                {
+                    Msg($"Esta persona YA EXISTE en el centro: {existe.fkId_cen}.", "ww");
+                }
+                else
+                {
+                    Msg("Cédula VÁLIDA y DISPONIBLE.", "ss");
+                    txtNombresDirModal.Focus();
+                }
+
+                MantenerModalAbierto();
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al validar: " + ex.Message, "ee");
+            }
+        }
+
+        private void MantenerModalAbierto()
+        {
+            string scriptAbrir = "new bootstrap.Modal(document.getElementById('modalNuevoDirector')).show();";
+            string scriptRestaurarUI = $"ToggleTipoDirector(document.getElementById('{ddlTipoDirModal.ClientID}'));";
+            ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenAndFixUI", scriptAbrir + scriptRestaurarUI, true);
+        }
+
+        protected void btnValidarCedulaInt_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string cedula = txtCedulaInt.Text.Trim();
+
+                if (string.IsNullOrEmpty(cedula)) { Msg("Ingrese un número de cédula.", "ww"); return; }
+
+                if (!EsCedulaValida(cedula))
+                {
+                    Msg("Cédula INCORRECTA (Formato inválido).", "ee");
+                    txtCedulaInt.Focus();
+                    return;
+                }
+
+                var existente = _manejador.BuscarIntegranteActivoPorCedula(cedula);
+
+                if (existente != null)
+                {
+                    if (string.IsNullOrEmpty(hfIdIntegrante.Value))
+                    {
+                        Msg($"Esta persona YA EXISTE en el centro: {existente.fkId_cen}.", "ww");
+                    }
+                    else if (existente.strId_cin != hfIdIntegrante.Value)
+                    {
+                        Msg("La cédula pertenece a otro integrante registrado.", "ww");
+                    }
+                    else
+                    {
+                        Msg("Cédula VÁLIDA (Es la actual del usuario).", "ss");
+                    }
+                }
+                else
+                {
+                    Msg("Cédula VÁLIDA y DISPONIBLE.", "ss");
+                    txtNombresInt.Focus();
+                }
+            }
+            catch (Exception ex) { Msg("Error validación: " + ex.Message, "ee"); }
+        }
+
     }
 }

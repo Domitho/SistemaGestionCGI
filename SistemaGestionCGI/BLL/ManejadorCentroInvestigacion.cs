@@ -19,14 +19,22 @@ namespace SistemaGestionCGI.BLL
         {
             string sql = @"
                 SELECT 
-                    C.strId_cen, C.strNombre_cen, C.strFacultad_cen, C.strArea_cen, 
-                    C.strUbicacion_cen, C.strLineaInv_cen, C.strMision_cen, C.strVision_cen, 
-                    C.dtFechaAprobacion_cen, C.bitActivo_cen, 
-                    C.strResolucion_cen, C.strAceptacion_cen,
-                    (I.strNombres_cin + ' ' + I.strApellidos_cin) AS NombreDirector
+                    C.strId_cen, C.strNombre_cen, C.strFacultad_cen, 
+                    C.strArea_cen, C.strUbicacion_cen, C.strLineaInv_cen, 
+                    C.strMision_cen, C.strVision_cen, C.dtFechaAprobacion_cen, 
+                    C.bitActivo_cen, C.strResolucion_cen, C.strAceptacion_cen,
+            
+                    ISNULL(
+                        (SELECT TOP 1 (I.strNombres_cin + ' ' + I.strApellidos_cin)
+                         FROM INVGCCCENTRO_INVESTIGACION_INTEGRANTES I 
+                         WHERE I.fkId_cen = C.strId_cen 
+                         AND I.strFuncion_cin = 'Director' 
+                         AND I.bitActivo_cin = 1), 
+                        'SIN ASIGNAR'
+                    ) AS NombreDirector
+
                 FROM INVGCCCENTRO_INVESTIGACION C
-                LEFT JOIN INVGCCCENTRO_INVESTIGACION_INTEGRANTES I 
-                    ON C.strId_cen = I.fkId_cen AND I.strFuncion_cin = 'Director' AND I.bitActivo_cin = 1
+                WHERE C.bitActivo_cen = 1
                 ORDER BY C.strNombre_cen";
 
             return _dal.SelectSql<InvgccCentroInvestigacion>(sql);
@@ -90,16 +98,16 @@ namespace SistemaGestionCGI.BLL
 
         public List<InvgccCentroIntegrantes> ObtenerIntegrantesPorCentro(string idCentro)
         {
-            // CORREGIDO: Se agregó dtFechaFin_cin
             string sql = $@"
                 SELECT 
-                I.strId_cin, I.fkId_cen, I.strCedula_cin, I.strNombres_cin, I.strApellidos_cin, 
-                I.strCorreo_cin, I.strFuncion_cin, I.strTipo_cin, I.strCarrera_cin, 
-                I.strFacultad_cin, I.strEntidad_cin, I.dtFechaRegistro_cin, I.bitActivo_cin,
-                I.dtFechaFin_cin, 
-                (I.strApellidos_cin + ' ' + I.strNombres_cin) as NombreCompleto
+                    I.strId_cin, I.fkId_cen, I.strCedula_cin, I.strNombres_cin, I.strApellidos_cin, 
+                    I.strCorreo_cin, I.strFuncion_cin, I.strTipo_cin, I.strCarrera_cin, 
+                    I.strFacultad_cin, I.strEntidad_cin, I.dtFechaRegistro_cin, I.bitActivo_cin,
+                    I.dtFechaFin_cin, 
+                    (I.strApellidos_cin + ' ' + I.strNombres_cin) as NombreCompleto
                 FROM INVGCCCENTRO_INVESTIGACION_INTEGRANTES I
                 WHERE fkId_cen = '{idCentro}' 
+                AND bitActivo_cin = 1  
                 ORDER BY strApellidos_cin ASC";
 
             return _dal.SelectSql<InvgccCentroIntegrantes>(sql);
@@ -131,7 +139,7 @@ namespace SistemaGestionCGI.BLL
             GuardarHistorial(obj.strId_cin, "NUEVO", "Ingreso inicial al Centro de Investigación", usuarioLogueado);
         }
 
-        public void ActualizarIntegrante(InvgccCentroIntegrantes obj)
+        public void ActualizarIntegrante(InvgccCentroIntegrantes obj, string usuario)
         {
             string sql = $@"
                 UPDATE INVGCCCENTRO_INVESTIGACION_INTEGRANTES SET
@@ -147,6 +155,7 @@ namespace SistemaGestionCGI.BLL
                 WHERE strId_cin = '{obj.strId_cin}'";
 
             _dal.UpdateSql(sql);
+            GuardarHistorial(obj.strId_cin, "EDICIÓN", "Actualización de datos generales", usuario);
         }
 
         public void CambiarEstadoIntegrante(string idIntegrante, string motivo, string usuario)
@@ -154,16 +163,14 @@ namespace SistemaGestionCGI.BLL
             var integrante = ObtenerIntegrantePorId(idIntegrante);
             if (integrante != null)
             {
-                bool nuevoEstado = !integrante.bitActivo_cin;
-                int bit = nuevoEstado ? 1 : 0;
-                string accion = nuevoEstado ? "REACTIVAR" : "BAJA";
+                int nuevoBit = integrante.bitActivo_cin ? 0 : 1;
+                string accion = (nuevoBit == 1) ? "REACTIVAR" : "BAJA";
 
-                // CORREGIDO: Lógica de fecha fin
-                string sqlFecha = nuevoEstado ? "NULL" : "GETDATE()";
+                string sqlFecha = (nuevoBit == 0) ? "GETDATE()" : "NULL";
 
                 string sql = $@"
                     UPDATE INVGCCCENTRO_INVESTIGACION_INTEGRANTES 
-                    SET bitActivo_cin = {bit}, 
+                    SET bitActivo_cin = {nuevoBit}, 
                         dtFechaFin_cin = {sqlFecha}
                     WHERE strId_cin = '{idIntegrante}'";
 
@@ -261,5 +268,119 @@ namespace SistemaGestionCGI.BLL
 
             _dal.InsertSql(sql);
         }
+
+        //
+
+        // ==========================================
+        // 5. GESTIÓN DE PAPELERA (SOLO INTEGRANTES)
+        // ==========================================
+
+        public List<InvgccCentroIntegrantes> ObtenerIntegrantesPapelera(string idCentro)
+        {
+            string sql = $@"
+                SELECT *, (strApellidos_cin + ' ' + strNombres_cin) as NombreCompleto 
+                FROM INVGCCCENTRO_INVESTIGACION_INTEGRANTES 
+                WHERE fkId_cen = '{idCentro}' 
+                AND (bitActivo_cin = 0 OR bitActivo_cin IS NULL) 
+                ORDER BY strApellidos_cin";
+
+            return _dal.SelectSql<InvgccCentroIntegrantes>(sql);
+        }
+
+        public bool RestaurarIntegrante(string idIntegrante, string usuario)
+        {
+            var integrante = ObtenerIntegrantePorId(idIntegrante);
+            if (integrante == null) return false;
+
+            if (integrante.strFuncion_cin == "Director")
+            {
+                var directorActual = BuscarDirectorDelCentro(integrante.fkId_cen);
+
+                if (directorActual != null && directorActual.strId_cin != idIntegrante)
+                {
+                    return false;
+                }
+            }
+
+            string sql = $"UPDATE INVGCCCENTRO_INVESTIGACION_INTEGRANTES SET bitActivo_cin = 1, dtFechaFin_cin = NULL WHERE strId_cin = '{idIntegrante}'";
+            _dal.UpdateSql(sql);
+
+            GuardarHistorial(idIntegrante, "RESTAURACIÓN", "Recuperado desde papelera", usuario);
+
+            return true;
+        }
+
+        public bool ExisteDirectorActivo(string idCentro)
+        {
+            string sql = $@"
+                SELECT * FROM INVGCCCENTRO_INVESTIGACION_INTEGRANTES 
+                WHERE fkId_cen = '{idCentro}' 
+                AND strFuncion_cin = 'Director' 
+                AND bitActivo_cin = 1";
+
+            var lista = _dal.SelectSql<InvgccCentroIntegrantes>(sql);
+            return lista != null && lista.Count > 0;
+        }
+
+        public string GuardarCentroCompleto(InvgccCentroInvestigacion c)
+        {
+            c.strNombre_cen = c.strNombre_cen.ToUpper().Trim().Replace("'", "''");
+            c.strMision_cen = c.strMision_cen.Replace("'", "''");
+            c.strVision_cen = c.strVision_cen.Replace("'", "''");
+
+            if (string.IsNullOrEmpty(c.strId_cen))
+            {
+                c.strId_cen = GenerarNuevoIdCentro();
+
+                string sql = $@"
+                    INSERT INTO INVGCCCENTRO_INVESTIGACION
+                    (strId_cen, strNombre_cen, strFacultad_cen, strArea_cen, strUbicacion_cen,
+                     strLineaInv_cen, strMision_cen, strVision_cen, dtFechaAprobacion_cen,
+                     strResolucion_cen, strAceptacion_cen,
+                     bitActivo_cen, dtFechaRegistro)
+                    VALUES
+                    ('{c.strId_cen}', '{c.strNombre_cen}', '{c.strFacultad_cen}',
+                     '{c.strArea_cen}', '{c.strUbicacion_cen}', '{c.strLineaInv_cen}',
+                     '{c.strMision_cen}', '{c.strVision_cen}',
+                     '{c.dtFechaAprobacion_cen:yyyy-MM-dd}',
+                     '{c.strResolucion_cen}', '{c.strAceptacion_cen}',
+                     1, GETDATE())";
+
+                _dal.InsertSql(sql);
+            }
+            else
+            {
+                string sql = $@"
+                    UPDATE INVGCCCENTRO_INVESTIGACION SET
+                    strNombre_cen = '{c.strNombre_cen}',
+                    strFacultad_cen = '{c.strFacultad_cen}',
+                    strArea_cen = '{c.strArea_cen}',
+                    strUbicacion_cen = '{c.strUbicacion_cen}',
+                    strLineaInv_cen = '{c.strLineaInv_cen}',
+                    strMision_cen = '{c.strMision_cen}',
+                    strVision_cen = '{c.strVision_cen}',
+                    dtFechaAprobacion_cen = '{c.dtFechaAprobacion_cen:yyyy-MM-dd}',
+                    strResolucion_cen = '{c.strResolucion_cen}',
+                    strAceptacion_cen = '{c.strAceptacion_cen}'
+                    WHERE strId_cen = '{c.strId_cen}'";
+
+                _dal.UpdateSql(sql);
+            }
+
+            return c.strId_cen;
+        }
+
+        //
+
+        public InvgccCentroIntegrantes BuscarIntegranteActivoPorCedula(string cedula)
+        {
+            string sql = $@"
+                SELECT TOP 1 * FROM INVGCCCENTRO_INVESTIGACION_INTEGRANTES 
+                WHERE strCedula_cin = '{cedula}' 
+                AND bitActivo_cin = 1";
+
+            return _dal.SelectSql<InvgccCentroIntegrantes>(sql)?.FirstOrDefault();
+        }
+
     }
 }

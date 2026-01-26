@@ -120,7 +120,7 @@
             
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Coordinador</label>
-                    <div class="input-group">
+                    <div class="input-group gap-2">
                         <asp:TextBox ID="txtCoordinadorGru" runat="server" CssClass="form-control" ReadOnly="true" placeholder="Asigne el coordinador..."></asp:TextBox>
         
                         <asp:LinkButton ID="btnAgregarCoordinador" runat="server" CssClass="btn btn-outline-primary" OnClick="btnAgregarCoordinador_Click">
