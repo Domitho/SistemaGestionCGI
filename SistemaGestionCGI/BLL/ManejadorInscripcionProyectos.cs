@@ -101,8 +101,49 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sql);
         }
 
-        public void Eliminar(string id) =>
-            _dal.Delete("INVGCCINSCRIPCION_PROYECTOS", $"strId_pro = '{id}'");
+        public void Eliminar(string idProyecto)
+        {
+            string sqlGetInfo = $@"
+                SELECT P.fkId_coordinador, I.strFuncion_int 
+                FROM INVGCCINSCRIPCION_PROYECTOS P
+                LEFT JOIN INVGCCGRUPO_INTEGRANTES I ON P.fkId_coordinador = I.strId_int
+                WHERE P.strId_pro = '{idProyecto}'";
+
+            var info = _dal.SelectSql<dynamic>(sqlGetInfo).FirstOrDefault();
+
+            string idCoordinador = null;
+            string funcionCoordinador = "";
+
+            if (info != null)
+            {
+                try
+                {
+                    idCoordinador = info.fkId_coordinador;
+                    funcionCoordinador = info.strFuncion_int != null ? info.strFuncion_int.ToString().ToUpper() : "";
+                }
+                catch { }
+            }
+
+            _dal.Delete("INVGCCINSCRIPCION_PROYECTOS", $"strId_pro = '{idProyecto}'");
+
+            if (!string.IsNullOrEmpty(idCoordinador))
+            {
+                if (funcionCoordinador.StartsWith("COORDINADOR DE PROYECTO"))
+                {
+                    string sqlCheck = $"SELECT COUNT(*) as Total FROM INVGCCINSCRIPCION_PROYECTOS WHERE fkId_coordinador = '{idCoordinador}'";
+                    var conteo = _dal.SelectSql<dynamic>(sqlCheck);
+
+                    int proyectosRestantes = 0;
+                    if (conteo != null && conteo.Count > 0)
+                        int.TryParse(conteo[0].Total.ToString(), out proyectosRestantes);
+
+                    if (proyectosRestantes == 0)
+                    {
+                        _dal.Delete("INVGCCGRUPO_INTEGRANTES", $"strId_int = '{idCoordinador}'");
+                    }
+                }
+            }
+        }
 
         public void CambiarEstado(string id, string nuevoEstado, string observacion)
         {
@@ -122,7 +163,7 @@ namespace SistemaGestionCGI.BLL
             string sql = @"
                 SELECT TOP 1 
                     strId_doc, strCedula_doc, strNombres_doc, strApellidos_doc, 
-                    strFacultad_doc, strCarrera_doc, strCertificado_doc
+                    strFacultad_doc, strCarrera_doc, strCertificado_doc, strCorreo_doc
                 FROM INVGCCCATEGORIZACION_DOCENTES 
                 WHERE strCedula_doc = '" + cedula + "' AND bitActivo_doc = 1";
 
@@ -179,20 +220,25 @@ namespace SistemaGestionCGI.BLL
         {
             string nuevoId = GenerarNuevoIdIntegrante();
 
+            string idDocenteSql = string.IsNullOrEmpty(intg.fkId_docente_origen) ? "NULL" : $"'{intg.fkId_docente_origen}'";
+            string certificadoSql = string.IsNullOrEmpty(intg.strCertificado_int) ? "NULL" : $"'{intg.strCertificado_int}'";
+
             string sql = $@"
                 INSERT INTO INVGCCGRUPO_INTEGRANTES 
                 (
                     strId_int, strCedula_int, strApellidos_int, strNombres_int, 
                     strCorreo_int, strCarrera_int, strFuncion_int, 
                     strTipo_int, fkId_gru, bitActivo_int, dtFechaini_int, 
-                    strEntidad_int, strFacultad_int, strCertificado_int
+                    strEntidad_int, strFacultad_int, 
+                    strCertificado_int, fkId_docente_origen 
                 ) 
                 VALUES 
                 (
                     '{nuevoId}', '{intg.strCedula_int}', '{intg.strApellidos_int}', '{intg.strNombres_int}', 
                     '{intg.strCorreo_int}', '{intg.strCarrera_int}', '{intg.strFuncion_int}', 
                     '{intg.strTipo_int}', '{intg.fkId_gru}', 1, GETDATE(), 
-                    '{intg.strEntidad_int}', '{intg.strFacultad_int}', '{intg.strCertificado_int}'
+                    '{intg.strEntidad_int}', '{intg.strFacultad_int}', 
+                    {certificadoSql}, {idDocenteSql}
                 )";
 
             _dal.UpdateSql(sql);
@@ -299,5 +345,40 @@ namespace SistemaGestionCGI.BLL
             }
             return $"I{max + 1}";
         }
+
+        //
+
+        public List<dynamic> ObtenerDocentesDisponibles()
+        {
+            string sql = @"
+                SELECT strCedula_doc, 
+                       (strApellidos_doc + ' ' + strNombres_doc) as NombreCompleto
+                FROM INVGCCCATEGORIZACION_DOCENTES
+                WHERE bitActivo_doc = 1 
+                AND strCedula_doc NOT IN (
+                    SELECT strCedula_int 
+                    FROM INVGCCGRUPO_INTEGRANTES 
+                    WHERE bitActivo_int = 1
+                )
+                ORDER BY strApellidos_doc ASC";
+
+            return _dal.SelectSql<dynamic>(sql); 
+        }
+
+        public List<dynamic> ObtenerDocentesSinGrupo()
+        {
+            string sql = @"
+                SELECT strCedula_doc, 
+                       (strApellidos_doc + ' ' + strNombres_doc) as NombreCompleto
+                FROM INVGCCCATEGORIZACION_DOCENTES
+                WHERE bitActivo_doc = 1 
+                AND strCedula_doc NOT IN (
+                    SELECT strCedula_int FROM INVGCCGRUPO_INTEGRANTES WHERE bitActivo_int = 1
+                )
+                ORDER BY strApellidos_doc ASC";
+
+            return _dal.SelectSql<dynamic>(sql);
+        }
+
     }
 }

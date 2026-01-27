@@ -925,6 +925,7 @@ namespace SistemaGestionCGI
 
                 if (!EsCedulaValida(cedula))
                 {
+                    txtCedulaDirModal.CssClass = "form-control form-control-sm is-valid";
                     Msg("Cédula INCORRECTA (Dígito verificador inválido).", "ee");
                     txtCedulaDirModal.Focus();
                     MantenerModalAbierto();

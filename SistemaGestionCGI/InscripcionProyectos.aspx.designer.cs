@@ -105,6 +105,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.DropDownList ddlCoordinador;
 
         /// <summary>
+        /// Control btnAbrirModalIntegrante.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnAbrirModalIntegrante;
+
+        /// <summary>
         /// Control txtTema.
         /// </summary>
         /// <remarks>
@@ -429,22 +438,40 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.DropDownList ddlTipoInt;
 
         /// <summary>
-        /// Control txtBuscarCedula.
+        /// Control pnlListadoDocente.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtBuscarCedula;
+        protected global::System.Web.UI.WebControls.Panel pnlListadoDocente;
 
         /// <summary>
-        /// Control btnBuscarDocente.
+        /// Control ddlDocentesDisponibles.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnBuscarDocente;
+        protected global::System.Web.UI.WebControls.DropDownList ddlDocentesDisponibles;
+
+        /// <summary>
+        /// Control pnlDatosPersonales.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlDatosPersonales;
+
+        /// <summary>
+        /// Control hfIdDocenteInt.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfIdDocenteInt;
 
         /// <summary>
         /// Control txtCedulaInt.
@@ -454,6 +481,15 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtCedulaInt;
+
+        /// <summary>
+        /// Control btnValidarCedulaServer.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnValidarCedulaServer;
 
         /// <summary>
         /// Control txtNombresInt.
@@ -483,6 +519,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtCorreoInt;
 
         /// <summary>
+        /// Control divInternoModal.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divInternoModal;
+
+        /// <summary>
         /// Control ddlFacultadInt.
         /// </summary>
         /// <remarks>
@@ -492,13 +537,22 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.DropDownList ddlFacultadInt;
 
         /// <summary>
-        /// Control txtCarreraInt.
+        /// Control ddlCarreraInt.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtCarreraInt;
+        protected global::System.Web.UI.WebControls.DropDownList ddlCarreraInt;
+
+        /// <summary>
+        /// Control divExternoModal.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel divExternoModal;
 
         /// <summary>
         /// Control txtEntidadInt.
@@ -517,6 +571,33 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtFuncionDisplay;
+
+        /// <summary>
+        /// Control pnlAlertaDocente.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlAlertaDocente;
+
+        /// <summary>
+        /// Control lnkVerArchivoDocente.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkVerArchivoDocente;
+
+        /// <summary>
+        /// Control hfRutaArchivoDocente.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfRutaArchivoDocente;
 
         /// <summary>
         /// Control btnGuardarIntegrante.

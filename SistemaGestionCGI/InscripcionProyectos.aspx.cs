@@ -104,24 +104,51 @@ namespace SistemaGestionCGI
 
         protected void ddlGrupo_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ViewState["IntegrantePendiente"] = null;
-
             string idGrupo = ddlGrupo.SelectedValue;
-            CargarCoordinadores(ddlCoordinador, idGrupo);
 
-            // Mostrar Info Card
             if (!string.IsNullOrEmpty(idGrupo))
             {
+                CargarCoordinadores(ddlCoordinador, idGrupo);
+
                 var info = _manejador.ObtenerInfoGrupo(idGrupo);
                 if (info != null)
                 {
                     lblNombreGrupoInfo.Text = info.strNombre_gru;
-                    lblLineasInfo.Text = !string.IsNullOrEmpty(info.strLineasinv_gru) ? info.strLineasinv_gru : "General";
+                    lblLineasInfo.Text = info.strLineasinv_gru;
                     pnlInfoGrupo.Visible = true;
-                    return;
                 }
             }
-            pnlInfoGrupo.Visible = false;
+            else
+            {
+                pnlInfoGrupo.Visible = false;
+                ddlCoordinador.Items.Clear();
+                ddlCoordinador.Items.Add(new ListItem("-- Seleccione Grupo Primero --", ""));
+            }
+        }
+
+        protected void btnAbrirModalIntegrante_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(ddlGrupo.SelectedValue))
+            {
+                Msg("Debe seleccionar un Grupo de Investigación antes de agregar un integrante.", "ww");
+                return;
+            }
+
+            LimpiarCamposModal();
+
+            ddlTipoInt.SelectedIndex = 0;
+
+            pnlListadoDocente.Visible = false;  
+            pnlDatosPersonales.Visible = true;
+
+            txtFuncionDisplay.Text = "COORDINADOR DE PROYECTO";
+
+            divInternoModal.Visible = true;
+            divExternoModal.Visible = false;
+
+            HabilitarEdicion(true);
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "showModal", "AbrirModalNuevoIntegrante();", true);
         }
 
         protected void ddlGrupoEdit_SelectedIndexChanged(object sender, EventArgs e)
@@ -149,6 +176,17 @@ namespace SistemaGestionCGI
                     return;
                 }
 
+                string funcionAsignada = "";
+
+                if (ddlTipoInt.SelectedValue == "Docente")
+                {
+                    funcionAsignada = "COORDINADOR DE PROYECTO (DOCENTE)";
+                }
+                else
+                {
+                    funcionAsignada = "COORDINADOR DE PROYECTO";
+                }
+
                 var integranteTemp = new InvgccGrupoIntegrantes
                 {
                     fkId_gru = ddlGrupo.SelectedValue,
@@ -157,9 +195,11 @@ namespace SistemaGestionCGI
                     strApellidos_int = txtApellidosInt.Text.Trim().ToUpper(),
                     strCorreo_int = txtCorreoInt.Text.Trim().ToLower(),
                     strTipo_int = ddlTipoInt.SelectedValue,
-                    strFuncion_int = "Miembro Investigador",
+                    strFuncion_int = funcionAsignada,
+                    fkId_docente_origen = (ddlTipoInt.SelectedValue == "Docente") ? hfIdDocenteInt.Value : null,
+                    strCertificado_int = (ddlTipoInt.SelectedValue == "Docente") ? hfRutaArchivoDocente.Value : null,
 
-                    strCarrera_int = (ddlTipoInt.SelectedValue != "Externo") ? txtCarreraInt.Text.Trim().ToUpper() : null,
+                    strCarrera_int = (ddlTipoInt.SelectedValue != "Externo") ? ddlCarreraInt.SelectedValue : null,
                     strFacultad_int = (ddlTipoInt.SelectedValue != "Externo") ? ddlFacultadInt.SelectedValue : null,
                     strEntidad_int = (ddlTipoInt.SelectedValue == "Externo") ? txtEntidadInt.Text.Trim().ToUpper() : null
                 };
@@ -183,62 +223,6 @@ namespace SistemaGestionCGI
             catch (Exception ex)
             {
                 Msg("Error: " + ex.Message, "ee");
-            }
-        }
-
-        protected void btnBuscarDocente_Click(object sender, EventArgs e)
-        {
-            string cedula = txtBuscarCedula.Text.Trim();
-            if (string.IsNullOrEmpty(cedula)) return;
-
-            try
-            {
-                string grupoOcupado = _manejador.VerificarIntegranteEnOtroGrupo(cedula);
-                if (!string.IsNullOrEmpty(grupoOcupado))
-                {
-                    Msg($"El docente existe, PERO ya pertenece al grupo '{grupoOcupado}'. No puede estar en dos grupos.", "ww");
-
-                    LimpiarCamposModal();
-                    return; 
-                }
-
-                dynamic docente = _manejador.ObtenerDocenteCategorizado(cedula);
-
-                if (docente != null)
-                {
-                    txtCedulaInt.Text = GetProp(docente, "strCedula_doc");
-                    txtNombresInt.Text = GetProp(docente, "strNombres_doc");
-                    txtApellidosInt.Text = GetProp(docente, "strApellidos_doc");
-                    txtCorreoInt.Text = "";
-                    txtCarreraInt.Text = GetProp(docente, "strCarrera_doc");
-
-                    string fac = GetProp(docente, "strFacultad_doc");
-                    if (ddlFacultadInt.Items.FindByValue(fac) != null)
-                        ddlFacultadInt.SelectedValue = fac;
-
-                    txtNombresInt.ReadOnly = true;
-                    txtApellidosInt.ReadOnly = true;
-                    txtCarreraInt.ReadOnly = true;
-                    txtCorreoInt.ReadOnly = false;
-
-                    Msg("Docente encontrado.", "ss");
-                }
-                else
-                {
-                    Msg("Docente no encontrado. Llene los datos manualmente.", "ww");
-                    txtNombresInt.Text = ""; txtApellidosInt.Text = "";
-                    txtNombresInt.ReadOnly = false;
-                    txtApellidosInt.ReadOnly = false;
-                }
-            }
-            catch (Exception ex)
-            {
-                Msg("Error: " + ex.Message, "ee");
-            }
-            finally
-            {
-                string script = "AbrirModalNuevoIntegrante(); ToggleTipoIntegranteModal();";
-                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenModal", script, true);
             }
         }
 
@@ -552,24 +536,42 @@ namespace SistemaGestionCGI
 
         private void LimpiarCamposModal()
         {
+            hfIdDocenteInt.Value = "";
             txtCedulaInt.Text = "";
             txtNombresInt.Text = "";
             txtApellidosInt.Text = "";
             txtCorreoInt.Text = "";
-            txtCarreraInt.Text = "";
             txtEntidadInt.Text = "";
 
             if (ddlFacultadInt.Items.Count > 0) ddlFacultadInt.SelectedIndex = 0;
 
+            ddlCarreraInt.Items.Clear();
+            ddlCarreraInt.Items.Add(new ListItem("-- Seleccione Facultad Primero --", ""));
+
+            pnlAlertaDocente.Visible = false;
+            hfRutaArchivoDocente.Value = "";
+            lnkVerArchivoDocente.NavigateUrl = "";
+
+            HabilitarEdicion(true);
         }
 
         private void HabilitarEdicion(bool habilitar)
         {
+            txtCedulaInt.ReadOnly = !habilitar;
             txtNombresInt.ReadOnly = !habilitar;
             txtApellidosInt.ReadOnly = !habilitar;
-            txtCarreraInt.ReadOnly = !habilitar;
+            txtCorreoInt.ReadOnly = !habilitar;
 
             ddlFacultadInt.Enabled = habilitar;
+            ddlCarreraInt.Enabled = habilitar; 
+
+            string cssText = habilitar ? "form-control form-control-sm" : "form-control form-control-sm bg-light";
+            string cssDdl = habilitar ? "form-select form-select-sm" : "form-select form-select-sm bg-light";
+
+            txtCedulaInt.CssClass = cssText;
+            txtNombresInt.CssClass = cssText;
+            ddlFacultadInt.CssClass = cssDdl;
+            ddlCarreraInt.CssClass = cssDdl;
         }
 
         protected void btnRegresar_Click(object sender, EventArgs e)
@@ -591,7 +593,6 @@ namespace SistemaGestionCGI
         // UTILIDADES Y ARCHIVOS
         // =============================================
 
-        // Helper para construir el String final (Ej: "1 Año, 2 Meses")
         private string ConstruirDuracion(string anios, string meses, string semanas, string dias)
         {
             List<string> partes = new List<string>();
@@ -611,18 +612,15 @@ namespace SistemaGestionCGI
             return string.Join(", ", partes);
         }
 
-        // Helper para extraer los números de un string existente (Ej: "2 Meses" -> saca el 2)
         private string ExtraerNumeroDeTexto(string textoCompleto, string palabraClave)
         {
             if (string.IsNullOrEmpty(textoCompleto)) return "0";
 
-            // Divide por comas
             var partes = textoCompleto.Split(',');
             foreach (var parte in partes)
             {
-                if (parte.Contains(palabraClave) || parte.Contains(palabraClave.ToLower())) // Busca "Año", "Mes", etc
+                if (parte.Contains(palabraClave) || parte.Contains(palabraClave.ToLower()))
                 {
-                    // Extrae solo los dígitos
                     string numero = "";
                     foreach (char c in parte) if (char.IsDigit(c)) numero += c;
                     return numero;
@@ -640,21 +638,18 @@ namespace SistemaGestionCGI
                 return;
             }
 
-            // Intentamos separar "6 Meses" por el espacio
             string[] partes = duracionTexto.Split(' ');
 
             if (partes.Length >= 2)
             {
-                txtNum.Text = partes[0]; // El número (Ej: 6)
+                txtNum.Text = partes[0]; 
 
-                // Buscamos la unidad en el combo
                 string unidad = partes[1];
                 if (ddlUnidad.Items.FindByValue(unidad) != null)
                     ddlUnidad.SelectedValue = unidad;
             }
             else
             {
-                // Si el formato antiguo no coincide (ej: "Medio año"), lo ponemos todo en el número para no perder datos
                 txtNum.Text = duracionTexto;
             }
         }
@@ -722,5 +717,271 @@ namespace SistemaGestionCGI
             string cleanMsg = msg.Replace("\\", "\\\\").Replace("'", "\\'").Replace("\r\n", " ").Replace("\n", " ");
             ScriptManager.RegisterStartupScript(this, GetType(), "alert", $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema'); }});", true);
         }
+
+        //
+
+        protected void ddlTipoInt_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string tipo = ddlTipoInt.SelectedValue;
+            LimpiarCamposModal();
+
+            if (tipo == "Docente")
+            {
+                pnlListadoDocente.Visible = true;
+                pnlDatosPersonales.Visible = false;
+
+                txtFuncionDisplay.Text = "COORDINADOR DE PROYECTO (DOCENTE)";
+
+                var lista = _manejador.ObtenerDocentesSinGrupo();
+                LlenarListControl(ddlDocentesDisponibles, lista, "NombreCompleto", "strCedula_doc");
+                ddlDocentesDisponibles.Items.Insert(0, new ListItem("-- Busque Docente --", ""));
+            }
+            else
+            {
+                pnlListadoDocente.Visible = false;
+                pnlDatosPersonales.Visible = true;
+
+                txtFuncionDisplay.Text = "COORDINADOR DE PROYECTO";
+                HabilitarEdicion(true); 
+
+                divInternoModal.Visible = (tipo == "Interno");
+                divExternoModal.Visible = (tipo == "Externo");
+            }
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "reOpen", "AbrirModalNuevoIntegrante();", true);
+        }
+
+        protected void ddlDocentesDisponibles_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string cedula = ddlDocentesDisponibles.SelectedValue;
+
+            pnlAlertaDocente.Visible = false;
+            lnkVerArchivoDocente.NavigateUrl = "";
+            hfRutaArchivoDocente.Value = "";
+
+            if (!string.IsNullOrEmpty(cedula))
+            {
+                dynamic docente = _manejador.ObtenerDocenteCategorizado(cedula);
+
+                if (docente != null)
+                {
+                    txtCedulaInt.Text = GetProp(docente, "strCedula_doc");
+                    txtNombresInt.Text = GetProp(docente, "strNombres_doc");
+                    txtApellidosInt.Text = GetProp(docente, "strApellidos_doc");
+                    txtCorreoInt.Text = GetProp(docente, "strCorreo_doc");
+                    hfIdDocenteInt.Value = GetProp(docente, "strId_doc");
+
+                    string facultadBD = GetProp(docente, "strFacultad_doc");
+                    SeleccionarCombo(ddlFacultadInt, facultadBD);
+
+                    CargarCarrerasEnCombo(ddlCarreraInt, facultadBD);
+
+                    string carreraBD = GetProp(docente, "strCarrera_doc");
+                    SeleccionarCombo(ddlCarreraInt, carreraBD);
+
+                    string rutaArchivo = GetProp(docente, "strCertificado_doc");
+                    if (!string.IsNullOrEmpty(rutaArchivo))
+                    {
+                        pnlAlertaDocente.Visible = true;
+                        lnkVerArchivoDocente.NavigateUrl = ResolveUrl(rutaArchivo);
+                        hfRutaArchivoDocente.Value = rutaArchivo;
+                    }
+
+                    pnlDatosPersonales.Visible = true;
+                    divInternoModal.Visible = true;
+                    divExternoModal.Visible = false;
+
+                    HabilitarEdicion(false); 
+
+                    Msg("Datos del docente cargados y vinculados.", "ss");
+                }
+            }
+            else
+            {
+                pnlDatosPersonales.Visible = false;
+            }
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "reOpen", "AbrirModalNuevoIntegrante();", true);
+        }
+
+        private void SeleccionarItemSeguro(DropDownList ddl, string valorBD)
+        {
+            if (string.IsNullOrEmpty(valorBD)) return;
+
+            ddl.ClearSelection(); 
+            valorBD = valorBD.Trim().ToUpper(); 
+
+            ListItem item = ddl.Items.FindByValue(valorBD);
+
+            if (item == null) item = ddl.Items.FindByText(valorBD);
+
+            if (item == null)
+            {
+                foreach (ListItem li in ddl.Items)
+                {
+                    if (li.Text.ToUpper().Contains(valorBD) || li.Value.ToUpper().Contains(valorBD))
+                    {
+                        item = li;
+                        break; 
+                    }
+                }
+            }
+
+            if (item != null)
+            {
+                item.Selected = true;
+            }
+        }
+
+        private void CargarCarrerasEnCombo(DropDownList ddlCarrera, string facultad)
+        {
+            ddlCarrera.Items.Clear();
+            ddlCarrera.Items.Add(new ListItem("-- Seleccione Carrera --", ""));
+
+            if (string.IsNullOrEmpty(facultad)) return;
+
+            switch (facultad)
+            {
+                case "CIYA":
+                    ddlCarrera.Items.Add(new ListItem("SISTEMAS DE INFORMACIÓN", "SISTEMAS DE INFORMACIÓN"));
+                    ddlCarrera.Items.Add(new ListItem("INDUSTRIAL", "INDUSTRIAL"));
+                    ddlCarrera.Items.Add(new ListItem("ELECTROMECÁNICA", "ELECTROMECANICA"));
+                    ddlCarrera.Items.Add(new ListItem("ELECTRICIDAD", "ELECTRICIDAD"));
+                    ddlCarrera.Items.Add(new ListItem("HIDRAULICA", "HIDRAULICA"));
+                    ddlCarrera.Items.Add(new ListItem("SOFTWARE", "SOFTWARE"));
+                    break;
+                case "CAREN":
+                    ddlCarrera.Items.Add(new ListItem("AGRONOMÍA", "AGRONOMIA"));
+                    ddlCarrera.Items.Add(new ListItem("VETERINARIA", "VETERINARIA"));
+                    ddlCarrera.Items.Add(new ListItem("AMBIENTE", "AMBIENTE"));
+                    ddlCarrera.Items.Add(new ListItem("TURISMO", "TURISMO"));
+                    ddlCarrera.Items.Add(new ListItem("AGROPECUARIAS", "AGROPECUARIAS"));
+                    ddlCarrera.Items.Add(new ListItem("BIOTECNOLOGIA", "BIOTECNOLOGIA"));
+                    break;
+                case "CAYE":
+                    ddlCarrera.Items.Add(new ListItem("ADMINISTRACIÓN DE EMPRESAS", "ADMINISTRACIÓN DE EMPRESAS"));
+                    ddlCarrera.Items.Add(new ListItem("CONTABILIDAD", "CONTABILIDAD"));
+                    ddlCarrera.Items.Add(new ListItem("ECONOMIA", "ECONOMIA"));
+                    ddlCarrera.Items.Add(new ListItem("FINANZAS", "FINANZAS"));
+                    ddlCarrera.Items.Add(new ListItem("MERCADOTÉCNIA", "MERCADOTÉCNIA"));
+                    ddlCarrera.Items.Add(new ListItem("GESTIÓN DEL TALENTO HUMANO", "GESTIÓN DEL TALENTO HUMANO"));
+                    break;
+                case "CSAYE":
+                    ddlCarrera.Items.Add(new ListItem("DISEÑO GRAFICO", "DISEÑO GRAFICO"));
+                    ddlCarrera.Items.Add(new ListItem("DISEÑO GRAFICO INTERACTIVO", "DISEÑO GRAFICO INTERACTIVO"));
+                    ddlCarrera.Items.Add(new ListItem("COMUNICACIÓN", "COMUNICACIÓN"));
+                    ddlCarrera.Items.Add(new ListItem("TRABAJO SOCIAL", "TRABAJO SOCIAL"));
+                    ddlCarrera.Items.Add(new ListItem("ANIMACIÓN DIGITAL", "ANIMACIÓN DIGITAL"));
+                    ddlCarrera.Items.Add(new ListItem("PSICOLOGÍA SOCIAL", "PSICOLOGÍA SOCIAL"));
+                    break;
+                case "SALUD":
+                    ddlCarrera.Items.Add(new ListItem("ENFERMERIA", "ENFERMERIA"));
+                    break;
+                case "PUJILI":
+                    ddlCarrera.Items.Add(new ListItem("EDUCACIÓN INICIAL", "EDUCACIÓN INICIAL"));
+                    ddlCarrera.Items.Add(new ListItem("EDUCACIÓN BASICA", "EDUCACIÓN BASICA"));
+                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DEL IDIOMA INGLÉS", "PEDAGOGÍA DEL IDIOMA INGLÉS"));
+                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DE LA LENGUA Y LITERATURA", "PEDAGOGÍA DE LA LENGUA Y LITERATURA"));
+                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DE LAS MATEMÁTICAS Y LA FÍSICA", "PEDAGOGÍA DE LAS MATEMÁTICAS Y LA FÍSICA"));
+                    break;
+                case "LAMANA":
+                    ddlCarrera.Items.Add(new ListItem("CONTABILIDAD_LM", "CONTABILIDAD_LM"));
+                    ddlCarrera.Items.Add(new ListItem("ADMINISTRACIÓN_LM", "ADMINISTRACIÓN_LM"));
+                    ddlCarrera.Items.Add(new ListItem("ELECTROMECÁNICA_LM", "ELECTROMECÁNICA_LM"));
+                    ddlCarrera.Items.Add(new ListItem("SISTEMAS DE INFORMACIÓN_LM", "SISTEMAS DE INFORMACIÓN_LM"));
+                    ddlCarrera.Items.Add(new ListItem("TURISMO_LM", "TURISMO_LM"));
+                    ddlCarrera.Items.Add(new ListItem("AGRONOMÍA_LM", "AGRONOMÍA_LM"));
+                    ddlCarrera.Items.Add(new ListItem("AGROINDUSTRIAS_LM", "AGROINDUSTRIAS_LM"));
+                    break;
+            }
+        }
+
+        private void SeleccionarCombo(DropDownList ddl, string valor)
+        {
+            string valorLimpio = !string.IsNullOrEmpty(valor) ? valor.Trim() : "";
+            if (ddl.Items.FindByValue(valorLimpio) != null)
+            {
+                ddl.SelectedValue = valorLimpio;
+            }
+            else
+            {
+                ddl.SelectedIndex = 0;
+            }
+        }
+
+        protected void ddlFacultadInt_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            CargarCarrerasEnCombo(ddlCarreraInt, ddlFacultadInt.SelectedValue);
+            ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenFac", "AbrirModalNuevoIntegrante();", true);
+        }
+
+
+        protected void btnValidarCedulaServer_Click(object sender, EventArgs e)
+        {
+            string cedula = txtCedulaInt.Text.Trim();
+
+            if (string.IsNullOrEmpty(cedula))
+            {
+                Msg("Ingrese un número de cédula.", "ww");
+            }
+            else if (EsCedulaValida(cedula))
+            {
+                txtCedulaInt.CssClass = "form-control form-control-sm is-valid";
+                Msg("El numero de cedula es valido.", "ss");
+            }
+            else
+            {
+                txtCedulaInt.CssClass = "form-control form-control-sm is-invalid";
+                Msg("La cédula ingresada es INCORRECTA.", "ee");
+
+            }
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "reOpenVal", "AbrirModalNuevoIntegrante();", true);
+        }
+
+        private bool EsCedulaValida(string cedula)
+        {
+            if (string.IsNullOrEmpty(cedula) || cedula.Length != 10) return false;
+
+            if (!long.TryParse(cedula, out long _)) return false;
+
+            try
+            {
+                int provincia = int.Parse(cedula.Substring(0, 2));
+                if ((provincia < 1 || provincia > 24) && provincia != 30) return false;
+
+                int tercerDigito = int.Parse(cedula.Substring(2, 1));
+                if (tercerDigito >= 6) return false;
+
+                int[] coeficientes = { 2, 1, 2, 1, 2, 1, 2, 1, 2 };
+                int verificador = int.Parse(cedula.Substring(9, 1));
+                int suma = 0;
+
+                for (int i = 0; i < 9; i++)
+                {
+                    int valor = int.Parse(cedula.Substring(i, 1)) * coeficientes[i];
+
+                    if (valor >= 10)
+                        suma += (valor - 9);
+                    else
+                        suma += valor;
+                }
+
+                int digitoCalculado = 0;
+                int residuo = suma % 10;
+
+                if (residuo != 0)
+                {
+                    digitoCalculado = 10 - residuo;
+                }
+
+                return verificador == digitoCalculado;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
     }
 }
