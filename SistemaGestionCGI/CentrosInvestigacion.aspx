@@ -9,6 +9,36 @@
     <link href="DesignersUTC/Styles/modal-historial-reporte.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/papelera.css" rel="stylesheet" />
 
+    <style>
+        .popover {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 0.8rem; 
+            max-width: 240px; 
+            border: 1px solid rgba(49, 39, 131, 0.2); 
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); 
+            border-radius: 0.5rem;
+        }
+
+        .popover-header {
+            background-color: #f8f9fa;
+            color: #312783; 
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 0.5rem 0.75rem; 
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .popover-body {
+            padding: 0.6rem 0.75rem; 
+            color: #444;
+            line-height: 1.4;
+        }
+    
+        .bs-popover-top > .popover-arrow::after {
+            border-top-color: #f8f9fa;
+        }
+    </style>
+
     <%-- ENCABEZADO PRINCIPAL --%>
     <div id="headerCentros" runat="server" class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
         <h3 class="utc-title mb-0">
@@ -82,7 +112,6 @@
             </asp:LinkButton>
         </div>
 
-        <%-- APLICADO: text-start para forzar alineación izquierda como en Grupos --%>
         <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4 text-start">
             
             <h4 class="utc-subtitle mb-4 text-center">
@@ -95,19 +124,23 @@
                     <asp:TextBox ID="txtNombre" runat="server" CssClass="form-control" autocomplete="off" />
                 </div>
                 <div class="col-md-12">
-                   <label class="form-label fw-bold text-primary">Director Encargado</label>
+                    <label class="form-label fw-bold text-primary">Director Encargado</label>
                     <div class="input-group gap-2">
-                        <span class="input-group-text bg-white text-primary border-end-0"><i class="fa-solid fa-user-tie"></i></span>
+                        <span class="input-group-text bg-white text-primary border-end-0">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </span>
         
-                        <asp:DropDownList ID="ddlDirector" runat="server" CssClass="form-select border-start-0 bg-light">
-                            <asp:ListItem Text="-- Sin Director Asignado --" Value="" />
-                        </asp:DropDownList>
+                        <asp:TextBox ID="txtDirector" runat="server" 
+                                     CssClass="form-control border-start-0 bg-light text-dark fw-bold" 
+                                     ReadOnly="true" 
+                                     placeholder="-- Sin Director Asignado --" />
         
-                        <button type="button" id="btnNuevoDirectorInput" runat="server" class="btn btn-outline-primary" onclick="AbrirModalNuevoDirector()">
-                            <i class="fa-solid fa-plus me-1"></i> Nuevo
+                        <button type="button" id="btnNuevoDirectorInput" runat="server" 
+                                class="btn btn-outline-primary" onclick="AbrirModalNuevoDirector()">
+                            <i class="fa-solid fa-pen-to-square me-1"></i> Asignar
                         </button>
                     </div>
-                    <small class="text-muted">* Seleccione un integrante existente o registre uno nuevo directamente.</small>
+                    <small class="text-muted">* Para asignar un director, use el botón lateral.</small>
                 </div>
                 
                 <div class="col-md-6">
@@ -218,8 +251,14 @@
                 <i class="fa-solid fa-users me-2"></i> GESTIÓN DE INTEGRANTES
             </h3>
             <div class="d-flex gap-2">
-                <asp:LinkButton runat="server" ID="btnVerPapelera" CssClass="btn btn-secondary btn-pill" OnClick="btnVerPapelera_Click" ToolTip="Ver Integrantes Eliminados">
-                    <i class="fa-solid fa-trash-arrow-up"></i>
+                <asp:LinkButton runat="server" ID="btnVerPapelera" 
+                    CssClass="btn btn-outline-danger btn-pill" 
+                    OnClick="btnVerPapelera_Click"
+                    data-bs-toggle="popover" 
+                    data-bs-trigger="hover focus"
+                    title="Papelera de Integrantes" 
+                    data-bs-content="Aquí puedes consultar el historial de eliminados y <b>restaurar</b> integrantes si es necesario.">
+                    <i class="fa-solid fa-trash-can me-2"></i> PAPELERA
                 </asp:LinkButton>
                 <asp:LinkButton runat="server" ID="btnNuevoIntegrante" CssClass="btn btn-primary btn-pill" OnClick="btnNuevoIntegrante_Click">
                     <i class="fa-solid fa-user-plus me-2"></i> NUEVO INTEGRANTE
@@ -270,18 +309,29 @@
                                 </td>
                                 <td>
                                     <asp:LinkButton ID="btnHistorial" runat="server" CommandName="Historial" CommandArgument='<%# Eval("strId_cin") %>' 
-                                        CssClass="btn btn-info btn-sm rounded-circle me-1 text-white" ToolTip="Ver Historial de Movimientos">
+                                        CssClass="btn btn-info btn-sm rounded-circle me-1 text-white" 
+                                        data-bs-toggle="popover" 
+                                        data-bs-trigger="hover focus"
+                                        title="Historial" 
+                                        data-bs-content="Consulta la cronología de movimientos y cambios de este integrante.">
                                         <i class="fa-solid fa-clock-rotate-left"></i>
                                     </asp:LinkButton>
 
                                     <asp:LinkButton ID="btnEditarInt" runat="server" CommandName="Editar" CommandArgument='<%# Eval("strId_cin") %>' 
-                                        CssClass="btn btn-warning btn-sm rounded-circle me-1" ToolTip="Editar">
+                                        CssClass="btn btn-warning btn-sm rounded-circle me-1" 
+                                        data-bs-toggle="popover" 
+                                        data-bs-trigger="hover focus"
+                                        title="Editar Datos" 
+                                        data-bs-content="Modifica la información personal o de vinculación.">
                                         <i class="fa-solid fa-pen"></i>
                                     </asp:LinkButton>
 
                                     <asp:LinkButton ID="btnEliminarInt" runat="server" CommandName="Eliminar" CommandArgument='<%# Eval("strId_cin") %>' 
                                         CssClass='<%# Convert.ToBoolean(Eval("bitActivo_cin")) ? "btn btn-outline-danger btn-sm rounded-circle" : "btn btn-outline-success btn-sm rounded-circle" %>' 
-                                        ToolTip='<%# Convert.ToBoolean(Eval("bitActivo_cin")) ? "Dar de Baja" : "Activar" %>'>
+                                        data-bs-toggle="popover" 
+                                        data-bs-trigger="hover focus"
+                                        title='<%# Convert.ToBoolean(Eval("bitActivo_cin")) ? "Dar de Baja" : "Reactivar Integrante" %>'
+                                        data-bs-content='<%# Convert.ToBoolean(Eval("bitActivo_cin")) ? "El integrante pasará a estado <b>Inactivo</b>." : "El integrante volverá a estar <b>Activo</b> en el centro." %>'>
                                         <i class="fa-solid fa-power-off"></i>
                                     </asp:LinkButton>
                                 </td>
@@ -293,7 +343,6 @@
         </div>
     </asp:Panel>
 
-    <%-- 4. FORMULARIO INTEGRANTES (CORREGIDO: text-start y estructura limpia) --%>
     <asp:Panel ID="pnlFormularioInt" runat="server" Visible="false">
         <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-4 rounded shadow-utc border header-utc-line">
             <h3 class="utc-title mb-0">
@@ -304,9 +353,8 @@
             </asp:LinkButton>
         </div>
 
-        <%-- AÑADIDO: text-start --%>
-        <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4 mb-5 text-start">
-            
+        <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4 text-start">
+        
             <h5 class="text-center fw-bold mb-4" style="color: var(--utc-azul-oscuro);">
                 <i class="fa-solid fa-user-plus me-2"></i> DATOS DEL INTEGRANTE
             </h5>
@@ -321,25 +369,28 @@
 
             <asp:HiddenField ID="hfIdIntegrante" runat="server" />
 
-            <h6 class="fw-bold text-primary mb-3">Datos Personales</h6>
+            <div class="row g-3">
             
-            <div class="row g-3 mb-3">
+                <div class="col-12">
+                    <h6 class="fw-bold text-primary border-bottom pb-2 mb-0">Datos Personales</h6>
+                </div>
+
                 <div class="col-md-12">
                     <label class="form-label small fw-bold text-secondary">Cédula</label>
                     <div class="input-group gap-2">
-                        <asp:TextBox ID="txtCedulaInt" runat="server" CssClass="form-control" placeholder="" autocomplete="off" />
+                        <asp:TextBox ID="txtCedulaInt" runat="server" CssClass="form-control" autocomplete="off" />
                         <asp:LinkButton ID="btnValidarCedulaInt" runat="server" CssClass="btn btn-outline-primary" OnClick="btnValidarCedulaInt_Click">
                             <i class="fa-solid fa-magnifying-glass me-1"></i> Validar
                         </asp:LinkButton>
                     </div>
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label class="form-label small fw-bold text-secondary">Nombres</label>
                     <asp:TextBox ID="txtNombresInt" runat="server" CssClass="form-control" autocomplete="off"/>
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label class="form-label small fw-bold text-secondary">Apellidos</label>
                     <asp:TextBox ID="txtApellidosInt" runat="server" CssClass="form-control" autocomplete="off"/>
                 </div>
@@ -348,10 +399,8 @@
                     <label class="form-label small fw-bold text-secondary">Correo</label>
                     <asp:TextBox ID="txtCorreoInt" runat="server" CssClass="form-control" TextMode="Email" autocomplete="off"/>
                 </div>
-            </div>
 
-            <div id="divIntInterno" class="col-12"> 
-                <div class="row g-3 mb-4">
+                <div id="divIntInterno" class="col-12 row g-3 m-0 p-0"> 
                     <div class="col-md-6">
                         <label class="form-label small fw-bold text-primary">Facultad / Extensión</label>
                         <asp:DropDownList ID="ddlFacultadInt" runat="server" CssClass="form-select" 
@@ -373,16 +422,15 @@
                         </asp:DropDownList>
                     </div>
                 </div>
-            </div>
 
-            <div id="divIntExterno" class="w-100 mb-4" style="display:none; width: 100%;">
-                <label class="form-label small fw-bold text-primary">Institución de Origen</label>
-                <asp:TextBox ID="txtEntidadExternoInt" runat="server" CssClass="form-control w-100" placeholder="Universidad o Empresa..." autocomplete="off" />
-            </div>
+                <div id="divIntExterno" class="col-12" style="display:none;">
+                    <label class="form-label small fw-bold text-primary">Institución de Origen</label>
+                    <asp:TextBox ID="txtEntidadExternoInt" runat="server" CssClass="form-control" placeholder="Universidad o Empresa..." autocomplete="off" />
+                </div>
+                <div class="col-12 mt-4">
+                    <h6 class="fw-bold text-primary border-bottom pb-2 mb-0">Datos del Grupo</h6>
+                </div>
 
-            <h6 class="fw-bold text-primary mb-3">Datos del Grupo</h6>
-            
-            <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label small fw-bold text-secondary">Función Asignada</label>
                     <div class="input-group">
@@ -402,9 +450,8 @@
                         <span class="input-group-text bg-white text-secondary"><i class="fa-regular fa-calendar"></i></span>
                     </div>
                 </div>
-            </div>
 
-            <div class="d-flex justify-content-center gap-3 mt-4">
+            </div> <div class="d-flex justify-content-center gap-3 mt-5">
                 <asp:LinkButton ID="btnGuardarInt" runat="server" CssClass="btn btn-primary btn-pill px-4 py-2 fw-bold shadow-sm" OnClick="btnGuardarInt_Click">
                     <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Integrante
                 </asp:LinkButton>
@@ -415,7 +462,6 @@
         </div>
     </asp:Panel>
 
-    <%-- 5. MODALES (Historial, Reporte, Estado, Director, Papelera) --%>
     <div class="modal fade" id="modalHistorial" tabindex="-1" aria-hidden="true" ClientIDMode="Static">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content rounded-4 shadow-utc border-0">
@@ -650,7 +696,6 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
 
-                <%-- APLICADO: text-start --%>
                 <div class="modal-body p-4 bg-white text-start">
                     <div class="row mb-4">
                         <div class="col-md-12">
@@ -663,15 +708,14 @@
                     </div>
 
                     <div class="mb-4">
-                        <h6 class="utc-subtitle border-bottom pb-2 mb-3 text-secondary" style="font-size: 0.85rem; letter-spacing: 0.5px;">
-                            <i class="fa-solid fa-address-card me-2"></i> INFORMACIÓN PERSONAL
-                        </h6>
                     
+                        <h6 class="text-primary fw-bold mb-3 small text-uppercase">
+                            <i class="fa-regular fa-id-card me-2"></i> INFORMACIÓN PERSONAL
+                        </h6>
                         <div class="row g-3">
                             <div class="col-md-12">
                                 <label class="form-label text-secondary small fw-bold">Número de Cédula <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light"><i class="fa-solid fa-id-card"></i></span>
+                                <div class="input-group gap-2">
                                     <asp:TextBox ID="txtCedulaDirModal" runat="server" CssClass="form-control" MaxLength="10" placeholder="Ej: 050..." autocomplete="off" />
                                     <asp:LinkButton ID="btnValidarCedula" runat="server" CssClass="btn btn-primary" OnClick="btnValidarCedula_Click">
                                         <i class="fa-solid fa-magnifying-glass me-1"></i> Validar
@@ -699,31 +743,30 @@
                         </div>
                     </div>
 
-                    <div id="divDirInterno">
-                        <h6 class="utc-subtitle border-bottom pb-2 mb-3 text-secondary" style="font-size: 0.85rem; letter-spacing: 0.5px;">
-                            <i class="fa-solid fa-building-columns me-2"></i> AFILIACIÓN INSTITUCIONAL
+                        <h6 class="text-primary fw-bold mb-3 small text-uppercase">
+                            <i class="fa-regular fa-id-card me-2"></i> AFILIACIÓN INSTITUCIONAL
                         </h6>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label text-secondary small fw-bold mb-1">Facultad / Extensión</label>
-                                <asp:DropDownList ID="ddlFacultadDirModal" runat="server" CssClass="form-select shadow-sm" 
-                                    AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadDirModal_SelectedIndexChanged">
-                                    <asp:ListItem Text="-- Seleccione --" Value="" />
-                                    <asp:ListItem Value="CAREN">CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
-                                    <asp:ListItem Value="CIYA">CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
-                                    <asp:ListItem Value="CAYE">CIENCIAS ADMINISTRATIVAS (CAYE)</asp:ListItem>
-                                    <asp:ListItem Value="CSAYE">CIENCIAS SOCIALES (CSAYE)</asp:ListItem>
-                                    <asp:ListItem Value="SALUD">CIENCIAS DE LA SALUD (CS)</asp:ListItem> 
-                                    <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
-                                    <asp:ListItem Value="LAMANA">EXTENSION LA MANÁ</asp:ListItem>
-                                </asp:DropDownList>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label text-secondary small fw-bold mb-1">Carrera / Departamento</label>
-                                <asp:DropDownList ID="ddlCarreraDirModal" runat="server" CssClass="form-select shadow-sm">
-                                    <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
-                                </asp:DropDownList>
-                            </div>
+
+                    <div id="divDirInterno" class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-bold mb-1">Facultad / Extensión</label>
+                            <asp:DropDownList ID="ddlFacultadDirModal" runat="server" CssClass="form-select shadow-sm" 
+                                AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadDirModal_SelectedIndexChanged">
+                                <asp:ListItem Text="-- Seleccione --" Value="" />
+                                <asp:ListItem Value="CAREN">CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
+                                <asp:ListItem Value="CIYA">CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
+                                <asp:ListItem Value="CAYE">CIENCIAS ADMINISTRATIVAS (CAYE)</asp:ListItem>
+                                <asp:ListItem Value="CSAYE">CIENCIAS SOCIALES (CSAYE)</asp:ListItem>
+                                <asp:ListItem Value="SALUD">CIENCIAS DE LA SALUD (CS)</asp:ListItem> 
+                                <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
+                                <asp:ListItem Value="LAMANA">EXTENSION LA MANÁ</asp:ListItem>
+                            </asp:DropDownList>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-bold mb-1">Carrera / Departamento</label>
+                            <asp:DropDownList ID="ddlCarreraDirModal" runat="server" CssClass="form-select shadow-sm">
+                                <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
+                            </asp:DropDownList>
                         </div>
                     </div>
 
@@ -731,14 +774,15 @@
                         <h6 class="utc-subtitle border-bottom pb-2 mb-3 text-secondary" style="font-size: 0.85rem; letter-spacing: 0.5px;">
                             <i class="fa-solid fa-briefcase me-2"></i> INSTITUCIÓN DE ORIGEN
                         </h6>
-                        <div class="row">
-                            <div class="col-12">
-                                <label class="form-label text-secondary small fw-bold">Nombre de la Institución / Empresa</label>
-                                <asp:TextBox ID="txtEntidadDirModal" runat="server" CssClass="form-control" placeholder="Ej: Universidad Central del Ecuador" autocomplete="off" />
-                            </div>
+                        <div class="col-12">
+                            <label class="form-label text-secondary small fw-bold">Nombre de la Institución / Empresa</label>
+                            <asp:TextBox ID="txtEntidadDirModal" runat="server" CssClass="form-control" placeholder="Ej: Universidad Central del Ecuador" autocomplete="off" />
                         </div>
                     </div>
                 </div>
+
+                
+                <hr class="text-muted opacity-25 my-4">
 
                 <div class="modal-footer justify-content-center border-0 pb-4 pt-0 bg-white">
                     <asp:LinkButton ID="btnGuardarDirectorModal" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow-sm fw-bold" OnClick="btnGuardarDirectorModal_Click">
@@ -911,27 +955,45 @@
 
     <%-- LIBRERÍAS EXTERNAS --%>
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
+    <script type="text/javascript">
 
-    <script>
         // ==========================================
-        // 1. INICIALIZACIÓN (DOCUMENT READY)
+        // 1. CONFIGURACIÓN GLOBAL
         // ==========================================
-        $(document).ready(function () {
-            // A. Iniciar Tablas
+        const dtConfig = {
+            responsive: true,
+            autoWidth: false,
+            pageLength: 10,
+            language: { url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json" },
+            dom: "<'row align-items-center mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-end'f>><'row'<'col-sm-12'tr>><'row mt-3 align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+        };
+
+        Sys.Application.add_load(function () {
+
             initTables();
 
-            initMyFileInput('wrapperResolucion', '<%= flpResolucion.ClientID %>');
+            if (typeof UTC_FileInput === 'function') {
+                initMyFileInput('wrapperResolucion', '<%= flpResolucion.ClientID %>');
             initMyFileInput('wrapperAceptacion', '<%= flpAceptacion.ClientID %>');
+            }
 
             cargarEstadoEdicion('wrapperResolucion', '<%= hfResolucionActual.ClientID %>');
             cargarEstadoEdicion('wrapperAceptacion', '<%= hfAceptacionActual.ClientID %>');
+
+            var ddlInt = document.getElementById('<%= ddlTipoInt.ClientID %>');
+            if (ddlInt) ToggleTipoIntegrante(ddlInt);
+
+            var ddlDir = document.getElementById('<%= ddlTipoDirModal.ClientID %>');
+            if (ddlDir) ToggleTipoDirector(ddlDir);
+
+            var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+            var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+                return new bootstrap.Popover(popoverTriggerEl, { html: true, trigger: 'hover focus' })
+            });
         });
 
-        // ==========================================
-        // 2. WRAPPER PARA TU COMPONENTE
-        // ==========================================
         function initMyFileInput(wrapperId, inputId) {
-            if (typeof UTC_FileInput === 'function') {
+            if (document.getElementById(wrapperId)) {
                 UTC_FileInput({
                     wrapper: wrapperId,
                     dropzone: wrapperId.replace('wrapper', 'dropzone'),
@@ -939,14 +1001,9 @@
                     loader: wrapperId.replace('wrapper', 'loader'),
                     input: inputId
                 });
-            } else {
-                console.error("Error: utc-fileinput.js no se ha cargado correctamente.");
             }
         }
 
-        // ==========================================
-        // 3. LOGICA VISUAL PARA MODO "EDITAR"
-        // ==========================================
         function cargarEstadoEdicion(wrapperId, hiddenFieldId) {
             var hf = document.getElementById(hiddenFieldId);
             var wrapper = document.getElementById(wrapperId);
@@ -956,7 +1013,6 @@
                 var preview = document.getElementById(wrapperId.replace('wrapper', 'preview'));
                 var nameLabel = wrapper.querySelector('.utc-fileinput-name');
                 var removeBtn = wrapper.querySelector('.remove-btn');
-
                 var nombreArchivo = hf.value.split('/').pop().split('\\').pop();
 
                 if (dropzone) dropzone.style.display = 'none';
@@ -974,78 +1030,77 @@
                     if (esImagen) {
                         preview.innerHTML = '<div class="text-center mt-2"><img src="' + rutaWeb + '" style="height:60px; border-radius:4px; border:1px solid #ddd;" /></div>';
                     } else {
-                        var icono = 'fa-file-lines';
-                        if (nombreArchivo.includes('.pdf')) icono = 'fa-file-pdf text-danger';
-                        if (nombreArchivo.includes('.doc')) icono = 'fa-file-word text-primary';
-
+                        var icono = nombreArchivo.includes('.pdf') ? 'fa-file-pdf text-danger' : (nombreArchivo.includes('.doc') ? 'fa-file-word text-primary' : 'fa-file-lines');
                         preview.innerHTML = '<div class="alert alert-light border mt-2 py-1"><i class="fa-solid ' + icono + ' me-2"></i>Archivo Actual Cargado</div>';
                     }
                 }
 
                 if (removeBtn) {
                     removeBtn.style.display = 'block';
-                    removeBtn.addEventListener('click', function (e) {
-                        hf.value = '';
-                    });
+                    removeBtn.onclick = function () { hf.value = ''; };
                 }
             }
         }
 
-        // ==========================================
-        // 4. TABLAS Y OTRAS UTILIDADES
-        // ==========================================
-        const dtConfig = {
-            responsive: true,
-            autoWidth: false,
-            pageLength: 10,
-            language: { url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json" },
-            dom: "<'row align-items-center mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-end'f>><'row'<'col-sm-12'tr>><'row mt-3 align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
-        };
-
         function initTables() {
-            if ($.fn.DataTable.isDataTable('#tablaCentros')) $('#tablaCentros').DataTable().destroy();
-            if ($.fn.DataTable.isDataTable('#tablaIntegrantes')) $('#tablaIntegrantes').DataTable().destroy();
-
-            $('#tablaCentros').DataTable(dtConfig);
-            $('#tablaIntegrantes').DataTable(dtConfig);
+            if (document.getElementById('tablaCentros')) {
+                if ($.fn.DataTable.isDataTable('#tablaCentros')) $('#tablaCentros').DataTable().destroy();
+                $('#tablaCentros').DataTable(dtConfig);
+            }
+            if (document.getElementById('tablaIntegrantes')) {
+                if ($.fn.DataTable.isDataTable('#tablaIntegrantes')) $('#tablaIntegrantes').DataTable().destroy();
+                $('#tablaIntegrantes').DataTable(dtConfig);
+            }
         }
 
-        // Funciones del Modal y Reporte (se mantienen igual)
-        function AbrirModalNuevoDirector() { new bootstrap.Modal(document.getElementById('modalNuevoDirector')).show(); }
+        function AbrirModalNuevoDirector() {
+            var el = document.getElementById('modalNuevoDirector');
+            if (el) new bootstrap.Modal(el).show();
+        }
 
         function ToggleTipoDirector(el) {
+            if (!el) return;
             var tipo = el.value;
-            document.getElementById('divDirInterno').style.display = (tipo === "Externo") ? 'none' : 'flex';
-            document.getElementById('divDirExterno').style.display = (tipo === "Externo") ? 'block' : 'none';
+            var divInt = document.getElementById('divDirInterno');
+            var divExt = document.getElementById('divDirExterno');
+
+            if (divInt) divInt.style.display = (tipo === "Externo") ? 'none' : 'flex';
+            if (divExt) divExt.style.display = (tipo === "Externo") ? 'block' : 'none';
         }
 
         function ToggleTipoIntegrante(el) {
+            if (!el) return;
             var tipo = el.value;
-
             var divInt = document.getElementById('divIntInterno');
             var divExt = document.getElementById('divIntExterno');
 
             if (tipo === "Externo") {
-                divInt.style.display = 'none';
-                divExt.style.display = 'block';
+                if (divInt) divInt.style.setProperty('display', 'none', 'important');
+                if (divExt) divExt.style.setProperty('display', 'block', 'important');
             } else {
-                divInt.style.display = 'flex';
-                divExt.style.display = 'none';
+                if (divInt) divInt.style.setProperty('display', 'flex', 'important');
+
+                if (divExt) divExt.style.setProperty('display', 'none', 'important');
             }
         }
 
         function abrirModalPapelera() {
             var el = document.getElementById('modalPapelera');
-            var m = bootstrap.Modal.getOrCreateInstance(el);
-            m.show();
+            if (el) {
+                var m = bootstrap.Modal.getOrCreateInstance(el);
+                m.show();
+            }
         }
 
         function imprimirReporte() {
-            var contenido = document.getElementById("arealmpresion").innerHTML;
+            var area = document.getElementById("arealmpresion");
+            if (!area) return;
+
+            var contenido = area.innerHTML;
             var ventana = window.open('', 'PRINT', 'height=800,width=1000');
             ventana.document.write('<html><head><title>Reporte</title>');
             ventana.document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">');
-            ventana.document.write('<style>body{font-family:sans-serif;} .header-hero-banner{background:#003876!important;color:#fff!important;padding:20px;text-align:center;}</style>');
+            ventana.document.write('<style>body{font-family:sans-serif;} .header-hero-banner{background:#003876!important;color:#fff!important;padding:20px;text-align:center;} .timeline-list{list-style:none;border-left:2px solid #ccc;padding-left:20px;}</style>');
             ventana.document.write('</head><body>' + contenido + '</body></html>');
             ventana.document.close();
             ventana.focus();

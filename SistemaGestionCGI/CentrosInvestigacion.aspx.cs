@@ -50,55 +50,21 @@ namespace SistemaGestionCGI
             rptCentros.DataBind();
         }
 
-        private void CargarCombosDirector(string idCentro)
+        private void CargarDirectorActual(string idCentro)
         {
-            ddlDirector.Items.Clear();
-            ddlDirector.Items.Add(new ListItem("-- Sin Director Asignado --", ""));
+            txtDirector.Text = ""; 
 
             if (!string.IsNullOrEmpty(idCentro))
             {
-                var integrantes = _manejador.ObtenerIntegrantesPorCentro(idCentro);
-                foreach (var item in integrantes)
-                {
-                    ddlDirector.Items.Add(new ListItem(item.NombreCompleto, item.strId_cin));
-                }
-
                 var directorActual = _manejador.BuscarDirectorDelCentro(idCentro);
-
                 if (directorActual != null)
                 {
-                    if (ddlDirector.Items.FindByValue(directorActual.strId_cin) != null)
-                        ddlDirector.SelectedValue = directorActual.strId_cin;
-
-                    ConfigurarEstadoControlesDirector(true);
+                    txtDirector.Text = directorActual.NombreCompleto;
                 }
                 else
                 {
-                    ConfigurarEstadoControlesDirector(false);
+                    txtDirector.Text = "--- SIN DIRECTOR ASIGNADO ---";
                 }
-            }
-            else
-            {
-                ConfigurarEstadoControlesDirector(false);
-            }
-        }
-
-        private void ConfigurarEstadoControlesDirector(bool hayDirectorActivo)
-        {
-            if (hayDirectorActivo)
-            {
-
-                ddlDirector.Enabled = false;
-                ddlDirector.CssClass = "form-select border-start-0 bg-light text-dark fw-bold";
-
-                btnNuevoDirectorInput.Visible = false;
-            }
-            else
-            {
-                ddlDirector.Enabled = true;
-                ddlDirector.CssClass = "form-select border-start-0 bg-white";
-
-                btnNuevoDirectorInput.Visible = true;
             }
         }
 
@@ -113,7 +79,7 @@ namespace SistemaGestionCGI
             else
             {
                 btnNuevoDirectorInput.Disabled = true;
-                btnNuevoDirectorInput.Attributes["class"] = "btn btn-outline-secondary"; // Gris visual
+                btnNuevoDirectorInput.Attributes["class"] = "btn btn-outline-secondary"; 
                 btnNuevoDirectorInput.Attributes["title"] = "Ya existe un Director activo. Para agregar uno nuevo, primero debe dar de baja al actual en la sección 'Integrantes'.";
             }
         }
@@ -145,10 +111,8 @@ namespace SistemaGestionCGI
 
                 ViewState["DirectorPendiente"] = nuevoDir;
 
-                ddlDirector.Items.Clear();
-                string etiqueta = $"{nuevoDir.strApellidos_cin} {nuevoDir.strNombres_cin} (PENDIENTE)";
-                ddlDirector.Items.Add(new ListItem(etiqueta, "-1"));
-                ddlDirector.SelectedValue = "-1";
+                txtDirector.Text = $"{nuevoDir.strApellidos_cin} {nuevoDir.strNombres_cin} (PENDIENTE DE GUARDAR)";
+                txtDirector.CssClass = "form-control border-start-0 bg-warning bg-opacity-10 text-dark fw-bold"; // Feedback visual
 
                 string scriptCerrar = "var m = bootstrap.Modal.getInstance(document.getElementById('modalNuevoDirector')); m.hide();";
                 ScriptManager.RegisterStartupScript(this, GetType(), "CloseModalDir", scriptCerrar, true);
@@ -210,28 +174,6 @@ namespace SistemaGestionCGI
                     _manejador.GuardarIntegrante(directorPendiente, usuario);
 
                     ViewState["DirectorPendiente"] = null;
-                }
-                else
-                {
-                    string idSeleccionado = ddlDirector.SelectedValue;
-
-                    if (!string.IsNullOrEmpty(idSeleccionado) && idSeleccionado != "-1" && idSeleccionado != "")
-                    {
-                        var directorActualEnBD = _manejador.BuscarDirectorDelCentro(idCentroFinal);
-
-                        if (directorActualEnBD != null && directorActualEnBD.strId_cin != idSeleccionado)
-                        {
-                            directorActualEnBD.strFuncion_cin = "Miembro";
-                            _manejador.ActualizarIntegrante(directorActualEnBD, usuario);
-                        }
-
-                        var nuevoDirector = _manejador.ObtenerIntegrantePorId(idSeleccionado);
-                        if (nuevoDirector != null && nuevoDirector.strFuncion_cin != "Director")
-                        {
-                            nuevoDirector.strFuncion_cin = "Director";
-                            _manejador.ActualizarIntegrante(nuevoDirector, usuario);
-                        }
-                    }
                 }
 
                 Redireccionar("Centro guardado exitosamente.", "ss");
@@ -295,7 +237,7 @@ namespace SistemaGestionCGI
             hfResolucionActual.Value = c.strResolucion_cen;
             hfAceptacionActual.Value = c.strAceptacion_cen;
 
-            CargarCombosDirector(c.strId_cen);
+            CargarDirectorActual(c.strId_cen);
 
             CambiarVista(Vista.FormularioCentro);
 
@@ -694,8 +636,8 @@ namespace SistemaGestionCGI
             hfResolucionActual.Value = "";
             hfAceptacionActual.Value = "";
 
-            ddlDirector.Items.Clear();
-            ddlDirector.Items.Add(new ListItem("-- Sin Director Asignado --", ""));
+            txtDirector.Text = "";
+            ViewState["DirectorPendiente"] = null;
 
             ViewState["DirectorPendiente"] = null;
         }

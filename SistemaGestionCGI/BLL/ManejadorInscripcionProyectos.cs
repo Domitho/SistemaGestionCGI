@@ -14,29 +14,36 @@ namespace SistemaGestionCGI.BLL
         // LECTURA DE DATOS
         // =============================================================
 
-        public List<InvgccInscripcionProyectos> ObtenerTodos()
+        // Cambia el tipo de retorno a dynamic o una clase DTO, 
+        // porque estas columnas "extras" no existen en tu entidad base.
+        public List<dynamic> ObtenerTodos()
         {
             string sql = @"
-                SELECT P.strId_pro, P.strTema_pro, 
-                       P.fkId_coordinador, 
-                       P.strCoordinador_pro, 
-                       P.strCedulaCoordinador_pro,
+                SELECT 
+                    P.strId_pro, 
+                    P.strTema_pro, 
+                    P.strDuracion_pro, 
+                    P.dtFehains_pro, 
+                    P.strEstado_pro, 
+                    P.intPuntaje_pro,
+                    P.strArchivo_pro,
+                    G.strNombre_gru, 
+                    C.strNombre_conv,
 
-                       ISNULL(
-                           (I.strApellidos_int + ' ' + I.strNombres_int + ' (' + I.strFuncion_int + ')'), 
-                           P.strCoordinador_pro
-                       ) as NombreCoordinadorCompleto,
+                    -- 1. COLUMNA SOLO PARA EL NOMBRE
+                    COALESCE(I.strApellidos_int + ' ' + I.strNombres_int, P.strCoordinador_pro) as NombreCoordinador,
 
-                       P.strDuracion_pro, P.dtFehains_pro, P.strEstado_pro, P.intPuntaje_pro,
-                       P.strArchivo_pro, 
-                       G.strNombre_gru, C.strNombre_conv
+                    -- 2. COLUMNA SOLO PARA EL CARGO (Si es nulo, ponemos 'COORDINADOR')
+                    COALESCE(I.strFuncion_int, 'COORDINADOR') as CargoCoordinador
+
                 FROM INVGCCINSCRIPCION_PROYECTOS P 
                 INNER JOIN INVGCCGRUPO_INVESTIGACION G ON P.fkId_gru = G.strId_gru
                 INNER JOIN INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION C ON P.fkId_conv = C.strId_conv
                 LEFT JOIN INVGCCGRUPO_INTEGRANTES I ON P.fkId_coordinador = I.strId_int
+        
                 ORDER BY ISNULL(P.intPuntaje_pro, -1) DESC, P.dtFehains_pro DESC";
 
-            return _dal.SelectSql<InvgccInscripcionProyectos>(sql);
+            return _dal.SelectSql<dynamic>(sql);
         }
 
         public InvgccInscripcionProyectos ObtenerPorId(string id)
@@ -139,6 +146,7 @@ namespace SistemaGestionCGI.BLL
 
                     if (proyectosRestantes == 0)
                     {
+                        _dal.Delete("INVGCCINTEGRANTES_HISTORIAL", $"strId_int = '{idCoordinador}'");
                         _dal.Delete("INVGCCGRUPO_INTEGRANTES", $"strId_int = '{idCoordinador}'");
                     }
                 }
@@ -396,5 +404,32 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<dynamic>(sql);
         }
 
+        //
+
+        public List<dynamic> ObtenerCoordinadoresDisponibles(string idGrupo, string idProyectoEditando = null)
+        {
+            string sql = $@"
+                SELECT I.strId_int, 
+                       (I.strApellidos_int + ' ' + I.strNombres_int + ' (' + ISNULL(I.strFuncion_int, 'S/F') + ')') as NombreCompleto
+                FROM INVGCCGRUPO_INTEGRANTES I
+                WHERE I.fkId_gru = '{idGrupo}'
+                AND I.bitActivo_int = 1
+        
+                AND NOT EXISTS (
+                    SELECT 1 
+                    FROM INVGCCINSCRIPCION_PROYECTOS P 
+                    WHERE P.fkId_coordinador = I.strId_int
+                    AND P.strEstado_pro IN ('Pendiente', 'Aprobado') 
+            ";
+
+            if (!string.IsNullOrEmpty(idProyectoEditando))
+            {
+                sql += $" AND P.strId_pro != '{idProyectoEditando}'";
+            }
+
+            sql += ")"; 
+
+            return _dal.SelectSql<dynamic>(sql);
+        }
     }
 }

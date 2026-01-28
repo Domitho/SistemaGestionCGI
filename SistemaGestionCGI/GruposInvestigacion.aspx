@@ -840,7 +840,7 @@
                         <hr class="text-muted opacity-25 my-4">
 
                         <h6 class="text-primary fw-bold mb-3 small text-uppercase">
-                            <i class="fa-solid fa-building-columns me-2"></i> Afiliación
+                            <i class="fa-solid fa-building-columns me-2"></i> Afiliación Institucional
                         </h6>
 
                         <div id="divInterno" class="row g-3 mb-4">
@@ -1102,21 +1102,19 @@
             var pnlSeleccion = document.getElementById('pnlSeleccionDocenteInt');
             var pnlDatos = document.getElementById('<%= pnlDatosPersonalesInt.ClientID %>');
 
-        var divInterno = document.getElementById('divInternoInt');
-        var divExterno = document.getElementById('divExternoInt');
+            var divInterno = document.getElementById('divInternoInt');
+            var divExterno = document.getElementById('divExternoInt');
 
-        // Verificar si ya se seleccionó un docente (para mantener datos visibles)
-        var hfIdDoc = document.getElementById('<%= hfIdDocenteInt.ClientID %>');
+            var hfIdDoc = document.getElementById('<%= hfIdDocenteInt.ClientID %>');
             var hayDocente = hfIdDoc && hfIdDoc.value !== "";
 
             if (tipo === "Docente") {
-                pnlSeleccion.style.display = 'block'; // Mostrar Dropdown
+                pnlSeleccion.style.display = 'block'; 
 
-                // Si ya hay datos cargados, mostramos el formulario
                 if (hayDocente) {
                     pnlDatos.style.display = 'block';
                 } else {
-                    pnlDatos.style.display = 'none'; // Ocultar hasta que seleccione
+                    pnlDatos.style.display = 'none'; 
                 }
 
                 divInterno.style.display = 'flex';
@@ -1128,7 +1126,7 @@
                 divInterno.style.display = 'none';
                 divExterno.style.display = 'block';
             }
-            else { // Interno
+            else { 
                 pnlSeleccion.style.display = 'none';
                 pnlDatos.style.display = 'block';
                 divInterno.style.display = 'flex';
@@ -1163,9 +1161,8 @@
         var pnlBusqueda = document.getElementById('pnlBusquedaDocente');
         var pnlDatos = document.getElementById('<%= pnlDatosPersonalesCoord.ClientID %>');
         var divInterno = document.getElementById('divInterno');
-        var divExterno = document.getElementById('divExterno'); // Asegúrate de tener este ID en el HTML si usas externos
+        var divExterno = document.getElementById('divExterno'); 
 
-        // Verificar si ya hay un docente seleccionado (clave para corregir el bug de ocultamiento)
         var hfIdDoc = document.getElementById('<%= hfCoordIdDocente.ClientID %>');
             var hayDocente = hfIdDoc && hfIdDoc.value !== "";
 

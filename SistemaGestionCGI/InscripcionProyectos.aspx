@@ -20,7 +20,6 @@
             font-weight: 600 !important;
         }
 
-        /* Asegura que los formularios no desborden en móviles */
         .form-stack {
             max-width: 100% !important;
         }
@@ -71,14 +70,28 @@
                             <tr>
                                 <td><%# Eval("strId_pro") %></td>
                                 <td class="text-start"><%# Eval("strTema_pro") %></td>
-                                <td class="text-start text-uppercase small"><%# Eval("NombreCoordinadorCompleto") %></td>
+                                <td class="text-start">
+    
+                                    <div class="fw-semibold text-dark">
+                                        <%# Eval("NombreCoordinador") %>
+                                    </div>
+
+                                    <div class="small text-muted text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                                        <%# Eval("CargoCoordinador") %>
+                                    </div>
+
+                                </td>
                                 <td><%# Eval("strDuracion_pro") %></td>
                                 <td><%# Convert.ToDateTime(Eval("dtFehains_pro")).ToString("dd/MM/yyyy") %></td>
                                 <td class="text-start"><%# Eval("strNombre_gru") %></td>
                                 <td class="text-center align-middle">
-                                    <%# Eval("intPuntaje_pro") == null || Eval("intPuntaje_pro") == DBNull.Value
-                                        ? "<span class='badge rounded-pill bg-secondary bg-opacity-25 text-secondary border border-secondary fw-normal'><i class='fa-solid fa-hourglass-start me-1'></i> Por Calificar</span>" 
-                                        : "<span class='fw-bold fs-5 text-dark'>" + Eval("intPuntaje_pro") + " <small class='text-muted fs-6'>pts</small></span>" 
+                                    <%# string.IsNullOrEmpty(Eval("intPuntaje_pro").ToString()) 
+        
+                                        ? "<span class='badge bg-light text-secondary border border-secondary-subtle px-3 py-2 rounded-pill'>" +
+                                          "<i class='fa-regular fa-clock me-2'></i>Pendiente</span>" 
+        
+                                        : "<span class='badge bg-success bg-opacity-10 text-success border border-success px-3 py-2 rounded-pill'>" +
+                                          Eval("intPuntaje_pro") + "</span>" 
                                     %>
                                 </td>
                                 <td>
@@ -136,12 +149,18 @@
         </div>
     </asp:Panel>
 
-    <%-- PANEL 2: FORMULARIO DE REGISTRO --%>
-    <asp:Panel ID="pnlFormulario" runat="server" Visible="false">
+    <%-- PANEL ÚNICO DE GESTIÓN (CREAR Y EDITAR) --%>
+    <asp:Panel ID="pnlGestion" runat="server" Visible="false">
         <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4">
+            
+            <%-- Título dinámico (se cambia desde C#) --%>
             <h4 class="utc-subtitle mb-4 text-center">
-                <i class="fa-solid fa-file-circle-plus me-2"></i> Registrar Proyecto
+                <i class="fa-solid fa-clipboard-list me-2"></i> <asp:Label ID="lblTituloGestion" runat="server" Text="Gestionar Proyecto"></asp:Label>
             </h4>
+
+            <%-- HIDDEN FIELDS DE CONTROL --%>
+            <asp:HiddenField ID="hfIdProyecto" runat="server" /> 
+            <asp:HiddenField ID="hfArchivoActual" runat="server" />
 
             <div class="row g-3">
                 <div class="col-12">
@@ -149,6 +168,7 @@
                     <asp:DropDownList ID="ddlGrupo" runat="server" CssClass="form-select" AutoPostBack="true" OnSelectedIndexChanged="ddlGrupo_SelectedIndexChanged"></asp:DropDownList>
                 </div>
 
+                <%-- PANEL INFO GRUPO (Solo visible al seleccionar grupo) --%>
                 <asp:Panel ID="pnlInfoGrupo" runat="server" Visible="false" CssClass="col-12 animate__animated animate__fadeIn">
                     <div class="alert alert-primary shadow-sm border-0 d-flex align-items-center" role="alert">
                         <div class="me-3 display-6"><i class="fa-solid fa-users-viewfinder"></i></div>
@@ -157,17 +177,13 @@
                             <p class="mb-0 small opacity-75">
                                 <i class="fa-solid fa-list-check me-1"></i> Líneas: <asp:Label ID="lblLineasInfo" runat="server"></asp:Label>
                             </p>
-                            <hr class="my-2 opacity-25">
-                            <p class="mb-0 small">
-                                <i class="fa-solid fa-circle-info me-1"></i> Seleccione un integrante. Si es <strong>externo</strong>, regístrelo con (+).
-                            </p>
                         </div>
                     </div>
                 </asp:Panel>
 
                 <div class="col-12">
                     <label class="form-label">Coordinador del Proyecto</label>
-                     <div class="d-flex gap-2">
+                    <div class="d-flex gap-2">
                         <asp:DropDownList ID="ddlCoordinador" runat="server" CssClass="form-select w-100">
                             <asp:ListItem Text="-- Seleccione Grupo Primero --" Value="" />
                         </asp:DropDownList>
@@ -176,56 +192,64 @@
                             <i class="fa-solid fa-plus"></i> Nuevo
                         </asp:LinkButton>
                     </div>
-                    <div class="form-text small text-muted">Si el coordinador no aparece, agréguelo aquí.</div>
                 </div>
 
                 <div class="col-12">
                     <label class="form-label">Titulo del Proyecto</label>
                     <asp:TextBox ID="txtTema" runat="server" CssClass="form-control" autocomplete="off" />
                 </div>
+
+                <%-- DURACIÓN (INPUT GROUP + HIDDEN FIELDS) --%>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Duración Estimada</label>
-    
                     <div class="input-group gap-2">
-       
                         <asp:TextBox ID="txtDuracionDisplay" runat="server" 
                             CssClass="form-control bg-white text-primary fw-bold border-start-0 border-end-0" 
                             placeholder="Seleccione..." ReadOnly="true" ClientIDMode="Static" />
-        
-                        <button type="button" class="btn btn-outline-primary" onclick="AbrirModalDuracion(false)">
+                        
+                        <button type="button" class="btn btn-outline-primary" onclick="AbrirModalDuracion()">
                             <i class="fa-solid fa-stopwatch me-2"></i> Definir Tiempo
                         </button>
                     </div>
-
+                    <%-- Solo un set de HiddenFields --%>
                     <asp:HiddenField ID="hfAnios" runat="server" ClientIDMode="Static" Value="0" />
                     <asp:HiddenField ID="hfMeses" runat="server" ClientIDMode="Static" Value="0" />
                     <asp:HiddenField ID="hfSemanas" runat="server" ClientIDMode="Static" Value="0" />
                     <asp:HiddenField ID="hfDias" runat="server" ClientIDMode="Static" Value="0" />
                 </div>
+
                 <div class="col-md-6">
                     <label class="form-label">Puntuación (Opcional)</label>
                     <asp:TextBox ID="txtPuntaje" runat="server" CssClass="form-control" TextMode="Number" placeholder="Ej: 95" />
-                    <div class="form-text small">Dejar vacío si aún no ha sido calificado.</div>
                 </div>
+
                 <div class="col-12">
                     <label class="form-label">Fecha de Inicio</label>
                     <asp:TextBox ID="txtFecha" runat="server" TextMode="Date" CssClass="form-control" />
                 </div>
+
                 <div class="col-12">
                     <label class="form-label">Convocatoria</label>
                     <asp:DropDownList ID="ddlConv" runat="server" CssClass="form-select"></asp:DropDownList>
                 </div>
 
-                <%-- FILE INPUT --%>
+                <%-- SECCIÓN ARCHIVO (UNIFICADA) --%>
                 <div class="col-12">
-                    <label class="form-label fw-semibold">Archivo de convocatoria</label>
+                    <label class="form-label fw-semibold">Archivo del Proyecto</label>
+                    
+                    <%-- Label para mostrar el archivo actual en modo Edición --%>
+                    <asp:Panel ID="pnlArchivoActual" runat="server" Visible="false" CssClass="alert alert-secondary d-flex justify-content-between align-items-center py-2 mb-2">
+                        <span><i class="fa-solid fa-file-pdf me-2 text-danger"></i> <asp:Label ID="lblNombreArchivoActual" runat="server" Text="Archivo.pdf" CssClass="fw-bold"></asp:Label></span>
+                        <span class="badge bg-secondary">Actual</span>
+                    </asp:Panel>
+
                     <div class="utc-fileinput-wrapper" id="wrapperArchivo">
                         <div class="utc-fileinput-header">
                             <div class="utc-fileinput-icon"><i class="fa-solid fa-paperclip"></i></div>
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="utc-fileinput-name">Ningún archivo seleccionado</span>
                                 <div class="utc-fileinput-buttons d-flex gap-2">
-                                    <button type="button" class="btn btn-outline-primary utc-btn-small rename-btn"><i class="fa-solid fa-pen-to-square"></i> Renombrar</button>
+                                    <button type="button" class="btn btn-outline-primary utc-btn-small rename-btn"><i class="fa-solid fa-pen-to-square"></i></button>
                                     <button type="button" class="btn btn-outline-danger utc-btn-small remove-btn"><i class="fa-solid fa-xmark"></i></button>
                                 </div>
                             </div>
@@ -233,118 +257,22 @@
                         <input type="text" class="form-control form-control-sm utc-edit-name-field" placeholder="Nuevo nombre..." />
                         <div class="utc-fileinput-preview" id="previewArchivo"></div>
                         <div class="utc-fileinput-loader" id="loaderArchivo"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
-                        <div class="utc-dropzone" id="dropzoneArchivo"><i class="fa-solid fa-cloud-arrow-up fa-2x mb-2"></i><br />Arrastra un archivo aquí.</div>
+                        <div class="utc-dropzone" id="dropzoneArchivo"><i class="fa-solid fa-cloud-arrow-up fa-2x mb-2"></i><br />Arrastra para subir/reemplazar.</div>
                         <asp:FileUpload ID="flpArchivo" runat="server" CssClass="utc-fileinput-input" />
                     </div>
-                    <div class="form-text">Formatos permitidos: PDF, XLS, XLSX (máx 8MB)</div>
+                    <div class="form-text">Formatos: PDF, XLS, XLSX (máx 8MB). Si sube uno nuevo, reemplazará al actual.</div>
                 </div>
             </div>
 
             <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
-                <asp:LinkButton ID="btnGuardar" runat="server" 
+                <asp:LinkButton ID="btnGuardarGestion" runat="server" 
                     CssClass="btn btn-primary btn-pill px-4" 
-                    OnClientClick="return ValidarPuntajeProyecto(false);"
-                    OnClick="btnGuardar_Click">
-                    <i class="fa-solid fa-floppy-disk me-2"></i> Guardar
+                    OnClientClick="return ValidarPuntajeProyecto();"
+                    OnClick="btnGuardarGestion_Click">
+                    <i class="fa-solid fa-floppy-disk me-2"></i> <asp:Label ID="lblBtnGuardar" runat="server" Text="Guardar"></asp:Label>
                 </asp:LinkButton>
+
                 <asp:LinkButton ID="btnCancelar" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="btnCancelar_Click" CausesValidation="false">
-                    <i class="fa-solid fa-ban me-2"></i> Cancelar
-                </asp:LinkButton>
-            </div>
-        </div>
-    </asp:Panel>
-
-    <%-- PANEL 3: EDICIÓN DE PROYECTO --%>
-    <asp:Panel ID="pnlEdicion" runat="server" Visible="false">
-        <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4">
-            <h4 class="utc-subtitle mb-4 text-center">
-                <i class="fa-solid fa-pen-to-square me-2"></i> Editar Proyecto
-            </h4>
-            <asp:HiddenField ID="hfIdEdit" runat="server" />
-            <asp:HiddenField ID="hfArchivoActual" runat="server" />
-
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Grupo</label>
-                    <asp:DropDownList ID="ddlGrupoEdit" runat="server" CssClass="form-select" AutoPostBack="true" OnSelectedIndexChanged="ddlGrupoEdit_SelectedIndexChanged"></asp:DropDownList>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Coordinador</label>
-                    <asp:DropDownList ID="ddlCoordinadorEdit" runat="server" CssClass="form-select">
-                        <asp:ListItem Text="-- Seleccione Grupo Primero --" Value="" />
-                    </asp:DropDownList>
-                </div>
-                <div class="col-12">
-                    <label class="form-label">Titulo del Proyecto</label>
-                    <asp:TextBox ID="txtTemaEdit" runat="server" CssClass="form-control" autocomplete="off" />
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Duración Estimada</label>
-    
-                    <div class="input-group">
-                        <asp:TextBox ID="txtDuracionDisplayEdit" runat="server" 
-                            CssClass="form-control bg-white text-primary fw-bold border-start-0 border-end-0" 
-                            placeholder="Seleccione..." ReadOnly="true" ClientIDMode="Static" />
-        
-                        <button type="button" class="btn btn-outline-primary" onclick="AbrirModalDuracion(true)">
-                            <i class="fa-solid fa-stopwatch me-2"></i> Definir Tiempo
-                        </button>
-                    </div>
-
-                    <asp:HiddenField ID="hfAniosEdit" runat="server" ClientIDMode="Static" Value="0" />
-                    <asp:HiddenField ID="hfMesesEdit" runat="server" ClientIDMode="Static" Value="0" />
-                    <asp:HiddenField ID="hfSemanasEdit" runat="server" ClientIDMode="Static" Value="0" />
-                    <asp:HiddenField ID="hfDiasEdit" runat="server" ClientIDMode="Static" Value="0" />
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-bold text-primary">Puntaje Asignado</label>
-                    <asp:TextBox ID="txtPuntajeEdit" runat="server" CssClass="form-control" TextMode="Number" />
-                </div>
-                <div class="col-12">
-                    <label class="form-label">Fecha de Inicio</label>
-                    <asp:TextBox ID="txtFechaEdit" runat="server" TextMode="Date" CssClass="form-control" />
-                </div>
-                <div class="col-12">
-                    <label class="form-label">Convocatoria</label>
-                    <asp:DropDownList ID="ddlConvEdit" runat="server" CssClass="form-select"></asp:DropDownList>
-                </div>
-                <div class="col-12">
-                    <label class="form-label fw-bold">Archivo Actual</label>
-                    <asp:Label ID="lblArchivoActual" runat="server" CssClass="d-block mb-2 text-primary fw-semibold"></asp:Label>
-                </div>
-                
-                <%-- FILE INPUT EDICION --%>
-                <div class="col-12">
-                    <label class="form-label fw-semibold">Reemplazar Archivo (opcional)</label>
-                    <div class="utc-fileinput-wrapper" id="wrapperArchivoEdit">
-                        <div class="utc-fileinput-header">
-                            <div class="utc-fileinput-icon"><i class="fa-solid fa-paperclip"></i></div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="utc-fileinput-name">Ningún archivo seleccionado</span>
-                                <div class="utc-fileinput-buttons d-flex gap-2">
-                                    <button type="button" class="btn btn-outline-primary utc-btn-small rename-btn"><i class="fa-solid fa-pen-to-square"></i> Renombrar</button>
-                                    <button type="button" class="btn btn-outline-danger utc-btn-small remove-btn"><i class="fa-solid fa-xmark"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                        <input type="text" class="form-control form-control-sm utc-edit-name-field" placeholder="Nuevo nombre..." />
-                        <div class="utc-fileinput-preview" id="previewArchivoEdit"></div>
-                        <div class="utc-fileinput-loader" id="loaderArchivoEdit"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
-                        <div class="utc-dropzone" id="dropzoneArchivoEdit"><i class="fa-solid fa-cloud-arrow-up fa-2x mb-2"></i><br />Arrastra un archivo aquí.</div>
-                        <asp:FileUpload ID="flpArchivoEdit" runat="server" CssClass="utc-fileinput-input" />
-                    </div>
-                    <div class="form-text">Formatos permitidos: PDF, XLS, XLSX (máx 8MB)</div>
-                </div>
-            </div>
-
-            <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
-                <asp:LinkButton ID="btnActualizar" runat="server" 
-                    CssClass="btn btn-primary btn-pill px-4" 
-                    OnClientClick="return ValidarPuntajeProyecto(true);" 
-                    OnClick="btnActualizar_Click">
-                    <i class="fa-solid fa-floppy-disk me-2"></i> Actualizar
-                </asp:LinkButton>
-                <asp:LinkButton ID="btnCancelarEdit" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="btnCancelarEdit_Click" CausesValidation="false">
                     <i class="fa-solid fa-ban me-2"></i> Cancelar
                 </asp:LinkButton>
             </div>
@@ -648,27 +576,19 @@
         };
 
         Sys.Application.add_load(function () {
-            // Inicializar DataTable
             const tabla = '#tablaProyectos';
             if ($.fn.DataTable && $.fn.DataTable.isDataTable(tabla)) $(tabla).DataTable().destroy();
             if ($(tabla).length) $(tabla).DataTable(dtConfigProyectos);
 
-            // Inicializar FileInputs
             if (typeof UTC_FileInput === 'function') {
                 if (document.getElementById('wrapperArchivo')) {
                     UTC_FileInput({
                         wrapper: "wrapperArchivo", dropzone: "dropzoneArchivo", preview: "previewArchivo", loader: "loaderArchivo",
                         input: "<%= flpArchivo.ClientID %>", pdfjsLibUrl: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js"
-                    });
+                        });
+                    }
                 }
-                if (document.getElementById('wrapperArchivoEdit')) {
-                    UTC_FileInput({
-                        wrapper: "wrapperArchivoEdit", dropzone: "dropzoneArchivoEdit", preview: "previewArchivoEdit", loader: "loaderArchivoEdit",
-                        input: "<%= flpArchivoEdit.ClientID %>", pdfjsLibUrl: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js"
-                    });
-                }
-            }
-        });
+            });
 
         // ==========================================
         // 2. MODALS SIMPLES (Llamados desde Backend)
@@ -686,58 +606,60 @@
         }
 
         // ==========================================
-        // 3. PARCHE PARA MODAL DE TIEMPO
-        // Sobrescribe la función del archivo externo para arreglar el fondo negro
+        // 3. SELECTOR DE TIEMPO (Parche y Conexión)
         // ==========================================
-        function AbrirModalDuracion(esEdit) {
-            // Seteamos la variable global de tu archivo externo
-            if (typeof esEdicionDuracion !== 'undefined') esEdicionDuracion = esEdit;
+        function AbrirModalDuracion() {
+            document.getElementById('tmpAnios').value = document.getElementById('hfAnios').value || 0;
+            document.getElementById('tmpMeses').value = document.getElementById('hfMeses').value || 0;
+            document.getElementById('tmpSemanas').value = document.getElementById('hfSemanas').value || 0;
+            document.getElementById('tmpDias').value = document.getElementById('hfDias').value || 0;
 
-            let sufijo = esEdit ? "Edit" : "";
-
-            // Cargar datos en los inputs del modal
-            document.getElementById('tmpAnios').value = document.getElementById('hfAnios' + sufijo).value || 0;
-            document.getElementById('tmpMeses').value = document.getElementById('hfMeses' + sufijo).value || 0;
-            document.getElementById('tmpSemanas').value = document.getElementById('hfSemanas' + sufijo).value || 0;
-            document.getElementById('tmpDias').value = document.getElementById('hfDias' + sufijo).value || 0;
-
-            // Llamamos a la función correcta de TU archivo externo
-            if (typeof ActualizarPreview === 'function') {
-                ActualizarPreview();
-            }
+            if (typeof ActualizarPreview === 'function') ActualizarPreview();
 
             var el = document.getElementById('modalDuracion');
-
-            // ---> EL FIX VISUAL <---
-            // Mueve el modal al body para evitar que el fondo negro lo tape
-            document.body.appendChild(el);
-
+            document.body.appendChild(el); 
             var modal = bootstrap.Modal.getOrCreateInstance(el);
             modal.show();
         }
 
-        // ==========================================
-        // 4. VALIDACIONES ESPECÍFICAS DE ESTA PÁGINA
-        // ==========================================
-        function ValidarPuntajeProyecto(esEdicion) {
-            var idCampo = esEdicion ? '<%= txtPuntajeEdit.ClientID %>' : '<%= txtPuntaje.ClientID %>';
-            var idTema = esEdicion ? '<%= txtTemaEdit.ClientID %>' : '<%= txtTema.ClientID %>';
+        function GuardarDuracion() {
+            document.getElementById('hfAnios').value = document.getElementById('tmpAnios').value;
+            document.getElementById('hfMeses').value = document.getElementById('tmpMeses').value;
+            document.getElementById('hfSemanas').value = document.getElementById('tmpSemanas').value;
+            document.getElementById('hfDias').value = document.getElementById('tmpDias').value;
 
-            var inputTema = document.getElementById(idTema);
-            // Validación de Título
-            if (inputTema && inputTema.value.trim() === "") {
-                if (typeof Swal !== 'undefined') Swal.fire('Atención', 'El título del proyecto es obligatorio.', 'warning');
-                else alert('El título del proyecto es obligatorio.');
+            let texto = document.getElementById('lblLivePreview').innerText;
+            document.getElementById('txtDuracionDisplay').value = texto;
+
+            var el = document.getElementById('modalDuracion');
+            var modal = bootstrap.Modal.getInstance(el);
+            modal.hide();
+        }
+
+        // ==========================================
+        // 4. VALIDACIONES Y UTILIDADES
+        // ==========================================
+        function ValidarPuntajeProyecto() {
+            var inputTema = document.getElementById('<%= txtTema.ClientID %>');
+            var inputPuntaje = document.getElementById('<%= txtPuntaje.ClientID %>');
+
+            if (inputTema.value.trim() === "") {
+                if (typeof toastify === 'function') {
+                    toastify('ww', 'El título del proyecto es obligatorio.', 'Atención');
+                } else {
+                    alert('El título del proyecto es obligatorio.');
+                }
                 return false;
             }
 
-            // Validación de Puntaje
-            var inputPuntaje = document.getElementById(idCampo);
-            if (inputPuntaje && inputPuntaje.value.trim() !== "") {
+            if (inputPuntaje.value.trim() !== "") {
                 var puntaje = parseFloat(inputPuntaje.value);
                 if (isNaN(puntaje) || puntaje < 0 || puntaje > 150) {
-                    if (typeof Swal !== 'undefined') Swal.fire('Error', 'La calificación debe ser entre 0 y 150.', 'error');
-                    else alert('La calificación debe ser entre 0 y 150.');
+                    if (typeof toastify === 'function') {
+                        toastify('ee', 'La calificación debe ser entre 0 y 150.', 'Error');
+                    } else {
+                        alert('La calificación debe ser entre 0 y 150.');
+                    }
                     return false;
                 }
             }
