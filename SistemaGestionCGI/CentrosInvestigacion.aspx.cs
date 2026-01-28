@@ -329,6 +329,7 @@ namespace SistemaGestionCGI
                 if (string.IsNullOrWhiteSpace(txtCedulaInt.Text) || string.IsNullOrWhiteSpace(txtNombresInt.Text))
                 {
                     Msg("Cédula y Nombres son obligatorios.", "ww");
+                    MantenerEstadoVisualIntegrantes();
                     return;
                 }
 
@@ -422,6 +423,11 @@ namespace SistemaGestionCGI
             catch (Exception ex) { Msg("Error: " + ex.Message, "ee"); }
         }
 
+        private void MantenerEstadoVisualIntegrantes()
+        {
+            string script = $"ToggleTipoIntegrante(document.getElementById('{ddlTipoInt.ClientID}'));";
+            ScriptManager.RegisterStartupScript(this, GetType(), "RestaurarUIInt", script, true);
+        }
         protected void rptIntegrantes_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             string id = e.CommandArgument.ToString();
@@ -706,7 +712,7 @@ namespace SistemaGestionCGI
             ddlCarreraInt.Items.Clear();
             ddlCarreraInt.Items.Add(new ListItem("-- Seleccione Facultad Primero --", ""));
 
-            string script = "document.getElementById('divIntInterno').style.display = 'block';";
+            string script = $"ToggleTipoIntegrante(document.getElementById('{ddlTipoInt.ClientID}'));";
             ScriptManager.RegisterStartupScript(this, GetType(), "ResetDesign", script, true);
         }
 

@@ -216,21 +216,21 @@ namespace SistemaGestionCGI.BLL
             return null;
         }
 
-        public string GuardarIntegranteExpress(InvgccGrupoIntegrantes intg)
+        public string GuardarIntegranteExpress(InvgccGrupoIntegrantes intg, string usuarioResponsable)
         {
             string nuevoId = GenerarNuevoIdIntegrante();
 
             string idDocenteSql = string.IsNullOrEmpty(intg.fkId_docente_origen) ? "NULL" : $"'{intg.fkId_docente_origen}'";
             string certificadoSql = string.IsNullOrEmpty(intg.strCertificado_int) ? "NULL" : $"'{intg.strCertificado_int}'";
 
-            string sql = $@"
+            string sqlIntegrante = $@"
                 INSERT INTO INVGCCGRUPO_INTEGRANTES 
                 (
                     strId_int, strCedula_int, strApellidos_int, strNombres_int, 
                     strCorreo_int, strCarrera_int, strFuncion_int, 
                     strTipo_int, fkId_gru, bitActivo_int, dtFechaini_int, 
                     strEntidad_int, strFacultad_int, 
-                    strCertificado_int, fkId_docente_origen 
+                    strCertificado_int, fkId_docente_origen
                 ) 
                 VALUES 
                 (
@@ -241,7 +241,23 @@ namespace SistemaGestionCGI.BLL
                     {certificadoSql}, {idDocenteSql}
                 )";
 
-            _dal.UpdateSql(sql);
+            _dal.UpdateSql(sqlIntegrante);
+
+            try
+            {
+                string motivo = "Vinculación Automática por Creación de Proyecto";
+
+                string sqlHistorial = $@"
+                    INSERT INTO INVGCCINTEGRANTES_HISTORIAL
+                    (strId_int, dtFecha, strAccion, strMotivo, strUsuario)
+                    VALUES
+                    ('{nuevoId}', GETDATE(), 'VINCULACION', '{motivo}', '{usuarioResponsable}')";
+
+                _dal.UpdateSql(sqlHistorial);
+            }
+            catch (Exception ex)
+            {
+            }
 
             return nuevoId;
         }

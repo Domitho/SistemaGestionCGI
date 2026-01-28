@@ -9,6 +9,7 @@
     <link href="DesignersUTC/Styles/modal-historial-reporte.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/papelera.css" rel="stylesheet" />
 
+    <%-- ENCABEZADO PRINCIPAL --%>
     <div id="headerCentros" runat="server" class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
         <h3 class="utc-title mb-0">
             <i class="fa-solid fa-building-columns me-2"></i> CENTROS DE INVESTIGACIÓN
@@ -20,6 +21,7 @@
         </div>
     </div>
 
+    <%-- 1. TABLA DE CENTROS --%>
     <asp:Panel ID="pnlGrilla" runat="server" Visible="true">
         <div class="table-responsive bg-white p-3 rounded shadow-utc">
             <table id="tablaCentros" class="table table-bordered table-hover table-utc align-middle text-center" style="width:100%">
@@ -69,8 +71,8 @@
         </div>
     </asp:Panel>
 
+    <%-- 2. FORMULARIO DE CENTRO --%>
     <asp:Panel ID="pnlFormulario" runat="server" Visible="false">
-        
         <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-4 rounded shadow-utc border header-utc-line">
             <h3 class="utc-title mb-0">
                 <i class="fa-solid fa-building-columns me-2"></i> GESTIÓN DE CENTRO
@@ -80,7 +82,8 @@
             </asp:LinkButton>
         </div>
 
-        <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4">
+        <%-- APLICADO: text-start para forzar alineación izquierda como en Grupos --%>
+        <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4 text-start">
             
             <h4 class="utc-subtitle mb-4 text-center">
                 <i class="fa-solid fa-file-pen me-2"></i> Datos del Centro
@@ -207,6 +210,7 @@
         </div>
     </asp:Panel>
 
+    <%-- 3. TABLA DE INTEGRANTES --%>
     <asp:Panel ID="pnlIntegrantes" runat="server" Visible="false">
         
         <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
@@ -289,6 +293,7 @@
         </div>
     </asp:Panel>
 
+    <%-- 4. FORMULARIO INTEGRANTES (CORREGIDO: text-start y estructura limpia) --%>
     <asp:Panel ID="pnlFormularioInt" runat="server" Visible="false">
         <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-4 rounded shadow-utc border header-utc-line">
             <h3 class="utc-title mb-0">
@@ -299,138 +304,118 @@
             </asp:LinkButton>
         </div>
 
-        <div class="card border-0 shadow-utc rounded-4 p-4 mb-5 bg-white">
-        
+        <%-- AÑADIDO: text-start --%>
+        <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4 mb-5 text-start">
+            
             <h5 class="text-center fw-bold mb-4" style="color: var(--utc-azul-oscuro);">
                 <i class="fa-solid fa-user-plus me-2"></i> DATOS DEL INTEGRANTE
             </h5>
 
-            <div class="row mb-4">
-                <div class="col-12 text-start">
-                    <label class="form-label fw-bold text-primary small text-uppercase mb-1 d-block">Tipo de Integrante</label>
-                    <asp:DropDownList ID="ddlTipoInt" runat="server" CssClass="form-select shadow-sm w-100" style="text-align: left !important;" onchange="ToggleTipoIntegrante(this)">
-                        <asp:ListItem Text="Interno (Administrativo / Docente / Estudiante)" Value="Interno" Selected="True"/>
-                        <asp:ListItem Text="Externo (Invitado)" Value="Externo" />
-                    </asp:DropDownList>
-                </div>
+            <div class="mb-4">
+                <label class="fw-bold text-primary small text-uppercase mb-1 d-block">Tipo de Integrante</label>
+                <asp:DropDownList ID="ddlTipoInt" runat="server" CssClass="form-select shadow-sm" onchange="ToggleTipoIntegrante(this)">
+                    <asp:ListItem Text="Interno (Administrativo/Estudiante)" Value="Interno" Selected="True"/>
+                    <asp:ListItem Text="Externo (Invitado)" Value="Externo" />
+                </asp:DropDownList>
             </div>
 
             <asp:HiddenField ID="hfIdIntegrante" runat="server" />
 
-            <div class="mb-4 text-start">
-                <h6 class="utc-subtitle border-bottom pb-2 mb-3 text-secondary" style="font-size: 0.85rem; letter-spacing: 0.5px;">
-                    <i class="fa-solid fa-address-card me-2"></i> INFORMACIÓN PERSONAL
-                </h6>
+            <h6 class="fw-bold text-primary mb-3">Datos Personales</h6>
             
-                <div class="row g-3">
-                    <div class="col-md-12">
-                        <label class="form-label small fw-bold text-secondary d-block mb-1">Número de Cédula</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="fa-solid fa-id-card"></i></span>
-                            <asp:TextBox ID="txtCedulaInt" runat="server" CssClass="form-control" placeholder="Ej: 050..." autocomplete="off" />
-                            <asp:LinkButton ID="btnValidarCedulaInt" runat="server" CssClass="btn btn-primary px-4" OnClick="btnValidarCedulaInt_Click">
-                                <i class="fa-solid fa-magnifying-glass me-1"></i> Validar
-                            </asp:LinkButton>
-                        </div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-12">
+                    <label class="form-label small fw-bold text-secondary">Cédula</label>
+                    <div class="input-group gap-2">
+                        <asp:TextBox ID="txtCedulaInt" runat="server" CssClass="form-control" placeholder="" autocomplete="off" />
+                        <asp:LinkButton ID="btnValidarCedulaInt" runat="server" CssClass="btn btn-outline-primary" OnClick="btnValidarCedulaInt_Click">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i> Validar
+                        </asp:LinkButton>
                     </div>
+                </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold text-secondary d-block mb-1">Nombres</label>
-                        <asp:TextBox ID="txtNombresInt" runat="server" CssClass="form-control w-100" placeholder="Nombres completos" autocomplete="off" />
-                    </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold text-secondary">Nombres</label>
+                    <asp:TextBox ID="txtNombresInt" runat="server" CssClass="form-control" autocomplete="off"/>
+                </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold text-secondary d-block mb-1">Apellidos</label>
-                        <asp:TextBox ID="txtApellidosInt" runat="server" CssClass="form-control w-100" placeholder="Apellidos completos" autocomplete="off" />
-                    </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold text-secondary">Apellidos</label>
+                    <asp:TextBox ID="txtApellidosInt" runat="server" CssClass="form-control" autocomplete="off"/>
+                </div>
 
-                    <div class="col-12">
-                        <label class="form-label small fw-bold text-secondary d-block mb-1">Correo Electrónico</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="fa-solid fa-envelope"></i></span>
-                            <asp:TextBox ID="txtCorreoInt" runat="server" CssClass="form-control" TextMode="Email" placeholder="ejemplo@utc.edu.ec" autocomplete="off" />
-                        </div>
-                    </div>
+                <div class="col-12">
+                    <label class="form-label small fw-bold text-secondary">Correo</label>
+                    <asp:TextBox ID="txtCorreoInt" runat="server" CssClass="form-control" TextMode="Email" autocomplete="off"/>
                 </div>
             </div>
 
-            <div id="divIntInterno" class="mb-4 text-start">
-                <h6 class="utc-subtitle border-bottom pb-2 mb-3 text-secondary" style="font-size: 0.85rem; letter-spacing: 0.5px;">
-                    <i class="fa-solid fa-building-columns me-2"></i> AFILIACIÓN INSTITUCIONAL
-                </h6>
-                <div class="row g-3">
+            <div id="divIntInterno" class="col-12"> 
+                <div class="row g-3 mb-4">
                     <div class="col-md-6">
-                        <label class="form-label small fw-bold text-secondary d-block mb-1">Facultad / Extensión</label>
-                        <asp:DropDownList ID="ddlFacultadInt" runat="server" CssClass="form-select w-100 shadow-sm" style="text-align: left !important;" AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadInt_SelectedIndexChanged">
-                            <asp:ListItem Text="-- Seleccione Facultad --" Value="" />
+                        <label class="form-label small fw-bold text-primary">Facultad / Extensión</label>
+                        <asp:DropDownList ID="ddlFacultadInt" runat="server" CssClass="form-select" 
+                            AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadInt_SelectedIndexChanged">
+                            <asp:ListItem Text="-- Seleccione --" Value="" />
                             <asp:ListItem Value="CAREN">CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
                             <asp:ListItem Value="CIYA">CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
                             <asp:ListItem Value="CAYE">CIENCIAS ADMINISTRATIVAS (CAYE)</asp:ListItem>
                             <asp:ListItem Value="CSAYE">CIENCIAS SOCIALES (CSAYE)</asp:ListItem>
-                            <asp:ListItem Value="SALUD">CIENCIAS DE LA SALUD (CS)</asp:ListItem> 
+                            <asp:ListItem Value="SALUD">CIENCIAS DE LA SALUD (CS)</asp:ListItem>
                             <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
                             <asp:ListItem Value="LAMANA">EXTENSION LA MANÁ</asp:ListItem>
                         </asp:DropDownList>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label small fw-bold text-secondary d-block mb-1">Carrera / Departamento</label>
-                        <asp:DropDownList ID="ddlCarreraInt" runat="server" CssClass="form-select w-100 shadow-sm" style="text-align: left !important;">
+                        <label class="form-label small fw-bold text-primary">Carrera / Departamento</label>
+                        <asp:DropDownList ID="ddlCarreraInt" runat="server" CssClass="form-select">
                             <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
                         </asp:DropDownList>
                     </div>
                 </div>
             </div>
 
-            <div id="divIntExterno" style="display:none;" class="mb-4 text-start">
-                <h6 class="utc-subtitle border-bottom pb-2 mb-3 text-secondary" style="font-size: 0.85rem; letter-spacing: 0.5px;">
-                    <i class="fa-solid fa-briefcase me-2"></i> INSTITUCIÓN DE ORIGEN
-                </h6>
-                <div class="row">
-                    <div class="col-12">
-                        <label class="form-label small fw-bold text-secondary d-block mb-1">Nombre de la Institución / Empresa</label>
-                        <asp:TextBox ID="txtEntidadExternoInt" runat="server" CssClass="form-control w-100 shadow-sm" placeholder="Ej: Universidad Central del Ecuador" autocomplete="off" />
-                    </div>
-                </div>
+            <div id="divIntExterno" class="w-100 mb-4" style="display:none; width: 100%;">
+                <label class="form-label small fw-bold text-primary">Institución de Origen</label>
+                <asp:TextBox ID="txtEntidadExternoInt" runat="server" CssClass="form-control w-100" placeholder="Universidad o Empresa..." autocomplete="off" />
             </div>
 
-            <div class="mb-4 text-start">
-                <h6 class="utc-subtitle border-bottom pb-2 mb-3 text-secondary" style="font-size: 0.85rem; letter-spacing: 0.5px;">
-                    <i class="fa-solid fa-layer-group me-2"></i> DATOS EN EL CENTRO
-                </h6>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold text-secondary d-block mb-1">Función Asignada</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light text-primary shadow-sm"><i class="fa-solid fa-id-card"></i></span>
-                            <asp:DropDownList ID="ddlFuncionInt" runat="server" CssClass="form-select shadow-sm fw-bold text-primary border-start-0" 
-                                style="text-align: left !important; background-color: #f8faff;" Enabled="false">
-                                <asp:ListItem Text="Miembro Investigador" Value="Miembro" Selected="True"></asp:ListItem>
-                            </asp:DropDownList>
-                        </div>
-                        <small class="text-muted d-block mt-1"><i class="fa-solid fa-circle-info me-1"></i> Rol definido automáticamente.</small>
+            <h6 class="fw-bold text-primary mb-3">Datos del Grupo</h6>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold text-secondary">Función Asignada</label>
+                    <div class="input-group">
+                        <span class="input-group-text border-end-0" style="background-color: #e3f2fd; color: #0d6efd;">
+                            <i class="fa-solid fa-id-card"></i>
+                        </span>
+                        <asp:DropDownList ID="ddlFuncionInt" runat="server" CssClass="form-select border-start-0 text-primary fw-bold" Enabled="false">
+                            <asp:ListItem Text="Miembro Investigador" Value="Miembro" Selected="True"></asp:ListItem>
+                        </asp:DropDownList>
                     </div>
+                </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold text-secondary d-block mb-1">Fecha de Ingreso</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0 shadow-sm"><i class="fa-regular fa-calendar"></i></span>
-                            <input type="text" class="form-control shadow-sm" value="<%= DateTime.Now.ToString("dd/MM/yyyy") %>" readonly style="background-color: #f8faff;" />
-                        </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold text-secondary">Fecha Inicio</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" value="<%= DateTime.Now.ToString("dd/MM/yyyy") %>" readonly style="background-color: #fff;" />
+                        <span class="input-group-text bg-white text-secondary"><i class="fa-regular fa-calendar"></i></span>
                     </div>
                 </div>
             </div>
 
             <div class="d-flex justify-content-center gap-3 mt-4">
-                <asp:LinkButton ID="btnGuardarInt" runat="server" CssClass="btn btn-primary btn-pill px-5 py-2 fw-bold shadow-sm" OnClick="btnGuardarInt_Click">
-                    <i class="fa-solid fa-floppy-disk me-2"></i> GUARDAR INTEGRANTE
+                <asp:LinkButton ID="btnGuardarInt" runat="server" CssClass="btn btn-primary btn-pill px-4 py-2 fw-bold shadow-sm" OnClick="btnGuardarInt_Click">
+                    <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Integrante
                 </asp:LinkButton>
                 <asp:LinkButton ID="btnCancelarInt" runat="server" CssClass="btn btn-outline-secondary btn-pill px-4 py-2 fw-bold" OnClick="btnCancelarInt_Click">
-                    <i class="fa-solid fa-ban me-2"></i> CANCELAR
+                    <i class="fa-solid fa-ban me-2"></i> Cancelar
                 </asp:LinkButton>
             </div>
         </div>
     </asp:Panel>
 
+    <%-- 5. MODALES (Historial, Reporte, Estado, Director, Papelera) --%>
     <div class="modal fade" id="modalHistorial" tabindex="-1" aria-hidden="true" ClientIDMode="Static">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content rounded-4 shadow-utc border-0">
@@ -520,7 +505,7 @@
                     <h5 class="modal-title w-100"><i class="fa-solid fa-power-off me-2"></i> CAMBIO DE ESTADO</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-4">
+                <div class="modal-body p-4 text-start">
                     <div class="text-center mb-4">
                         <i class="fa-solid fa-circle-exclamation fa-3x text-warning mb-3"></i>
                         <p class="fs-5">¿Estás seguro de <strong class="text-primary">cambiar el estado</strong> de este integrante?</p>
@@ -565,7 +550,7 @@
                         </div>
 
                         <div class="header-info-split d-flex justify-content-between border-bottom pb-4 mb-4" style="border-color: #003876 !important;">
-                            <div class="info-left">
+                            <div class="info-left text-start">
                                 <span class="d-block text-uppercase small fw-bold text-secondary">Sistema de Gestión de Investigación</span>
                                 <h1 class="doc-title mb-0" style="color: #003876; font-weight: 900; font-size: 2rem; text-transform: uppercase;">Historial de Movimientos</h1>
                             </div>
@@ -581,7 +566,7 @@
                             </div>
                         </div>
 
-                        <div class="researcher-card p-4 mb-5 rounded-3" style="background-color: #f8faff; border: 1px solid #e1e8f0; border-left: 5px solid #003876;">
+                        <div class="researcher-card p-4 mb-5 rounded-3 text-start" style="background-color: #f8faff; border: 1px solid #e1e8f0; border-left: 5px solid #003876;">
                             <div class="row mb-3">
                                 <div class="col-6">
                                     <span class="d-block small fw-bold text-uppercase text-secondary">INVESTIGADOR</span>
@@ -604,7 +589,7 @@
                             </div>
                         </div>
 
-                        <div class="timeline-container ps-2">
+                        <div class="timeline-container ps-2 text-start">
                             <h4 class="mb-4 pb-2 border-bottom fw-bold text-secondary">Registro Cronológico de Eventos</h4>
                             
                             <ul class="timeline-list list-unstyled position-relative ps-4" style="border-left: 2px solid #e9ecef;">
@@ -665,7 +650,8 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
 
-                <div class="modal-body p-4 bg-white">
+                <%-- APLICADO: text-start --%>
+                <div class="modal-body p-4 bg-white text-start">
                     <div class="row mb-4">
                         <div class="col-md-12">
                             <label class="form-label text-primary fw-bold small text-uppercase mb-1">Tipo de Vinculación</label>
@@ -718,11 +704,10 @@
                             <i class="fa-solid fa-building-columns me-2"></i> AFILIACIÓN INSTITUCIONAL
                         </h6>
                         <div class="row g-3">
-                            <div class="col-md-6 text-start">
-                                <label class="form-label text-secondary small fw-bold d-block mb-1">Facultad / Extensión</label>
-                                <asp:DropDownList ID="ddlFacultadDirModal" runat="server" CssClass="form-select w-100 shadow-sm" 
-                                    style="text-align: left !important;" AutoPostBack="true" 
-                                    OnSelectedIndexChanged="ddlFacultadDirModal_SelectedIndexChanged">
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small fw-bold mb-1">Facultad / Extensión</label>
+                                <asp:DropDownList ID="ddlFacultadDirModal" runat="server" CssClass="form-select shadow-sm" 
+                                    AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadDirModal_SelectedIndexChanged">
                                     <asp:ListItem Text="-- Seleccione --" Value="" />
                                     <asp:ListItem Value="CAREN">CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
                                     <asp:ListItem Value="CIYA">CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
@@ -733,11 +718,9 @@
                                     <asp:ListItem Value="LAMANA">EXTENSION LA MANÁ</asp:ListItem>
                                 </asp:DropDownList>
                             </div>
-                            <div class="col-md-6 text-start">
-                                <label class="form-label text-secondary small fw-bold d-block mb-1">Carrera / Departamento</label>
-                                <asp:DropDownList ID="ddlCarreraDirModal" runat="server" 
-                                    CssClass="form-select w-100 shadow-sm" 
-                                    style="text-align: left !important;">
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small fw-bold mb-1">Carrera / Departamento</label>
+                                <asp:DropDownList ID="ddlCarreraDirModal" runat="server" CssClass="form-select shadow-sm">
                                     <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
                                 </asp:DropDownList>
                             </div>
@@ -776,19 +759,19 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
 
-                <div class="modal-body p-4 bg-light">
+                <div class="modal-body p-4 bg-light text-center">
                 
-                    <h6 class="text-center text-primary fw-bold mb-4 text-uppercase border-bottom pb-3">
+                    <h6 class="text-primary fw-bold mb-4 text-uppercase border-bottom pb-3">
                         <asp:Label ID="lblCentroDocNombre" runat="server" Text="Nombre del Centro"></asp:Label>
                     </h6>
 
                     <div class="row g-4">
                         <div class="col-md-6">
                             <div class="card h-100 border-0 shadow-sm rounded-3 overflow-hidden">
-                                <div class="card-header bg-white border-0 pt-4 pb-0 text-center">
+                                <div class="card-header bg-white border-0 pt-4 pb-0">
                                     <i class="fa-solid fa-file-contract fa-4x text-primary mb-2"></i>
                                 </div>
-                                <div class="card-body text-center">
+                                <div class="card-body">
                                     <h6 class="card-title fw-bold text-dark">Resolución de Creación</h6>
                                     <p class="card-text small text-muted mb-4">
                                         <asp:Label ID="lblEstadoRes" runat="server" Text="No cargado"></asp:Label>
@@ -811,10 +794,10 @@
 
                         <div class="col-md-6">
                             <div class="card h-100 border-0 shadow-sm rounded-3 overflow-hidden">
-                                <div class="card-header bg-white border-0 pt-4 pb-0 text-center">
+                                <div class="card-header bg-white border-0 pt-4 pb-0">
                                     <i class="fa-solid fa-file-circle-check fa-4x text-success mb-2"></i>
                                 </div>
-                                <div class="card-body text-center">
+                                <div class="card-body">
                                     <h6 class="card-title fw-bold text-dark">Documento de Aceptación</h6>
                                     <p class="card-text small text-muted mb-4">
                                         <asp:Label ID="lblEstadoAce" runat="server" Text="No cargado"></asp:Label>
@@ -881,7 +864,7 @@
                                     </asp:LinkButton>
                                 </div>
 
-                                <div class="d-flex mt-2 pt-3 border-top bg-white">
+                                <div class="d-flex mt-2 pt-3 border-top bg-white text-center">
                                     <div class="data-grid-item flex-fill">
                                         <span class="label-mini">Cédula</span>
                                         <span class="value-bold"><%# Eval("strCedula_cin") %></span>
@@ -986,7 +969,7 @@
                 if (preview) {
                     preview.style.display = 'block';
                     var esImagen = /\.(jpg|jpeg|png|gif|webp)$/i.test(nombreArchivo);
-                    var rutaWeb = hf.value.replace('~/', ''); 
+                    var rutaWeb = hf.value.replace('~/', '');
 
                     if (esImagen) {
                         preview.innerHTML = '<div class="text-center mt-2"><img src="' + rutaWeb + '" style="height:60px; border-radius:4px; border:1px solid #ddd;" /></div>';
@@ -1002,7 +985,7 @@
                 if (removeBtn) {
                     removeBtn.style.display = 'block';
                     removeBtn.addEventListener('click', function (e) {
-                        hf.value = ''; 
+                        hf.value = '';
                     });
                 }
             }
@@ -1037,17 +1020,17 @@
         }
 
         function ToggleTipoIntegrante(el) {
-            var tipo = el.value; 
+            var tipo = el.value;
 
             var divInt = document.getElementById('divIntInterno');
             var divExt = document.getElementById('divIntExterno');
 
             if (tipo === "Externo") {
-                divInt.style.display = 'none';  
+                divInt.style.display = 'none';
                 divExt.style.display = 'block';
             } else {
-                divInt.style.display = 'flex'; 
-                divExt.style.display = 'none'; 
+                divInt.style.display = 'flex';
+                divExt.style.display = 'none';
             }
         }
 

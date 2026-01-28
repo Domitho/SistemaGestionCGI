@@ -186,7 +186,7 @@
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Duración Estimada</label>
     
-                    <div class="input-group">
+                    <div class="input-group gap-2">
        
                         <asp:TextBox ID="txtDuracionDisplay" runat="server" 
                             CssClass="form-control bg-white text-primary fw-bold border-start-0 border-end-0" 

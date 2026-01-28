@@ -301,14 +301,15 @@ namespace SistemaGestionCGI
                     {
                         var nuevoInt = JsonConvert.DeserializeObject<InvgccGrupoIntegrantes>(jsonPendiente);
 
-                        idCoordinadorFinal = _manejador.GuardarIntegranteExpress(nuevoInt);
+                        string usuarioLogueado = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
+
+                        idCoordinadorFinal = _manejador.GuardarIntegranteExpress(nuevoInt, usuarioLogueado);
 
                         ViewState["IntegrantePendiente"] = null;
                     }
                     else
                     {
-                        CargarCoordinadores(ddlCoordinador, ddlGrupo.SelectedValue);
-                        Msg("La sesión del integrante temporal ha caducado...", "ww");
+                        Msg("La sesión del integrante temporal ha caducado. Agréguelo nuevamente.", "ww");
                         return;
                     }
                 }
