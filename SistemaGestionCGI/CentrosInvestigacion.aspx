@@ -371,8 +371,11 @@
 
             <div class="row g-3">
             
+                <hr class="text-muted opacity-25 my-4">
                 <div class="col-12">
-                    <h6 class="fw-bold text-primary border-bottom pb-2 mb-0">Datos Personales</h6>
+                        <h6 class="text-primary fw-bold mb-3 small text-uppercase">
+                            <i class="fa-regular fa-id-card me-2"></i> Información Personal
+                        </h6>
                 </div>
 
                 <div class="col-md-12">
@@ -400,9 +403,13 @@
                     <asp:TextBox ID="txtCorreoInt" runat="server" CssClass="form-control" TextMode="Email" autocomplete="off"/>
                 </div>
 
+                <h6 class="text-primary fw-bold mb-3 small text-uppercase">
+                    <i class="fa-solid fa-building-columns me-2"></i> Afiliación Institucional
+                </h6>
+
                 <div id="divIntInterno" class="col-12 row g-3 m-0 p-0"> 
                     <div class="col-md-6">
-                        <label class="form-label small fw-bold text-primary">Facultad / Extensión</label>
+                        <label class="form-label small fw-bold text-secondary">Facultad / Extensión</label>
                         <asp:DropDownList ID="ddlFacultadInt" runat="server" CssClass="form-select" 
                             AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadInt_SelectedIndexChanged">
                             <asp:ListItem Text="-- Seleccione --" Value="" />
@@ -416,7 +423,7 @@
                         </asp:DropDownList>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label small fw-bold text-primary">Carrera / Departamento</label>
+                        <label class="form-label small fw-bold text-secondary">Carrera / Departamento</label>
                         <asp:DropDownList ID="ddlCarreraInt" runat="server" CssClass="form-select">
                             <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
                         </asp:DropDownList>
@@ -424,11 +431,12 @@
                 </div>
 
                 <div id="divIntExterno" class="col-12" style="display:none;">
-                    <label class="form-label small fw-bold text-primary">Institución de Origen</label>
+                    <label class="form-label small fw-bold text-secondary">Institución de Origen</label>
                     <asp:TextBox ID="txtEntidadExternoInt" runat="server" CssClass="form-control" placeholder="Universidad o Empresa..." autocomplete="off" />
                 </div>
-                <div class="col-12 mt-4">
-                    <h6 class="fw-bold text-primary border-bottom pb-2 mb-0">Datos del Grupo</h6>
+
+                <div class="col-12">
+                    <hr class="text-muted opacity-25 my-4">
                 </div>
 
                 <div class="col-md-6">
@@ -744,7 +752,7 @@
                     </div>
 
                         <h6 class="text-primary fw-bold mb-3 small text-uppercase">
-                            <i class="fa-regular fa-id-card me-2"></i> AFILIACIÓN INSTITUCIONAL
+                            <i class="fa-solid fa-building-columns me-2"></i> AFILIACIÓN INSTITUCIONAL
                         </h6>
 
                     <div id="divDirInterno" class="row g-3 mb-4">
@@ -780,9 +788,6 @@
                         </div>
                     </div>
                 </div>
-
-                
-                <hr class="text-muted opacity-25 my-4">
 
                 <div class="modal-footer justify-content-center border-0 pb-4 pt-0 bg-white">
                     <asp:LinkButton ID="btnGuardarDirectorModal" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow-sm fw-bold" OnClick="btnGuardarDirectorModal_Click">

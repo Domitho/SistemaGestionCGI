@@ -122,6 +122,7 @@
     <Content Include="DesignersUTC\Scripts\utc-fileinput.js" />
     <Content Include="DesignersUTC\Scripts\utc-selector-tiempo.js" />
     <Content Include="DesignersUTC\Scripts\validaciones-grupos.js" />
+    <Content Include="DesignersUTC\Styles\informes-coordinadores-pro.css" />
     <Content Include="DesignersUTC\Styles\login-full.css" />
     <Content Include="DesignersUTC\Styles\modal-form-docentes.css" />
     <Content Include="DesignersUTC\Styles\modal-historial-reporte.css" />

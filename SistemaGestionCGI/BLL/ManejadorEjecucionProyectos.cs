@@ -364,11 +364,52 @@ namespace SistemaGestionCGI.BLL
             return "";
         }
 
+        //
+
+        public List<dynamic> ObtenerRepositorioCompleto(int idEjecucion)
+        {
+            string sql = $@"
+                SELECT 
+                    'AVANCE' as TipoDoc, 
+                    strNombrePeriodo as Nombre, 
+                    strArchivo_path as Ruta, 
+                    dtFechaSubida as Fecha,
+                    'fa-file-pdf text-primary' as Icono
+                FROM INVGCCEJECUCION_INFORMES 
+                WHERE fkId_ejec = {idEjecucion}
+
+                UNION ALL
+
+                SELECT 
+                    'CIERRE' as TipoDoc, 
+                    'Informe de Cierre' as Nombre, 
+                    strInforme_Cierre as Ruta, 
+                    dtFechafin_ejec as Fecha,
+                    'fa-file-contract text-warning' as Icono
+                FROM INVGCCEJECUCION_PROYECTO 
+                WHERE strId_ejec = {idEjecucion} AND strInforme_Cierre IS NOT NULL
+
+                UNION ALL
+
+                SELECT 
+                    'FINAL' as TipoDoc, 
+                    'Informe Final' as Nombre, 
+                    strInforme_Final as Ruta, 
+                    dtFechafin_ejec as Fecha,
+                    'fa-award text-success' as Icono
+                FROM INVGCCEJECUCION_PROYECTO 
+                WHERE strId_ejec = {idEjecucion} AND strInforme_Final IS NOT NULL
+        
+                ORDER BY Fecha DESC";
+
+            return _dal.SelectSql<dynamic>(sql);
+        }
+
     }
 
-    // AGREGADO: Clase auxiliar para leer la cédula limpia
     public class DtoCedulaTemp
     {
         public string strCedulaCoordinador_pro { get; set; }
     }
+
 }

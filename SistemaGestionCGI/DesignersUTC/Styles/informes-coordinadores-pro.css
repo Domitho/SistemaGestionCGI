@@ -1,0 +1,227 @@
+﻿/* =========================================================
+   1. TARJETA HERO DEL PROYECTO (Vista Principal)
+   ========================================================= */
+
+/* Contenedor principal de la tarjeta */
+.card-hero-project {
+    border: none;
+    background: #fff;
+    min-height: 280px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease;
+}
+
+    .card-hero-project:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 35px rgba(49, 39, 131, 0.15) !important;
+    }
+
+    /* Borde lateral decorativo (Izquierda) */
+    .card-hero-project::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 6px;
+        background: linear-gradient(to bottom, var(--utc-azul), var(--utc-azul-oscuro));
+        z-index: 2;
+    }
+
+/* Cajas de Métricas Internas (Periodo, Inicio, Informes) */
+.metric-box-hero {
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.2rem;
+    height: 100%;
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+}
+
+    .metric-box-hero:hover {
+        background-color: #fff;
+        border-color: var(--utc-celeste-info);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        transform: translateY(-2px);
+    }
+
+.metric-icon {
+    font-size: 1.5rem;
+    color: var(--utc-azul);
+    opacity: 0.8;
+    margin-bottom: 0.5rem;
+}
+
+/* Columna de Acción (Derecha) */
+.action-column {
+    background: linear-gradient(135deg, #fdfdfd 0%, #f4f6f9 100%);
+    border-left: 1px solid rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+}
+
+/* =========================================================
+   2. PESTAÑAS MODERNAS (Panel de Gestión)
+   ========================================================= */
+
+.nav-tabs-utc {
+    border-bottom: 2px solid #e9ecef;
+    gap: 1.5rem;
+}
+
+    .nav-tabs-utc .nav-link {
+        border: none;
+        background: transparent;
+        color: #6c757d;
+        font-weight: 600;
+        padding: 1rem 0.5rem;
+        position: relative;
+        transition: color 0.3s ease;
+    }
+
+        .nav-tabs-utc .nav-link:hover {
+            color: var(--utc-azul);
+        }
+
+        .nav-tabs-utc .nav-link.active {
+            color: var(--utc-azul);
+            background: transparent;
+        }
+
+            /* Línea inferior animada para la pestaña activa */
+            .nav-tabs-utc .nav-link.active::after {
+                content: '';
+                position: absolute;
+                bottom: -2px;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: var(--utc-azul);
+                border-radius: 3px 3px 0 0;
+            }
+
+/* =========================================================
+   3. CRONOLOGÍA DETALLADA (Rich Timeline)
+   ========================================================= */
+
+/* Contenedor de la tarjeta del historial */
+.history-card {
+    background-color: #fff;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+    /* Efecto Hover */
+    .history-card:hover {
+        background-color: #fdfdfd;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        transform: translateX(2px);
+    }
+
+    /* Borde de color lateral (Más grueso) */
+    .history-card.border-avance {
+        border-left: 5px solid var(--utc-azul) !important;
+    }
+
+    .history-card.border-cierre {
+        border-left: 5px solid #ffb800 !important;
+    }
+
+    .history-card.border-final {
+        border-left: 5px solid var(--utc-verde) !important;
+    }
+
+/* Fondo sutil para el icono según el tipo */
+.icon-box-history {
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.bg-icon-avance {
+    background-color: rgba(49, 39, 131, 0.1);
+    color: var(--utc-azul);
+}
+
+.bg-icon-cierre {
+    background-color: rgba(255, 184, 0, 0.1);
+    color: #ffb800;
+}
+
+.bg-icon-final {
+    background-color: rgba(27, 158, 75, 0.1);
+    color: var(--utc-verde);
+}
+
+/* =========================================================
+   4. UTILIDADES VISUALES, BOTONES Y SCROLL
+   ========================================================= */
+
+/* Botones de acción circulares (Ver, Editar, Eliminar) */
+.btn-action-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    background-color: #f8f9fa;
+}
+
+    .btn-action-icon:hover {
+        background-color: #e9ecef;
+        transform: scale(1.1);
+    }
+
+    .btn-action-icon.text-danger:hover {
+        background-color: #ffeaea;
+    }
+
+/* Efecto de elevación al pasar el mouse */
+.hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .hover-lift:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.08) !important;
+    }
+
+/* Scrollbar personalizado delgado */
+.scroll-cronologia::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scroll-cronologia::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scroll-cronologia::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 20px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+    .scroll-cronologia::-webkit-scrollbar-thumb:hover {
+        background-color: #9ca3af;
+    }
+
+/* Ajuste de espaciado de letras */
+.letter-spacing-1 {
+    letter-spacing: 1px;
+}
