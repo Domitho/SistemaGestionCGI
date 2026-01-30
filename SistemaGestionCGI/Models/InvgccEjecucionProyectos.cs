@@ -20,6 +20,8 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("strCedulaCoordinador_ejec")]
         public string strCedulaCoordinador_ejec { get; set; }
 
+        [JsonProperty("fkId_ciclo")]
+        public int? fkId_ciclo { get; set; }
 
         [JsonProperty("strPeriodo_ejec")]
         public string strPeriodo_ejec { get; set; }
@@ -45,5 +47,22 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("CantidadInformes")]
         public int CantidadInformes { get; set; }
 
+        [JsonProperty("strDuracion_pro")]
+        public string strDuracion_pro { get; set; }
+
+        [JsonProperty("InicioCicloActual")]
+        public DateTime? InicioCicloActual { get; set; }
+
+        [JsonProperty("FinCicloActual")]
+        public DateTime? FinCicloActual { get; set; }
+
     }
+
+    public class CicloAcademico
+    {
+        public int id_ciclo { get; set; }
+        public string strNombre_ciclo { get; set; }
+        public DateTime dtInicio_ciclo { get; set; }
+    }
+
 }

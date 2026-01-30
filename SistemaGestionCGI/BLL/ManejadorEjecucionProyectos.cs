@@ -19,9 +19,13 @@ namespace SistemaGestionCGI.BLL
             string sql = @"
                 SELECT E.*, 
                        P.strTema_pro as TituloProyecto,
+                       P.strDuracion_pro,
+                       C.dtInicio_ciclo as InicioCicloActual,
+                       C.dtFin_ciclo as FinCicloActual,
                        (SELECT COUNT(*) FROM INVGCCEJECUCION_INFORMES I WHERE I.fkId_ejec = E.strId_ejec) as CantidadInformes
                 FROM INVGCCEJECUCION_PROYECTO E
-                INNER JOIN INVGCCINSCRIPCION_PROYECTOS P ON E.fkId_pro = P.strId_pro ";
+                INNER JOIN INVGCCINSCRIPCION_PROYECTOS P ON E.fkId_pro = P.strId_pro 
+                LEFT JOIN INVGCCEJECUCION_PROYECTO_CICLOS C ON E.fkId_ciclo = C.id_ciclo";
 
             if (!string.IsNullOrEmpty(cedulaUsuario))
             {
@@ -33,12 +37,40 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<InvgccEjecucionProyectos>(sql);
         }
 
+        public void RenovarCicloProyecto(int idEjecucion, int idNuevoCiclo, string nombreNuevoPeriodo)
+        {
+            string sql = $@"
+                UPDATE INVGCCEJECUCION_PROYECTO 
+                SET 
+                    fkId_ciclo = {idNuevoCiclo},
+                    strPeriodo_ejec = '{nombreNuevoPeriodo}'
+                WHERE strId_ejec = {idEjecucion}";
+
+            _dal.UpdateSql(sql);
+        }
+
+        public List<CicloAcademico> ObtenerCiclosFuturos(DateTime fechaBase)
+        {
+            string sql = $@"
+                SELECT id_ciclo, strNombre_ciclo, dtInicio_ciclo 
+                FROM INVGCCEJECUCION_PROYECTO_CICLOS 
+                WHERE dtInicio_ciclo > '{fechaBase:yyyy-MM-dd}'
+                ORDER BY dtInicio_ciclo ASC";
+
+            return _dal.SelectSql<CicloAcademico>(sql);
+        }
+
         public InvgccEjecucionProyectos ObtenerEjecucionPorId(int id)
         {
             string sql = $@"
-                SELECT E.*, P.strTema_pro as TituloProyecto 
+                SELECT E.*, 
+                       P.strTema_pro as TituloProyecto,
+                       C.dtInicio_ciclo as InicioCicloActual,  
+                       C.dtFin_ciclo as FinCicloActual 
                 FROM INVGCCEJECUCION_PROYECTO E
                 INNER JOIN INVGCCINSCRIPCION_PROYECTOS P ON E.fkId_pro = P.strId_pro
+                -- HACEMOS EL JOIN CON LA TABLA DE CICLOS
+                LEFT JOIN INVGCCEJECUCION_PROYECTO_CICLOS C ON E.fkId_ciclo = C.id_ciclo 
                 WHERE E.strId_ejec = {id}";
 
             var lista = _dal.SelectSql<InvgccEjecucionProyectos>(sql);
@@ -62,10 +94,10 @@ namespace SistemaGestionCGI.BLL
             string sql = $@"
                 INSERT INTO INVGCCEJECUCION_PROYECTO 
                 (fkId_pro, strCoordinador_ejec, strCedulaCoordinador_ejec, 
-                 strPeriodo_ejec, dtFechaini_ejec, dtFechafin_ejec, strInforme_ejec, strEstado_ejec)
+                 strPeriodo_ejec, fkId_ciclo, dtFechaini_ejec, dtFechafin_ejec, strInforme_ejec, strEstado_ejec)
                 VALUES 
                 ('{obj.fkId_pro}', '{obj.strCoordinador_ejec}', {cedulaSql}, 
-                 '{obj.strPeriodo_ejec}', '{obj.dtFechaini_ejec:yyyy-MM-dd}', NULL, '{obj.strInforme_ejec}', 'En Ejecución')";
+                 '{obj.strPeriodo_ejec}', {obj.fkId_ciclo}, '{obj.dtFechaini_ejec:yyyy-MM-dd}', NULL, '{obj.strInforme_ejec}', 'En Ejecución')";
 
             _dal.UpdateSql(sql);
         }
@@ -324,9 +356,11 @@ namespace SistemaGestionCGI.BLL
             string nombreCiclo = $"{fechaInicio.ToString("MMMM yyyy").ToUpper()} - {fechaFin.ToString("MMMM yyyy").ToUpper()}";
 
             string sqlInsert = $@"
-                INSERT INTO INVGCCEJECUCION_PROYECTO_CICLOS (strNombre_ciclo, dtInicio_ciclo)
-                VALUES ('{nombreCiclo}', '{fechaInicio:yyyy-MM-dd}')";
-
+                INSERT INTO INVGCCEJECUCION_PROYECTO_CICLOS 
+                (strNombre_ciclo, dtInicio_ciclo, dtFin_ciclo) 
+                VALUES 
+                ('{nombreCiclo}', '{fechaInicio:yyyy-MM-dd}', '{fechaFin:yyyy-MM-dd}')";
+        
             _dal.UpdateSql(sqlInsert);
         }
 
@@ -405,11 +439,34 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<dynamic>(sql);
         }
 
+        //
+        public List<CicloAcademico> ObtenerTodosLosCiclos()
+        {
+            string sql = @"
+                SELECT id_ciclo, strNombre_ciclo, dtInicio_ciclo 
+                FROM INVGCCEJECUCION_PROYECTO_CICLOS 
+                ORDER BY dtInicio_ciclo DESC";
+
+            return _dal.SelectSql<CicloAcademico>(sql);
+        }
+
+        public List<dynamic> ObtenerCiclosConFechas()
+        {
+            string sql = "SELECT id_ciclo, strNombre_ciclo, dtInicio_ciclo, dtFin_ciclo FROM INVGCCEJECUCION_PROYECTO_CICLOS ORDER BY dtInicio_ciclo ASC";
+            return _dal.SelectSql<dynamic>(sql);
+        }
     }
 
     public class DtoCedulaTemp
     {
         public string strCedulaCoordinador_pro { get; set; }
+    }
+
+    public class GrupoPeriodo
+    {
+        public string NombrePeriodo { get; set; }
+        public DateTime FechaInicioCiclo { get; set; }
+        public List<dynamic> Archivos { get; set; }
     }
 
 }

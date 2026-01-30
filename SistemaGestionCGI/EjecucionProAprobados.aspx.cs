@@ -7,6 +7,7 @@ using System.Text;
 using SistemaGestionCGI.BLL;
 using SistemaGestionCGI.Models;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace SistemaGestionCGI
 {
@@ -124,7 +125,10 @@ namespace SistemaGestionCGI
                 {
                     fkId_pro = ddlProyectosAprobados.SelectedValue,
                     strCoordinador_ejec = txtCoordinadorAdd.Text.Trim(),
-                    strPeriodo_ejec = ddlCiclo.SelectedItem.Text,
+
+                    strPeriodo_ejec = ddlCiclo.SelectedItem.Text, 
+                    fkId_ciclo = int.Parse(ddlCiclo.SelectedValue),
+
                     dtFechaini_ejec = DateTime.Parse(txtFechaIniAdd.Text),
                     dtFechafin_ejec = null
                 };
@@ -192,29 +196,172 @@ namespace SistemaGestionCGI
                     }
                     catch (Exception ex) { Msg("Error al eliminar: " + ex.Message, "ee"); }
                     break;
+
+                case "RenovarCiclo":
+                    hfIdEjecRenovar.Value = id.ToString();
+
+                    CargarCiclosFuturos(id);
+
+                    ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalRenovar",
+                        "new bootstrap.Modal(document.getElementById('modalRenovarCiclo')).show();", true);
+                    break;
             }
         }
+
+        // PERIODOS
+
+        private void CargarCiclosFuturos(int idEjecucion)
+        {
+            try
+            {
+                ddlCiclosFuturos.Items.Clear();
+
+                var proy = _manejador.ObtenerEjecucionPorId(idEjecucion);
+                if (proy == null) return;
+
+                DateTime fechaInicioProy = proy.dtFechaini_ejec;
+                DateTime fechaFinTeoricaProyecto = CalcularFechaFinReal(fechaInicioProy, proy.strDuracion_pro);
+
+                DateTime finCicloActual = proy.FinCicloActual != null
+                    ? Convert.ToDateTime(proy.FinCicloActual)
+                    : Convert.ToDateTime(proy.InicioCicloActual).AddMonths(6);
+
+                var todosCiclos = _manejador.ObtenerCiclosConFechas();
+
+                int contadorOpciones = 0;
+
+                foreach (dynamic c in todosCiclos)
+                {
+                    int cId = (int)c.id_ciclo;
+                    string cNombre = (string)c.strNombre_ciclo;
+                    DateTime cInicio = Convert.ToDateTime(c.dtInicio_ciclo);
+
+                    DateTime cFin = c.dtFin_ciclo != null
+                        ? Convert.ToDateTime(c.dtFin_ciclo)
+                        : cInicio.AddMonths(6);
+
+                    bool esFuturo = cInicio > finCicloActual;
+
+                    bool estaEnPlazo = cFin <= fechaFinTeoricaProyecto.AddDays(5); 
+
+                    if (esFuturo && estaEnPlazo)
+                    {
+                        ddlCiclosFuturos.Items.Add(new ListItem(cNombre, cId.ToString()));
+                        contadorOpciones++;
+                    }
+                }
+
+                if (contadorOpciones == 0)
+                {
+                    ddlCiclosFuturos.Items.Add(new ListItem("No hay ciclos disponibles que se ajusten a la duración restante.", "0"));
+                    ddlCiclosFuturos.Enabled = false;
+                    btnConfirmarRenovacion.Enabled = false;
+                }
+                else
+                {
+                    ddlCiclosFuturos.Enabled = true;
+                    btnConfirmarRenovacion.Enabled = true;
+                    ddlCiclosFuturos.Items.Insert(0, new ListItem("-- Seleccione Siguiente Periodo --", "0"));
+                }
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al filtrar ciclos: " + ex.Message, "ee");
+            }
+        }
+
+        protected void btnConfirmarRenovacion_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                int idEjec = int.Parse(hfIdEjecRenovar.Value);
+                int idNuevoCiclo = int.Parse(ddlCiclosFuturos.SelectedValue);
+                string nombreCiclo = ddlCiclosFuturos.SelectedItem.Text;
+
+                _manejador.RenovarCicloProyecto(idEjec, idNuevoCiclo, nombreCiclo);
+
+                Msg("Ciclo renovado correctamente. Ya puede subir informes del nuevo periodo.", "ss");
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "CloseRenovar",
+                    "bootstrap.Modal.getInstance(document.getElementById('modalRenovarCiclo')).hide();", true);
+
+                CargarGrillaEjecucion();
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al renovar: " + ex.Message, "ee");
+            }
+        }
+
+        // FIN PERIODOS
 
         protected void rptEjecucion_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
             if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
             {
-                dynamic data = e.Item.DataItem;
                 Literal lit = (Literal)e.Item.FindControl("litNotificacionPlazo");
-
                 var btnEditar = (LinkButton)e.Item.FindControl("btnEditar");
                 var btnEliminar = (LinkButton)e.Item.FindControl("btnEliminar");
-                var btnEquipo = (LinkButton)e.Item.FindControl("btnEquipo");
+                var btnRenovar = (LinkButton)e.Item.FindControl("btnRenovarCiclo");
 
                 string estado = DataBinder.Eval(e.Item.DataItem, "strEstado_ejec")?.ToString().ToUpper().Trim() ?? "";
 
                 if (estado == "FINALIZADO")
                 {
-                    var btnEdit = (LinkButton)e.Item.FindControl("btnEditar");
-                    var btnDel = (LinkButton)e.Item.FindControl("btnEliminar");
+                    if (btnEditar != null) { btnEditar.Enabled = false; btnEditar.CssClass += " btn-disabled-utc"; }
+                    if (btnEliminar != null) { btnEliminar.Enabled = false; btnEliminar.CssClass += " btn-disabled-utc"; }
+                }
 
-                    if (btnEdit != null) { btnEdit.Enabled = false; btnEdit.CssClass += " btn-disabled-utc"; }
-                    if (btnDel != null) { btnDel.Enabled = false; btnDel.CssClass += " btn-disabled-utc"; }
+                object rawInicio = DataBinder.Eval(e.Item.DataItem, "dtFechaini_ejec");
+                object rawDuracion = DataBinder.Eval(e.Item.DataItem, "strDuracion_pro");
+                object rawInicioCiclo = DataBinder.Eval(e.Item.DataItem, "InicioCicloActual");
+
+                if (rawInicio != null && rawInicioCiclo != null && estado != "FINALIZADO")
+                {
+                    object rawFinCiclo = DataBinder.Eval(e.Item.DataItem, "FinCicloActual");
+
+                    DateTime fechaInicioProy = Convert.ToDateTime(rawInicio);
+                    string textoDuracion = rawDuracion?.ToString() ?? "";
+
+                    DateTime fechaFinRealProyecto = CalcularFechaFinReal(fechaInicioProy, textoDuracion);
+
+                    DateTime fechaFinCicloActual;
+
+                    if (rawFinCiclo != null && rawFinCiclo != DBNull.Value)
+                    {
+                        fechaFinCicloActual = Convert.ToDateTime(rawFinCiclo);
+                    }
+                    else
+                    {
+                        DateTime inicioCiclo = Convert.ToDateTime(rawInicioCiclo);
+                        fechaFinCicloActual = inicioCiclo.AddMonths(6);
+                    }
+
+                    bool cicloVencido = DateTime.Now > fechaFinCicloActual;
+                    bool proyectoVigente = DateTime.Now < fechaFinRealProyecto;
+
+                    if (cicloVencido && proyectoVigente)
+                    {
+                        if (btnRenovar != null)
+                        {
+                            btnRenovar.Visible = true; 
+                        }
+
+                        if (lit != null) lit.Text = "";
+                    }
+                    else if (!proyectoVigente)
+                    {
+                        if (lit != null)
+                            lit.Text = "<span class='badge bg-secondary border'>Tiempo Finalizado</span>";
+
+                        if (btnRenovar != null) btnRenovar.Visible = false;
+                    }
+                    else
+                    {
+                        if (btnRenovar != null) btnRenovar.Visible = false;
+
+                        if (lit != null) lit.Text = "<span class='text-success small fw-bold'><i class='fa-solid fa-check'></i> Vigente</span>";
+                    }
                 }
             }
         }
@@ -531,7 +678,9 @@ namespace SistemaGestionCGI
                 }
 
                 DateTime inicio = DateTime.Parse(txtMesInicio.Text);
-                DateTime fin = DateTime.Parse(txtMesFin.Text);
+
+                DateTime finRaw = DateTime.Parse(txtMesFin.Text);
+                DateTime fin = new DateTime(finRaw.Year, finRaw.Month, DateTime.DaysInMonth(finRaw.Year, finRaw.Month));
 
                 _manejador.GuardarCiclo(inicio, fin);
 
@@ -629,6 +778,19 @@ namespace SistemaGestionCGI
                 {
                     Msg("Error: El proyecto está FINALIZADO. No se admiten cambios.", "ee");
                     return;
+                }
+
+                if (checkProy.FinCicloActual != null)
+                {
+                    DateTime finCiclo = Convert.ToDateTime(checkProy.FinCicloActual);
+
+                    if (DateTime.Now > finCiclo)
+                    {
+                        Msg("BLOQUEADO: El periodo académico ha vencido (" + finCiclo.ToString("dd/MM/yyyy") + "). Debe RENOVAR el ciclo antes de subir informes.", "ee");
+
+                        ScriptManager.RegisterStartupScript(this, GetType(), "Reopen", "AbrirModalInformes();", true);
+                        return;
+                    }
                 }
 
                 var inf = new InvgccEjecucionInformes
@@ -908,27 +1070,60 @@ namespace SistemaGestionCGI
             var proyecto = _manejador.ObtenerEjecucionPorId(idEjecucion);
             if (proyecto == null) return;
 
-            if (proyecto.strEstado_ejec == "FINALIZADO")
+            DateTime? fechaFinCiclo = null;
+
+            if (proyecto.FinCicloActual != null)
             {
-                btnAbrirGenerador.Visible = false;
-                btnSubirEscaneado.Visible = false;
+                fechaFinCiclo = Convert.ToDateTime(proyecto.FinCicloActual);
+            }
+            else if (proyecto.InicioCicloActual != null)
+            {
+                fechaFinCiclo = Convert.ToDateTime(proyecto.InicioCicloActual).AddMonths(6);
+            }
 
-                foreach (RepeaterItem item in rptInformes.Items)
-                {
-                    var btnEdit = item.FindControl("btnEditarInf") as LinkButton;
-                    var btnDel = item.FindControl("btnEliminarInf") as LinkButton;
+            bool esPeriodoVencido = fechaFinCiclo != null && DateTime.Now.Date > fechaFinCiclo.Value.Date;
+            string estado = proyecto.strEstado_ejec?.ToUpper() ?? "";
 
-                    if (btnEdit != null) btnEdit.Visible = false;
-                    if (btnDel != null) btnDel.Visible = false;
-                }
+
+            if (estado == "FINALIZADO")
+            {
+                DesactivarControlesDeSubida();
+            }
+            else if (esPeriodoVencido)
+            {
+                DesactivarControlesDeSubida();
+
+                btnInformeCierre.Enabled = false;
+                btnInformeCierre.CssClass += " btn-locked opacity-50";
+                btnInformeCierre.ToolTip = "Debe renovar el periodo académico para realizar acciones.";
+
+                btnInformeFinal.Enabled = false;
+                btnInformeFinal.CssClass += " btn-locked opacity-50";
             }
             else
             {
                 btnAbrirGenerador.Visible = true;
                 btnSubirEscaneado.Visible = true;
+
+                btnInformeCierre.Enabled = true;
+                btnInformeCierre.CssClass = btnInformeCierre.CssClass.Replace(" btn-locked opacity-50", "");
             }
         }
 
+        private void DesactivarControlesDeSubida()
+        {
+            btnAbrirGenerador.Visible = false;
+            btnSubirEscaneado.Visible = false;
+
+            foreach (RepeaterItem item in rptInformes.Items)
+            {
+                var btnEdit = item.FindControl("btnEditarInf") as LinkButton;
+                var btnDel = item.FindControl("btnEliminarInf") as LinkButton;
+
+                if (btnEdit != null) btnEdit.Visible = false;
+                if (btnDel != null) btnDel.Visible = false;
+            }
+        }
 
         private DateTime? ObtenerFechaFinDelTexto(string periodoTexto)
         {
@@ -1241,6 +1436,37 @@ namespace SistemaGestionCGI
                 // Esto captura errores de código (ej: nulos o formato)
                 Msg("Error al procesar la notificación: " + ex.Message, "ee");
             }
+        }
+
+        //
+        // ==========================================
+        // LÓGICA DE CÁLCULO DE FECHAS (NUEVO)
+        // ==========================================
+        private DateTime CalcularFechaFinReal(DateTime fechaInicio, string textoDuracion)
+        {
+            if (string.IsNullOrEmpty(textoDuracion)) return fechaInicio;
+
+            DateTime fechaCalculada = fechaInicio;
+            string duracionNorm = textoDuracion.ToLower();
+
+            // 1. Extraer AÑOS
+            var matchAnios = Regex.Match(duracionNorm, @"(\d+)\s*año");
+            if (matchAnios.Success) fechaCalculada = fechaCalculada.AddYears(int.Parse(matchAnios.Groups[1].Value));
+
+            // 2. Extraer MESES
+            var matchMeses = Regex.Match(duracionNorm, @"(\d+)\s*mes");
+            if (matchMeses.Success) fechaCalculada = fechaCalculada.AddMonths(int.Parse(matchMeses.Groups[1].Value));
+
+            // 3. Extraer SEMANAS
+            var matchSemanas = Regex.Match(duracionNorm, @"(\d+)\s*semana");
+            if (matchSemanas.Success) fechaCalculada = fechaCalculada.AddDays(int.Parse(matchSemanas.Groups[1].Value) * 7);
+
+            // 4. Extraer DÍAS
+            var matchDias = Regex.Match(duracionNorm, @"(\d+)\s*día");
+            if (!matchDias.Success) matchDias = Regex.Match(duracionNorm, @"(\d+)\s*dia");
+            if (matchDias.Success) fechaCalculada = fechaCalculada.AddDays(int.Parse(matchDias.Groups[1].Value));
+
+            return fechaCalculada;
         }
 
     }

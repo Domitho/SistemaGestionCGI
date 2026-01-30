@@ -120,8 +120,21 @@
                                     <div class="fw-bold text-secondary mb-1">
                                         <%# Eval("strPeriodo_ejec") %>
                                     </div>
-    
+
                                     <asp:Literal ID="litNotificacionPlazo" runat="server"></asp:Literal>
+
+                                    <div class="mt-1">
+                                        <asp:LinkButton ID="btnRenovarCiclo" runat="server" 
+                                            CommandName="RenovarCiclo" 
+                                            CommandArgument='<%# Eval("strId_ejec") %>'
+                                            Visible="false"
+                                            CssClass="badge bg-danger text-white text-decoration-none border-0 py-2 px-3 shadow-sm hover-lift" 
+                                            ToolTip="El ciclo académico ha terminado. Haga clic para actualizar.">
+            
+                                            <i class="fa-solid fa-arrows-rotate fa-spin me-1" style="--fa-animation-duration: 3s;"></i>
+                                            VENCIDO - RENOVAR
+                                        </asp:LinkButton>
+                                    </div>
                                 </td>
                                 <td><%# Convert.ToDateTime(Eval("dtFechaini_ejec")).ToString("dd/MM/yyyy") %></td>
                                 <td>
@@ -1139,6 +1152,52 @@
                     </small>
                 </div>
 
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalRenovarCiclo" tabindex="-1" aria-hidden="true" ClientIDMode="Static" runat="server">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-utc rounded-4">
+            
+                <div class="modal-header bg-warning bg-opacity-10 border-bottom-0">
+                    <h5 class="modal-title fw-bold text-dark">
+                        <i class="fa-solid fa-clock-rotate-left me-2"></i> Transición de Periodo
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-warning bg-opacity-10 rounded-circle mb-3" style="width: 60px; height: 60px;">
+                            <i class="fa-solid fa-calendar-check fs-3 text-warning"></i>
+                        </div>
+                        <h6 class="fw-bold">El ciclo académico actual ha finalizado</h6>
+                        <p class="text-muted small mb-0">
+                            El proyecto sigue vigente según su duración total. <br />
+                            Para continuar, asigne el siguiente periodo académico.
+                        </p>
+                    </div>
+
+                    <div class="bg-light p-3 rounded border mb-3">
+                        <label class="form-label fw-bold small text-secondary mb-1">Siguiente Periodo / Ciclo</label>
+                        <asp:DropDownList ID="ddlCiclosFuturos" runat="server" CssClass="form-select shadow-sm fw-bold text-primary">
+                        </asp:DropDownList>
+                        <div class="form-text small"><i class="fa-solid fa-circle-info me-1"></i> Se actualizará el registro para la carga de nuevos informes.</div>
+                    </div>
+
+                    <asp:HiddenField ID="hfIdEjecRenovar" runat="server" ClientIDMode="Static" />
+
+                    <div class="d-grid">
+                        <asp:LinkButton ID="btnConfirmarRenovacion" runat="server" 
+                            CssClass="btn btn-warning fw-bold shadow-sm py-2" 
+                            OnClick="btnConfirmarRenovacion_Click">
+                            <i class="fa-solid fa-check me-2"></i> Confirmar Transición
+                        </asp:LinkButton>
+                    </div>
+
+                </div>
             </div>
         </div>
     </div>

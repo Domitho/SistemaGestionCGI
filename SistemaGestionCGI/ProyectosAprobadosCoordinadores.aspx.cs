@@ -103,37 +103,27 @@ namespace SistemaGestionCGI
         {
             hfIdEjecucionInforme.Value = idEjecucion.ToString();
 
-            // A. Cargar Columna Izquierda (Informes de Avance)
             var listaInformes = _manejador.ObtenerInformes(idEjecucion);
             rptInformes.DataSource = listaInformes;
             rptInformes.DataBind();
 
-            // Control de mensaje "Sin Datos"
             var divSinDatos = pnlGestionProyecto.FindControl("sinDatos") as System.Web.UI.HtmlControls.HtmlGenericControl;
             if (divSinDatos != null) divSinDatos.Visible = (listaInformes.Count == 0);
 
-            // B. Cargar Columna Derecha (Cronología Histórica)
-            // NOTA: Asegúrate de haber agregado el método ObtenerRepositorioCompleto en el BLL como hablamos antes.
             try
             {
-                var historial = _manejador.ObtenerRepositorioCompleto(idEjecucion);
-                rptCronologiaSide.DataSource = historial;
-                rptCronologiaSide.DataBind();
+                CargarCronologiaAgrupada(idEjecucion);
             }
             catch
             {
-                // Fallback si no has actualizado el BLL aun, para que no rompa
-                rptCronologiaSide.DataSource = null;
-                rptCronologiaSide.DataBind();
+                rptPeriodos.DataSource = null;
+                rptPeriodos.DataBind();
             }
 
-            // C. Configurar Footer Lateral (Cierre y Final)
             ConfigurarDocumentosFinales(idEjecucion);
 
-            // D. Bloqueo si está finalizado
             BloquearGestionSiFinalizado(idEjecucion);
 
-            // E. SWITCH DE PANELES
             pnlListadoTarjetas.Visible = false;
             pnlEquipoListado.Visible = false;
             pnlGestionProyecto.Visible = true;
@@ -169,7 +159,6 @@ namespace SistemaGestionCGI
             return "";
         }
 
-        // Botón "Volver" (Desde cualquier panel secundario)
         protected void btnVolverTarjeta_Click(object sender, EventArgs e)
         {
             pnlGestionProyecto.Visible = false;
@@ -190,6 +179,29 @@ namespace SistemaGestionCGI
 
                 if (!EsProyectoDelCoordinador(idEjec)) { Msg("No autorizado.", "ee"); return; }
 
+                var ciclos = _manejador.ObtenerTodosLosCiclos();
+                var cicloActual = ciclos.OrderByDescending(c => c.dtInicio_ciclo).FirstOrDefault();
+
+                if (DateTime.Now < cicloActual.dtInicio_ciclo)
+                {
+                    Msg("Error de configuración: La fecha actual es anterior al último ciclo registrado.", "ee");
+                    return;
+                }
+
+                var proy = _manejador.ObtenerEjecucionPorId(idEjec);
+
+                {
+                    DateTime inicio = proy.dtFechaini_ejec;
+
+                    DateTime fin = proy.dtFechafin_ejec ?? DateTime.MaxValue;
+
+                    if (DateTime.Now < inicio || DateTime.Now > fin)
+                    {
+                        Msg($"Bloqueado: La fecha actual está fuera del periodo del proyecto ({inicio:dd/MM/yyyy} - {(proy.dtFechafin_ejec.HasValue ? fin.ToString("dd/MM/yyyy") : "Indefinido")}).", "ee");
+                        return;
+                    }
+                }
+
                 string nombreArchivo = $"INF_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivoInf.FileName)}";
                 string ruta = GuardarArchivoFisico(flpArchivoInf, nombreArchivo);
 
@@ -209,7 +221,6 @@ namespace SistemaGestionCGI
                     _manejador.ActualizarInforme(inf);
                 }
 
-                // Refrescar la VISTA DE GESTIÓN (No el modal antiguo)
                 CargarVistaGestion(idEjec);
 
                 Msg("Informe cargado exitosamente.", "ss");
@@ -263,10 +274,9 @@ namespace SistemaGestionCGI
         {
             hfIdEjecucionEquipo.Value = idEjecucion.ToString();
             pnlListadoTarjetas.Visible = false;
-            pnlGestionProyecto.Visible = false; // Asegurar que el otro panel esté cerrado
+            pnlGestionProyecto.Visible = false; 
             pnlEquipoListado.Visible = true;
 
-            // Ocultar legacy form
             pnlFormularioMiembro.Visible = false;
             btnAbrirFormMiembro.Visible = false;
 
@@ -404,6 +414,82 @@ namespace SistemaGestionCGI
             string path = pathObj?.ToString() ?? "";
             string ext = System.IO.Path.GetExtension(path).ToLower().Replace(".", "").ToUpper();
             return string.IsNullOrEmpty(ext) ? "ARCHIVO" : ext;
+        }
+
+        // PERIODOS
+
+        public string ObtenerEtiquetaPeriodo(DateTime fecha)
+        {
+            int anio = fecha.Year;
+            int mes = fecha.Month;
+
+            if (mes <= 3)
+            {
+                return $"OCTUBRE {anio - 1} - MARZO {anio}";
+            }
+            else if (mes >= 10)
+            {
+                return $"OCTUBRE {anio} - MARZO {anio + 1}";
+            }
+            else
+            {
+                return $"ABRIL {anio} - SEPTIEMBRE {anio}";
+            }
+        }
+
+        private void CargarCronologiaAgrupada(int idEjecucion)
+        {
+            var listaArchivos = _manejador.ObtenerRepositorioCompleto(idEjecucion);
+
+            List<CicloAcademico> listaCiclos = _manejador.ObtenerTodosLosCiclos();
+
+            var listaAgrupada = listaArchivos
+                .GroupBy(archivo => IdentificarCiclo(Convert.ToDateTime(archivo.Fecha), listaCiclos))
+                .Select(g => new GrupoPeriodo
+                {
+            NombrePeriodo = g.Key.strNombre_ciclo,
+                    FechaInicioCiclo = g.Key.dtInicio_ciclo,
+            Archivos = g.ToList()
+                })
+                .OrderByDescending(g => g.FechaInicioCiclo)
+                .ToList();
+
+            rptPeriodos.DataSource = listaAgrupada;
+            rptPeriodos.DataBind();
+
+            var divSinHistorial = pnlGestionProyecto.FindControl("sinHistorial") as System.Web.UI.HtmlControls.HtmlGenericControl;
+            if (divSinHistorial != null) divSinHistorial.Visible = (listaAgrupada.Count == 0);
+        }
+
+        private CicloAcademico IdentificarCiclo(DateTime fechaArchivo, List<CicloAcademico> ciclos)
+        {
+            var cicloEncontrado = ciclos.FirstOrDefault(c => c.dtInicio_ciclo <= fechaArchivo.Date);
+
+            if (cicloEncontrado != null)
+            {
+                return cicloEncontrado;
+            }
+
+            return new CicloAcademico { strNombre_ciclo = "PERIODOS ANTERIORES / SIN ASIGNAR", dtInicio_ciclo = DateTime.MinValue };
+        }
+
+        protected void rptPeriodos_ItemDataBound(object sender, RepeaterItemEventArgs e)
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                // 1. Obtenemos los datos del grupo actual
+                var grupo = (GrupoPeriodo)e.Item.DataItem;
+
+                // 2. Buscamos el Repeater hijo dentro de este item
+                var rptHijo = (Repeater)e.Item.FindControl("rptArchivosPeriodo");
+
+                // 3. Le pasamos SU lista de archivos correspondiente
+                if (rptHijo != null)
+                {
+                    rptHijo.DataSource = grupo.Archivos;
+                    rptHijo.DataBind();
+                }
+            }
         }
     }
 }

@@ -87,13 +87,13 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl sinDatos;
 
         /// <summary>
-        /// Control rptCronologiaSide.
+        /// Control rptPeriodos.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptCronologiaSide;
+        protected global::System.Web.UI.WebControls.Repeater rptPeriodos;
 
         /// <summary>
         /// Control sinHistorial.

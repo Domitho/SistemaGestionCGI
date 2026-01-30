@@ -301,66 +301,66 @@
 
                         <%-- Lista con Scroll --%>
                         <div class="scroll-cronologia pe-2" style="max-height: 600px; overflow-y: auto;">
-        
-                            <asp:Repeater ID="rptCronologiaSide" runat="server">
+    
+                            <%-- REPEATER PADRE: LOS PERIODOS --%>
+                            <asp:Repeater ID="rptPeriodos" runat="server" OnItemDataBound="rptPeriodos_ItemDataBound">
                                 <ItemTemplate>
-                                    <%-- Tarjeta rica en información --%>
-                                    <div class="history-card <%# GetBorderColor(Eval("TipoDoc").ToString()) %>">
-                                        <div class="d-flex align-items-center gap-3">
-                        
-                                            <%-- 1. Icono Temático (Izquierda) --%>
-                                            <div class="icon-box-history <%# GetIconBgClass(Eval("TipoDoc").ToString()) %>">
-                                                <i class='<%# GetIconClass(Eval("TipoDoc").ToString()) %>'></i>
-                                            </div>
-
-                                            <%-- 2. Información Central --%>
-                                            <div class="flex-grow-1 overflow-hidden">
-                                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                                    <span class="badge bg-light text-dark border"><%# Eval("TipoDoc") %></span>
-                                                    <small class="text-muted" style="font-size: 0.75rem;">
-                                                        <%# Convert.ToDateTime(Eval("Fecha")).ToString("dd MMM yyyy") %>
-                                                    </small>
-                                                </div>
-                            
-                                                <h6 class="mb-0 fw-bold text-dark text-truncate" title='<%# Eval("Nombre") %>'>
-                                                    <%# Eval("Nombre") %>
-                                                </h6>
-                            
-                                                <small class="text-muted d-block text-truncate">
-                                                    <i class="fa-solid fa-info-circle me-1" style="font-size:0.7rem"></i>
-                                                    <%# GetDescripcion(Eval("TipoDoc").ToString()) %>
-                                                </small>
-                                            </div>
-
-                                            <%-- 3. DOBLE BOTÓN DE ACCIÓN (Ver + Descargar) --%>
-                                            <div class="flex-shrink-0 ms-2 d-flex gap-2">
-                            
-                                                <%-- Botón VER (Ojo) --%>
-                                                <a href='<%# ResolveUrl(Eval("Ruta").ToString()) %>' target="_blank" 
-                                                   class="btn btn-light btn-sm text-primary border shadow-sm" 
-                                                   title="Ver Documento">
-                                                    <i class="fa-solid fa-eye"></i>
-                                                </a>
-
-                                                <%-- Botón DESCARGAR (Flecha) --%>
-                                                <a href='<%# ResolveUrl(Eval("Ruta").ToString()) %>' download
-                                                   class="btn btn-light btn-sm text-dark border shadow-sm" 
-                                                   title="Descargar Copia">
-                                                    <i class="fa-solid fa-download"></i>
-                                                </a>
-
-                                            </div>
-
-                                        </div>
+            
+                                    <%-- Encabezado del Periodo (Separador Visual) --%>
+                                    <div class="d-flex align-items-center mb-3 mt-2">
+                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning fw-bold px-3 py-2 w-100 text-start">
+                                            <i class="fa-solid fa-calendar-range me-2"></i> <%# Eval("NombrePeriodo") %>
+                                        </span>
                                     </div>
+
+                                    <%-- Contenedor de la línea de tiempo para este grupo --%>
+                                    <div class="timeline-group mb-4 ps-2">
+                
+                                        <%-- REPEATER HIJO: LOS ARCHIVOS DE ESTE PERIODO --%>
+                                        <asp:Repeater ID="rptArchivosPeriodo" runat="server">
+                                            <ItemTemplate>
+                                                <div class="history-card <%# GetBorderColor(Eval("TipoDoc").ToString()) %> mb-3">
+                                                    <div class="d-flex align-items-center gap-3">
+                                
+                                                        <%-- Icono --%>
+                                                        <div class="icon-box-history <%# GetIconBgClass(Eval("TipoDoc").ToString()) %>">
+                                                            <i class='<%# GetIconClass(Eval("TipoDoc").ToString()) %>'></i>
+                                                        </div>
+
+                                                        <%-- Info --%>
+                                                        <div class="flex-grow-1 overflow-hidden">
+                                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                <span class="badge bg-light text-dark border"><%# Eval("TipoDoc") %></span>
+                                                                <small class="text-muted" style="font-size: 0.75rem;">
+                                                                    <%# Convert.ToDateTime(Eval("Fecha")).ToString("dd MMM yyyy") %>
+                                                                </small>
+                                                            </div>
+                                                            <h6 class="mb-0 fw-bold text-dark text-truncate" title='<%# Eval("Nombre") %>'>
+                                                                <%# Eval("Nombre") %>
+                                                            </h6>
+                                                            <small class="text-muted d-block text-truncate">
+                                                                <%# GetDescripcion(Eval("TipoDoc").ToString()) %>
+                                                            </small>
+                                                        </div>
+
+                                                        <%-- Botones --%>
+                                                        <div class="flex-shrink-0 ms-2 d-flex gap-2">
+                                                            <a href='<%# ResolveUrl(Eval("Ruta").ToString()) %>' target="_blank" class="btn btn-light btn-sm text-primary border shadow-sm"><i class="fa-solid fa-eye"></i></a>
+                                                            <a href='<%# ResolveUrl(Eval("Ruta").ToString()) %>' download class="btn btn-light btn-sm text-dark border shadow-sm"><i class="fa-solid fa-download"></i></a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+
+                                    </div>
+
                                 </ItemTemplate>
                             </asp:Repeater>
 
-                            <%-- Mensaje si está vacío --%>
                             <div id="sinHistorial" runat="server" visible="false" class="text-center py-4 text-muted">
                                 No hay historial disponible.
                             </div>
-
                         </div>
 
                         <div style="display:none;">
