@@ -182,14 +182,6 @@
                                         <i class="fa-solid fa-trash"></i>
                                     </asp:LinkButton>
 
-                                    <asp:LinkButton ID="btnNotificar" runat="server" 
-                                        CommandName="Notificar" 
-                                        CommandArgument='<%# Eval("strId_ejec") %>'
-                                        CssClass="btn btn-dark btn-sm rounded-circle me-1 position-relative" 
-                                        ToolTip="Enviar Recordatorio por Correo">
-                                        <i class="fa-solid fa-bell"></i>
-                                    </asp:LinkButton>
-
                                 </td>
                             </tr>
                         </ItemTemplate>

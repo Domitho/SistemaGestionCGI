@@ -66,15 +66,42 @@ namespace SistemaGestionCGI
                 Literal lit = (Literal)e.Item.FindControl("litAlertaPlazo");
 
                 DateTime? fin = null;
-                try { fin = data.dtFechafin_ejec; } catch { }
-
-                if (fin.HasValue && fin.Value.Year > 1900 && data.strEstado_ejec == "EN EJECUCIÓN")
+                try
                 {
-                    TimeSpan restante = fin.Value - DateTime.Now;
-                    if (restante.TotalDays < 0)
-                        lit.Text = "<span class='badge bg-danger'><i class='fa-solid fa-clock me-1'></i> Plazo Vencido</span>";
-                    else if (restante.TotalDays < 30)
-                        lit.Text = $"<span class='badge bg-warning text-dark'><i class='fa-solid fa-hourglass-half me-1'></i> Cierra en {Math.Ceiling(restante.TotalDays)} días</span>";
+                    if (data.FinCicloActual != null)
+                        fin = data.FinCicloActual;
+                    else
+                        fin = data.dtFechafin_ejec; 
+                }
+                catch { }
+
+                string estado = data.strEstado_ejec.ToString();
+
+                if (fin.HasValue && fin.Value.Year > 1900 && (estado == "EN EJECUCIÓN" || estado == "En Ejecución"))
+                {
+                    TimeSpan restante = fin.Value.Date - DateTime.Now.Date;
+                    int dias = (int)restante.TotalDays;
+
+                    if (dias < 0)
+                    {
+                        lit.Text = $"<span class='badge bg-danger bg-opacity-10 text-danger border border-danger'><i class='fa-solid fa-circle-exclamation me-1'></i> Periodo Vencido hace {Math.Abs(dias)} días</span>";
+                    }
+                    else if (dias < 30)
+                    {
+                        lit.Text = $"<span class='badge bg-warning bg-opacity-10 text-dark border border-warning'><i class='fa-solid fa-clock me-1'></i> Cierra en {dias} días</span>";
+                    }
+                    else
+                    {
+                        lit.Text = $"<span class='badge bg-success bg-opacity-10 text-success border border-success'><i class='fa-regular fa-calendar-check me-1'></i> A tiempo ({dias} días restantes)</span>";
+                    }
+                }
+                else if (estado == "FINALIZADO" || estado == "CIERRE APROBADO")
+                {
+                    lit.Text = "<span class='badge bg-secondary opacity-50'><i class='fa-solid fa-lock me-1'></i> Finalizado</span>";
+                }
+                else
+                {
+                    lit.Text = "<span class='text-muted small'>- Sin plazo definido -</span>";
                 }
             }
         }
@@ -86,7 +113,6 @@ namespace SistemaGestionCGI
             switch (e.CommandName)
             {
                 case "Informes":
-                    // AQUÍ ESTÁ EL CAMBIO CLAVE: Cambiamos de vista en lugar de abrir modal
                     CargarVistaGestion(int.Parse(id));
                     break;
 
@@ -133,7 +159,6 @@ namespace SistemaGestionCGI
         {
             var proy = _manejador.ObtenerEjecucionPorId(idEjecucion);
 
-            // Informe Cierre
             bool hayCierre = !string.IsNullOrEmpty(proy.strInforme_Cierre);
             lnkVerCierre.Enabled = hayCierre;
             lnkVerCierre.NavigateUrl = hayCierre ? ResolveUrl(proy.strInforme_Cierre) : "#";
@@ -141,7 +166,6 @@ namespace SistemaGestionCGI
                 ? "btn btn-sm btn-outline-warning text-start text-dark w-100 mb-2"
                 : "btn btn-sm btn-light text-start text-muted w-100 mb-2 disabled border";
 
-            // Informe Final
             bool hayFinal = !string.IsNullOrEmpty(proy.strInforme_Final);
             lnkVerFinal.Enabled = hayFinal;
             lnkVerFinal.NavigateUrl = hayFinal ? ResolveUrl(proy.strInforme_Final) : "#";
@@ -150,7 +174,6 @@ namespace SistemaGestionCGI
                 : "btn btn-sm btn-light text-start text-muted w-100 disabled border";
         }
 
-        // Método auxiliar para el Frontend (Colores de borde)
         public string GetBorderColor(string tipo)
         {
             if (tipo == "AVANCE") return "border-avance";
@@ -179,25 +202,22 @@ namespace SistemaGestionCGI
 
                 if (!EsProyectoDelCoordinador(idEjec)) { Msg("No autorizado.", "ee"); return; }
 
-                var ciclos = _manejador.ObtenerTodosLosCiclos();
-                var cicloActual = ciclos.OrderByDescending(c => c.dtInicio_ciclo).FirstOrDefault();
-
-                if (DateTime.Now < cicloActual.dtInicio_ciclo)
-                {
-                    Msg("Error de configuración: La fecha actual es anterior al último ciclo registrado.", "ee");
-                    return;
-                }
-
                 var proy = _manejador.ObtenerEjecucionPorId(idEjec);
 
+                if (proy.FinCicloActual.HasValue)
                 {
-                    DateTime inicio = proy.dtFechaini_ejec;
-
-                    DateTime fin = proy.dtFechafin_ejec ?? DateTime.MaxValue;
-
-                    if (DateTime.Now < inicio || DateTime.Now > fin)
+                    if (DateTime.Now.Date > proy.FinCicloActual.Value.Date)
                     {
-                        Msg($"Bloqueado: La fecha actual está fuera del periodo del proyecto ({inicio:dd/MM/yyyy} - {(proy.dtFechafin_ejec.HasValue ? fin.ToString("dd/MM/yyyy") : "Indefinido")}).", "ee");
+                        Msg($"PERIODO VENCIDO: El ciclo actual finalizó el {proy.FinCicloActual:dd/MM/yyyy}. Contacte al administrador para la renovación.", "ee");
+                        return;
+                    }
+                }
+
+                if (proy.InicioCicloActual.HasValue)
+                {
+                    if (DateTime.Now.Date < proy.InicioCicloActual.Value.Date)
+                    {
+                        Msg($"ESPERA: El periodo asignado inicia el {proy.InicioCicloActual:dd/MM/yyyy}.", "ww");
                         return;
                     }
                 }
@@ -210,7 +230,7 @@ namespace SistemaGestionCGI
                     fkId_ejec = idEjec,
                     strNombrePeriodo = txtNombrePeriodoInf.Text.Trim(),
                     strArchivo_path = ruta,
-                    dtFechaSubida = DateTime.Now
+                    dtFechaSubida = DateTime.Now 
                 };
 
                 if (string.IsNullOrEmpty(hfIdInformeEdit.Value))
@@ -221,8 +241,7 @@ namespace SistemaGestionCGI
                     _manejador.ActualizarInforme(inf);
                 }
 
-                CargarVistaGestion(idEjec);
-
+                CargarVistaGestion(idEjec); 
                 Msg("Informe cargado exitosamente.", "ss");
                 ScriptManager.RegisterStartupScript(this, GetType(), "CloseSub", "CerrarSubModalUpload();", true);
             }
@@ -246,7 +265,7 @@ namespace SistemaGestionCGI
                 try
                 {
                     _manejador.EliminarInforme(idInf);
-                    CargarVistaGestion(int.Parse(hfIdEjecucionInforme.Value)); // Refrescar panel
+                    CargarVistaGestion(int.Parse(hfIdEjecucionInforme.Value)); 
                     Msg("Informe eliminado.", "ss");
                 }
                 catch (Exception ex) { Msg(ex.Message, "ee"); }
@@ -294,7 +313,6 @@ namespace SistemaGestionCGI
 
         protected void rptMiembros_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
-            // Lógica para ocultar botones de edición a coordinadores (Solo lectura)
             if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
             {
                 var btnEdit = e.Item.FindControl("btnEditarM");
@@ -318,27 +336,48 @@ namespace SistemaGestionCGI
         {
             var proy = _manejador.ObtenerEjecucionPorId(idEjecucion);
 
-            bool cerrado = (proy.strEstado_ejec == "FINALIZADO" || proy.strEstado_ejec == "CIERRE APROBADO");
+            lblEstadoPeriodo.Text = "";
 
-            btnAbrirGenerador.Visible = !cerrado;
+            bool proyectoCerrado = (proy.strEstado_ejec == "FINALIZADO" || proy.strEstado_ejec == "CIERRE APROBADO");
+            bool periodoVencido = false;
 
-            var btnSubir = pnlGestionProyecto.FindControl("btnSubirEscaneado") as System.Web.UI.HtmlControls.HtmlButton;
-            if (btnSubir != null)
+            if (proy.FinCicloActual.HasValue && !proyectoCerrado)
             {
-                btnSubir.Visible = !cerrado;
+                if (DateTime.Now.Date > proy.FinCicloActual.Value.Date)
+                {
+                    periodoVencido = true;
+                }
             }
-            else if (this.FindControl("btnSubirEscaneado") != null) 
+
+            bool bloquearEdicion = proyectoCerrado || periodoVencido;
+
+            btnAbrirGenerador.Visible = !bloquearEdicion;
+            var btnSubir = pnlGestionProyecto.FindControl("btnSubirEscaneado") as System.Web.UI.HtmlControls.HtmlButton;
+            if (btnSubir != null) btnSubir.Visible = !bloquearEdicion;
+
+            if (periodoVencido)
             {
-                this.FindControl("btnSubirEscaneado").Visible = !cerrado;
+                lblEstadoPeriodo.Text = @"
+                    <div class='badge bg-danger bg-opacity-10 text-danger border border-danger px-3 py-2'>
+                        <i class='fa-solid fa-lock me-2'></i> 
+                        PERIODO VENCIDO: No se permiten cargas. Contacte al Administrador.
+                    </div>";
+            }
+            else if (proyectoCerrado)
+            {
+                lblEstadoPeriodo.Text = @"
+                    <div class='badge bg-success bg-opacity-10 text-success border border-success px-3 py-2'>
+                        <i class='fa-solid fa-check-circle me-2'></i> 
+                        PROYECTO FINALIZADO
+                    </div>";
             }
 
             foreach (RepeaterItem item in rptInformes.Items)
             {
                 var btnEdit = item.FindControl("btnEditarInf");
                 var btnDel = item.FindControl("btnEliminarInf");
-
-                if (btnEdit != null) btnEdit.Visible = !cerrado;
-                if (btnDel != null) btnDel.Visible = !cerrado;
+                if (btnEdit != null) btnEdit.Visible = !bloquearEdicion;
+                if (btnDel != null) btnDel.Visible = !bloquearEdicion;
             }
         }
 
@@ -358,7 +397,6 @@ namespace SistemaGestionCGI
             ScriptManager.RegisterStartupScript(this, GetType(), "toast", script, true);
         }
 
-        // Métodos Legacy (Stubs para evitar errores de compilación con paneles ocultos)
         protected void btnAbrirFormMiembro_Click(object sender, EventArgs e) { }
         protected void btnGuardarMiembro_Click(object sender, EventArgs e) { }
         protected void btnCancelarMiembro_Click(object sender, EventArgs e) { }
@@ -367,16 +405,14 @@ namespace SistemaGestionCGI
 
         //
 
-        // Método para devolver la clase CSS del icono según el tipo
         public string GetIconClass(string tipo)
         {
-            if (tipo == "AVANCE") return "fa-regular fa-file-pdf"; // Icono PDF
-            if (tipo == "CIERRE") return "fa-solid fa-flag-checkered"; // Icono Meta
-            if (tipo == "FINAL") return "fa-solid fa-award"; // Icono Premio
+            if (tipo == "AVANCE") return "fa-regular fa-file-pdf"; 
+            if (tipo == "CIERRE") return "fa-solid fa-flag-checkered"; 
+            if (tipo == "FINAL") return "fa-solid fa-award"; 
             return "fa-solid fa-file";
         }
 
-        // Método para el color de fondo del icono
         public string GetIconBgClass(string tipo)
         {
             if (tipo == "AVANCE") return "bg-icon-avance";
@@ -385,7 +421,6 @@ namespace SistemaGestionCGI
             return "bg-light";
         }
 
-        // Método para texto descriptivo extra
         public string GetDescripcion(string tipo)
         {
             if (tipo == "AVANCE") return "Informe de seguimiento periódico";
@@ -394,7 +429,6 @@ namespace SistemaGestionCGI
             return "Documento del proyecto";
         }
 
-        // Devuelve la clase del icono según la extensión del archivo
         public string GetFileIconClass(object pathObj)
         {
             string path = pathObj?.ToString() ?? "";
@@ -405,10 +439,9 @@ namespace SistemaGestionCGI
             if (ext == ".xls" || ext == ".xlsx") return "fa-solid fa-file-excel text-success";
             if (ext == ".jpg" || ext == ".png" || ext == ".jpeg") return "fa-solid fa-file-image text-warning";
 
-            return "fa-solid fa-file text-secondary"; // Por defecto
+            return "fa-solid fa-file text-secondary"; 
         }
 
-        // Devuelve el texto "PDF", "WORD", etc.
         public string GetFileTypeLabel(object pathObj)
         {
             string path = pathObj?.ToString() ?? "";
@@ -417,25 +450,6 @@ namespace SistemaGestionCGI
         }
 
         // PERIODOS
-
-        public string ObtenerEtiquetaPeriodo(DateTime fecha)
-        {
-            int anio = fecha.Year;
-            int mes = fecha.Month;
-
-            if (mes <= 3)
-            {
-                return $"OCTUBRE {anio - 1} - MARZO {anio}";
-            }
-            else if (mes >= 10)
-            {
-                return $"OCTUBRE {anio} - MARZO {anio + 1}";
-            }
-            else
-            {
-                return $"ABRIL {anio} - SEPTIEMBRE {anio}";
-            }
-        }
 
         private void CargarCronologiaAgrupada(int idEjecucion)
         {
@@ -447,11 +461,11 @@ namespace SistemaGestionCGI
                 .GroupBy(archivo => IdentificarCiclo(Convert.ToDateTime(archivo.Fecha), listaCiclos))
                 .Select(g => new GrupoPeriodo
                 {
-            NombrePeriodo = g.Key.strNombre_ciclo,
+                    NombrePeriodo = g.Key.strNombre_ciclo,
                     FechaInicioCiclo = g.Key.dtInicio_ciclo,
-            Archivos = g.ToList()
+                    Archivos = g.ToList() 
                 })
-                .OrderByDescending(g => g.FechaInicioCiclo)
+                .OrderByDescending(g => g.FechaInicioCiclo) 
                 .ToList();
 
             rptPeriodos.DataSource = listaAgrupada;
@@ -463,27 +477,22 @@ namespace SistemaGestionCGI
 
         private CicloAcademico IdentificarCiclo(DateTime fechaArchivo, List<CicloAcademico> ciclos)
         {
-            var cicloEncontrado = ciclos.FirstOrDefault(c => c.dtInicio_ciclo <= fechaArchivo.Date);
 
-            if (cicloEncontrado != null)
-            {
-                return cicloEncontrado;
-            }
+            var ciclo = ciclos.FirstOrDefault(c => fechaArchivo.Date >= c.dtInicio_ciclo.Date);
 
-            return new CicloAcademico { strNombre_ciclo = "PERIODOS ANTERIORES / SIN ASIGNAR", dtInicio_ciclo = DateTime.MinValue };
+            if (ciclo != null) return ciclo;
+
+            return new CicloAcademico { strNombre_ciclo = "HISTORIAL ANTIGUO / SIN PERIODO", dtInicio_ciclo = DateTime.MinValue };
         }
 
         protected void rptPeriodos_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
             if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
             {
-                // 1. Obtenemos los datos del grupo actual
                 var grupo = (GrupoPeriodo)e.Item.DataItem;
 
-                // 2. Buscamos el Repeater hijo dentro de este item
                 var rptHijo = (Repeater)e.Item.FindControl("rptArchivosPeriodo");
 
-                // 3. Le pasamos SU lista de archivos correspondiente
                 if (rptHijo != null)
                 {
                     rptHijo.DataSource = grupo.Archivos;

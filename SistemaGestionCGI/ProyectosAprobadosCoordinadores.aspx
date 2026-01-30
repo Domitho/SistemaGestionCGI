@@ -193,6 +193,7 @@
     
                         <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white rounded-3 border shadow-sm">
                             <span class="fw-bold text-secondary small text-uppercase">Acciones Disponibles</span>
+                            <asp:Literal ID="lblEstadoPeriodo" runat="server"></asp:Literal>
                             <div class="d-flex gap-2">
         
                                 <%-- Botón Generar --%>

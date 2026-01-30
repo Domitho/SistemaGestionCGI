@@ -51,6 +51,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.LinkButton btnVolverDesdeGestion;
 
         /// <summary>
+        /// Control lblEstadoPeriodo.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal lblEstadoPeriodo;
+
+        /// <summary>
         /// Control btnAbrirGenerador.
         /// </summary>
         /// <remarks>
