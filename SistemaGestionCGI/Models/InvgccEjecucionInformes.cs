@@ -6,10 +6,10 @@ namespace SistemaGestionCGI.Models
     public class InvgccEjecucionInformes
     {
         [JsonProperty("strId_informe")]
-        public int strId_informe { get; set; } // CAMBIO: int
+        public int strId_informe { get; set; }
 
         [JsonProperty("fkId_ejec")]
-        public int fkId_ejec { get; set; } // CAMBIO: int
+        public int fkId_ejec { get; set; } 
 
         [JsonProperty("strNombrePeriodo")]
         public string strNombrePeriodo { get; set; }
@@ -19,5 +19,8 @@ namespace SistemaGestionCGI.Models
 
         [JsonProperty("dtFechaSubida")]
         public DateTime dtFechaSubida { get; set; }
+
+        [JsonProperty("strCiclo_informe")]
+        public string strCiclo_informe { get; set; }
     }
 }

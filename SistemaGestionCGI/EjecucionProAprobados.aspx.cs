@@ -19,6 +19,8 @@ namespace SistemaGestionCGI
         private const string RUTA_VIRTUAL_ARCHIVOS = "~/RepositorioUTC/EjecucionInformes/";
         private bool EsAdmin => Session["RolUsuario"]?.ToString() == "ADMINISTRADOR";
 
+        private string _ultimoCicloVisto = "";
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["UsuarioLogueado"] == null)
@@ -220,7 +222,12 @@ namespace SistemaGestionCGI
                 if (proy == null) return;
 
                 DateTime fechaInicioProy = proy.dtFechaini_ejec;
+
                 DateTime fechaFinTeoricaProyecto = CalcularFechaFinReal(fechaInicioProy, proy.strDuracion_pro);
+                if (fechaFinTeoricaProyecto == fechaInicioProy)
+                {
+                    fechaFinTeoricaProyecto = fechaInicioProy.AddYears(2);
+                }
 
                 DateTime finCicloActual = proy.FinCicloActual != null
                     ? Convert.ToDateTime(proy.FinCicloActual)
@@ -228,6 +235,7 @@ namespace SistemaGestionCGI
 
                 var todosCiclos = _manejador.ObtenerCiclosConFechas();
 
+                HashSet<string> nombresAgregados = new HashSet<string>();
                 int contadorOpciones = 0;
 
                 foreach (dynamic c in todosCiclos)
@@ -236,24 +244,24 @@ namespace SistemaGestionCGI
                     string cNombre = (string)c.strNombre_ciclo;
                     DateTime cInicio = Convert.ToDateTime(c.dtInicio_ciclo);
 
-                    DateTime cFin = c.dtFin_ciclo != null
-                        ? Convert.ToDateTime(c.dtFin_ciclo)
-                        : cInicio.AddMonths(6);
+                    bool esFuturo = cInicio >= finCicloActual;
 
-                    bool esFuturo = cInicio > finCicloActual;
-
-                    bool estaEnPlazo = cFin <= fechaFinTeoricaProyecto.AddDays(5); 
+                    bool estaEnPlazo = cInicio < fechaFinTeoricaProyecto;
 
                     if (esFuturo && estaEnPlazo)
                     {
-                        ddlCiclosFuturos.Items.Add(new ListItem(cNombre, cId.ToString()));
-                        contadorOpciones++;
+                        if (!nombresAgregados.Contains(cNombre))
+                        {
+                            ddlCiclosFuturos.Items.Add(new ListItem(cNombre, cId.ToString()));
+                            nombresAgregados.Add(cNombre);
+                            contadorOpciones++;
+                        }
                     }
                 }
 
                 if (contadorOpciones == 0)
                 {
-                    ddlCiclosFuturos.Items.Add(new ListItem("No hay ciclos disponibles que se ajusten a la duración restante.", "0"));
+                    ddlCiclosFuturos.Items.Add(new ListItem("🚫 No hay ciclos futuros compatibles con la duración del proyecto.", "0"));
                     ddlCiclosFuturos.Enabled = false;
                     btnConfirmarRenovacion.Enabled = false;
                 }
@@ -774,6 +782,8 @@ namespace SistemaGestionCGI
                 if (!int.TryParse(hfIdEjecucionInforme.Value, out int idEjec)) return;
 
                 var checkProy = _manejador.ObtenerEjecucionPorId(idEjec);
+                string nombreCicloActual = checkProy.strPeriodo_ejec;
+
                 if (checkProy.strEstado_ejec == "FINALIZADO")
                 {
                     Msg("Error: El proyecto está FINALIZADO. No se admiten cambios.", "ee");
@@ -808,7 +818,7 @@ namespace SistemaGestionCGI
                         ScriptManager.RegisterStartupScript(this, GetType(), "Reopen", "AbrirSubModalUpload();", true);
                         return;
                     }
-                    _manejador.GuardarInforme(inf);
+                    _manejador.GuardarInforme(inf, nombreCicloActual);
                     Redireccionar("Informe subido correctamente.", "ss");
                 }
                 else
@@ -841,7 +851,6 @@ namespace SistemaGestionCGI
                     btnGuardarCierre.Visible = false;
                     btnAprobarCierre.Visible = false;
 
-                    // Mostrar archivo para descargar
                     pnlArchivoCierreActual.Visible = true;
                     lblNombreArchivoCierre.Text = Path.GetFileName(proyecto.strInforme_Cierre);
                     lnkVerCierreActual.HRef = ResolveUrl(proyecto.strInforme_Cierre);
@@ -873,12 +882,25 @@ namespace SistemaGestionCGI
                     }
                     else
                     {
-                        // Modo Limpio
                         pnlArchivoCierreActual.Visible = false;
                         btnAprobarCierre.Visible = false;
                         lblTituloInputCierre.InnerText = "Documento de Cierre";
                         litBtnCierreTexto.Text = "Enviar a Revisión";
                     }
+                }
+
+                var listaHistorial = _manejador.ObtenerHistorialCierre(idEjec);
+                if (listaHistorial != null && listaHistorial.Count > 0)
+                {
+                    rptHistorialCierre.DataSource = listaHistorial;
+                    rptHistorialCierre.DataBind();
+                    rptHistorialCierre.Visible = true;
+                    lblSinHistorial.Visible = false;
+                }
+                else
+                {
+                    rptHistorialCierre.Visible = false;
+                    lblSinHistorial.Visible = true;
                 }
 
                 ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalCierre",
@@ -908,7 +930,7 @@ namespace SistemaGestionCGI
                 string rutaGuardada = GuardarArchivoFisico(flpCierre, nombreArchivo);
 
                 string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
-                _manejador.SubirInformeCierre(idEjec, rutaGuardada, usuario);
+                _manejador.SubirInformeCierre(idEjec, rutaGuardada, usuario, flpCierre.FileName);
 
                 string mensaje = pnlArchivoCierreActual.Visible
                     ? "Informe de cierre actualizado/corregido correctamente."
@@ -1449,24 +1471,48 @@ namespace SistemaGestionCGI
             DateTime fechaCalculada = fechaInicio;
             string duracionNorm = textoDuracion.ToLower();
 
-            // 1. Extraer AÑOS
-            var matchAnios = Regex.Match(duracionNorm, @"(\d+)\s*año");
-            if (matchAnios.Success) fechaCalculada = fechaCalculada.AddYears(int.Parse(matchAnios.Groups[1].Value));
+            var matchAnios = Regex.Match(duracionNorm, @"(\d+)\s*(a|y)");
+            if (matchAnios.Success)
+            {
+                fechaCalculada = fechaCalculada.AddYears(int.Parse(matchAnios.Groups[1].Value));
+            }
 
-            // 2. Extraer MESES
             var matchMeses = Regex.Match(duracionNorm, @"(\d+)\s*mes");
             if (matchMeses.Success) fechaCalculada = fechaCalculada.AddMonths(int.Parse(matchMeses.Groups[1].Value));
 
-            // 3. Extraer SEMANAS
             var matchSemanas = Regex.Match(duracionNorm, @"(\d+)\s*semana");
             if (matchSemanas.Success) fechaCalculada = fechaCalculada.AddDays(int.Parse(matchSemanas.Groups[1].Value) * 7);
 
-            // 4. Extraer DÍAS
             var matchDias = Regex.Match(duracionNorm, @"(\d+)\s*día");
             if (!matchDias.Success) matchDias = Regex.Match(duracionNorm, @"(\d+)\s*dia");
             if (matchDias.Success) fechaCalculada = fechaCalculada.AddDays(int.Parse(matchDias.Groups[1].Value));
 
             return fechaCalculada;
+        }
+
+        //
+
+        protected void rptInformes_ItemDataBound(object sender, RepeaterItemEventArgs e)
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                string cicloItem = DataBinder.Eval(e.Item.DataItem, "strCiclo_informe") as string;
+                if (string.IsNullOrEmpty(cicloItem)) cicloItem = "Periodos Anteriores";
+
+                var phHeader = e.Item.FindControl("phHeaderCiclo") as PlaceHolder;
+                var litHeader = e.Item.FindControl("litNombreCicloGroup") as Literal;
+
+                if (cicloItem != _ultimoCicloVisto)
+                {
+                    if (phHeader != null) phHeader.Visible = true;
+                    if (litHeader != null) litHeader.Text = cicloItem;
+                    _ultimoCicloVisto = cicloItem;
+                }
+                else
+                {
+                    if (phHeader != null) phHeader.Visible = false;
+                }
+            }
         }
 
     }

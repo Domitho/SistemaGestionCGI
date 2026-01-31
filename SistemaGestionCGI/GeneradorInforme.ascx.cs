@@ -434,14 +434,18 @@ namespace SistemaGestionCGI
                 // ==========================================================================================
                 // 4. REGISTRO EN BASE DE DATOS
                 // ==========================================================================================
+
                 var nuevoInforme = new InvgccEjecucionInformes
                 {
                     fkId_ejec = idEjecucion,
                     strNombrePeriodo = txtGenPeriodo.Text,
                     strArchivo_path = "~/RepositorioUTC/EjecucionInformes/" + nombreFinal,
-                    // dtFecha_creacion = DateTime.Now // Si tu tabla no tiene este campo, borra esta línea.
                 };
-                _manejador.GuardarInforme(nuevoInforme);
+
+                var datosProyecto = _manejador.ObtenerEjecucionPorId(nuevoInforme.fkId_ejec);
+                string cicloActual = datosProyecto.strPeriodo_ejec;
+
+                _manejador.GuardarInforme(nuevoInforme, cicloActual);
 
                 // 5. CERRAR Y LIMPIAR
                 string scriptFin = $"limpiarBorrador(); bootstrap.Modal.getInstance(document.getElementById('modalGeneradorInforme')).hide(); resetWizard({idEjecucion});";

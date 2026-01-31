@@ -573,6 +573,24 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl modalSubirCierre;
 
         /// <summary>
+        /// Control rptHistorialCierre.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptHistorialCierre;
+
+        /// <summary>
+        /// Control lblSinHistorial.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSinHistorial;
+
+        /// <summary>
         /// Control divAlertaCierre.
         /// </summary>
         /// <remarks>

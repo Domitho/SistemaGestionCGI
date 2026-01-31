@@ -580,64 +580,46 @@
                     </div>
 
                     <div class="row g-3">
-                        <asp:Repeater ID="rptInformes" runat="server" OnItemCommand="rptInformes_ItemCommand">
+                        <asp:Repeater ID="rptInformes" runat="server" OnItemDataBound="rptInformes_ItemDataBound">
                             <ItemTemplate>
-                                <div class="col-md-4 col-sm-6">
+        
+                                <%-- 1. ENCABEZADO DE GRUPO (Se controla desde el CodeBehind) --%>
+                                <asp:PlaceHolder ID="phHeaderCiclo" runat="server" Visible="false">
+                                    <div class="mt-3 mb-2 pb-1 border-bottom">
+                                        <span class="badge bg-primary bg-opacity-10 text-primary border px-3 py-2 rounded-pill fw-bold">
+                                            <i class="fa-solid fa-layer-group me-2"></i>
+                                            <asp:Literal ID="litNombreCicloGroup" runat="server"></asp:Literal>
+                                        </span>
+                                    </div>
+                                </asp:PlaceHolder>
 
-                                    <div class="file-card" onclick="GestionarArchivoDirecto('<%# ResolveUrl(Eval("strArchivo_path").ToString()) %>')">
-
-                                        <div class="position-absolute top-0 end-0 p-2 d-flex gap-1" style="z-index: 10;">
-
-                                            <asp:LinkButton ID="btnEditarInf" runat="server"
-                                                CommandName="EditarInforme" CommandArgument='<%# Eval("strId_informe") %>'
-                                                CssClass="btn btn-sm btn-light rounded-circle shadow-sm text-primary"
-                                                OnClientClick="event.stopPropagation();"
-                                                ToolTip="Corregir archivo">
+                                <%-- 2. TU ITEM DE ARCHIVO (ESTILO ACTUAL) --%>
+                                <div class="list-group-item border-0 px-0 py-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3 text-primary fs-4"><i class="fa-regular fa-file-word"></i></div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold text-dark"><%# Eval("strNombrePeriodo") %></h6>
+                                                <small class="text-muted">
+                                                    <i class="fa-regular fa-calendar me-1"></i> <%# Eval("dtFechaSubida", "{0:dd/MM/yyyy}") %>
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <a href='<%# ResolveUrl(Eval("strArchivo_path").ToString()) %>' target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="fa-solid fa-download"></i>
+                                            </a>
+                                            <asp:LinkButton ID="btnEditarInf" runat="server" CommandName="EditarInforme" CommandArgument='<%# Eval("strId_informe") %>' CssClass="btn btn-sm btn-outline-warning ms-1">
                                                 <i class="fa-solid fa-pen"></i>
                                             </asp:LinkButton>
-
-                                            <asp:LinkButton ID="btnEliminarInf" runat="server"
-                                                CommandName="EliminarInforme" CommandArgument='<%# Eval("strId_informe") %>'
-                                                CssClass="btn btn-sm btn-light rounded-circle shadow-sm text-danger"
-                                                OnClientClick="event.stopPropagation(); return confirm('¿CONFIRMACIÓN:\n\nVa a eliminar este documento permanentemente.\n¿Continuar?');"
-                                                ToolTip="Eliminar">
-                                                <i class="fa-solid fa-trash-can"></i>
+                                            <asp:LinkButton ID="btnEliminarInf" runat="server" CommandName="EliminarInforme" CommandArgument='<%# Eval("strId_informe") %>' CssClass="btn btn-sm btn-outline-danger ms-1" OnClientClick="return confirm('¿Eliminar archivo?');">
+                                                <i class="fa-solid fa-trash"></i>
                                             </asp:LinkButton>
                                         </div>
-
-                                        <div class="file-card-preview">
-                                            <i class='<%# Eval("strArchivo_path").ToString().ToLower().EndsWith(".pdf") 
-                                                ? "fa-solid fa-file-pdf text-danger" 
-                                                : "fa-solid fa-file-word text-primary" %>'>
-                                            </i>
-                                        </div>
-
-                                        <div class="file-card-body">
-                                            <div class="file-card-title" title='<%# Eval("strNombrePeriodo") %>'>
-                                                <%# Eval("strNombrePeriodo") %>
-                                            </div>
-                                            <div class="file-card-meta">
-                                                <span>
-                                                    <i class="fa-solid fa-calendar-days me-1"></i>
-                                                    <%# Convert.ToDateTime(Eval("dtFechaSubida")).ToString("dd MMM") %>
-                                                </span>
-                                                <span><i class="fa-solid fa-download text-muted"></i></span>
-                                            </div>
-                                        </div>
-
                                     </div>
                                 </div>
-                            </ItemTemplate>
 
-                            <FooterTemplate>
-                                <asp:Panel ID="pnlNoData" runat="server" Visible='<%# rptInformes.Items.Count == 0 %>'>
-                                    <div class="text-center py-5 text-muted opacity-50">
-                                        <i class="fa-regular fa-folder-open fa-4x mb-3"></i>
-                                        <h5>Carpeta vacía</h5>
-                                        <p>Usa el botón "Subir Nuevo" para agregar informes.</p>
-                                    </div>
-                                </asp:Panel>
-                            </FooterTemplate>
+                            </ItemTemplate>
                         </asp:Repeater>
 
                         <hr class="my-4" style="opacity: 0.1">
@@ -776,47 +758,109 @@
     </div>
 
     <div class="modal fade" id="modalSubirCierre" tabindex="-1" aria-hidden="true" style="z-index: 1080;" ClientIDMode="Static" runat="server">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg"> 
             <div class="modal-content shadow-lg border-0 rounded-4">
-                
-                <div class="modal-header border-bottom-0 pb-0 bg-warning bg-opacity-10">
-                    <h5 class="modal-title fw-bold text-dark">
-                        <i class="fa-solid fa-file-signature me-2"></i> Informe de Cierre
-                    </h5>
+            
+                <div class="modal-header border-bottom-0 pb-0 bg-warning bg-opacity-10 py-3">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                            <i class="fa-solid fa-file-signature fs-4"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold text-dark mb-0">Informe de Cierre</h5>
+                            <small class="text-muted">Gestión de documentos finales</small>
+                        </div>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                
-                <div class="modal-body pt-3 px-4 pb-4">
-    
-                    <div id="divAlertaCierre" runat="server" class="alert alert-warning border-0 d-flex align-items-center small mb-3" role="alert">
-                        <i class="fa-solid fa-triangle-exclamation me-2"></i>
-                        <div>Al subir este documento, el proyecto pasará a estado <strong>EN REVISIÓN</strong>.</div>
+
+                <div class="modal-body px-4 pb-4 pt-3">
+
+                    <div class="d-flex justify-content-end mb-2">
+                        <a class="btn btn-sm btn-light border text-secondary fw-bold shadow-sm" data-bs-toggle="collapse" href="#collapseHistorial" role="button">
+                            <i class="fa-solid fa-clock-rotate-left me-1"></i> Historial de Versiones
+                        </a>
                     </div>
 
-                    <asp:Panel ID="pnlCierreBloqueado" runat="server" Visible="false" CssClass="text-center py-4 mb-3 bg-success bg-opacity-10 rounded-3 border border-success">
-                        <div class="mb-2">
-                            <i class="fa-solid fa-circle-check fa-3x text-success"></i>
+                    <div class="collapse mb-4" id="collapseHistorial">
+                        <div class="p-3 bg-light rounded-3 border" style="max-height: 250px; overflow-y: auto;">
+                            <h6 class="small fw-bold text-uppercase text-muted mb-3 ls-1">Versiones Anteriores</h6>
+                        
+                            <asp:Repeater ID="rptHistorialCierre" runat="server">
+                                <ItemTemplate>
+                                    <div class="d-flex gap-3 mb-3 position-relative">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="bg-white border rounded-circle d-flex align-items-center justify-content-center text-secondary shadow-sm" style="width: 32px; height: 32px; z-index: 2;">
+                                                <i class="fa-solid fa-file-pdf small"></i>
+                                            </div>
+                                            <div class="bg-secondary opacity-25" style="width: 2px; flex-grow: 1; margin-top: -5px; margin-bottom: -10px;"></div>
+                                        </div>
+
+                                        <div class="card card-body border-0 shadow-sm p-2 flex-fill">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div style="overflow: hidden; padding-right: 10px;">
+                                                    <span class="d-block fw-bold text-dark text-truncate" title='<%# Eval("strNombreArchivo") %>'>
+                                                        <%# Eval("strNombreArchivo") %>
+                                                    </span>
+                                                    <div class="d-flex align-items-center gap-3 mt-1 text-muted small">
+                                                        <span><i class="fa-regular fa-calendar me-1"></i> <%# Eval("dtFechaSubida", "{0:dd/MM/yyyy HH:mm}") %></span>
+                                                        <span><i class="fa-regular fa-user me-1"></i> <%# Eval("strUsuarioSubida") %></span>
+                                                    </div>
+                                                </div>
+                                                <a href='<%# ResolveUrl(Eval("strRutaArchivo").ToString()) %>' target="_blank" class="btn btn-sm btn-outline-primary bg-white border-0 shadow-sm" title="Descargar">
+                                                    <i class="fa-solid fa-download"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ItemTemplate>
+                            </asp:Repeater>
+
+                            <asp:Label ID="lblSinHistorial" runat="server" Visible="false" CssClass="d-block text-center py-4">
+                                <div class="text-muted opacity-50 mb-2"><i class="fa-regular fa-folder-open fa-2x"></i></div>
+                                <small class="text-muted">No existen versiones previas registradas.</small>
+                            </asp:Label>
                         </div>
-                        <h5 class="fw-bold text-success mb-1">Informe Aprobado</h5>
-                        <p class="text-muted small mb-0">Este documento ha sido validado. No se permiten más cambios.</p>
+                    </div>
+                    <div id="divAlertaCierre" runat="server" class="alert alert-warning border-0 d-flex align-items-center shadow-sm mb-4" role="alert">
+                        <div class="fs-4 me-3 text-warning"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div>
+                            <h6 class="fw-bold mb-0">Atención</h6>
+                            <small>Al subir este documento, el proyecto pasará automáticamente a estado <strong>EN REVISIÓN</strong>.</small>
+                        </div>
+                    </div>
+
+                    <asp:Panel ID="pnlCierreBloqueado" runat="server" Visible="false" CssClass="text-center py-5 mb-3 bg-success bg-opacity-10 rounded-4 border border-success border-opacity-25">
+                        <div class="mb-3">
+                            <div class="d-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle shadow-sm" style="width: 60px; height: 60px;">
+                                <i class="fa-solid fa-check fa-2x"></i>
+                            </div>
+                        </div>
+                        <h4 class="fw-bold text-success mb-1">Informe Aprobado</h4>
+                        <p class="text-muted mb-0 px-5">Este documento ha sido revisado y validado exitosamente. La fase de cierre ha concluido.</p>
                     </asp:Panel>
 
-                    <asp:Panel ID="pnlArchivoCierreActual" runat="server" Visible="false" CssClass="mb-3">
-                        <label class="form-label fw-bold small text-primary">Archivo en Sistema:</label>
-                        <div class="d-flex align-items-center justify-content-between p-2 border rounded bg-light">
-                            <div class="d-flex align-items-center text-truncate">
-                                <i class="fa-solid fa-file-pdf text-danger fs-4 me-2"></i>
-                                <asp:Label ID="lblNombreArchivoCierre" runat="server" CssClass="small fw-bold text-dark text-truncate" style="max-width: 200px;"></asp:Label>
+                    <asp:Panel ID="pnlArchivoCierreActual" runat="server" Visible="false" CssClass="mb-4">
+                        <label class="form-label fw-bold small text-uppercase text-muted ls-1">Versión Vigente (En Revisión)</label>
+                        <div class="d-flex align-items-center justify-content-between p-3 border rounded-3 bg-white shadow-sm">
+                            <div class="d-flex align-items-center overflow-hidden">
+                                <div class="bg-danger bg-opacity-10 text-danger rounded p-2 me-3">
+                                    <i class="fa-solid fa-file-pdf fs-4"></i>
+                                </div>
+                                <div class="text-truncate">
+                                    <asp:Label ID="lblNombreArchivoCierre" runat="server" CssClass="d-block fw-bold text-dark text-truncate"></asp:Label>
+                                    <small class="text-success"><i class="fa-solid fa-circle-check me-1"></i> Archivo cargado correctamente</small>
+                                </div>
                             </div>
-                            <a id="lnkVerCierreActual" runat="server" target="_blank" class="btn btn-sm btn-outline-primary rounded-circle" title="Ver archivo">
-                                <i class="fa-solid fa-eye"></i>
+                            <a id="lnkVerCierreActual" runat="server" target="_blank" class="btn btn-light border shadow-sm text-primary ms-3">
+                                <i class="fa-solid fa-eye me-2"></i> Ver
                             </a>
                         </div>
                     </asp:Panel>
 
                     <asp:Panel ID="pnlCargaCierre" runat="server">
-                        <label class="form-label fw-bold small text-secondary" id="lblTituloInputCierre" runat="server">Documento de Cierre</label>
-        
+                        <label class="form-label fw-bold small text-uppercase text-muted ls-1" id="lblTituloInputCierre" runat="server">Cargar Nueva Versión</label>
+                    
                         <div class="utc-fileinput-wrapper" id="wrapperCierre">
                             <div class="utc-fileinput-header">
                                 <div class="utc-fileinput-icon"><i class="fa-solid fa-file-pdf"></i></div>
@@ -831,32 +875,30 @@
                             <input type="text" class="form-control form-control-sm utc-edit-name-field" placeholder="Renombrar..." />
                             <div class="utc-fileinput-preview" id="previewCierre"></div>
                             <div class="utc-fileinput-loader" id="loaderCierre"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
-                            <div class="utc-dropzone" id="dropzoneCierre">
-                                <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-warning"></i><br />
-                                <span id="lblTextoDropzoneCierre" runat="server">Subir Informe de Cierre</span>
+                            <div class="utc-dropzone" id="dropzoneCierre" style="border: 2px dashed #dee2e6; background: #f8f9fa;">
+                                <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-secondary opacity-50"></i><br />
+                                <span id="lblTextoDropzoneCierre" runat="server" class="fw-bold text-secondary">Arrastre su archivo PDF aquí</span>
                             </div>
                             <asp:FileUpload ID="flpCierre" runat="server" CssClass="utc-fileinput-input" accept=".pdf" />
                         </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <asp:LinkButton ID="btnGuardarCierre" runat="server" 
+                                CssClass="btn btn-warning text-dark fw-bold btn-lg shadow hover-scale"
+                                OnClick="btnGuardarCierre_Click">
+                                <i class="fa-solid fa-paper-plane me-2"></i> <asp:Literal ID="litBtnCierreTexto" runat="server">Enviar a Revisión</asp:Literal>
+                            </asp:LinkButton>
+
+                            <asp:LinkButton ID="btnAprobarCierre" runat="server" Visible="false"
+                                CssClass="btn btn-success fw-bold btn-lg shadow hover-scale"
+                                OnClientClick="return confirm('¿Está seguro de APROBAR este informe?\n\n- Se bloqueará la edición.\n- Se habilitará el Informe Final.');"
+                                OnClick="btnAprobarCierre_Click">
+                                <i class="fa-solid fa-check-double me-2"></i> APROBAR DOCUMENTO
+                            </asp:LinkButton>
+                        </div>
                     </asp:Panel>
 
-                    <div class="d-grid gap-2 mt-4">
-        
-                        <asp:LinkButton ID="btnGuardarCierre" runat="server" 
-                            CssClass="btn btn-warning text-dark fw-bold btn-lg shadow-sm"
-                            OnClick="btnGuardarCierre_Click">
-                            <i class="fa-solid fa-paper-plane me-2"></i> <asp:Literal ID="litBtnCierreTexto" runat="server">Enviar a Revisión</asp:Literal>
-                        </asp:LinkButton>
-
-                        <asp:LinkButton ID="btnAprobarCierre" runat="server" Visible="false"
-                            CssClass="btn btn-success fw-bold btn-lg shadow-sm"
-                            OnClientClick="return confirm('¿Está seguro de APROBAR este informe?\n\n- Se bloqueará la edición.\n- Se habilitará el Informe Final.');"
-                            OnClick="btnAprobarCierre_Click">
-                            <i class="fa-solid fa-check-double me-2"></i> APROBAR DOCUMENTO
-                        </asp:LinkButton>
-
-                    </div>
                 </div>
-                
             </div>
         </div>
     </div>

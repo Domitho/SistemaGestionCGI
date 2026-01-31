@@ -56,6 +56,9 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("FinCicloActual")]
         public DateTime? FinCicloActual { get; set; }
 
+        [JsonProperty("strCiclo_informe")]
+        public string strCiclo_informe { get; set; }
+
     }
 
     public class CicloAcademico

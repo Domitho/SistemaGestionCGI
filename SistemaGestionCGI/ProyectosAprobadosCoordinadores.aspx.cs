@@ -208,7 +208,7 @@ namespace SistemaGestionCGI
                 {
                     if (DateTime.Now.Date > proy.FinCicloActual.Value.Date)
                     {
-                        Msg($"PERIODO VENCIDO: El ciclo actual finalizó el {proy.FinCicloActual:dd/MM/yyyy}. Contacte al administrador para la renovación.", "ee");
+                        Msg($"PERIODO VENCIDO: El ciclo actual finalizó el {proy.FinCicloActual:dd/MM/yyyy}. Contacte al administrador.", "ee");
                         return;
                     }
                 }
@@ -230,18 +230,22 @@ namespace SistemaGestionCGI
                     fkId_ejec = idEjec,
                     strNombrePeriodo = txtNombrePeriodoInf.Text.Trim(),
                     strArchivo_path = ruta,
-                    dtFechaSubida = DateTime.Now 
+                    dtFechaSubida = DateTime.Now
                 };
 
                 if (string.IsNullOrEmpty(hfIdInformeEdit.Value))
-                    _manejador.GuardarInforme(inf);
+                {
+                    string nombreCiclo = proy.strPeriodo_ejec;
+
+                    _manejador.GuardarInforme(inf, nombreCiclo);
+                }
                 else
                 {
                     inf.strId_informe = int.Parse(hfIdInformeEdit.Value);
                     _manejador.ActualizarInforme(inf);
                 }
 
-                CargarVistaGestion(idEjec); 
+                CargarVistaGestion(idEjec);
                 Msg("Informe cargado exitosamente.", "ss");
                 ScriptManager.RegisterStartupScript(this, GetType(), "CloseSub", "CerrarSubModalUpload();", true);
             }

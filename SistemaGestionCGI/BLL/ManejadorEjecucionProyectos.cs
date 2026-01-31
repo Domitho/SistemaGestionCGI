@@ -208,7 +208,7 @@ namespace SistemaGestionCGI.BLL
 
         public List<InvgccEjecucionInformes> ObtenerInformes(int idEjecucion)
         {
-            string sql = $"SELECT * FROM INVGCCEJECUCION_INFORMES WHERE fkId_ejec = {idEjecucion} ORDER BY dtFechaSubida DESC";
+            string sql = $"SELECT * FROM INVGCCEJECUCION_INFORMES WHERE fkId_ejec = {idEjecucion} ORDER BY strCiclo_informe DESC, dtFechaSubida DESC";
             return _dal.SelectSql<InvgccEjecucionInformes>(sql);
         }
 
@@ -218,16 +218,19 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<InvgccEjecucionInformes>(sql)?.FirstOrDefault();
         }
 
-        public void GuardarInforme(InvgccEjecucionInformes inf)
+        public void GuardarInforme(InvgccEjecucionInformes inf, string nombreCiclo)
         {
             string fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             string rutaSegura = inf.strArchivo_path.Replace("'", "''");
+            string nombreArchivo = inf.strNombrePeriodo.Replace("'", "''");
+
+            string cicloSeguro = string.IsNullOrEmpty(nombreCiclo) ? "Periodo Anterior" : nombreCiclo.Replace("'", "''");
 
             string sql = $@"
                 INSERT INTO INVGCCEJECUCION_INFORMES 
-                (fkId_ejec, strNombrePeriodo, strArchivo_path, dtFechaSubida)
+                (fkId_ejec, strNombrePeriodo, strArchivo_path, dtFechaSubida, strCiclo_informe)
                 VALUES 
-                ({inf.fkId_ejec}, '{inf.strNombrePeriodo}', '{rutaSegura}', '{fecha}')";
+                ({inf.fkId_ejec}, '{nombreArchivo}', '{rutaSegura}', '{fecha}', '{cicloSeguro}')";
 
             _dal.UpdateSql(sql);
         }
@@ -262,15 +265,29 @@ namespace SistemaGestionCGI.BLL
             _dal.Delete("INVGCCEJECUCION_INFORMES", $"strId_informe = {idInforme}");
 
 
-        public void SubirInformeCierre(int idEjecucion, string rutaArchivo, string usuario)
+        public void SubirInformeCierre(int idEjecucion, string rutaArchivo, string usuario, string nombreOriginal)
         {
-            string sql = $@"
+            string sqlHistorial = $@"
+                INSERT INTO INVGCCEJECUCION_CIERRE_HISTORIAL 
+                (fkId_ejec, strNombreArchivo, strRutaArchivo, dtFechaSubida, strUsuarioSubida)
+                VALUES 
+                ({idEjecucion}, '{nombreOriginal}', '{rutaArchivo}', GETDATE(), '{usuario}')";
+
+            _dal.UpdateSql(sqlHistorial);
+
+            string sqlUpdate = $@"
                 UPDATE INVGCCEJECUCION_PROYECTO 
                 SET strInforme_Cierre = '{rutaArchivo}',
                     strEstado_ejec = 'EN REVISION'
                 WHERE strId_ejec = {idEjecucion}";
 
-            _dal.UpdateSql(sql);
+            _dal.UpdateSql(sqlUpdate);
+        }
+
+        public List<dynamic> ObtenerHistorialCierre(int idEjecucion)
+        {
+            string sql = $"SELECT * FROM INVGCCEJECUCION_CIERRE_HISTORIAL WHERE fkId_ejec = {idEjecucion} ORDER BY dtFechaSubida DESC";
+            return _dal.SelectSql<dynamic>(sql);
         }
 
         public void SubirInformeFinal(int idEjecucion, string rutaArchivo, string usuario)
