@@ -282,7 +282,6 @@ namespace SistemaGestionCGI.BLL
             RegistrarHistorial(integrante.strId_int, "EDICIÓN", "Actualización de datos generales.", usuario);
         }
 
-        // Modificamos para aceptar el segundo parámetro 'idGrupoActual'
         public string VerificarIntegranteEnOtroGrupo(string cedula, string idGrupoActual = "")
         {
             string sql = $@"
@@ -444,10 +443,18 @@ namespace SistemaGestionCGI.BLL
 
         public List<InvgccCategorizacionDocentes> ObtenerDocentesCategorizadosCombo()
         {
-            string sql = @"SELECT strId_doc, (strApellidos_doc + ' ' + strNombres_doc) as NombreCompleto 
-                   FROM INVGCCCATEGORIZACION_DOCENTES 
-                   WHERE bitActivo_doc = 1 AND strCategorizacion IS NOT NULL 
-                   ORDER BY strApellidos_doc";
+            string sql = @"
+                SELECT D.strId_doc, (D.strApellidos_doc + ' ' + D.strNombres_doc) as NombreCompleto 
+                FROM INVGCCCATEGORIZACION_DOCENTES D
+                WHERE D.bitActivo_doc = 1 
+                  AND D.strCategorizacion IS NOT NULL
+                  AND D.strCedula_doc NOT IN (
+                      SELECT I.strCedula_int 
+                      FROM INVGCCGRUPO_INTEGRANTES I 
+                      WHERE I.bitActivo_int = 1 
+                  )
+                ORDER BY D.strApellidos_doc";
+
             return _dal.SelectSql<InvgccCategorizacionDocentes>(sql);
         }
 

@@ -429,6 +429,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtCedulaInt;
 
         /// <summary>
+        /// Control btnValidarCedulaInt.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnValidarCedulaInt;
+
+        /// <summary>
         /// Control txtNombresInt.
         /// </summary>
         /// <remarks>
@@ -825,13 +834,13 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtCedulaCoord;
 
         /// <summary>
-        /// Control rfvCedula.
+        /// Control btnValidarCedulaCoord.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.RequiredFieldValidator rfvCedula;
+        protected global::System.Web.UI.WebControls.LinkButton btnValidarCedulaCoord;
 
         /// <summary>
         /// Control txtNombreCoord.

@@ -120,7 +120,6 @@ namespace SistemaGestionCGI
 
                 if (string.IsNullOrEmpty(hfIdGrupo.Value))
                 {
-
                     if (!string.IsNullOrEmpty(hfCoordCedula.Value))
                     {
                         var coord = new InvgccGrupoIntegrantes
@@ -135,7 +134,6 @@ namespace SistemaGestionCGI
                             strCarrera_int = string.IsNullOrEmpty(hfCoordCarrera.Value) ? null : hfCoordCarrera.Value,
                             strCertificado_int = hfCoordArchivo.Value,
                             fkId_docente_origen = string.IsNullOrEmpty(hfCoordIdDocente.Value) ? null : hfCoordIdDocente.Value,
-
                             strFuncion_int = "INVESTIGADOR PRINCIPAL",
                             dtFechaini_int = DateTime.Now,
                             bitActivo_int = true
@@ -153,11 +151,7 @@ namespace SistemaGestionCGI
                 else
                 {
                     string idGrupoLimpio = hfIdGrupo.Value.Trim();
-
-                    if (string.IsNullOrEmpty(idGrupoLimpio))
-                    {
-                        Msg("Error crítico: ID de grupo perdido.", "ee"); return;
-                    }
+                    if (string.IsNullOrEmpty(idGrupoLimpio)) { Msg("Error crítico: ID perdido.", "ee"); return; }
 
                     g.strId_gru = idGrupoLimpio;
                     _manejador.ActualizarGrupo(g);
@@ -166,8 +160,7 @@ namespace SistemaGestionCGI
                     {
                         var coord = new InvgccGrupoIntegrantes
                         {
-                            fkId_gru = idGrupoLimpio, 
-
+                            fkId_gru = idGrupoLimpio,
                             strNombres_int = hfCoordNombre.Value,
                             strApellidos_int = hfCoordApellidos.Value,
                             strCedula_int = hfCoordCedula.Value,
@@ -178,7 +171,6 @@ namespace SistemaGestionCGI
                             strCarrera_int = string.IsNullOrEmpty(hfCoordCarrera.Value) ? null : hfCoordCarrera.Value,
                             strCertificado_int = hfCoordArchivo.Value,
                             fkId_docente_origen = string.IsNullOrEmpty(hfCoordIdDocente.Value) ? null : hfCoordIdDocente.Value,
-
                             strFuncion_int = "INVESTIGADOR PRINCIPAL",
                             dtFechaini_int = DateTime.Now,
                             bitActivo_int = true
@@ -264,29 +256,20 @@ namespace SistemaGestionCGI
             if (ddlCategoriaGru.Items.FindByValue(g.strCategoria_gru) != null)
                 ddlCategoriaGru.SelectedValue = g.strCategoria_gru;
 
-            // --- LOGICA DEL COORDINADOR (DIRECTOR) ---
-            // Consultamos la tabla de integrantes en tiempo real
             var coordinadorActivo = _manejador.ObtenerInvestigadorPrincipalActivo(g.strId_gru);
 
             if (coordinadorActivo != null)
             {
-                // CASO A: HAY UN REY VIGENTE
                 txtCoordinadorGru.Text = $"{coordinadorActivo.strApellidos_int} {coordinadorActivo.strNombres_int}";
                 txtCoordinadorGru.CssClass = "form-control bg-light fw-bold text-success";
-
-                // Ocultamos el botón para que no puedan agregar otro encima
                 btnAgregarCoordinador.Visible = false;
             }
             else
             {
-                // CASO B: EL PUESTO ESTÁ VACANTE (Lo dieron de baja en integrantes)
                 txtCoordinadorGru.Text = "SIN ASIGNAR (Requiere designación)";
                 txtCoordinadorGru.CssClass = "form-control bg-warning bg-opacity-10 text-danger fw-bold";
-
-                // Mostramos el botón para permitir nombrar uno nuevo
                 btnAgregarCoordinador.Visible = true;
             }
-            // -----------------------------------------
 
             hfFotoActual.Value = g.strFoto_gru;
             hfArchivoActual.Value = g.strArchivo_gru;
@@ -309,6 +292,7 @@ namespace SistemaGestionCGI
             var docentes = _manejador.ObtenerDocentesCategorizadosCombo();
             ddlDocentesCoord.Items.Clear();
             ddlDocentesCoord.Items.Add(new ListItem("-- Seleccione Docente --", ""));
+
             foreach (var d in docentes)
             {
                 ddlDocentesCoord.Items.Add(new ListItem(d.NombreCompleto, d.strId_doc));
@@ -316,7 +300,7 @@ namespace SistemaGestionCGI
 
             LimpiarCamposCoordinador();
 
-            string script = "abrirModalCoord(); toggleTipoCoordinador();";
+            string script = "RenderizarModalCoord('Interno');";
             ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalCoord", script, true);
         }
 
@@ -324,38 +308,48 @@ namespace SistemaGestionCGI
         {
             pnlFormularioGrupo.Visible = true;
 
-            string cedulaValidar = txtCedulaCoord.Text.Trim();
-            string grupoOcupado = _manejador.VerificarIntegranteEnOtroGrupo(cedulaValidar);
-
-            if (!string.IsNullOrEmpty(grupoOcupado))
-            {
-                Msg($"IMPOSIBLE VINCULAR: Esta persona ya es miembro activo del grupo '{grupoOcupado}'.", "ee");
-
-                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenDuplicado", "abrirModalCoord(); toggleTipoCoordinador();", true);
-                return;
-            }
-
-            if (pnlCargaArchivo.Visible && !flpArchivoCoord.HasFile)
-            {
-                Msg("Adjunte la resolución (PDF).", "ww");
-                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenF", "abrirModalCoord(); toggleTipoCoordinador();", true);
-                return;
-            }
-
-            bool subioNuevo = flpArchivoCoord.HasFile;
-            bool tienePrevio = !string.IsNullOrEmpty(hfCoordArchivo.Value);
-
-            if (!subioNuevo && !tienePrevio)
-            {
-                Msg("El documento de resolución es obligatorio. Súbalo o busque un docente con certificado.", "ww");
-                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenF", "abrirModalCoord(); toggleTipoCoordinador();", true);
-                return;
-            }
-
-
             try
             {
+                string cedula = txtCedulaCoord.Text.Trim();
                 string tipo = ddlTipoCoord.SelectedValue;
+
+                if (tipo != "Docente")
+                {
+                    if (!EsCedulaValida(cedula))
+                    {
+                        txtCedulaCoord.CssClass = "form-control bg-light is-invalid";
+                        Msg("Cédula inválida. Corrija antes de asignar.", "ee");
+                        ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenBadCed", $"RenderizarModalCoord('{tipo}');", true);
+                        return;
+                    }
+
+                    string ocupado = _manejador.VerificarIntegranteEnOtroGrupo(cedula, hfIdGrupo.Value);
+
+                    if (!string.IsNullOrEmpty(ocupado))
+                    {
+                        txtCedulaCoord.CssClass = "form-control bg-light is-invalid";
+                        Msg($"El usuario ya coordina o pertenece a: '{ocupado}'.", "ww");
+                        ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenDup", $"RenderizarModalCoord('{tipo}');", true);
+                        return;
+                    }
+                }
+
+                if (pnlCargaArchivo.Visible && !flpArchivoCoord.HasFile)
+                {
+                    Msg("Adjunte la resolución (PDF).", "ww");
+                    ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenFile", $"RenderizarModalCoord('{tipo}');", true);
+                    return;
+                }
+
+                bool subioNuevo = flpArchivoCoord.HasFile;
+                bool tienePrevio = !string.IsNullOrEmpty(hfCoordArchivo.Value);
+
+                if (!subioNuevo && !tienePrevio)
+                {
+                    Msg("El documento de resolución es obligatorio.", "ww");
+                    ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenFile2", $"RenderizarModalCoord('{tipo}');", true);
+                    return;
+                }
 
                 string rutaFinal = hfCoordArchivo.Value;
 
@@ -366,10 +360,9 @@ namespace SistemaGestionCGI
                 }
 
                 hfCoordArchivo.Value = rutaFinal;
-
                 hfCoordNombre.Value = txtNombreCoord.Text.ToUpper().Trim();
                 hfCoordApellidos.Value = txtApellidoCoord.Text.ToUpper().Trim();
-                hfCoordCedula.Value = txtCedulaCoord.Text.Trim();
+                hfCoordCedula.Value = cedula;
                 hfCoordCorreo.Value = txtCorreoCoord.Text.ToLower().Trim();
                 hfCoordTipo.Value = tipo;
 
@@ -393,7 +386,7 @@ namespace SistemaGestionCGI
 
                 txtCoordinadorGru.Text = $"{txtApellidoCoord.Text} {txtNombreCoord.Text}";
 
-                ScriptManager.RegisterStartupScript(this, GetType(), "Close", "cerrarModalCoord();", true);
+                ScriptManager.RegisterStartupScript(this, GetType(), "CloseModal", "cerrarModalCoord();", true);
 
                 if (tienePrevio && !subioNuevo)
                     Msg("Coordinador asignado (Certificado recuperado).", "ss");
@@ -403,21 +396,21 @@ namespace SistemaGestionCGI
             catch (Exception ex)
             {
                 Msg(ex.Message, "ee");
-                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenE", "abrirModalCoord(); toggleTipoCoordinador();", true);
+                string tipo = ddlTipoCoord.SelectedValue;
+                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenErr", $"RenderizarModalCoord('{tipo}');", true);
             }
         }
 
-        
+
         protected void btnCambiarArchivo_Click(object sender, EventArgs e)
         {
             pnlFormularioGrupo.Visible = true;
-
             hfCoordArchivo.Value = "";
-
             pnlCargaArchivo.Visible = true;
             pnlArchivoRecuperado.Visible = false;
 
-            ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenChange", "abrirModalCoord(); toggleTipoCoordinador();", true);
+            string tipo = ddlTipoCoord.SelectedValue;
+            ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenChange", $"RenderizarModalCoord('{tipo}');", true);
         }
 
         private void LimpiarCoordParcial()
@@ -475,40 +468,54 @@ namespace SistemaGestionCGI
             CambiarVista(Vista.FormularioIntegrante);
             LimpiarFormularioIntegrante();
             CargarComboDocentes();
-            ScriptManager.RegisterStartupScript(this, GetType(), "initForm", "InitFormulario();", true);
+
+            string script = "RenderizarEstadoVisual('Interno');";
+            ScriptManager.RegisterStartupScript(this, GetType(), "initForm", script, true);
         }
 
         protected void btnGuardarInt_Click(object sender, EventArgs e)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(txtCedulaInt.Text) || string.IsNullOrWhiteSpace(txtNombresInt.Text))
+                string cedula = txtCedulaInt.Text.Trim();
+                string tipo = ddlTipoInt.SelectedValue;
+
+                if (tipo != "Docente")
+                {
+                    if (!EsCedulaValida(cedula))
+                    {
+                        txtCedulaInt.CssClass = "form-control is-invalid";
+                        Msg("IMPOSIBLE GUARDAR: La cédula ingresada no es válida.", "ee");
+                        return;
+                    }
+
+                    if (string.IsNullOrEmpty(hfIdIntEdit.Value))
+                    {
+                        string grupoOcupado = _manejador.VerificarIntegranteEnOtroGrupo(cedula, hfGrupoIdActual.Value);
+                        if (!string.IsNullOrEmpty(grupoOcupado))
+                        {
+                            txtCedulaInt.CssClass = "form-control is-invalid";
+                            Msg($"DETENIDO: Esa persona ya pertenece al grupo '{grupoOcupado}'.", "ww");
+                            return;
+                        }
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(cedula) || string.IsNullOrWhiteSpace(txtNombresInt.Text))
                 {
                     Msg("Cédula y Nombres son obligatorios.", "ww");
                     return;
                 }
 
-                if (string.IsNullOrEmpty(hfIdIntEdit.Value))
-                {
-                    string grupoExistente = _manejador.VerificarIntegranteEnOtroGrupo(txtCedulaInt.Text.Trim());
-                    if (grupoExistente != null)
-                    {
-                        Msg($"La cédula ya pertenece al grupo: {grupoExistente}.", "ee");
-                        return;
-                    }
-                }
-
                 var i = new InvgccGrupoIntegrantes
                 {
                     fkId_gru = hfGrupoIdActual.Value,
-                    strCedula_int = txtCedulaInt.Text.Trim(),
+                    strCedula_int = cedula,
                     strNombres_int = txtNombresInt.Text.Trim(),
                     strApellidos_int = txtApellidosInt.Text.Trim(),
                     strCorreo_int = txtCorreoInt.Text.Trim(),
-
                     strFuncion_int = txtFuncionInt.Text,
-
-                    strTipo_int = ddlTipoInt.SelectedValue,
+                    strTipo_int = tipo,
                     dtFechaini_int = !string.IsNullOrEmpty(dtFechaIniInt.Text) ? DateTime.Parse(dtFechaIniInt.Text) : DateTime.Now,
                     strCertificado_int = null,
                     bitActivo_int = true
@@ -516,32 +523,23 @@ namespace SistemaGestionCGI
 
                 if (i.strTipo_int == "Externo")
                 {
-                    if (string.IsNullOrWhiteSpace(txtEntidadInt.Text))
-                    {
-                        Msg("Debe indicar la Entidad de Origen.", "ww");
-                        return;
-                    }
+                    if (string.IsNullOrWhiteSpace(txtEntidadInt.Text)) { Msg("Debe indicar la Entidad de Origen.", "ww"); return; }
                     i.strEntidad_int = txtEntidadInt.Text.Trim();
-                    i.strCarrera_int = null;
-                    i.strFacultad_int = null;
-                    i.strCertificado_int = null;
-                    i.fkId_docente_origen = null;
+                    i.strCarrera_int = null; i.strFacultad_int = null; i.fkId_docente_origen = null;
                 }
                 else if (i.strTipo_int == "Docente")
                 {
                     i.strEntidad_int = null;
                     i.strCarrera_int = ddlCarreraInt.SelectedValue;
                     i.strFacultad_int = ddlFacultadInt.SelectedValue;
-
                     i.strCertificado_int = hfCertificadoIntVinculado.Value;
                     i.fkId_docente_origen = hfIdDocenteInt.Value;
                 }
-                else 
+                else
                 {
                     i.strEntidad_int = null;
                     i.strCarrera_int = ddlCarreraInt.SelectedValue;
                     i.strFacultad_int = ddlFacultadInt.SelectedValue;
-                    i.strCertificado_int = null;
                     i.fkId_docente_origen = null;
                 }
 
@@ -550,13 +548,13 @@ namespace SistemaGestionCGI
                 if (string.IsNullOrEmpty(hfIdIntEdit.Value))
                 {
                     _manejador.GuardarIntegrante(i, usuario);
-                    SetFlashMessage("Integrante agregado.", "ss");
+                    SetFlashMessage("Integrante agregado correctamente.", "ss");
                 }
                 else
                 {
                     i.strId_int = hfIdIntEdit.Value;
                     _manejador.ActualizarIntegrante(i, usuario);
-                    SetFlashMessage("Integrante actualizado.", "ss");
+                    SetFlashMessage("Datos del integrante actualizados.", "ss");
                 }
 
                 Response.Redirect($"GruposInvestigacion.aspx?idGrupo={hfGrupoIdActual.Value}", false);
@@ -610,7 +608,6 @@ namespace SistemaGestionCGI
             txtApellidosInt.Text = i.strApellidos_int;
             txtCorreoInt.Text = i.strCorreo_int;
             dtFechaIniInt.Text = i.dtFechaini_int.ToString("yyyy-MM-dd");
-
             txtFuncionInt.Text = i.strFuncion_int;
 
             hfCertificadoIntVinculado.Value = i.strCertificado_int;
@@ -622,12 +619,27 @@ namespace SistemaGestionCGI
             ddlTipoInt.Enabled = false;
             ddlTipoInt.CssClass = "form-select shadow-sm border-primary bg-light";
 
-            if (i.strTipo_int == "Externo")
+            if (i.strTipo_int == "Docente")
             {
+                BloquearCamposDatosPersonales(true);
+
+                if (ddlFacultadInt.Items.FindByValue(i.strFacultad_int) != null)
+                    ddlFacultadInt.SelectedValue = i.strFacultad_int;
+
+                CargarCarrerasEnCombo(ddlCarreraInt, i.strFacultad_int);
+
+                if (ddlCarreraInt.Items.FindByValue(i.strCarrera_int) != null)
+                    ddlCarreraInt.SelectedValue = i.strCarrera_int;
+            }
+            else if (i.strTipo_int == "Externo")
+            {
+                BloquearCamposDatosPersonales(false);
                 txtEntidadInt.Text = i.strEntidad_int;
             }
-            else
+            else 
             {
+                BloquearCamposDatosPersonales(false);
+
                 if (ddlFacultadInt.Items.FindByValue(i.strFacultad_int) != null)
                     ddlFacultadInt.SelectedValue = i.strFacultad_int;
 
@@ -638,7 +650,37 @@ namespace SistemaGestionCGI
             }
 
             CambiarVista(Vista.FormularioIntegrante);
-            ScriptManager.RegisterStartupScript(this, GetType(), "initForm", "InitFormulario();", true);
+
+            string script = $"RenderizarEstadoVisual('{i.strTipo_int}');";
+            ScriptManager.RegisterStartupScript(this, GetType(), "InitEditUI", script, true);
+        }
+
+        private void BloquearCamposDatosPersonales(bool bloquear)
+        {
+            txtCedulaInt.ReadOnly = bloquear;
+            txtNombresInt.ReadOnly = bloquear;
+            txtApellidosInt.ReadOnly = bloquear;
+            txtCorreoInt.ReadOnly = bloquear;
+
+            ddlFacultadInt.Enabled = !bloquear;
+            ddlCarreraInt.Enabled = !bloquear;
+
+            if (bloquear)
+            {
+                string estiloLocked = "form-control bg-light text-secondary fw-bold";
+                txtCedulaInt.CssClass = estiloLocked;
+                txtNombresInt.CssClass = estiloLocked;
+                txtApellidosInt.CssClass = estiloLocked;
+                txtCorreoInt.CssClass = estiloLocked;
+            }
+            else
+            {
+                string estiloNormal = "form-control";
+                txtCedulaInt.CssClass = estiloNormal;
+                txtNombresInt.CssClass = estiloNormal;
+                txtApellidosInt.CssClass = estiloNormal;
+                txtCorreoInt.CssClass = estiloNormal;
+            }
         }
 
         protected void btnCancelarInt_Click(object sender, EventArgs e)
@@ -875,20 +917,28 @@ namespace SistemaGestionCGI
             hfIdIntEdit.Value = "";
             lblTituloFormInt.Text = "Nuevo Integrante";
 
-            txtCedulaInt.Text = ""; txtNombresInt.Text = ""; txtApellidosInt.Text = "";
-            txtCorreoInt.Text = ""; txtEntidadInt.Text = ""; ddlCarreraInt.SelectedIndex= 0;
+            txtCedulaInt.Text = "";
+            txtNombresInt.Text = "";
+            txtApellidosInt.Text = "";
+            txtCorreoInt.Text = "";
+            txtEntidadInt.Text = "";
 
-            ddlTipoInt.SelectedIndex = 0;
-            ddlTipoInt.Enabled = true; 
-            ddlTipoInt.CssClass = "form-select shadow-sm border-primary"; 
-
-            ddlFacultadInt.SelectedIndex = 0;
             dtFechaIniInt.Text = DateTime.Now.ToString("yyyy-MM-dd");
+            txtFuncionInt.Text = "Miembro Investigador";
 
             hfCertificadoIntVinculado.Value = "";
             hfIdDocenteInt.Value = "";
 
-            txtFuncionInt.Text = "Miembro Investigador";
+            ddlTipoInt.SelectedIndex = 0;
+            if(ddlFacultadInt.Items.Count > 0) ddlFacultadInt.SelectedIndex = 0;
+            CargarCarrerasEnCombo(ddlCarreraInt, "");
+
+            ddlTipoInt.Enabled = true;
+            ddlTipoInt.CssClass = "form-select shadow-sm border-primary";
+            BloquearCamposDatosPersonales(false);
+
+            string script = "RenderizarEstadoVisual('Interno');";
+            ScriptManager.RegisterStartupScript(this, GetType(), "ResetUI", script, true);
         }
 
         private string GuardarArchivoFisico(FileUpload control, string subCarpeta, string nombre)
@@ -1030,10 +1080,10 @@ namespace SistemaGestionCGI
                 ddlDocentesCategorizados.Items.Clear();
                 ddlDocentesCategorizados.DataSource = lista;
                 ddlDocentesCategorizados.DataTextField = "NombreCompleto";
-                ddlDocentesCategorizados.DataValueField = "strId_doc";    
+                ddlDocentesCategorizados.DataValueField = "strId_doc";
                 ddlDocentesCategorizados.DataBind();
 
-                ddlDocentesCategorizados.Items.Insert(0, new ListItem("-- Seleccione un Docente --", ""));
+                ddlDocentesCategorizados.Items.Insert(0, new ListItem("-- Seleccione un Docente Libre --", ""));
             }
             catch (Exception ex)
             {
@@ -1059,10 +1109,9 @@ namespace SistemaGestionCGI
                 if (docente != null)
                 {
                     string grupoOcupado = _manejador.VerificarIntegranteEnOtroGrupo(docente.strCedula_doc, hfGrupoIdActual.Value);
-
                     if (!string.IsNullOrEmpty(grupoOcupado))
                     {
-                        Msg($"El docente '{docente.strApellidos_doc}' ya pertenece al grupo '{grupoOcupado}'.", "ww");
+                        Msg($"El docente ya ha sido vinculado al grupo '{grupoOcupado}'.", "ww");
                         LimpiarCamposDocente();
                         ddlDocentesCategorizados.SelectedIndex = 0;
                         return;
@@ -1075,9 +1124,7 @@ namespace SistemaGestionCGI
                     txtCorreoInt.Text = !string.IsNullOrEmpty(docente.strCorreo_doc) ? docente.strCorreo_doc : "";
 
                     SeleccionarCombo(ddlFacultadInt, docente.strFacultad_doc);
-
                     CargarCarrerasEnCombo(ddlCarreraInt, docente.strFacultad_doc);
-
                     SeleccionarCombo(ddlCarreraInt, docente.strCarrera_doc);
 
                     hfIdDocenteInt.Value = docente.strId_doc;
@@ -1086,10 +1133,8 @@ namespace SistemaGestionCGI
                     txtCedulaInt.ReadOnly = true;
                     txtNombresInt.ReadOnly = true;
                     txtApellidosInt.ReadOnly = true;
-
                     ddlFacultadInt.Enabled = false; 
                     ddlCarreraInt.Enabled = false;  
-
                     txtCorreoInt.ReadOnly = true;
 
                     Msg("Docente vinculado exitosamente.", "ss");
@@ -1101,7 +1146,7 @@ namespace SistemaGestionCGI
             }
             finally
             {
-                string script = $"ToggleTipoIntegranteForm(document.getElementById('{ddlTipoInt.ClientID}'));";
+                string script = "RenderizarEstadoVisual('Docente');";
                 ScriptManager.RegisterStartupScript(this, GetType(), "RefreshIntForm", script, true);
             }
         }
@@ -1151,41 +1196,28 @@ namespace SistemaGestionCGI
             try
             {
                 ddlTipoCoord.SelectedValue = "Docente";
-
                 var docente = _manejador.ObtenerDocenteCategorizadoPorId(idDocente);
 
                 if (docente != null)
                 {
-                    string grupoOcupado = _manejador.VerificarIntegranteEnOtroGrupo(docente.strCedula_doc, hfIdGrupo.Value);
-                    if (!string.IsNullOrEmpty(grupoOcupado))
-                    {
-                        Msg($"ERROR: El docente {docente.strApellidos_doc} ya pertenece al grupo '{grupoOcupado}'.", "ww");
-                        LimpiarCamposCoordinador();
-                        ddlDocentesCoord.SelectedIndex = 0;
-                        return;
-                    }
 
                     txtCedulaCoord.Text = docente.strCedula_doc;
                     txtNombreCoord.Text = docente.strNombres_doc;
                     txtApellidoCoord.Text = docente.strApellidos_doc;
-
                     txtCorreoCoord.Text = !string.IsNullOrEmpty(docente.strCorreo_doc) ? docente.strCorreo_doc : "";
 
                     SeleccionarCombo(ddlFacultadCoord, docente.strFacultad_doc);
-
                     CargarCarrerasEnCombo(ddlCarreraCoord, docente.strFacultad_doc);
-
                     SeleccionarCombo(ddlCarreraCoord, docente.strCarrera_doc);
 
                     hfCoordIdDocente.Value = docente.strId_doc;
 
-                    string rutaCertificado = docente.strCertificado_doc;
-                    if (!string.IsNullOrEmpty(rutaCertificado))
+                    if (!string.IsNullOrEmpty(docente.strCertificado_doc))
                     {
-                        hfCoordArchivo.Value = rutaCertificado;
+                        hfCoordArchivo.Value = docente.strCertificado_doc;
                         pnlCargaArchivo.Visible = false;
                         pnlArchivoRecuperado.Visible = true;
-                        lnkVerArchivo.NavigateUrl = ResolveUrl(rutaCertificado);
+                        lnkVerArchivo.NavigateUrl = ResolveUrl(docente.strCertificado_doc);
                         btnCambiarArchivo.Visible = false;
                     }
                     else
@@ -1196,27 +1228,18 @@ namespace SistemaGestionCGI
                         btnCambiarArchivo.Visible = true;
                     }
 
-                    txtCedulaCoord.ReadOnly = true;
-                    txtNombreCoord.ReadOnly = true;
-                    txtApellidoCoord.ReadOnly = true;
-
-                    ddlFacultadCoord.Enabled = false;
-                    ddlCarreraCoord.Enabled = false;
-
-                    txtCorreoCoord.ReadOnly = true; 
-
+                    AlternarBloqueoCamposCoord(true);
                     pnlDatosPersonalesCoord.Style["display"] = "block";
-                    Msg("Datos cargados correctamente.", "ss");
+                    Msg("Docente libre vinculado.", "ss");
                 }
             }
             catch (Exception ex)
             {
                 Msg("Error: " + ex.Message, "ee");
-                LimpiarCamposCoordinador(); 
             }
             finally
             {
-                string script = "abrirModalCoord(); toggleTipoCoordinador();";
+                string script = "RenderizarModalCoord('Docente');";
                 ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenAfterSelect", script, true);
             }
         }
@@ -1249,8 +1272,13 @@ namespace SistemaGestionCGI
             txtNombreCoord.ReadOnly = bloquear;
             txtApellidoCoord.ReadOnly = bloquear;
             txtCorreoCoord.ReadOnly = bloquear;
+
             ddlFacultadCoord.Enabled = !bloquear;
-            ddlCarreraCoord.Enabled = !bloquear; 
+            ddlCarreraCoord.Enabled = !bloquear;
+
+            string claseBase = bloquear ? "form-control bg-secondary bg-opacity-10" : "form-control bg-light";
+            txtNombreCoord.CssClass = claseBase;
+            txtApellidoCoord.CssClass = claseBase;
         }
 
         //
@@ -1258,11 +1286,14 @@ namespace SistemaGestionCGI
         private void CargarCarrerasEnCombo(DropDownList ddlCarrera, string facultad)
         {
             ddlCarrera.Items.Clear();
+
+            if (string.IsNullOrEmpty(facultad) || facultad == "-- Seleccione --")
+            {
+                ddlCarrera.Items.Add(new ListItem("-- Seleccione Facultad Primero --", ""));
+                return; 
+            }
+
             ddlCarrera.Items.Add(new ListItem("-- Seleccione Carrera --", ""));
-
-            if (string.IsNullOrEmpty(facultad)) return;
-
-            // Misma lógica que en Categorización
             switch (facultad)
             {
                 case "CIYA":
@@ -1329,6 +1360,167 @@ namespace SistemaGestionCGI
         {
             CargarCarrerasEnCombo(ddlCarreraInt, ddlFacultadInt.SelectedValue);
             ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenI", "InitFormulario();", true);
+        }
+
+        // CEDULAS
+        protected void btnValidarCedulaInt_Click(object sender, EventArgs e)
+        {
+            CambiarVista(Vista.FormularioIntegrante);
+            string cedula = txtCedulaInt.Text.Trim();
+
+            if (!EsCedulaValida(cedula))
+            {
+                txtCedulaInt.CssClass = "form-control is-invalid";
+                Msg("Cédula ingresada Incorrecta.", "ee");
+            }
+            else
+            {
+                string grupoOcupado = _manejador.VerificarIntegranteEnOtroGrupo(cedula, hfGrupoIdActual.Value);
+                if (!string.IsNullOrEmpty(grupoOcupado))
+                {
+                    txtCedulaInt.CssClass = "form-control is-invalid";
+                    Msg($"Esta persona YA EXISTE en el grupo: {grupoOcupado}.", "ww");
+                }
+                else
+                {
+                    txtCedulaInt.CssClass = "form-control is-valid";
+                    Msg("Cédula Válida y Disponible.", "ss");
+                    txtNombresInt.Focus();
+                }
+            }
+
+            string script = $"RenderizarEstadoVisual('{ddlTipoInt.SelectedValue}');";
+            ScriptManager.RegisterStartupScript(this, GetType(), "RestaurarUI_Int", script, true);
+        }
+
+        protected void btnValidarCedulaCoord_Click(object sender, EventArgs e)
+        {
+            pnlFormularioGrupo.Visible = true;
+            string cedula = txtCedulaCoord.Text.Trim();
+
+            if (!EsCedulaValida(cedula))
+            {
+                txtCedulaCoord.CssClass = "form-control bg-light is-invalid";
+                Msg("Cédula ingresada Incorrecta.", "ee");
+            }
+            else
+            {
+                string grupoOcupado = _manejador.VerificarIntegranteEnOtroGrupo(cedula, hfIdGrupo.Value);
+                if (!string.IsNullOrEmpty(grupoOcupado))
+                {
+                    txtCedulaCoord.CssClass = "form-control bg-light is-invalid";
+                    Msg($"Esta persona ya mantiene un registro actual en: {grupoOcupado}.", "ww");
+                }
+                else
+                {
+                    txtCedulaCoord.CssClass = "form-control bg-light is-valid";
+                    Msg("Cédula Válida.", "ss");
+                    txtNombreCoord.Focus();
+                }
+            }
+
+            string script = $"RenderizarModalCoord('{ddlTipoCoord.SelectedValue}');";
+            ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenModalVal", script, true);
+        }
+
+        private bool EsCedulaValida(string cedula)
+        {
+            if (string.IsNullOrEmpty(cedula) || cedula.Length != 10) return false;
+            if (!long.TryParse(cedula, out _)) return false;
+
+            try
+            {
+                int provincia = int.Parse(cedula.Substring(0, 2));
+                if (!((provincia >= 1 && provincia <= 24) || provincia == 30)) return false;
+
+                int tercerDigito = int.Parse(cedula.Substring(2, 1));
+                if (tercerDigito >= 6) return false;
+
+                int[] coeficientes = { 2, 1, 2, 1, 2, 1, 2, 1, 2 };
+                int suma = 0;
+                int verificador = int.Parse(cedula.Substring(9, 1));
+
+                for (int i = 0; i < 9; i++)
+                {
+                    int digito = int.Parse(cedula.Substring(i, 1));
+                    int producto = digito * coeficientes[i];
+                    if (producto >= 10) producto -= 9;
+                    suma += producto;
+                }
+
+                int residuo = suma % 10;
+                int resultado = (residuo == 0) ? 0 : (10 - residuo);
+
+                return resultado == verificador;
+            }
+            catch { return false; }
+        }
+
+        //
+        protected void ddlTipoInt_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            CambiarVista(Vista.FormularioIntegrante);
+
+            txtCedulaInt.Text = "";
+            txtNombresInt.Text = "";
+            txtApellidosInt.Text = "";
+            txtCorreoInt.Text = "";
+            txtEntidadInt.Text = "";
+            hfIdDocenteInt.Value = "";
+            hfCertificadoIntVinculado.Value = "";
+
+            txtCedulaInt.CssClass = "form-control";
+            BloquearCamposDatosPersonales(false);
+
+            string tipo = ddlTipoInt.SelectedValue;
+
+            if (tipo == "Docente")
+            {
+                CargarComboDocentes();
+            }
+            else 
+            {
+                if (ddlFacultadInt.Items.Count > 0) ddlFacultadInt.SelectedIndex = 0;
+                CargarCarrerasEnCombo(ddlCarreraInt, "");
+            }
+
+            string script = $"RenderizarEstadoVisual('{tipo}');";
+            ScriptManager.RegisterStartupScript(this, GetType(), "UI_Int", script, true);
+        }
+
+        protected void ddlTipoCoord_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            txtCedulaCoord.Text = "";
+            txtNombreCoord.Text = "";
+            txtApellidoCoord.Text = "";
+            txtCorreoCoord.Text = "";
+            txtEntidadCoord.Text = "";
+            hfCoordIdDocente.Value = "";
+            hfCoordArchivo.Value = "";
+
+            txtCedulaCoord.CssClass = "form-control bg-light";
+            AlternarBloqueoCamposCoord(false);
+
+            pnlCargaArchivo.Visible = true;
+            pnlArchivoRecuperado.Visible = false;
+            btnCambiarArchivo.Visible = true;
+
+            if (ddlFacultadCoord.Items.Count > 0) ddlFacultadCoord.SelectedIndex = 0;
+            CargarCarrerasEnCombo(ddlCarreraCoord, "");
+            if (ddlDocentesCoord.Items.Count > 0) ddlDocentesCoord.SelectedIndex = 0;
+
+            string tipo = ddlTipoCoord.SelectedValue;
+
+            if (tipo == "Docente")
+            {
+                var docentes = _manejador.ObtenerDocentesCategorizadosCombo();
+                ddlDocentesCoord.Items.Clear();
+                ddlDocentesCoord.Items.Add(new ListItem("-- Seleccione Docente --", ""));
+                foreach (var d in docentes) ddlDocentesCoord.Items.Add(new ListItem(d.NombreCompleto, d.strId_doc));
+            }
+
+            string script = $"RenderizarModalCoord('{tipo}');";
+            ScriptManager.RegisterStartupScript(this, GetType(), "UI_Coord", script, true);
         }
 
     }
