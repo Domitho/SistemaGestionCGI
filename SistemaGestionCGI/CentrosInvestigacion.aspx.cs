@@ -52,18 +52,19 @@ namespace SistemaGestionCGI
 
         private void CargarDirectorActual(string idCentro)
         {
-            txtDirector.Text = ""; 
+            txtDirector.Text = "--- SIN DIRECTOR ASIGNADO ---";
+            txtDirector.CssClass = "form-control border-start-0 text-muted"; 
+
+            ViewState["DirectorPendiente"] = null;
 
             if (!string.IsNullOrEmpty(idCentro))
             {
                 var directorActual = _manejador.BuscarDirectorDelCentro(idCentro);
+
                 if (directorActual != null)
                 {
-                    txtDirector.Text = directorActual.NombreCompleto;
-                }
-                else
-                {
-                    txtDirector.Text = "--- SIN DIRECTOR ASIGNADO ---";
+                    txtDirector.Text = $"{directorActual.strNombres_cin} {directorActual.strApellidos_cin}";
+                    txtDirector.CssClass = "form-control border-start-0 text-dark fw-bold"; 
                 }
             }
         }
@@ -88,38 +89,46 @@ namespace SistemaGestionCGI
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(txtCedulaDirModal.Text)) { Msg("Cédula obligatoria", "ww"); return; }
+                if (string.IsNullOrWhiteSpace(txtCedulaDirModal.Text))
+                {
+                    Msg("La cédula es obligatoria.", "ww");
+                    MantenerModalAbierto(); 
+                    return;
+                }
 
-                string cedula = txtCedulaDirModal.Text.Trim();
-                if (!EsCedulaValida(cedula)) { Msg("Cédula inválida.", "ee"); return; }
-
-                var existe = _manejador.BuscarIntegranteActivoPorCedula(cedula);
-                if (existe != null) { Msg($"Esta persona ya existe en el centro {existe.fkId_cen}.", "ww"); return; }
+                if (!EsCedulaValida(txtCedulaDirModal.Text.Trim()))
+                {
+                    Msg("No se puede asignar: La cédula es inválida.", "ee");
+                    txtCedulaDirModal.CssClass = "form-control is-invalid";
+                    MantenerModalAbierto(); 
+                    return;
+                }
 
                 var nuevoDir = new InvgccCentroIntegrantes
                 {
-                    strCedula_cin = cedula,
-                    strNombres_cin = txtNombresDirModal.Text.ToUpper(),
-                    strApellidos_cin = txtApellidosDirModal.Text.ToUpper(),
-                    strCorreo_cin = txtCorreoDirModal.Text,
+                    strCedula_cin = txtCedulaDirModal.Text.Trim(),
+                    strNombres_cin = txtNombresDirModal.Text.ToUpper().Trim(),
+                    strApellidos_cin = txtApellidosDirModal.Text.ToUpper().Trim(),
+                    strCorreo_cin = txtCorreoDirModal.Text.ToLower().Trim(),
                     strTipo_cin = ddlTipoDirModal.SelectedValue,
-                    strFuncion_cin = "Director", 
+                    strFuncion_cin = "Director",
                     strCarrera_cin = (ddlTipoDirModal.SelectedValue == "Interno") ? ddlCarreraDirModal.SelectedValue : "",
-                    strFacultad_cin = ddlFacultadDirModal.SelectedValue,
-                    strEntidad_cin = (ddlTipoDirModal.SelectedValue == "Externo") ? txtEntidadDirModal.Text : ""
+                    strFacultad_cin = (ddlTipoDirModal.SelectedValue == "Interno") ? ddlFacultadDirModal.SelectedValue : "",
+                    strEntidad_cin = (ddlTipoDirModal.SelectedValue == "Externo") ? txtEntidadDirModal.Text.ToUpper() : "UTC"
                 };
 
                 ViewState["DirectorPendiente"] = nuevoDir;
 
-                txtDirector.Text = $"{nuevoDir.strApellidos_cin} {nuevoDir.strNombres_cin} (PENDIENTE DE GUARDAR)";
-                txtDirector.CssClass = "form-control border-start-0 bg-warning bg-opacity-10 text-dark fw-bold"; // Feedback visual
+                txtDirector.Text = $"{nuevoDir.strNombres_cin} {nuevoDir.strApellidos_cin}";
+                txtDirector.CssClass = "form-control border-start-0 text-primary fw-bold";
 
-                string scriptCerrar = "var m = bootstrap.Modal.getInstance(document.getElementById('modalNuevoDirector')); m.hide();";
-                ScriptManager.RegisterStartupScript(this, GetType(), "CloseModalDir", scriptCerrar, true);
-
-                Msg("Director asignado temporalmente. (Guarde el Centro para confirmar)", "ii");
+                Msg("Director asignado temporalmente. (Recuerde Guardar el Centro)", "ss");
             }
-            catch (Exception ex) { Msg("Error modal: " + ex.Message, "ee"); }
+            catch (Exception ex)
+            {
+                Msg("Error al asignar: " + ex.Message, "ee");
+                MantenerModalAbierto(); 
+            }
         }
 
         protected void btnNuevo_Click(object sender, EventArgs e)
@@ -416,6 +425,9 @@ namespace SistemaGestionCGI
                         ddlCarreraInt.SelectedValue = i.strCarrera_cin;
 
                     txtEntidadExternoInt.Text = "";
+
+                    pnlIntInterno.Visible = true;
+                    pnlIntExterno.Visible = false;
                 }
                 else
                 {
@@ -424,12 +436,12 @@ namespace SistemaGestionCGI
                     ddlFacultadInt.SelectedIndex = 0;
                     ddlCarreraInt.Items.Clear();
                     ddlCarreraInt.Items.Add(new ListItem("-- Seleccione Facultad --", ""));
+
+                    pnlIntInterno.Visible = false;
+                    pnlIntExterno.Visible = true;
                 }
 
                 CambiarVista(Vista.FormularioIntegrante);
-
-                string script = $"ToggleTipoIntegrante(document.getElementById('{ddlTipoInt.ClientID}'));";
-                ScriptManager.RegisterStartupScript(this, GetType(), "InitToggleInt", script, true);
             }
         }
 
@@ -864,38 +876,42 @@ namespace SistemaGestionCGI
             {
                 string cedula = txtCedulaDirModal.Text.Trim();
 
+                txtCedulaDirModal.CssClass = "form-control";
+
                 if (string.IsNullOrEmpty(cedula))
                 {
+                    txtCedulaDirModal.CssClass = "form-control is-invalid";
                     Msg("Ingrese un número de cédula.", "ww");
-                    MantenerModalAbierto();
                     return;
                 }
 
                 if (!EsCedulaValida(cedula))
                 {
-                    txtCedulaDirModal.CssClass = "form-control form-control-sm is-valid";
-                    Msg("Cédula INCORRECTA (Dígito verificador inválido).", "ee");
-                    txtCedulaDirModal.Focus();
-                    MantenerModalAbierto();
+                    txtCedulaDirModal.CssClass = "form-control is-invalid";
+                    Msg("Cédula inválida/incorrecta.", "ee");
                     return;
                 }
 
                 var existe = _manejador.BuscarIntegranteActivoPorCedula(cedula);
                 if (existe != null)
                 {
-                    Msg($"Esta persona YA EXISTE en el centro: {existe.fkId_cen}.", "ww");
+                    txtCedulaDirModal.CssClass = "form-control is-warning"; 
+                    Msg($"Esta persona ya existe en el centro {existe.fkId_cen}.", "ww");
                 }
                 else
                 {
-                    Msg("Cédula VÁLIDA y DISPONIBLE.", "ss");
+                    txtCedulaDirModal.CssClass = "form-control is-valid"; 
+                    Msg("Cédula correcta y disponible.", "ss");
                     txtNombresDirModal.Focus();
                 }
-
-                MantenerModalAbierto();
             }
             catch (Exception ex)
             {
-                Msg("Error al validar: " + ex.Message, "ee");
+                Msg("Error: " + ex.Message, "ee");
+            }
+            finally
+            {
+                MantenerModalAbierto();
             }
         }
 
@@ -912,12 +928,17 @@ namespace SistemaGestionCGI
             {
                 string cedula = txtCedulaInt.Text.Trim();
 
-                if (string.IsNullOrEmpty(cedula)) { Msg("Ingrese un número de cédula.", "ww"); return; }
+                if (string.IsNullOrEmpty(cedula))
+                {
+                    txtCedulaInt.CssClass = "form-control is-invalid"; 
+                    Msg("Ingrese un número de cédula.", "ww");
+                    return;
+                }
 
                 if (!EsCedulaValida(cedula))
                 {
+                    txtCedulaInt.CssClass = "form-control is-invalid"; 
                     Msg("Cédula INCORRECTA (Formato inválido).", "ee");
-                    txtCedulaInt.Focus();
                     return;
                 }
 
@@ -927,24 +948,94 @@ namespace SistemaGestionCGI
                 {
                     if (string.IsNullOrEmpty(hfIdIntegrante.Value))
                     {
+                        txtCedulaInt.CssClass = "form-control is-invalid";
                         Msg($"Esta persona YA EXISTE en el centro: {existente.fkId_cen}.", "ww");
                     }
                     else if (existente.strId_cin != hfIdIntegrante.Value)
                     {
+                        txtCedulaInt.CssClass = "form-control is-invalid";
                         Msg("La cédula pertenece a otro integrante registrado.", "ww");
                     }
                     else
                     {
+                        txtCedulaInt.CssClass = "form-control is-valid"; 
                         Msg("Cédula VÁLIDA (Es la actual del usuario).", "ss");
                     }
                 }
                 else
                 {
+                    txtCedulaInt.CssClass = "form-control is-valid"; 
                     Msg("Cédula VÁLIDA y DISPONIBLE.", "ss");
                     txtNombresInt.Focus();
                 }
             }
             catch (Exception ex) { Msg("Error validación: " + ex.Message, "ee"); }
+        }
+
+        // 
+        protected void ddlTipoDirModal_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            txtCedulaDirModal.Text = string.Empty;
+            txtNombresDirModal.Text = string.Empty;
+            txtApellidosDirModal.Text = string.Empty;
+            txtCorreoDirModal.Text = string.Empty;
+            txtEntidadDirModal.Text = string.Empty;
+
+            txtCedulaDirModal.CssClass = "form-control";
+
+            string tipo = ddlTipoDirModal.SelectedValue;
+
+            if (tipo == "Interno")
+            {
+                pnlDirInterno.Visible = true;
+                pnlDirExterno.Visible = false;
+
+                ddlFacultadDirModal.SelectedIndex = 0;
+                ddlCarreraDirModal.Items.Clear();
+                ddlCarreraDirModal.Items.Add(new ListItem("-- Seleccione Facultad Primero --", ""));
+            }
+            else
+            {
+                pnlDirInterno.Visible = false;
+                pnlDirExterno.Visible = true;
+            }
+
+            string scriptReabrir = @"
+                var myModal = new bootstrap.Modal(document.getElementById('modalNuevoDirector'));
+                myModal.show();
+            ";
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenModalDir", scriptReabrir, true);
+        }
+
+        protected void ddlTipoInt_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            txtCedulaInt.Text = string.Empty;
+            txtNombresInt.Text = string.Empty;
+            txtApellidosInt.Text = string.Empty;
+            txtCorreoInt.Text = string.Empty;
+
+            txtEntidadExternoInt.Text = string.Empty;
+
+            string tipo = ddlTipoInt.SelectedValue;
+
+            txtCedulaInt.CssClass = "form-control";
+
+            if (tipo == "Interno")
+            {
+                pnlIntInterno.Visible = true;
+                pnlIntExterno.Visible = false;
+
+                ddlFacultadInt.SelectedIndex = 0;
+                ddlCarreraInt.Items.Clear();
+                ddlCarreraInt.Items.Add(new ListItem("-- Seleccione Facultad Primero --", ""));
+            }
+            else
+            {
+                pnlIntInterno.Visible = false;
+                pnlIntExterno.Visible = true;
+            }
+
         }
 
     }

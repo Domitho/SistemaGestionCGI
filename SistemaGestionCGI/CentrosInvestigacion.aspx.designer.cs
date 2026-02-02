@@ -114,15 +114,6 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.HtmlControls.HtmlButton btnNuevoDirectorInput;
 
         /// <summary>
-        /// Control ddlFacultad.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlFacultad;
-
-        /// <summary>
         /// Control txtArea.
         /// </summary>
         /// <remarks>
@@ -130,6 +121,15 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtArea;
+
+        /// <summary>
+        /// Control ddlFacultad.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlFacultad;
 
         /// <summary>
         /// Control txtUbicacion.
@@ -366,6 +366,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtCorreoInt;
 
         /// <summary>
+        /// Control pnlIntInterno.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlIntInterno;
+
+        /// <summary>
         /// Control ddlFacultadInt.
         /// </summary>
         /// <remarks>
@@ -382,6 +391,15 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlCarreraInt;
+
+        /// <summary>
+        /// Control pnlIntExterno.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlIntExterno;
 
         /// <summary>
         /// Control txtEntidadExternoInt.
@@ -591,6 +609,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtCorreoDirModal;
 
         /// <summary>
+        /// Control pnlDirInterno.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlDirInterno;
+
+        /// <summary>
         /// Control ddlFacultadDirModal.
         /// </summary>
         /// <remarks>
@@ -607,6 +634,15 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlCarreraDirModal;
+
+        /// <summary>
+        /// Control pnlDirExterno.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlDirExterno;
 
         /// <summary>
         /// Control txtEntidadDirModal.

@@ -123,27 +123,24 @@
                     <label class="form-label">Nombre del Centro <span class="text-danger">*</span></label>
                     <asp:TextBox ID="txtNombre" runat="server" CssClass="form-control" autocomplete="off" />
                 </div>
-                <div class="col-md-12">
+                <div class="col-md-6">
                     <label class="form-label fw-bold text-primary">Director Encargado</label>
                     <div class="input-group gap-2">
-                        <span class="input-group-text bg-white text-primary border-end-0">
-                            <i class="fa-solid fa-user-tie"></i>
-                        </span>
-        
                         <asp:TextBox ID="txtDirector" runat="server" 
-                                     CssClass="form-control border-start-0 bg-light text-dark fw-bold" 
-                                     ReadOnly="true" 
-                                     placeholder="-- Sin Director Asignado --" />
+                            CssClass="form-control border-start-0 bg-light"     
+                            ReadOnly="true" 
+                            placeholder="-- Sin Director Asignado --" />
         
                         <button type="button" id="btnNuevoDirectorInput" runat="server" 
-                                class="btn btn-outline-primary" onclick="AbrirModalNuevoDirector()">
+                                class="btn btn-primary" onclick="AbrirModalNuevoDirector()">
                             <i class="fa-solid fa-pen-to-square me-1"></i> Asignar
                         </button>
                     </div>
-                    <small class="text-muted">* Para asignar un director, use el botón lateral.</small>
+                    <small class="text-muted">* Para asignar un director, use el botón Asignar.</small>
                 </div>
+                                <div class="col-md-6"><label class="form-label">Área</label><asp:TextBox ID="txtArea" runat="server" CssClass="form-control" /></div>
                 
-                <div class="col-md-6">
+                <div class="col-12">
                     <label class="form-label">Facultad</label>
                     <asp:DropDownList ID="ddlFacultad" runat="server" CssClass="form-select">
                         <asp:ListItem Text="-- Seleccione --" Value="" />
@@ -156,7 +153,6 @@
                         <asp:ListItem Value="LAMANA">EXTENSIÓN LA MANÁ</asp:ListItem>
                     </asp:DropDownList>
                 </div>
-                <div class="col-md-6"><label class="form-label">Área</label><asp:TextBox ID="txtArea" runat="server" CssClass="form-control" /></div>
                 <div class="col-md-6"><label class="form-label">Ubicación</label><asp:TextBox ID="txtUbicacion" runat="server" CssClass="form-control" /></div>
                 <div class="col-md-6"><label class="form-label">Fecha Aprobación</label><asp:TextBox ID="txtFechaAprobacion" runat="server" CssClass="form-control" TextMode="Date" /></div>
                 <div class="col-12">
@@ -361,7 +357,10 @@
 
             <div class="mb-4">
                 <label class="fw-bold text-primary small text-uppercase mb-1 d-block">Tipo de Integrante</label>
-                <asp:DropDownList ID="ddlTipoInt" runat="server" CssClass="form-select shadow-sm" onchange="ToggleTipoIntegrante(this)">
+    
+                <asp:DropDownList ID="ddlTipoInt" runat="server" CssClass="form-select shadow-sm" 
+                    AutoPostBack="true" 
+                    OnSelectedIndexChanged="ddlTipoInt_SelectedIndexChanged">
                     <asp:ListItem Text="Interno (Administrativo/Estudiante)" Value="Interno" Selected="True"/>
                     <asp:ListItem Text="Externo (Invitado)" Value="Externo" />
                 </asp:DropDownList>
@@ -407,33 +406,35 @@
                     <i class="fa-solid fa-building-columns me-2"></i> Afiliación Institucional
                 </h6>
 
-                <div id="divIntInterno" class="col-12 row g-3 m-0 p-0"> 
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold text-secondary">Facultad / Extensión</label>
-                        <asp:DropDownList ID="ddlFacultadInt" runat="server" CssClass="form-select" 
-                            AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadInt_SelectedIndexChanged">
-                            <asp:ListItem Text="-- Seleccione --" Value="" />
-                            <asp:ListItem Value="CAREN">CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
-                            <asp:ListItem Value="CIYA">CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
-                            <asp:ListItem Value="CAYE">CIENCIAS ADMINISTRATIVAS (CAYE)</asp:ListItem>
-                            <asp:ListItem Value="CSAYE">CIENCIAS SOCIALES (CSAYE)</asp:ListItem>
-                            <asp:ListItem Value="SALUD">CIENCIAS DE LA SALUD (CS)</asp:ListItem>
-                            <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
-                            <asp:ListItem Value="LAMANA">EXTENSION LA MANÁ</asp:ListItem>
-                        </asp:DropDownList>
+                <asp:Panel ID="pnlIntInterno" runat="server" Visible="true" CssClass="col-12">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-secondary">Facultad / Extensión</label>
+                            <asp:DropDownList ID="ddlFacultadInt" runat="server" CssClass="form-select" 
+                                AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadInt_SelectedIndexChanged">
+                                <asp:ListItem Text="-- Seleccione --" Value="" />
+                                <asp:ListItem Value="CAREN">CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
+                                <asp:ListItem Value="CIYA">CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
+                                <asp:ListItem Value="CAYE">CIENCIAS ADMINISTRATIVAS (CAYE)</asp:ListItem>
+                                <asp:ListItem Value="CSAYE">CIENCIAS SOCIALES (CSAYE)</asp:ListItem>
+                                <asp:ListItem Value="SALUD">CIENCIAS DE LA SALUD (CS)</asp:ListItem>
+                                <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
+                                <asp:ListItem Value="LAMANA">EXTENSION LA MANÁ</asp:ListItem>
+                            </asp:DropDownList>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-secondary">Carrera / Departamento</label>
+                            <asp:DropDownList ID="ddlCarreraInt" runat="server" CssClass="form-select">
+                                <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
+                            </asp:DropDownList>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold text-secondary">Carrera / Departamento</label>
-                        <asp:DropDownList ID="ddlCarreraInt" runat="server" CssClass="form-select">
-                            <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
-                        </asp:DropDownList>
-                    </div>
-                </div>
+                </asp:Panel>
 
-                <div id="divIntExterno" class="col-12" style="display:none;">
+                <asp:Panel ID="pnlIntExterno" runat="server" Visible="false" CssClass="col-12">
                     <label class="form-label small fw-bold text-secondary">Institución de Origen</label>
                     <asp:TextBox ID="txtEntidadExternoInt" runat="server" CssClass="form-control" placeholder="Universidad o Empresa..." autocomplete="off" />
-                </div>
+                </asp:Panel>
 
                 <div class="col-12">
                     <hr class="text-muted opacity-25 my-4">
@@ -708,7 +709,10 @@
                     <div class="row mb-4">
                         <div class="col-md-12">
                             <label class="form-label text-primary fw-bold small text-uppercase mb-1">Tipo de Vinculación</label>
-                            <asp:DropDownList ID="ddlTipoDirModal" runat="server" CssClass="form-select shadow-sm" onchange="ToggleTipoDirector(this)">
+                            
+                            <asp:DropDownList ID="ddlTipoDirModal" runat="server" CssClass="form-select shadow-sm"
+                                AutoPostBack="true" 
+                                OnSelectedIndexChanged="ddlTipoDirModal_SelectedIndexChanged">
                                 <asp:ListItem Text="INTERNO (Docente / Administrativo)" Value="Interno" Selected="True" />
                                 <asp:ListItem Text="EXTERNO (Invitado)" Value="Externo" />
                             </asp:DropDownList>
@@ -716,10 +720,10 @@
                     </div>
 
                     <div class="mb-4">
-                    
                         <h6 class="text-primary fw-bold mb-3 small text-uppercase">
                             <i class="fa-regular fa-id-card me-2"></i> INFORMACIÓN PERSONAL
                         </h6>
+                        
                         <div class="row g-3">
                             <div class="col-md-12">
                                 <label class="form-label text-secondary small fw-bold">Número de Cédula <span class="text-danger">*</span></label>
@@ -751,34 +755,35 @@
                         </div>
                     </div>
 
+                    <asp:Panel ID="pnlDirInterno" runat="server" Visible="true">
                         <h6 class="text-primary fw-bold mb-3 small text-uppercase">
                             <i class="fa-solid fa-building-columns me-2"></i> AFILIACIÓN INSTITUCIONAL
                         </h6>
-
-                    <div id="divDirInterno" class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label text-secondary small fw-bold mb-1">Facultad / Extensión</label>
-                            <asp:DropDownList ID="ddlFacultadDirModal" runat="server" CssClass="form-select shadow-sm" 
-                                AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadDirModal_SelectedIndexChanged">
-                                <asp:ListItem Text="-- Seleccione --" Value="" />
-                                <asp:ListItem Value="CAREN">CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
-                                <asp:ListItem Value="CIYA">CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
-                                <asp:ListItem Value="CAYE">CIENCIAS ADMINISTRATIVAS (CAYE)</asp:ListItem>
-                                <asp:ListItem Value="CSAYE">CIENCIAS SOCIALES (CSAYE)</asp:ListItem>
-                                <asp:ListItem Value="SALUD">CIENCIAS DE LA SALUD (CS)</asp:ListItem> 
-                                <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
-                                <asp:ListItem Value="LAMANA">EXTENSION LA MANÁ</asp:ListItem>
-                            </asp:DropDownList>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small fw-bold mb-1">Facultad / Extensión</label>
+                                <asp:DropDownList ID="ddlFacultadDirModal" runat="server" CssClass="form-select shadow-sm" 
+                                    AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadDirModal_SelectedIndexChanged">
+                                    <asp:ListItem Text="-- Seleccione --" Value="" />
+                                    <asp:ListItem Value="CAREN">CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
+                                    <asp:ListItem Value="CIYA">CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
+                                    <asp:ListItem Value="CAYE">CIENCIAS ADMINISTRATIVAS (CAYE)</asp:ListItem>
+                                    <asp:ListItem Value="CSAYE">CIENCIAS SOCIALES (CSAYE)</asp:ListItem>
+                                    <asp:ListItem Value="SALUD">CIENCIAS DE LA SALUD (CS)</asp:ListItem> 
+                                    <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
+                                    <asp:ListItem Value="LAMANA">EXTENSION LA MANÁ</asp:ListItem>
+                                </asp:DropDownList>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small fw-bold mb-1">Carrera / Departamento</label>
+                                <asp:DropDownList ID="ddlCarreraDirModal" runat="server" CssClass="form-select shadow-sm">
+                                    <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
+                                </asp:DropDownList>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-secondary small fw-bold mb-1">Carrera / Departamento</label>
-                            <asp:DropDownList ID="ddlCarreraDirModal" runat="server" CssClass="form-select shadow-sm">
-                                <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
-                            </asp:DropDownList>
-                        </div>
-                    </div>
+                    </asp:Panel>
 
-                    <div id="divDirExterno" style="display:none;">
+                    <asp:Panel ID="pnlDirExterno" runat="server" Visible="false">
                         <h6 class="utc-subtitle border-bottom pb-2 mb-3 text-secondary" style="font-size: 0.85rem; letter-spacing: 0.5px;">
                             <i class="fa-solid fa-briefcase me-2"></i> INSTITUCIÓN DE ORIGEN
                         </h6>
@@ -786,7 +791,8 @@
                             <label class="form-label text-secondary small fw-bold">Nombre de la Institución / Empresa</label>
                             <asp:TextBox ID="txtEntidadDirModal" runat="server" CssClass="form-control" placeholder="Ej: Universidad Central del Ecuador" autocomplete="off" />
                         </div>
-                    </div>
+                    </asp:Panel>
+
                 </div>
 
                 <div class="modal-footer justify-content-center border-0 pb-4 pt-0 bg-white">
@@ -962,9 +968,7 @@
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
     <script type="text/javascript">
 
-        // ==========================================
-        // 1. CONFIGURACIÓN GLOBAL
-        // ==========================================
+        // Configuración global para DataTables
         const dtConfig = {
             responsive: true,
             autoWidth: false,
@@ -979,17 +983,11 @@
 
             if (typeof UTC_FileInput === 'function') {
                 initMyFileInput('wrapperResolucion', '<%= flpResolucion.ClientID %>');
-            initMyFileInput('wrapperAceptacion', '<%= flpAceptacion.ClientID %>');
+                initMyFileInput('wrapperAceptacion', '<%= flpAceptacion.ClientID %>');
             }
 
             cargarEstadoEdicion('wrapperResolucion', '<%= hfResolucionActual.ClientID %>');
             cargarEstadoEdicion('wrapperAceptacion', '<%= hfAceptacionActual.ClientID %>');
-
-            var ddlInt = document.getElementById('<%= ddlTipoInt.ClientID %>');
-            if (ddlInt) ToggleTipoIntegrante(ddlInt);
-
-            var ddlDir = document.getElementById('<%= ddlTipoDirModal.ClientID %>');
-            if (ddlDir) ToggleTipoDirector(ddlDir);
 
             var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
             var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
@@ -1030,7 +1028,7 @@
                 if (preview) {
                     preview.style.display = 'block';
                     var esImagen = /\.(jpg|jpeg|png|gif|webp)$/i.test(nombreArchivo);
-                    var rutaWeb = hf.value.replace('~/', '');
+                    var rutaWeb = hf.value.replace('~/', ''); 
 
                     if (esImagen) {
                         preview.innerHTML = '<div class="text-center mt-2"><img src="' + rutaWeb + '" style="height:60px; border-radius:4px; border:1px solid #ddd;" /></div>';
@@ -1061,32 +1059,6 @@
         function AbrirModalNuevoDirector() {
             var el = document.getElementById('modalNuevoDirector');
             if (el) new bootstrap.Modal(el).show();
-        }
-
-        function ToggleTipoDirector(el) {
-            if (!el) return;
-            var tipo = el.value;
-            var divInt = document.getElementById('divDirInterno');
-            var divExt = document.getElementById('divDirExterno');
-
-            if (divInt) divInt.style.display = (tipo === "Externo") ? 'none' : 'flex';
-            if (divExt) divExt.style.display = (tipo === "Externo") ? 'block' : 'none';
-        }
-
-        function ToggleTipoIntegrante(el) {
-            if (!el) return;
-            var tipo = el.value;
-            var divInt = document.getElementById('divIntInterno');
-            var divExt = document.getElementById('divIntExterno');
-
-            if (tipo === "Externo") {
-                if (divInt) divInt.style.setProperty('display', 'none', 'important');
-                if (divExt) divExt.style.setProperty('display', 'block', 'important');
-            } else {
-                if (divInt) divInt.style.setProperty('display', 'flex', 'important');
-
-                if (divExt) divExt.style.setProperty('display', 'none', 'important');
-            }
         }
 
         function abrirModalPapelera() {

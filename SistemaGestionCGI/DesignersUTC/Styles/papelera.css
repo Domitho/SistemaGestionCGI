@@ -1,5 +1,4 @@
-﻿<style >
-/* Efecto de Vidrio para el Modal */
+﻿
 .utc-modal-premium {
     border: none;
     border-radius: 20px;
@@ -7,15 +6,13 @@
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
-/* Encabezado con patrón sutil */
 .papelera-header-premium {
-    background: #312783; /* Azul UTC */
+    background: #312783;
     background-image: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 100%);
     padding: 2rem;
     border: none;
 }
 
-/* Tarjeta de Registro (Card) */
 .docente-trash-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
@@ -32,7 +29,6 @@
         border-color: #312783;
     }
 
-/* Badge de Estado */
 .status-badge-inactive {
     background: #fff5f5;
     color: #c53030;
@@ -43,7 +39,6 @@
     letter-spacing: 0.05em;
 }
 
-/* Sección de Datos Destacados */
 .data-grid-item {
     border-right: 1px solid #edf2f7;
     padding: 0 1rem;
@@ -68,4 +63,11 @@
     color: #2d3748;
 }
 
-</style >
+
+@media (max-width: 768px) {
+    .data-grid-item {
+        border-right: none;
+        border-bottom: 1px solid #edf2f7; 
+        padding: 0.5rem 0;
+    }
+}
