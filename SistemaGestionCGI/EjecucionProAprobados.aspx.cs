@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Web.UI;
@@ -407,18 +408,20 @@ namespace SistemaGestionCGI
         {
             if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
             {
+                var btnEditarM = (LinkButton)e.Item.FindControl("btnEditarM");
+                var btnToggle = (LinkButton)e.Item.FindControl("btnToggleEstado");
+                var btnEliminarM = (LinkButton)e.Item.FindControl("btnEliminarMiembro");
+
+                string rol = DataBinder.Eval(e.Item.DataItem, "strRol_miembro")?.ToString().ToUpper() ?? "";
                 bool esFinalizado = ViewState["EsProyectoFinalizado"] != null && (bool)ViewState["EsProyectoFinalizado"];
 
-                if (esFinalizado)
+                bool esJefe = rol.Contains("DIRECTOR") || rol.Contains("COORDINADOR");
+
+                if (esJefe || esFinalizado)
                 {
-                    var btnEditarM = (LinkButton)e.Item.FindControl("btnEditarM");
-                    var btnToggle = (LinkButton)e.Item.FindControl("btnToggleEstado");
-                    var btnEliminarM = (LinkButton)e.Item.FindControl("btnEliminarMiembro");
-
                     if (btnEditarM != null) btnEditarM.Visible = false;
-                    if (btnToggle != null) btnToggle.Visible = false;
                     if (btnEliminarM != null) btnEliminarM.Visible = false;
-
+                    if (btnToggle != null) btnToggle.Visible = false;
                 }
             }
         }
@@ -504,7 +507,8 @@ namespace SistemaGestionCGI
         {
             if (int.TryParse(hfIdEjecucionEquipo.Value, out int id))
             {
-                rptMiembros.DataSource = _manejador.ObtenerMiembros(id);
+                var todos = _manejador.ObtenerMiembros(id);
+                rptMiembros.DataSource = todos.Where(m => m.bitActivo_miembro == true).ToList();
                 rptMiembros.DataBind();
             }
         }
@@ -1559,6 +1563,77 @@ namespace SistemaGestionCGI
                 else
                 {
                     if (phHeader != null) phHeader.Visible = false;
+                }
+            }
+        }
+
+        // papelera
+
+        protected void btnVerPapeleraInt_Click(object sender, EventArgs e)
+        {
+            if (int.TryParse(hfIdEjecucionEquipo.Value, out int id))
+            {
+                // Usamos la misma consulta general, pero filtramos en memoria con LINQ
+                var todos = _manejador.ObtenerMiembros(id);
+                var inactivos = todos.Where(m => m.bitActivo_miembro == false).ToList();
+
+                rptPapeleraIntegrantes.DataSource = inactivos;
+                rptPapeleraIntegrantes.DataBind();
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "PopTrash",
+                    "new bootstrap.Modal(document.getElementById('modalPapeleraIntegrantes')).show();", true);
+            }
+        }
+
+        protected void rptPapeleraIntegrantes_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            if (e.CommandName == "Restaurar")
+            {
+                try
+                {
+                    int idMiembroRecuperar = int.Parse(e.CommandArgument.ToString());
+                    int idProyectoActual = int.Parse(hfIdEjecucionEquipo.Value);
+                    string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
+
+                    // 1. Obtener datos del integrante que queremos restaurar
+                    var miembro = _manejador.ObtenerMiembroPorId(idMiembroRecuperar);
+                    if (miembro == null) return;
+
+                    // 2. VALIDACIÓN: Verificar si la cédula YA está activa en este proyecto
+                    var todosLosMiembros = _manejador.ObtenerMiembros(idProyectoActual);
+
+                    bool yaExisteActivo = todosLosMiembros.Any(m =>
+                        m.strCedula_miembro == miembro.strCedula_miembro && // Misma persona
+                        m.bitActivo_miembro == true &&                      // Está activo
+                        m.strId_miembro != idMiembroRecuperar               // No es el registro que estamos restaurando
+                    );
+
+                    if (yaExisteActivo)
+                    {
+                        Msg("⚠️ No se puede restaurar: Esta persona ya se encuentra ACTIVA en el proyecto.", "ww");
+
+                        // Mantenemos el modal abierto
+                        ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenTrash",
+                            "new bootstrap.Modal(document.getElementById('modalPapeleraIntegrantes')).show();", true);
+                        return;
+                    }
+
+                    // 3. RESTAURAR (Si pasó la validación)
+                    // Reusamos tu método CambiarEstadoMiembro (True = Activar)
+                    _manejador.CambiarEstadoMiembro(idMiembroRecuperar, true, "Restauración desde Papelera", usuario);
+
+                    Msg("Integrante reincorporado exitosamente.", "ss");
+
+                    // 4. Actualizar las vistas
+                    RefrescarTablaMiembros(); // Refresca la tabla principal (ahora aparecerá)
+
+                    // Cerrar el modal de papelera
+                    ScriptManager.RegisterStartupScript(this, GetType(), "CloseTrash",
+                        "bootstrap.Modal.getInstance(document.getElementById('modalPapeleraIntegrantes')).hide();", true);
+                }
+                catch (Exception ex)
+                {
+                    Msg("Error al restaurar: " + ex.Message, "ee");
                 }
             }
         }

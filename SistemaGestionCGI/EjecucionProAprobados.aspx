@@ -7,6 +7,7 @@
     <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/modal-informes.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/modal-historial-reporte.css" rel="stylesheet" />
+    <link href="DesignersUTC/Styles/papelera.css" rel="stylesheet" />
 
     <style>
         .hover-lift {
@@ -341,6 +342,13 @@
             </h3>
 
             <div class="d-flex gap-2">
+
+                <asp:LinkButton runat="server" ID="btnVerPapeleraInt" 
+                    CssClass="btn btn-outline-danger btn-pill" 
+                    OnClick="btnVerPapeleraInt_Click">
+                    <i class="fa-solid fa-trash-can me-2"></i> PAPELERA
+                </asp:LinkButton>
+
                 <asp:LinkButton runat="server" ID="btnAbrirFormMiembro"
                     CssClass="btn btn-primary btn-pill d-flex align-items-center"
                     OnClick="btnAbrirFormMiembro_Click">
@@ -381,7 +389,7 @@
                                 <td class="text-start">
                                     <div class="fw-bold"><%# Eval("strApellidos_miembro") %> <%# Eval("strNombres_miembro") %></div>
                                     <div class="small text-muted fst-italic">
-                                        <%# Eval("strTipo_miembro") %> - <%# Eval("strFacultad_miembro") == "EXTERNO" ? Eval("strEntidad_miembro") : Eval("strFacultad_miembro") %>
+                                        <%# Eval("strTipo_miembro") != null ? Eval("strTipo_miembro").ToString().ToUpper() : "" %>
                                     </div>
                                 </td>
 
@@ -1231,6 +1239,89 @@
                         </asp:LinkButton>
                     </div>
 
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%-- MODAL PAPELERA PREMIUM: INTEGRANTES (ADAPTADO) --%>
+    <div class="modal fade" id="modalPapeleraIntegrantes" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" runat="server" ClientIDMode="Static">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content utc-modal-premium">
+            
+                <div class="modal-header papelera-header-premium d-flex flex-column align-items-center justify-content-center text-white position-relative">
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-4" data-bs-dismiss="modal"></button>
+                    <div class="bg-white bg-opacity-25 rounded-circle p-3 mb-3 backdrop-blur">
+                        <i class="fa-solid fa-trash-arrow-up fa-2x"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">Papelera de Equipo</h4>
+                    <p class="mb-0 small opacity-75">Recuperación de miembros dados de baja</p>
+                </div>
+
+                <div class="modal-body p-4 bg-light">
+                    <asp:Repeater ID="rptPapeleraIntegrantes" runat="server" OnItemCommand="rptPapeleraIntegrantes_ItemCommand">
+                        <ItemTemplate>
+                            <div class="docente-trash-card p-3">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="bg-light rounded-circle p-3 text-secondary border">
+                                            <i class="fa-solid fa-user-xmark fa-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-bold text-dark mb-1 text-uppercase">
+                                                <%# Eval("strApellidos_miembro") %> <%# Eval("strNombres_miembro") %>
+                                            </h6>
+                                            <span class="status-badge-inactive">INACTIVO</span>
+                                        </div>
+                                    </div>
+                                
+                                    <asp:LinkButton runat="server" CommandName="Restaurar" CommandArgument='<%# Eval("strId_miembro") %>' 
+                                        CssClass="btn btn-sm btn-success rounded-pill px-4 shadow-sm fw-bold" 
+                                        OnClientClick="return confirm('¿Está seguro de restaurar a este integrante al proyecto?');">
+                                        <i class="fa-solid fa-rotate-left me-2"></i> RESTAURAR
+                                    </asp:LinkButton>
+                                </div>
+
+                                <div class="d-flex mt-2 pt-3 border-top bg-white text-center">
+                                    <div class="data-grid-item flex-fill">
+                                        <span class="label-mini">Cédula</span>
+                                        <span class="value-bold"><%# Eval("strCedula_miembro") %></span>
+                                    </div>
+                                    <div class="data-grid-item flex-fill">
+                                        <span class="label-mini">Rol</span>
+                                        <span class="value-bold text-primary"><%# Eval("strRol_miembro") %></span>
+                                    </div>
+                                    <div class="data-grid-item flex-fill">
+                                        <span class="label-mini">Tipo</span>
+                                        <span class="value-bold"><%# Eval("strTipo_miembro") %></span>
+                                    </div>
+                                    <div class="data-grid-item flex-fill">
+                                        <span class="label-mini">Origen</span>
+                                        <span class="value-bold text-muted" style="font-size: 0.7rem;">
+                                            <%# Eval("strTipo_miembro") != null && Eval("strTipo_miembro").ToString() == "Externo" ? Eval("strEntidad_miembro") : Eval("strFacultad_miembro") %>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </ItemTemplate>
+                        <FooterTemplate>
+                            <asp:Panel ID="pnlVacio" runat="server" Visible='<%# rptPapeleraIntegrantes.Items.Count == 0 %>'>
+                                <div class="text-center py-5">
+                                    <div class="mb-3 text-muted opacity-25">
+                                        <i class="fa-solid fa-trash-can fa-4x"></i>
+                                    </div>
+                                    <h6 class="fw-bold text-secondary">Papelera Vacía</h6>
+                                    <p class="text-muted small mb-0">No hay integrantes inactivos en este proyecto.</p>
+                                </div>
+                            </asp:Panel>
+                        </FooterTemplate>
+                    </asp:Repeater>
+                </div>
+
+                <div class="modal-footer border-0 bg-light justify-content-center pb-4">
+                    <button type="button" class="btn btn-outline-secondary btn-pill px-5" data-bs-dismiss="modal">
+                        Cerrar Ventana
+                    </button>
                 </div>
             </div>
         </div>
