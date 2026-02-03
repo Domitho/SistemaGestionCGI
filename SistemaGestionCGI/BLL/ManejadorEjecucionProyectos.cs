@@ -65,11 +65,11 @@ namespace SistemaGestionCGI.BLL
             string sql = $@"
                 SELECT E.*, 
                        P.strTema_pro as TituloProyecto,
+                       P.strDuracion_pro,
                        C.dtInicio_ciclo as InicioCicloActual,  
                        C.dtFin_ciclo as FinCicloActual 
                 FROM INVGCCEJECUCION_PROYECTO E
                 INNER JOIN INVGCCINSCRIPCION_PROYECTOS P ON E.fkId_pro = P.strId_pro
-                -- HACEMOS EL JOIN CON LA TABLA DE CICLOS
                 LEFT JOIN INVGCCEJECUCION_PROYECTO_CICLOS C ON E.fkId_ciclo = C.id_ciclo 
                 WHERE E.strId_ejec = {id}";
 
@@ -77,10 +77,9 @@ namespace SistemaGestionCGI.BLL
             return lista?.FirstOrDefault();
         }
 
-        public void GuardarEjecucion(InvgccEjecucionProyectos obj)
+        public int GuardarEjecucion(InvgccEjecucionProyectos obj)
         {
             string sqlInfo = $"SELECT strCedulaCoordinador_pro FROM INVGCCINSCRIPCION_PROYECTOS WHERE strId_pro = '{obj.fkId_pro}'";
-
             var listaTemp = _dal.SelectSql<DtoCedulaTemp>(sqlInfo);
             string cedulaHeredada = "";
 
@@ -91,7 +90,7 @@ namespace SistemaGestionCGI.BLL
 
             string cedulaSql = string.IsNullOrEmpty(cedulaHeredada) ? "NULL" : $"'{cedulaHeredada}'";
 
-            string sql = $@"
+            string sqlInsert = $@"
                 INSERT INTO INVGCCEJECUCION_PROYECTO 
                 (fkId_pro, strCoordinador_ejec, strCedulaCoordinador_ejec, 
                  strPeriodo_ejec, fkId_ciclo, dtFechaini_ejec, dtFechafin_ejec, strInforme_ejec, strEstado_ejec)
@@ -99,7 +98,22 @@ namespace SistemaGestionCGI.BLL
                 ('{obj.fkId_pro}', '{obj.strCoordinador_ejec}', {cedulaSql}, 
                  '{obj.strPeriodo_ejec}', {obj.fkId_ciclo}, '{obj.dtFechaini_ejec:yyyy-MM-dd}', NULL, '{obj.strInforme_ejec}', 'En Ejecución')";
 
-            _dal.UpdateSql(sql);
+            _dal.UpdateSql(sqlInsert);
+
+            string sqlGetId = $@"
+                SELECT TOP 1 strId_ejec 
+                FROM INVGCCEJECUCION_PROYECTO 
+                WHERE fkId_pro = '{obj.fkId_pro}' 
+                ORDER BY strId_ejec DESC";
+
+            var resultado = _dal.SelectSql<dynamic>(sqlGetId);
+
+            if (resultado != null && resultado.Count > 0)
+            {
+                return (int)resultado[0].strId_ejec;
+            }
+
+            return 0;
         }
 
         public void ActualizarEjecucion(InvgccEjecucionProyectos obj)
@@ -471,6 +485,15 @@ namespace SistemaGestionCGI.BLL
         {
             string sql = "SELECT id_ciclo, strNombre_ciclo, dtInicio_ciclo, dtFin_ciclo FROM INVGCCEJECUCION_PROYECTO_CICLOS ORDER BY dtInicio_ciclo ASC";
             return _dal.SelectSql<dynamic>(sql);
+        }
+
+        //
+        public dynamic ObtenerDatosIntegranteGrupo(string idIntegranteGrupo)
+        {
+            string sql = $"SELECT * FROM INVGCCGRUPO_INTEGRANTES WHERE strId_int = '{idIntegranteGrupo}'";
+
+            var lista = _dal.SelectSql<dynamic>(sql);
+            return lista.Count > 0 ? lista[0] : null;
         }
     }
 

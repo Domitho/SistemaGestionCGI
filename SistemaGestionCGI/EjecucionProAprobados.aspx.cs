@@ -123,16 +123,26 @@ namespace SistemaGestionCGI
                     return;
                 }
 
+                var proyInscripcion = _manejadorProyectos.ObtenerPorId(ddlProyectosAprobados.SelectedValue);
+                string idCoordinadorOrigen = proyInscripcion.fkId_coordinador;
+
+                var datosCoordinador = _manejador.ObtenerDatosIntegranteGrupo(idCoordinadorOrigen);
+
+                if (datosCoordinador == null)
+                {
+                    Msg("Error: No se encontraron los datos del coordinador en el Grupo de Investigación.", "ee");
+                    return;
+                }
+
                 var obj = new InvgccEjecucionProyectos
                 {
                     fkId_pro = ddlProyectosAprobados.SelectedValue,
-                    strCoordinador_ejec = txtCoordinadorAdd.Text.Trim(),
-
-                    strPeriodo_ejec = ddlCiclo.SelectedItem.Text, 
+                    strCoordinador_ejec = $"{datosCoordinador.strApellidos_int} {datosCoordinador.strNombres_int}",
+                    strCedulaCoordinador_ejec = datosCoordinador.strCedula_int,
+                    strPeriodo_ejec = ddlCiclo.SelectedItem.Text,
                     fkId_ciclo = int.Parse(ddlCiclo.SelectedValue),
-
                     dtFechaini_ejec = DateTime.Parse(txtFechaIniAdd.Text),
-                    dtFechafin_ejec = null
+                    strEstado_ejec = "En Ejecución"
                 };
 
                 if (flpArchivoAdd.HasFile)
@@ -141,8 +151,33 @@ namespace SistemaGestionCGI
                     obj.strInforme_ejec = GuardarArchivoFisico(flpArchivoAdd, nombre);
                 }
 
-                _manejador.GuardarEjecucion(obj);
-                Redireccionar("Ejecución iniciada correctamente.", "ss");
+                int idNuevoProyecto = _manejador.GuardarEjecucion(obj);
+
+                var nuevoMiembro = new InvgccEjecucionMiembros
+                {
+                    fkId_ejec = idNuevoProyecto,
+
+                    strCedula_miembro = datosCoordinador.strCedula_int,
+                    strNombres_miembro = datosCoordinador.strNombres_int,
+                    strApellidos_miembro = datosCoordinador.strApellidos_int,
+
+                    strCorreo_miembro = datosCoordinador.strCorreo_int,
+
+                    strFacultad_miembro = datosCoordinador.strFacultad_int ?? "N/A",
+                    strCarrera_miembro = datosCoordinador.strCarrera_int ?? "N/A",
+                    strEntidad_miembro = datosCoordinador.strEntidad_int ?? "",
+
+                    strRol_miembro = "COORDINADOR DE PROYECTO",
+
+                    strTipo_miembro = datosCoordinador.strTipo_int,
+
+                    bitActivo_miembro = true,
+                    dtFechaInicio_miembro = DateTime.Now
+                };
+
+                _manejador.GuardarMiembro(nuevoMiembro);
+
+                Redireccionar("Ejecución iniciada. Datos del Coordinador importados correctamente.", "ss");
             }
             catch (Exception ex) { Msg("Error al guardar: " + ex.Message, "ee"); }
         }
@@ -222,19 +257,15 @@ namespace SistemaGestionCGI
                 if (proy == null) return;
 
                 DateTime fechaInicioProy = proy.dtFechaini_ejec;
-
                 DateTime fechaFinTeoricaProyecto = CalcularFechaFinReal(fechaInicioProy, proy.strDuracion_pro);
-                if (fechaFinTeoricaProyecto == fechaInicioProy)
-                {
-                    fechaFinTeoricaProyecto = fechaInicioProy.AddYears(2);
-                }
+
+                DateTime fechaLimite = fechaFinTeoricaProyecto.AddDays(5);
 
                 DateTime finCicloActual = proy.FinCicloActual != null
                     ? Convert.ToDateTime(proy.FinCicloActual)
                     : Convert.ToDateTime(proy.InicioCicloActual).AddMonths(6);
 
                 var todosCiclos = _manejador.ObtenerCiclosConFechas();
-
                 HashSet<string> nombresAgregados = new HashSet<string>();
                 int contadorOpciones = 0;
 
@@ -244,9 +275,9 @@ namespace SistemaGestionCGI
                     string cNombre = (string)c.strNombre_ciclo;
                     DateTime cInicio = Convert.ToDateTime(c.dtInicio_ciclo);
 
-                    bool esFuturo = cInicio >= finCicloActual;
+                    bool esFuturo = cInicio >= finCicloActual.AddDays(-20);
 
-                    bool estaEnPlazo = cInicio < fechaFinTeoricaProyecto;
+                    bool estaEnPlazo = cInicio < fechaLimite;
 
                     if (esFuturo && estaEnPlazo)
                     {
@@ -261,7 +292,8 @@ namespace SistemaGestionCGI
 
                 if (contadorOpciones == 0)
                 {
-                    ddlCiclosFuturos.Items.Add(new ListItem("🚫 No hay ciclos futuros compatibles con la duración del proyecto.", "0"));
+                    string finStr = fechaFinTeoricaProyecto.ToString("dd/MMM/yyyy").ToUpper();
+                    ddlCiclosFuturos.Items.Add(new ListItem($"⛔ PROYECTO FINALIZA EL {finStr}", "0"));
                     ddlCiclosFuturos.Enabled = false;
                     btnConfirmarRenovacion.Enabled = false;
                 }
@@ -272,10 +304,7 @@ namespace SistemaGestionCGI
                     ddlCiclosFuturos.Items.Insert(0, new ListItem("-- Seleccione Siguiente Periodo --", "0"));
                 }
             }
-            catch (Exception ex)
-            {
-                Msg("Error al filtrar ciclos: " + ex.Message, "ee");
-            }
+            catch (Exception ex) { Msg("Error al filtrar ciclos: " + ex.Message, "ee"); }
         }
 
         protected void btnConfirmarRenovacion_Click(object sender, EventArgs e)
@@ -1435,11 +1464,10 @@ namespace SistemaGestionCGI
                 }
 
                 string cuerpo = $@"
-            <p>Estimado/a <strong>{proy.strCoordinador_ejec}</strong>,</p>
-            <p>Se ha detectado que el proyecto <em>""{proy.TituloProyecto}""</em> presenta retrasos en la entrega de evidencias o informes de avance.</p>
-            <p style='color: #d9534f; font-weight: bold;'>Por favor, acceda al sistema y regularice su documentación lo antes posible.</p>";
+                    <p>Estimado/a <strong>{proy.strCoordinador_ejec}</strong>,</p>
+                    <p>Se ha detectado que el proyecto <em>""{proy.TituloProyecto}""</em> presenta retrasos en la entrega de evidencias o informes de avance.</p>
+                    <p style='color: #d9534f; font-weight: bold;'>Por favor, acceda al sistema y regularice su documentación lo antes posible.</p>";
 
-                // Aquí capturamos el resultado del EmailService
                 bool enviado = SistemaGestionCGI.Utilidades.EmailService.EnviarCorreo(
                     emailDestino,
                     "ALERTA UTC: Recordatorio de Informes Pendientes",
@@ -1450,42 +1478,62 @@ namespace SistemaGestionCGI
                 if (enviado)
                     Msg("Recordatorio enviado correctamente a: " + emailDestino, "ss");
                 else
-                    // Si el EmailService devolvió false, es un problema de Gmail/Web.config
                     Msg("Error SMTP: No se pudo conectar con el servidor de correo. Revise el Web.config.", "ee");
             }
             catch (Exception ex)
             {
-                // Esto captura errores de código (ej: nulos o formato)
                 Msg("Error al procesar la notificación: " + ex.Message, "ee");
             }
         }
 
         //
         // ==========================================
-        // LÓGICA DE CÁLCULO DE FECHAS (NUEVO)
+        // LÓGICA DE CÁLCULO DE FECHAS 
         // ==========================================
         private DateTime CalcularFechaFinReal(DateTime fechaInicio, string textoDuracion)
         {
-            if (string.IsNullOrEmpty(textoDuracion)) return fechaInicio;
+            if (string.IsNullOrWhiteSpace(textoDuracion)) return fechaInicio.AddMonths(6);
 
+            string texto = textoDuracion.ToLower();
             DateTime fechaCalculada = fechaInicio;
-            string duracionNorm = textoDuracion.ToLower();
+            bool seEncontroAlgo = false; 
 
-            var matchAnios = Regex.Match(duracionNorm, @"(\d+)\s*(a|y)");
+            var matchAnios = Regex.Match(texto, @"(\d+)\s*a(ñ|n)o");
             if (matchAnios.Success)
             {
-                fechaCalculada = fechaCalculada.AddYears(int.Parse(matchAnios.Groups[1].Value));
+                int cantidad = int.Parse(matchAnios.Groups[1].Value);
+                fechaCalculada = fechaCalculada.AddYears(cantidad);
+                seEncontroAlgo = true;
             }
 
-            var matchMeses = Regex.Match(duracionNorm, @"(\d+)\s*mes");
-            if (matchMeses.Success) fechaCalculada = fechaCalculada.AddMonths(int.Parse(matchMeses.Groups[1].Value));
+            var matchMeses = Regex.Match(texto, @"(\d+)\s*mes");
+            if (matchMeses.Success)
+            {
+                int cantidad = int.Parse(matchMeses.Groups[1].Value);
+                fechaCalculada = fechaCalculada.AddMonths(cantidad);
+                seEncontroAlgo = true;
+            }
 
-            var matchSemanas = Regex.Match(duracionNorm, @"(\d+)\s*semana");
-            if (matchSemanas.Success) fechaCalculada = fechaCalculada.AddDays(int.Parse(matchSemanas.Groups[1].Value) * 7);
+            var matchSemanas = Regex.Match(texto, @"(\d+)\s*sem");
+            if (matchSemanas.Success)
+            {
+                int cantidad = int.Parse(matchSemanas.Groups[1].Value);
+                fechaCalculada = fechaCalculada.AddDays(cantidad * 7);
+                seEncontroAlgo = true;
+            }
 
-            var matchDias = Regex.Match(duracionNorm, @"(\d+)\s*día");
-            if (!matchDias.Success) matchDias = Regex.Match(duracionNorm, @"(\d+)\s*dia");
-            if (matchDias.Success) fechaCalculada = fechaCalculada.AddDays(int.Parse(matchDias.Groups[1].Value));
+            var matchDias = Regex.Match(texto, @"(\d+)\s*d(ía|ia)");
+            if (matchDias.Success)
+            {
+                int cantidad = int.Parse(matchDias.Groups[1].Value);
+                fechaCalculada = fechaCalculada.AddDays(cantidad);
+                seEncontroAlgo = true;
+            }
+
+            if (!seEncontroAlgo)
+            {
+                return fechaInicio.AddMonths(6);
+            }
 
             return fechaCalculada;
         }
