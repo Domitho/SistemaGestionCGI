@@ -261,7 +261,7 @@ namespace SistemaGestionCGI
             {
                 lblTituloGestion.Text = "Registrar Nuevo Proyecto";
                 lblBtnGuardar.Text = "Guardar";
-                hfIdProyecto.Value = ""; 
+                hfIdProyecto.Value = "";
 
                 txtTema.Text = "";
                 txtPuntaje.Text = "";
@@ -271,8 +271,14 @@ namespace SistemaGestionCGI
                 hfAnios.Value = "0"; hfMeses.Value = "0"; hfSemanas.Value = "0"; hfDias.Value = "0";
 
                 if (ddlGrupo.Items.Count > 0) ddlGrupo.SelectedIndex = 0;
+
                 ddlCoordinador.Items.Clear();
                 ddlCoordinador.Items.Add(new ListItem("-- Seleccione Grupo Primero --", ""));
+
+                ddlCoordinador.Enabled = true;
+                ddlCoordinador.CssClass = "form-select";
+                ddlCoordinador.ToolTip = "";
+                btnAbrirModalIntegrante.Visible = true; 
 
                 pnlArchivoActual.Visible = false;
                 hfArchivoActual.Value = "";
@@ -302,6 +308,7 @@ namespace SistemaGestionCGI
                 if (ddlGrupo.Items.FindByValue(pro.fkId_gru) != null)
                 {
                     ddlGrupo.SelectedValue = pro.fkId_gru;
+
                     CargarCoordinadores(ddlCoordinador, pro.fkId_gru, pro.strId_pro);
 
                     if (!string.IsNullOrEmpty(pro.fkId_coordinador))
@@ -328,6 +335,26 @@ namespace SistemaGestionCGI
                 {
                     pnlArchivoActual.Visible = false;
                 }
+
+                string jefeEnEjecucion = _manejador.ObtenerJefeActivoEnEjecucion(idProyecto);
+
+                if (jefeEnEjecucion != null)
+                {
+                    ddlCoordinador.Enabled = false;
+                    ddlCoordinador.CssClass = "form-select bg-light";
+                    ddlCoordinador.ToolTip = $"BLOQUEADO: El proyecto ya tiene un coordinador activo en Ejecución ({jefeEnEjecucion}).";
+
+                    btnAbrirModalIntegrante.Visible = false; 
+
+                }
+                else
+                {
+                    ddlCoordinador.Enabled = true;
+                    ddlCoordinador.CssClass = "form-select";
+                    ddlCoordinador.ToolTip = "";
+
+                    btnAbrirModalIntegrante.Visible = true; 
+                }
             }
         }
 
@@ -342,6 +369,21 @@ namespace SistemaGestionCGI
                 if (string.IsNullOrWhiteSpace(txtTema.Text))
                 {
                     Msg("El tema es obligatorio.", "ww"); return;
+                }
+
+                if (!string.IsNullOrEmpty(hfIdProyecto.Value))
+                {
+                    string jefeEnEjecucion = _manejador.ObtenerJefeActivoEnEjecucion(hfIdProyecto.Value);
+
+                    if (jefeEnEjecucion != null)
+                    {
+                        var proyOriginal = _manejador.ObtenerPorId(hfIdProyecto.Value);
+                        if (proyOriginal != null && ddlCoordinador.SelectedValue != proyOriginal.fkId_coordinador)
+                        {
+                            Msg($"ACCIÓN DENEGADA: El proyecto tiene un coordinador activo en Ejecución ({jefeEnEjecucion}). Vaya al módulo de Ejecución y gestione la baja primero.", "ee");
+                            return; 
+                        }
+                    }
                 }
 
                 string duracionFinal = ConstruirDuracion(hfAnios.Value, hfMeses.Value, hfSemanas.Value, hfDias.Value);
@@ -372,14 +414,12 @@ namespace SistemaGestionCGI
                 };
 
                 string rutaArchivo = hfArchivoActual.Value;
-
                 if (flpArchivo.HasFile)
                 {
                     if (!ValidarExtension(flpArchivo.FileName)) return;
                     string nombreUnico = $"PROY_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivo.FileName)}";
                     rutaArchivo = GuardarArchivoFisico(flpArchivo, nombreUnico);
                 }
-
                 proyecto.strArchivo_pro = rutaArchivo;
 
                 if (string.IsNullOrEmpty(hfIdProyecto.Value))
@@ -391,6 +431,14 @@ namespace SistemaGestionCGI
                 {
                     proyecto.strId_pro = hfIdProyecto.Value;
                     _manejador.Actualizar(proyecto);
+
+                    if (!string.IsNullOrEmpty(idCoordinadorFinal))
+                    {
+                        string usuarioLogueado = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
+
+                        _manejador.SincronizarCoordinadorConEjecucion(proyecto.strId_pro, idCoordinadorFinal, usuarioLogueado);
+                    }
+
                     Redireccionar("Proyecto actualizado correctamente.", "ss");
                 }
             }

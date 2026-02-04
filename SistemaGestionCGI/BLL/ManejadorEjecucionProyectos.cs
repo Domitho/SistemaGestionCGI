@@ -78,7 +78,6 @@ namespace SistemaGestionCGI.BLL
 
             _dal.UpdateSql(sqlInsert);
 
-            // Recuperamos el ID recién creado
             string sqlGetId = $@"
                 SELECT TOP 1 strId_ejec 
                 FROM INVGCCEJECUCION_PROYECTO 
@@ -193,6 +192,32 @@ namespace SistemaGestionCGI.BLL
                     var miembro = ObtenerMiembroPorId(idMiembro);
                     if (miembro == null) return;
 
+                    if (nuevoEstado)
+                    {
+                        string rol = miembro.strRol_miembro?.ToUpper() ?? "";
+                        bool esPerfilMando = rol.Contains("COORDINADOR") || rol.Contains("DIRECTOR") || rol.Contains("PRINCIPAL");
+
+                        if (esPerfilMando)
+                        {
+                            var proyectoCheck = ObtenerEjecucionPorId(miembro.fkId_ejec);
+                            if (proyectoCheck != null)
+                            {
+                                string cedulaJefeActual = proyectoCheck.strCedulaCoordinador_ejec?.Trim() ?? "";
+                                string nombreJefeActual = proyectoCheck.strCoordinador_ejec?.ToUpper() ?? "";
+                                string cedulaMiembro = miembro.strCedula_miembro.Trim();
+
+                                bool puestoOcupadoPorOtro = !string.IsNullOrEmpty(cedulaJefeActual) &&
+                                                            !nombreJefeActual.Contains("SIN ASIGNAR") &&
+                                                            cedulaJefeActual != cedulaMiembro;
+
+                                if (puestoOcupadoPorOtro)
+                                {
+                                    throw new Exception($"NO SE PUEDE RESTAURAR: El proyecto ya tiene un Coordinador activo ({proyectoCheck.strCoordinador_ejec}). Debe dar de baja al actual antes de restaurar al anterior.");
+                                }
+                            }
+                        }
+                    }
+
                     string cedulaFija = miembro.strCedula_miembro.Trim();
 
                     int bit = nuevoEstado ? 1 : 0;
@@ -228,7 +253,6 @@ namespace SistemaGestionCGI.BLL
                             }
                             else if (nuevoEstado)
                             {
-
                                 bool puestoVacio = string.IsNullOrEmpty(cedulaJefeActual) ||
                                                    proyecto.strCoordinador_ejec.Contains("SIN ASIGNAR");
 
@@ -273,7 +297,7 @@ namespace SistemaGestionCGI.BLL
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception("Error BLL: " + ex.Message);
+                    throw new Exception(ex.Message); 
                 }
             }
         }

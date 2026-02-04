@@ -431,5 +431,92 @@ namespace SistemaGestionCGI.BLL
 
             return _dal.SelectSql<dynamic>(sql);
         }
+
+        //
+
+        public string ObtenerJefeActivoEnEjecucion(string idProyecto)
+        {
+            string sql = $@"
+                SELECT strCoordinador_ejec, strCedulaCoordinador_ejec 
+                FROM INVGCCEJECUCION_PROYECTO 
+                WHERE fkId_pro = '{idProyecto}'";
+
+            var res = _dal.SelectSql<dynamic>(sql);
+
+            if (res != null && res.Count > 0)
+            {
+                string nombre = res[0].strCoordinador_ejec?.ToString() ?? "";
+                string cedula = res[0].strCedulaCoordinador_ejec?.ToString() ?? "";
+
+                if (!string.IsNullOrEmpty(cedula) && !nombre.Contains("SIN ASIGNAR"))
+                {
+                    return nombre; 
+                }
+            }
+            return null;
+        }
+
+        public void SincronizarCoordinadorConEjecucion(string idProyecto, string idNuevoCoordinadorInt, string usuarioResponsable)
+        {
+            string sqlCheck = $"SELECT strId_ejec FROM INVGCCEJECUCION_PROYECTO WHERE fkId_pro = '{idProyecto}'";
+            var resEjec = _dal.SelectSql<dynamic>(sqlCheck);
+
+            if (resEjec != null && resEjec.Count > 0)
+            {
+                int idEjecucion = (int)resEjec[0].strId_ejec;
+
+                string sqlDatos = $"SELECT * FROM INVGCCGRUPO_INTEGRANTES WHERE strId_int = '{idNuevoCoordinadorInt}'";
+                var datos = _dal.SelectSql<dynamic>(sqlDatos);
+
+                if (datos != null && datos.Count > 0)
+                {
+                    var nuevoCoord = datos[0];
+                    string nombreCompleto = $"{nuevoCoord.strApellidos_int} {nuevoCoord.strNombres_int}";
+                    string cedula = nuevoCoord.strCedula_int;
+
+                    string sqlUpdateHeader = $@"
+                        UPDATE INVGCCEJECUCION_PROYECTO 
+                        SET strCoordinador_ejec = '{nombreCompleto.Replace("'", "''")}',
+                            strCedulaCoordinador_ejec = '{cedula}'
+                        WHERE strId_ejec = {idEjecucion}";
+                    _dal.UpdateSql(sqlUpdateHeader);
+
+                    string sqlCheckMember = $"SELECT strId_miembro FROM INVGCCEJECUCION_MIEMBROS WHERE fkId_ejec = {idEjecucion} AND strCedula_miembro = '{cedula}'";
+                    var resMember = _dal.SelectSql<dynamic>(sqlCheckMember);
+                    int idMiembroAfectado = 0;
+                    string accion = "";
+
+                    if (resMember == null || resMember.Count == 0)
+                    {
+                        string sqlInsertMember = $@"
+                            INSERT INTO INVGCCEJECUCION_MIEMBROS 
+                            (fkId_ejec, strCedula_miembro, strNombres_miembro, strApellidos_miembro, 
+                             strRol_miembro, strFacultad_miembro, bitActivo_miembro,
+                             strCorreo_miembro, strCarrera_miembro, strTipo_miembro, strEntidad_miembro, dtFechaInicio_miembro)
+                            VALUES 
+                            ({idEjecucion}, '{cedula}', '{nuevoCoord.strNombres_int}', '{nuevoCoord.strApellidos_int}', 
+                             'COORDINADOR DE PROYECTO', '{nuevoCoord.strFacultad_int ?? "N/A"}', 1,
+                             '{nuevoCoord.strCorreo_int}', '{nuevoCoord.strCarrera_int ?? "N/A"}', '{nuevoCoord.strTipo_int}', '{nuevoCoord.strEntidad_int ?? ""}', GETDATE())";
+                        _dal.UpdateSql(sqlInsertMember);
+
+                        var resNewId = _dal.SelectSql<dynamic>($"SELECT TOP 1 strId_miembro FROM INVGCCEJECUCION_MIEMBROS WHERE fkId_ejec={idEjecucion} ORDER BY strId_miembro DESC");
+                        if (resNewId.Count > 0) idMiembroAfectado = (int)resNewId[0].strId_miembro;
+                        accion = "DESIGNACIÓN (NUEVO)";
+                    }
+                    else
+                    {
+                        idMiembroAfectado = (int)resMember[0].strId_miembro;
+                        string sqlUpdateRole = $"UPDATE INVGCCEJECUCION_MIEMBROS SET bitActivo_miembro=1, strRol_miembro='COORDINADOR DE PROYECTO', dtFechaFin_miembro=NULL WHERE strId_miembro={idMiembroAfectado}";
+                        _dal.UpdateSql(sqlUpdateRole);
+                        accion = "DESIGNACIÓN (REACTIVADO)";
+                    }
+
+                    if (idMiembroAfectado > 0)
+                    {
+                        _dal.UpdateSql($"INSERT INTO INVGCCEJECUCION_MIEMBROS_HISTORIAL (fkId_miembro, dtFecha, strAccion, strMotivo, strUsuario) VALUES ({idMiembroAfectado}, GETDATE(), '{accion}', 'Sincronización desde Inscripción', '{usuarioResponsable}')");
+                    }
+                }
+            }
+        }
     }
 }

@@ -1651,15 +1651,17 @@ namespace SistemaGestionCGI
                     _manejador.RestaurarMiembro(idMiembroRecuperar, usuario);
 
                     Msg("Integrante reincorporado exitosamente.", "ss");
-
-                    RefrescarTablaMiembros(); 
+                    RefrescarTablaMiembros();
 
                     ScriptManager.RegisterStartupScript(this, GetType(), "CloseTrash",
                         "bootstrap.Modal.getInstance(document.getElementById('modalPapeleraIntegrantes')).hide();", true);
                 }
                 catch (Exception ex)
                 {
-                    Msg("Error al restaurar: " + ex.Message, "ee");
+                    Msg("No se pudo restaurar: " + ex.Message, "ee");
+
+                    ScriptManager.RegisterStartupScript(this, GetType(), "KeepTrashOpen",
+                        "new bootstrap.Modal(document.getElementById('modalPapeleraIntegrantes')).show();", true);
                 }
             }
         }
