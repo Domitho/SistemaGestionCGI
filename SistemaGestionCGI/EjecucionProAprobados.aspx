@@ -446,9 +446,8 @@
     <asp:Panel ID="pnlFormularioMiembro" runat="server" Visible="false">
         <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-4 rounded shadow-utc border header-utc-line">
             <h3 class="utc-title mb-0">
-                <i class="fa-solid fa-users-gear me-2"></i> EQUIPO DE TRABAJO
+                <i class="fa-solid fa-users-gear me-2"></i> GESTIÓN DE EQUIPO
             </h3>
-
             <asp:LinkButton ID="btnVolverFormMiembro" runat="server"
                 CssClass="btn btn-outline-primary btn-pill px-4"
                 OnClick="btnCancelarMiembro_Click" CausesValidation="false">
@@ -457,7 +456,7 @@
         </div>
 
         <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4">
-            
+        
             <h4 class="utc-subtitle mb-4 text-center">
                 <i class="fa-solid fa-user-plus me-2"></i>
                 <asp:Label runat="server" ID="lblTituloFormMiembro" Text="Nuevo Integrante" />
@@ -468,25 +467,31 @@
             <div class="row g-3">
                 <div class="col-12">
                     <label class="form-label fw-bold text-primary">Tipo de Vinculación</label>
-                    <asp:DropDownList ID="ddlTipoMiembro" runat="server" CssClass="form-select" onchange="toggleTipoIntegrante()">
-                        <asp:ListItem Value="Interno" Selected="True">Interno (Docente/Estudiante UTC)</asp:ListItem>
-                        <asp:ListItem Value="Externo">Externo (Inv. Invitado / Otra Institución)</asp:ListItem>
+                    <asp:DropDownList ID="ddlTipoMiembro" runat="server" CssClass="form-select shadow-sm border-primary" onchange="toggleTipoIntegrante()">
+                        <asp:ListItem Value="Interno" Selected="True">Interno (UTC)</asp:ListItem>
+                        <asp:ListItem Value="Externo">Externo (Otra Institución)</asp:ListItem>
                     </asp:DropDownList>
                 </div>
 
-                <div class="col-md-4">
-                    <label class="form-label">Cédula / Pasaporte <span class="text-danger">*</span></label>
-                    <asp:TextBox ID="txtCedulaMiembro" runat="server" CssClass="form-control" placeholder="10 dígitos" MaxLength="15" />
+                <div class="col-12">
+                    <label class="form-label">Cédula<span class="text-danger">*</span></label>
+                    <div class="input-group gap-2">
+                        <asp:TextBox ID="txtCedulaMiembro" runat="server" CssClass="form-control" placeholder="10 dígitos" MaxLength="15" />
+                        <asp:LinkButton ID="btnValidarCedula" runat="server" CssClass="btn btn-primary" OnClick="btnValidarCedula_Click" CausesValidation="false">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </asp:LinkButton>
+                    </div>
                 </div>
-                <div class="col-md-4">
+
+                <div class="col-md-6">
                     <label class="form-label">Nombres <span class="text-danger">*</span></label>
                     <asp:TextBox ID="txtNombresMiembro" runat="server" CssClass="form-control" />
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label class="form-label">Apellidos <span class="text-danger">*</span></label>
                     <asp:TextBox ID="txtApellidosMiembro" runat="server" CssClass="form-control" />
                 </div>
-    
+ 
                 <div class="col-md-6">
                     <label class="form-label">Correo Electrónico <span class="text-danger">*</span></label>
                     <div class="input-group">
@@ -494,44 +499,40 @@
                         <asp:TextBox ID="txtCorreoMiembro" runat="server" CssClass="form-control" TextMode="Email" placeholder="ejemplo@utc.edu.ec" />
                     </div>
                 </div>
-    
+ 
                 <div class="col-md-6">
                     <label class="form-label">Rol en el Proyecto</label>
                     <asp:DropDownList ID="ddlRolMiembro" runat="server" CssClass="form-select">
-                        <asp:ListItem>Investigador Principal</asp:ListItem>
-                        <asp:ListItem>Co-Investigador</asp:ListItem>
-                        <asp:ListItem>Ayudante de Investigación</asp:ListItem>
-                        <asp:ListItem>Tesista de Pregrado</asp:ListItem>
-                        <asp:ListItem>Tesista de Posgrado</asp:ListItem>
-                        <asp:ListItem>Técnico de Apoyo</asp:ListItem>
-                        <asp:ListItem>Director</asp:ListItem>
+                        <asp:ListItem>MIEMBRO DE PROYECTO</asp:ListItem>
                     </asp:DropDownList>
                 </div>
 
                 <div id="divCamposInternos" class="col-12 row g-3 m-0 p-0">
                     <div class="col-md-6">
                         <label class="form-label">Facultad / Extensión</label>
-                        <asp:DropDownList ID="ddlFacultadMiembro" runat="server" CssClass="form-select">
+                        <asp:DropDownList ID="ddlFacultadMiembro" runat="server" CssClass="form-select" 
+                            AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadMiembro_SelectedIndexChanged">
                             <asp:ListItem Text="-- Seleccione --" Value="" />
-                            <asp:ListItem>FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
-                            <asp:ListItem>FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
-                            <asp:ListItem>FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
-                            <asp:ListItem>FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
-                            <asp:ListItem>FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
-                            <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
-                            <asp:ListItem>EXTENSION LA MANÁ</asp:ListItem>
+                            <asp:ListItem Value="CAREN">FACULTAD DE CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
+                            <asp:ListItem Value="CIYA">FACULTAD DE CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
+                            <asp:ListItem Value="CAYE">FACULTAD DE CIENCIAS ADMINISTRATIVAS (CAYE)</asp:ListItem>
+                            <asp:ListItem Value="CSAYE">FACULTAD DE CIENCIAS SOCIALES (CSAYE)</asp:ListItem>
+                            <asp:ListItem Value="SALUD">FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
+                            <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
+                            <asp:ListItem Value="LAMANA">EXTENSION LA MANA</asp:ListItem>
                         </asp:DropDownList>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Carrera / Departamento</label>
-                        <asp:TextBox ID="txtCarreraMiembro" runat="server" CssClass="form-control" placeholder="Ej: Sistemas de Información" />
+                        <asp:DropDownList ID="ddlCarreraMiembro" runat="server" CssClass="form-select">
+                            <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
+                        </asp:DropDownList>
                     </div>
                 </div>
 
                 <div id="divCamposExternos" class="col-12" style="display:none;">
                     <label class="form-label fw-bold">Institución / Entidad de Origen</label>
-                    <asp:TextBox ID="txtEntidadMiembro" runat="server" CssClass="form-control" placeholder="Ej: Universidad Central, SENESCYT, Empresa Privada..." />
-                    <div class="form-text">Especifique la organización a la que pertenece el investigador invitado.</div>
+                    <asp:TextBox ID="txtEntidadMiembro" runat="server" CssClass="form-control" placeholder="Ej: Universidad Central, SENESCYT..." />
                 </div>
             </div>
 
@@ -1032,6 +1033,8 @@
                         <span id="lblRolMiembroEstado" class="text-muted">...</span>
                     </div>
 
+                    <div id="divAlertaDirector" class="text-center mb-2" style="display:none;"></div>
+
                     <div class="mb-3">
                         <label class="form-label fw-bold">Motivo del cambio (Obligatorio)</label>
                         <textarea id="txtMotivoCambio" class="form-control" rows="3" placeholder="Especifique la razón..."></textarea>
@@ -1277,7 +1280,7 @@
                                 
                                     <asp:LinkButton runat="server" CommandName="Restaurar" CommandArgument='<%# Eval("strId_miembro") %>' 
                                         CssClass="btn btn-sm btn-success rounded-pill px-4 shadow-sm fw-bold" 
-                                        OnClientClick="return confirm('¿Está seguro de restaurar a este integrante al proyecto?');">
+                                        OnClientClick="return confirmarRestaurar(this, '¿Está seguro de restaurar a este integrante al proyecto?');">
                                         <i class="fa-solid fa-rotate-left me-2"></i> RESTAURAR
                                     </asp:LinkButton>
                                 </div>

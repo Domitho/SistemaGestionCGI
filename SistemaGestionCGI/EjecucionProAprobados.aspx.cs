@@ -417,11 +417,27 @@ namespace SistemaGestionCGI
 
                 bool esJefe = rol.Contains("DIRECTOR") || rol.Contains("COORDINADOR");
 
-                if (esJefe || esFinalizado)
+                if (esFinalizado)
                 {
                     if (btnEditarM != null) btnEditarM.Visible = false;
                     if (btnEliminarM != null) btnEliminarM.Visible = false;
                     if (btnToggle != null) btnToggle.Visible = false;
+                }
+                else
+                {
+                    if (esJefe)
+                    {
+
+                        if (btnEditarM != null) btnEditarM.Visible = false;
+                        if (btnEliminarM != null) btnEliminarM.Visible = false;
+                        if (btnToggle != null) btnToggle.Visible = true;     
+                    }
+                    else
+                    {
+                        if (btnEditarM != null) btnEditarM.Visible = true;
+                        if (btnEliminarM != null) btnEliminarM.Visible = true;
+                        if (btnToggle != null) btnToggle.Visible = true;
+                    }
                 }
             }
         }
@@ -507,8 +523,7 @@ namespace SistemaGestionCGI
         {
             if (int.TryParse(hfIdEjecucionEquipo.Value, out int id))
             {
-                var todos = _manejador.ObtenerMiembros(id);
-                rptMiembros.DataSource = todos.Where(m => m.bitActivo_miembro == true).ToList();
+                rptMiembros.DataSource = _manejador.ObtenerMiembrosActivos(id);
                 rptMiembros.DataBind();
             }
         }
@@ -520,7 +535,6 @@ namespace SistemaGestionCGI
             hfIdMiembroEdit.Value = "";
             lblTituloFormMiembro.Text = "Nuevo Integrante";
 
-            // Limpiar campos
             txtCedulaMiembro.Text = "";
             txtNombresMiembro.Text = "";
             txtApellidosMiembro.Text = "";
@@ -532,69 +546,83 @@ namespace SistemaGestionCGI
         {
             try
             {
-                // 1. VALIDACIONES BÁSICAS
-                if (string.IsNullOrWhiteSpace(txtCedulaMiembro.Text) ||
-                    string.IsNullOrWhiteSpace(txtNombresMiembro.Text) ||
-                    string.IsNullOrWhiteSpace(txtCorreoMiembro.Text))
+                string cedula = txtCedulaMiembro.Text.Trim();
+                string tipo = ddlTipoMiembro.SelectedValue;
+
+                if (tipo == "Interno")
                 {
-                    Msg("Complete Cédula, Nombres y Correo.", "ww");
+                    if (!EsCedulaValida(cedula))
+                    {
+                        txtCedulaMiembro.CssClass = "form-control is-invalid";
+                        Msg("Error Crítico: La cédula no es válida.", "ee");
+                        return;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(hfIdMiembroEdit.Value))
+                {
+                    int idProyecto = int.Parse(hfIdEjecucionEquipo.Value);
+                    var miembros = _manejador.ObtenerMiembros(idProyecto);
+
+                    if (miembros.Any(x => x.strCedula_miembro == cedula && x.bitActivo_miembro == true))
+                    {
+                        Msg("Error: Esa persona ya está registrada en el equipo.", "ww");
+                        return;
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(txtNombresMiembro.Text) || string.IsNullOrWhiteSpace(txtCorreoMiembro.Text))
+                {
+                    Msg("Complete Nombres y Correo.", "ww");
                     return;
                 }
 
-                // 2. LOGICA SEGÚN TIPO
-                string tipo = ddlTipoMiembro.SelectedValue;
-                string entidad = "";
                 string facultad = "";
                 string carrera = "";
+                string entidad = "";
 
                 if (tipo == "Externo")
                 {
                     entidad = txtEntidadMiembro.Text.Trim();
-                    if (string.IsNullOrEmpty(entidad))
-                    {
-                        Msg("Debe especificar la Entidad para miembros externos.", "ww");
-                        return;
-                    }
+                    if (string.IsNullOrEmpty(entidad)) { Msg("Especifique la entidad externa.", "ww"); return; }
                     facultad = "EXTERNO";
                 }
                 else
                 {
                     facultad = ddlFacultadMiembro.SelectedValue;
-                    carrera = txtCarreraMiembro.Text.Trim();
+                    carrera = ddlCarreraMiembro.SelectedValue;
                 }
 
-                // 3. CONSTRUIR OBJETO
-                var m = new InvgccEjecucionMiembros
+                var nuevoMiembro = new InvgccEjecucionMiembros
                 {
                     fkId_ejec = int.Parse(hfIdEjecucionEquipo.Value),
-                    strCedula_miembro = txtCedulaMiembro.Text.Trim(),
+                    strCedula_miembro = cedula,
                     strNombres_miembro = txtNombresMiembro.Text.Trim().ToUpper(),
                     strApellidos_miembro = txtApellidosMiembro.Text.Trim().ToUpper(),
-                    strCorreo_miembro = txtCorreoMiembro.Text.Trim().ToLower(), // Nuevo
-                    strTipo_miembro = tipo, // Nuevo
+                    strCorreo_miembro = txtCorreoMiembro.Text.Trim().ToLower(),
+                    strTipo_miembro = tipo,
                     strRol_miembro = ddlRolMiembro.SelectedValue,
-
-                    // Campos Condicionales
                     strEntidad_miembro = entidad,
                     strFacultad_miembro = facultad,
-                    strCarrera_miembro = carrera
+                    strCarrera_miembro = carrera,
+                    bitActivo_miembro = true,
+                    dtFechaInicio_miembro = DateTime.Now
                 };
 
-                // 4. GUARDAR O ACTUALIZAR
+                // 4. GUARDAR
                 if (string.IsNullOrEmpty(hfIdMiembroEdit.Value))
                 {
-                    _manejador.GuardarMiembro(m);
-                    SetFlashMessage("Integrante agregado correctamente.", "ss");
+                    _manejador.GuardarMiembro(nuevoMiembro);
+                    SetFlashMessage("Integrante validado y guardado correctamente.", "ss");
                 }
                 else
                 {
-                    m.strId_miembro = int.Parse(hfIdMiembroEdit.Value);
-                    _manejador.ActualizarMiembro(m);
+                    nuevoMiembro.strId_miembro = int.Parse(hfIdMiembroEdit.Value);
+                    _manejador.ActualizarMiembro(nuevoMiembro);
                     SetFlashMessage("Datos del integrante actualizados.", "ss");
                 }
 
-                // Redirección suave (mismo ID de team)
-                Response.Redirect($"EjecucionProAprobados.aspx?idTeam={m.fkId_ejec}", false);
+                Response.Redirect($"EjecucionProAprobados.aspx?idTeam={nuevoMiembro.fkId_ejec}", false);
             }
             catch (Exception ex)
             {
@@ -620,11 +648,26 @@ namespace SistemaGestionCGI
                 {
                     hfIdMiembroEstado.Value = idMiembro.ToString();
                     string nombre = $"{m.strNombres_miembro} {m.strApellidos_miembro}";
+                    string rol = m.strRol_miembro;
+
+                    bool esJefe = rol.ToUpper().Contains("DIRECTOR") || rol.ToUpper().Contains("COORDINADOR");
+                    string jsRolUpdate;
+
+                    if (esJefe && m.bitActivo_miembro)
+                    {
+                        jsRolUpdate = $"document.getElementById('lblRolMiembroEstado').innerHTML = '<span class=\"text-danger fw-bold\">⚠️ {rol} <br><small>(Al dar baja, el proyecto quedará SIN ASIGNAR)</small></span>';";
+                    }
+                    else
+                    {
+                        jsRolUpdate = $"document.getElementById('lblRolMiembroEstado').innerText = '{rol}';";
+                    }
+
                     string script = $@"
                         document.getElementById('lblNombreMiembroEstado').innerText = '{nombre}';
-                        document.getElementById('lblRolMiembroEstado').innerText = '{m.strRol_miembro}';
+                        {jsRolUpdate} 
                         document.getElementById('txtMotivoCambio').value = ''; 
                         new bootstrap.Modal(document.getElementById('modalEstadoMiembro')).show();";
+
                     ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalEstado", script, true);
                 }
             }
@@ -1573,11 +1616,9 @@ namespace SistemaGestionCGI
         {
             if (int.TryParse(hfIdEjecucionEquipo.Value, out int id))
             {
-                // Usamos la misma consulta general, pero filtramos en memoria con LINQ
-                var todos = _manejador.ObtenerMiembros(id);
-                var inactivos = todos.Where(m => m.bitActivo_miembro == false).ToList();
+                var listaPapelera = _manejador.ObtenerMiembrosPapelera(id);
 
-                rptPapeleraIntegrantes.DataSource = inactivos;
+                rptPapeleraIntegrantes.DataSource = listaPapelera;
                 rptPapeleraIntegrantes.DataBind();
 
                 ScriptManager.RegisterStartupScript(this, GetType(), "PopTrash",
@@ -1592,42 +1633,27 @@ namespace SistemaGestionCGI
                 try
                 {
                     int idMiembroRecuperar = int.Parse(e.CommandArgument.ToString());
-                    int idProyectoActual = int.Parse(hfIdEjecucionEquipo.Value);
+                    int idProyecto = int.Parse(hfIdEjecucionEquipo.Value);
                     string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";
 
-                    // 1. Obtener datos del integrante que queremos restaurar
                     var miembro = _manejador.ObtenerMiembroPorId(idMiembroRecuperar);
                     if (miembro == null) return;
 
-                    // 2. VALIDACIÓN: Verificar si la cédula YA está activa en este proyecto
-                    var todosLosMiembros = _manejador.ObtenerMiembros(idProyectoActual);
-
-                    bool yaExisteActivo = todosLosMiembros.Any(m =>
-                        m.strCedula_miembro == miembro.strCedula_miembro && // Misma persona
-                        m.bitActivo_miembro == true &&                      // Está activo
-                        m.strId_miembro != idMiembroRecuperar               // No es el registro que estamos restaurando
-                    );
-
-                    if (yaExisteActivo)
+                    if (_manejador.ExisteMiembroActivoPorCedula(miembro.strCedula_miembro, idProyecto))
                     {
-                        Msg("⚠️ No se puede restaurar: Esta persona ya se encuentra ACTIVA en el proyecto.", "ww");
+                        Msg("Conflicto: Esta persona ya se encuentra ACTIVA en el proyecto.", "ww");
 
-                        // Mantenemos el modal abierto
                         ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenTrash",
                             "new bootstrap.Modal(document.getElementById('modalPapeleraIntegrantes')).show();", true);
                         return;
                     }
 
-                    // 3. RESTAURAR (Si pasó la validación)
-                    // Reusamos tu método CambiarEstadoMiembro (True = Activar)
-                    _manejador.CambiarEstadoMiembro(idMiembroRecuperar, true, "Restauración desde Papelera", usuario);
+                    _manejador.RestaurarMiembro(idMiembroRecuperar, usuario);
 
                     Msg("Integrante reincorporado exitosamente.", "ss");
 
-                    // 4. Actualizar las vistas
-                    RefrescarTablaMiembros(); // Refresca la tabla principal (ahora aparecerá)
+                    RefrescarTablaMiembros(); 
 
-                    // Cerrar el modal de papelera
                     ScriptManager.RegisterStartupScript(this, GetType(), "CloseTrash",
                         "bootstrap.Modal.getInstance(document.getElementById('modalPapeleraIntegrantes')).hide();", true);
                 }
@@ -1635,6 +1661,147 @@ namespace SistemaGestionCGI
                 {
                     Msg("Error al restaurar: " + ex.Message, "ee");
                 }
+            }
+        }
+
+        // CEDULA
+
+        protected void btnValidarCedula_Click(object sender, EventArgs e)
+        {
+            string cedula = txtCedulaMiembro.Text.Trim();
+
+            if (!EsCedulaValida(cedula))
+            {
+                txtCedulaMiembro.CssClass = "form-control is-invalid";
+                Msg("Cédula inválida. Verifique los dígitos.", "ee");
+                return;
+            }
+
+            int idProyecto = int.Parse(hfIdEjecucionEquipo.Value);
+            var miembros = _manejador.ObtenerMiembros(idProyecto);
+
+            bool existe = miembros.Any(m => m.strCedula_miembro == cedula && m.bitActivo_miembro == true);
+
+            if (existe)
+            {
+                txtCedulaMiembro.CssClass = "form-control is-invalid";
+                Msg("Esta persona YA está registrada en el equipo.", "ww");
+            }
+            else
+            {
+                txtCedulaMiembro.CssClass = "form-control is-valid";
+                Msg("Cédula válida y disponible.", "ss");
+                txtNombresMiembro.Focus();
+            }
+        }
+
+        private bool EsCedulaValida(string cedula)
+        {
+            if (string.IsNullOrEmpty(cedula) || cedula.Length != 10) return false;
+            if (!long.TryParse(cedula, out long n)) return false;
+
+            try
+            {
+                int provincia = int.Parse(cedula.Substring(0, 2));
+                if (!((provincia >= 1 && provincia <= 24) || provincia == 30)) return false;
+
+                int tercerDigito = int.Parse(cedula.Substring(2, 1));
+                if (tercerDigito >= 6) return false; // Solo personas naturales
+
+                int[] coeficientes = { 2, 1, 2, 1, 2, 1, 2, 1, 2 };
+                int suma = 0;
+                int verificador = int.Parse(cedula.Substring(9, 1));
+
+                for (int i = 0; i < 9; i++)
+                {
+                    int digito = int.Parse(cedula.Substring(i, 1));
+                    int producto = digito * coeficientes[i];
+                    if (producto >= 10) producto -= 9;
+                    suma += producto;
+                }
+
+                int residuo = suma % 10;
+                int resultado = (residuo == 0) ? 0 : (10 - residuo);
+
+                return resultado == verificador;
+            }
+            catch { return false; }
+        }
+
+        // FACULTAD -CARRERA
+
+        protected void ddlFacultadMiembro_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            CargarCarrerasEnCombo(ddlCarreraMiembro, ddlFacultadMiembro.SelectedValue);
+
+            string script = "toggleTipoIntegrante();";
+            ScriptManager.RegisterStartupScript(this, GetType(), "RestoreUI", script, true);
+        }
+
+        private void CargarCarrerasEnCombo(DropDownList ddlCarrera, string facultad)
+        {
+            ddlCarrera.Items.Clear();
+            if (string.IsNullOrEmpty(facultad))
+            {
+                ddlCarrera.Items.Add(new ListItem("-- Seleccione Facultad Primero --", ""));
+                return;
+            }
+
+            ddlCarrera.Items.Add(new ListItem("-- Seleccione Carrera --", ""));
+
+            switch (facultad)
+            {
+                case "CIYA":
+                    ddlCarrera.Items.Add(new ListItem("SISTEMAS DE INFORMACIÓN", "SISTEMAS DE INFORMACIÓN"));
+                    ddlCarrera.Items.Add(new ListItem("INDUSTRIAL", "INDUSTRIAL"));
+                    ddlCarrera.Items.Add(new ListItem("ELECTROMECÁNICA", "ELECTROMECANICA"));
+                    ddlCarrera.Items.Add(new ListItem("ELECTRICIDAD", "ELECTRICIDAD"));
+                    ddlCarrera.Items.Add(new ListItem("HIDRAULICA", "HIDRAULICA"));
+                    ddlCarrera.Items.Add(new ListItem("SOFTWARE", "SOFTWARE"));
+                    break;
+                case "CAREN":
+                    ddlCarrera.Items.Add(new ListItem("AGRONOMÍA", "AGRONOMIA"));
+                    ddlCarrera.Items.Add(new ListItem("VETERINARIA", "VETERINARIA"));
+                    ddlCarrera.Items.Add(new ListItem("AMBIENTE", "AMBIENTE"));
+                    ddlCarrera.Items.Add(new ListItem("TURISMO", "TURISMO"));
+                    ddlCarrera.Items.Add(new ListItem("AGROPECUARIAS", "AGROPECUARIAS"));
+                    ddlCarrera.Items.Add(new ListItem("BIOTECNOLOGIA", "BIOTECNOLOGIA"));
+                    break;
+                case "CAYE":
+                    ddlCarrera.Items.Add(new ListItem("ADMINISTRACIÓN DE EMPRESAS", "ADMINISTRACIÓN DE EMPRESAS"));
+                    ddlCarrera.Items.Add(new ListItem("CONTABILIDAD", "CONTABILIDAD"));
+                    ddlCarrera.Items.Add(new ListItem("ECONOMIA", "ECONOMIA"));
+                    ddlCarrera.Items.Add(new ListItem("FINANZAS", "FINANZAS"));
+                    ddlCarrera.Items.Add(new ListItem("MERCADOTÉCNIA", "MERCADOTÉCNIA"));
+                    ddlCarrera.Items.Add(new ListItem("GESTIÓN DEL TALENTO HUMANO", "GESTIÓN DEL TALENTO HUMANO"));
+                    break;
+                case "CSAYE":
+                    ddlCarrera.Items.Add(new ListItem("DISEÑO GRAFICO", "DISEÑO GRAFICO"));
+                    ddlCarrera.Items.Add(new ListItem("DISEÑO GRAFICO INTERACTIVO", "DISEÑO GRAFICO INTERACTIVO"));
+                    ddlCarrera.Items.Add(new ListItem("COMUNICACIÓN", "COMUNICACIÓN"));
+                    ddlCarrera.Items.Add(new ListItem("TRABAJO SOCIAL", "TRABAJO SOCIAL"));
+                    ddlCarrera.Items.Add(new ListItem("ANIMACIÓN DIGITAL", "ANIMACIÓN DIGITAL"));
+                    ddlCarrera.Items.Add(new ListItem("PSICOLOGÍA SOCIAL", "PSICOLOGÍA SOCIAL"));
+                    break;
+                case "SALUD":
+                    ddlCarrera.Items.Add(new ListItem("ENFERMERIA", "ENFERMERIA"));
+                    break;
+                case "PUJILI":
+                    ddlCarrera.Items.Add(new ListItem("EDUCACIÓN INICIAL", "EDUCACIÓN INICIAL"));
+                    ddlCarrera.Items.Add(new ListItem("EDUCACIÓN BASICA", "EDUCACIÓN BASICA"));
+                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DEL IDIOMA INGLÉS", "PEDAGOGÍA DEL IDIOMA INGLÉS"));
+                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DE LA LENGUA Y LITERATURA", "PEDAGOGÍA DE LA LENGUA Y LITERATURA"));
+                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DE LAS MATEMÁTICAS Y LA FÍSICA", "PEDAGOGÍA DE LAS MATEMÁTICAS Y LA FÍSICA"));
+                    break;
+                case "LAMANA":
+                    ddlCarrera.Items.Add(new ListItem("CONTABILIDAD_LM", "CONTABILIDAD_LM"));
+                    ddlCarrera.Items.Add(new ListItem("ADMINISTRACIÓN_LM", "ADMINISTRACIÓN_LM"));
+                    ddlCarrera.Items.Add(new ListItem("ELECTROMECÁNICA_LM", "ELECTROMECÁNICA_LM"));
+                    ddlCarrera.Items.Add(new ListItem("SISTEMAS DE INFORMACIÓN_LM", "SISTEMAS DE INFORMACIÓN_LM"));
+                    ddlCarrera.Items.Add(new ListItem("TURISMO_LM", "TURISMO_LM"));
+                    ddlCarrera.Items.Add(new ListItem("AGRONOMÍA_LM", "AGRONOMÍA_LM"));
+                    ddlCarrera.Items.Add(new ListItem("AGROINDUSTRIAS_LM", "AGROINDUSTRIAS_LM"));
+                    break;
             }
         }
 

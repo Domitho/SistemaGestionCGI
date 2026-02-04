@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SistemaGestionCGI.Models;
 using SistemaGestionCGI.Settings;
+using System.Transactions; // IMPORTANTE: Agregar referencia a System.Transactions
 
 namespace SistemaGestionCGI.BLL
 {
@@ -35,29 +36,6 @@ namespace SistemaGestionCGI.BLL
             sql += " ORDER BY E.strId_ejec DESC";
 
             return _dal.SelectSql<InvgccEjecucionProyectos>(sql);
-        }
-
-        public void RenovarCicloProyecto(int idEjecucion, int idNuevoCiclo, string nombreNuevoPeriodo)
-        {
-            string sql = $@"
-                UPDATE INVGCCEJECUCION_PROYECTO 
-                SET 
-                    fkId_ciclo = {idNuevoCiclo},
-                    strPeriodo_ejec = '{nombreNuevoPeriodo}'
-                WHERE strId_ejec = {idEjecucion}";
-
-            _dal.UpdateSql(sql);
-        }
-
-        public List<CicloAcademico> ObtenerCiclosFuturos(DateTime fechaBase)
-        {
-            string sql = $@"
-                SELECT id_ciclo, strNombre_ciclo, dtInicio_ciclo 
-                FROM INVGCCEJECUCION_PROYECTO_CICLOS 
-                WHERE dtInicio_ciclo > '{fechaBase:yyyy-MM-dd}'
-                ORDER BY dtInicio_ciclo ASC";
-
-            return _dal.SelectSql<CicloAcademico>(sql);
         }
 
         public InvgccEjecucionProyectos ObtenerEjecucionPorId(int id)
@@ -100,6 +78,7 @@ namespace SistemaGestionCGI.BLL
 
             _dal.UpdateSql(sqlInsert);
 
+            // Recuperamos el ID recién creado
             string sqlGetId = $@"
                 SELECT TOP 1 strId_ejec 
                 FROM INVGCCEJECUCION_PROYECTO 
@@ -131,13 +110,26 @@ namespace SistemaGestionCGI.BLL
 
         public void EliminarEjecucion(int id)
         {
+            _dal.DeleteSql($"DELETE FROM INVGCCEJECUCION_MIEMBROS_HISTORIAL WHERE fkId_miembro IN (SELECT strId_miembro FROM INVGCCEJECUCION_MIEMBROS WHERE fkId_ejec = {id})");
             _dal.DeleteSql($"DELETE FROM INVGCCEJECUCION_MIEMBROS WHERE fkId_ejec = {id}");
             _dal.DeleteSql($"DELETE FROM INVGCCEJECUCION_INFORMES WHERE fkId_ejec = {id}");
             _dal.Delete("INVGCCEJECUCION_PROYECTO", $"strId_ejec = {id}");
         }
 
+        public void RenovarCicloProyecto(int idEjecucion, int idNuevoCiclo, string nombreNuevoPeriodo)
+        {
+            string sql = $@"
+                UPDATE INVGCCEJECUCION_PROYECTO 
+                SET 
+                    fkId_ciclo = {idNuevoCiclo},
+                    strPeriodo_ejec = '{nombreNuevoPeriodo}'
+                WHERE strId_ejec = {idEjecucion}";
+
+            _dal.UpdateSql(sql);
+        }
+
         // =============================================================
-        // 2. GESTIÓN DE MIEMBROS
+        // 2. GESTIÓN DE MIEMBROS Y ESTADOS (SOLUCIÓN A TU PROBLEMA)
         // =============================================================
 
         public List<InvgccEjecucionMiembros> ObtenerMiembros(int idEjecucion)
@@ -165,9 +157,6 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sql);
         }
 
-        public void EliminarMiembro(int idMiembro) =>
-            _dal.UpdateSql($"UPDATE INVGCCEJECUCION_MIEMBROS SET bitActivo_miembro = 0 WHERE strId_miembro = {idMiembro}");
-
         public InvgccEjecucionMiembros ObtenerMiembroPorId(int id)
         {
             string sql = $"SELECT * FROM INVGCCEJECUCION_MIEMBROS WHERE strId_miembro = {id}";
@@ -190,6 +179,123 @@ namespace SistemaGestionCGI.BLL
                 WHERE strId_miembro = {obj.strId_miembro}";
 
             _dal.UpdateSql(sql);
+        }
+
+        public void EliminarMiembro(int idMiembro) =>
+            _dal.UpdateSql($"UPDATE INVGCCEJECUCION_MIEMBROS SET bitActivo_miembro = 0 WHERE strId_miembro = {idMiembro}");
+
+        public void CambiarEstadoMiembro(int idMiembro, bool nuevoEstado, string motivo, string usuario)
+        {
+            using (var scope = new TransactionScope())
+            {
+                try
+                {
+                    var miembro = ObtenerMiembroPorId(idMiembro);
+                    if (miembro == null) return;
+
+                    string cedulaFija = miembro.strCedula_miembro.Trim();
+
+                    int bit = nuevoEstado ? 1 : 0;
+                    string fechaFinSql = nuevoEstado ? "NULL" : $"'{DateTime.Now:yyyy-MM-dd HH:mm:ss}'";
+
+                    _dal.UpdateSql($@"UPDATE INVGCCEJECUCION_MIEMBROS 
+                              SET bitActivo_miembro = {bit}, dtFechaFin_miembro = {fechaFinSql}
+                              WHERE strId_miembro = {idMiembro}");
+
+                    RegistrarHistorialMiembro(idMiembro, nuevoEstado ? "REACTIVACIÓN" : "BAJA", motivo, usuario);
+
+                    if (miembro.fkId_ejec > 0)
+                    {
+                        var proyecto = ObtenerEjecucionPorId(miembro.fkId_ejec);
+
+                        if (proyecto != null)
+                        {
+                            string cedulaJefeActual = proyecto.strCedulaCoordinador_ejec?.Trim() ?? "";
+
+                            if (!nuevoEstado)
+                            {
+                                if (!string.IsNullOrEmpty(cedulaJefeActual) && cedulaFija == cedulaJefeActual)
+                                {
+                                    _dal.UpdateSql($@"UPDATE INVGCCEJECUCION_PROYECTO 
+                                              SET strCoordinador_ejec = '-- SIN ASIGNAR --'
+                                              WHERE strId_ejec = {miembro.fkId_ejec}");
+
+                                    _dal.UpdateSql($@"UPDATE INVGCCINSCRIPCION_PROYECTOS 
+                                              SET strCoordinador_pro = '-- SIN ASIGNAR --', 
+                                                  fkId_coordinador = NULL 
+                                              WHERE strId_pro = '{proyecto.fkId_pro}'");
+                                }
+                            }
+                            else if (nuevoEstado)
+                            {
+
+                                bool puestoVacio = string.IsNullOrEmpty(cedulaJefeActual) ||
+                                                   proyecto.strCoordinador_ejec.Contains("SIN ASIGNAR");
+
+                                string rolLocal = miembro.strRol_miembro?.ToUpper() ?? "";
+                                bool esJefe = rolLocal.Contains("COORDINADOR") || rolLocal.Contains("DIRECTOR") || rolLocal.Contains("PRINCIPAL");
+
+                                if ((puestoVacio || cedulaJefeActual == cedulaFija) && esJefe)
+                                {
+                                    string nombreCompleto = $"{miembro.strApellidos_miembro} {miembro.strNombres_miembro}";
+                                    string nombreConRol = $"{nombreCompleto} ({miembro.strRol_miembro})";
+
+                                    string sqlGetIdOriginal = $@"
+                                        SELECT TOP 1 G.strId_int 
+                                        FROM INVGCCGRUPO_INTEGRANTES G
+                                        INNER JOIN INVGCCINSCRIPCION_PROYECTOS P ON G.fkId_gru = P.fkId_gru
+                                        WHERE P.strId_pro = '{proyecto.fkId_pro}' 
+                                        AND G.strCedula_int = '{cedulaFija}'";
+
+                                    var resId = _dal.SelectSql<dynamic>(sqlGetIdOriginal);
+                                    string idIntegranteOriginal = (resId != null && resId.Count > 0) ? resId[0].strId_int : "NULL";
+                                    string valFk = (idIntegranteOriginal == "NULL") ? "NULL" : $"'{idIntegranteOriginal}'";
+
+                                    string sqlEjec = $@"
+                                        UPDATE INVGCCEJECUCION_PROYECTO 
+                                        SET strCoordinador_ejec = '{nombreCompleto.Replace("'", "''")}',
+                                            strCedulaCoordinador_ejec = '{cedulaFija}'
+                                        WHERE strId_ejec = {miembro.fkId_ejec}";
+                                    _dal.UpdateSql(sqlEjec);
+
+                                    string sqlInsc = $@"
+                                        UPDATE INVGCCINSCRIPCION_PROYECTOS 
+                                        SET strCoordinador_pro = '{nombreConRol.Replace("'", "''")}',
+                                            strCedulaCoordinador_pro = '{cedulaFija}',
+                                            fkId_coordinador = {valFk}
+                                        WHERE strId_pro = '{proyecto.fkId_pro}'";
+                                    _dal.UpdateSql(sqlInsc);
+                                }
+                            }
+                        }
+                    }
+                    scope.Complete();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Error BLL: " + ex.Message);
+                }
+            }
+        }
+
+        public void RegistrarHistorialMiembro(int idMiembro, string accion, string motivo, string usuario)
+        {
+            string fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            string motivoLimpio = motivo.Replace("'", "");
+
+            string sql = $@"
+                INSERT INTO INVGCCEJECUCION_MIEMBROS_HISTORIAL 
+                (fkId_miembro, dtFecha, strAccion, strMotivo, strUsuario)
+                VALUES 
+                ({idMiembro}, '{fecha}', '{accion}', '{motivoLimpio}', '{usuario}')";
+
+            _dal.UpdateSql(sql);
+        }
+
+        public List<InvgccEjecucionMiembrosHistorial> ObtenerHistorialMiembro(int idMiembro)
+        {
+            string sql = $"SELECT * FROM INVGCCEJECUCION_MIEMBROS_HISTORIAL WHERE fkId_miembro = {idMiembro} ORDER BY dtFecha DESC";
+            return _dal.SelectSql<InvgccEjecucionMiembrosHistorial>(sql);
         }
 
         public dynamic BuscarDocentePorCedula(string cedula)
@@ -217,7 +323,7 @@ namespace SistemaGestionCGI.BLL
         }
 
         // =============================================================
-        // 3. GESTIÓN DE INFORMES (TU CÓDIGO ORIGINAL SE MANTIENE IGUAL)
+        // 3. GESTIÓN DE INFORMES
         // =============================================================
 
         public List<InvgccEjecucionInformes> ObtenerInformes(int idEjecucion)
@@ -237,7 +343,6 @@ namespace SistemaGestionCGI.BLL
             string fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             string rutaSegura = inf.strArchivo_path.Replace("'", "''");
             string nombreArchivo = inf.strNombrePeriodo.Replace("'", "''");
-
             string cicloSeguro = string.IsNullOrEmpty(nombreCiclo) ? "Periodo Anterior" : nombreCiclo.Replace("'", "''");
 
             string sql = $@"
@@ -277,7 +382,6 @@ namespace SistemaGestionCGI.BLL
 
         public void EliminarInforme(int idInforme) =>
             _dal.Delete("INVGCCEJECUCION_INFORMES", $"strId_informe = {idInforme}");
-
 
         public void SubirInformeCierre(int idEjecucion, string rutaArchivo, string usuario, string nombreOriginal)
         {
@@ -326,111 +430,6 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sql);
         }
 
-        // =============================================================
-        // 4. GESTIÓN DE AUDITORÍA Y ESTADOS (TU CÓDIGO ORIGINAL SE MANTIENE IGUAL)
-        // =============================================================
-
-        public void CambiarEstadoMiembro(int idMiembro, bool nuevoEstado, string motivo, string usuario)
-        {
-            int bit = nuevoEstado ? 1 : 0;
-            string fechaFinSql = nuevoEstado ? "NULL" : $"'{DateTime.Now:yyyy-MM-dd HH:mm:ss}'";
-
-            string sqlUpdate = $@"
-                UPDATE INVGCCEJECUCION_MIEMBROS 
-                SET bitActivo_miembro = {bit},
-                    dtFechaFin_miembro = {fechaFinSql}
-                WHERE strId_miembro = {idMiembro}";
-
-            _dal.UpdateSql(sqlUpdate);
-
-            string accion = nuevoEstado ? "REACTIVACIÓN" : "BAJA TEMPORAL/DEFINITIVA";
-            RegistrarHistorialMiembro(idMiembro, accion, motivo, usuario);
-        }
-
-        public void RegistrarHistorialMiembro(int idMiembro, string accion, string motivo, string usuario)
-        {
-            string fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            string motivoLimpio = motivo.Replace("'", "");
-
-            string sql = $@"
-                INSERT INTO INVGCCEJECUCION_MIEMBROS_HISTORIAL 
-                (fkId_miembro, dtFecha, strAccion, strMotivo, strUsuario)
-                VALUES 
-                ({idMiembro}, '{fecha}', '{accion}', '{motivoLimpio}', '{usuario}')";
-
-            _dal.UpdateSql(sql);
-        }
-
-        public List<InvgccEjecucionMiembrosHistorial> ObtenerHistorialMiembro(int idMiembro)
-        {
-            string sql = $"SELECT * FROM INVGCCEJECUCION_MIEMBROS_HISTORIAL WHERE fkId_miembro = {idMiembro} ORDER BY dtFecha DESC";
-            return _dal.SelectSql<InvgccEjecucionMiembrosHistorial>(sql);
-        }
-
-        // =============================================================
-        // 5. UTILIDADES (TU CÓDIGO ORIGINAL SE MANTIENE IGUAL)
-        // =============================================================
-
-        public List<InvgccInscripcionProyectos> ObtenerProyectosAprobadosSinEjecucion()
-        {
-            string sql = @"
-                SELECT strId_pro, strTema_pro, strCoordinador_pro 
-                FROM INVGCCINSCRIPCION_PROYECTOS 
-                WHERE strEstado_pro = 'Aprobado' 
-                AND strId_pro NOT IN (SELECT fkId_pro FROM INVGCCEJECUCION_PROYECTO)";
-
-            return _dal.SelectSql<InvgccInscripcionProyectos>(sql);
-        }
-
-        public void GuardarCiclo(DateTime fechaInicio, DateTime fechaFin)
-        {
-            string nombreCiclo = $"{fechaInicio.ToString("MMMM yyyy").ToUpper()} - {fechaFin.ToString("MMMM yyyy").ToUpper()}";
-
-            string sqlInsert = $@"
-                INSERT INTO INVGCCEJECUCION_PROYECTO_CICLOS 
-                (strNombre_ciclo, dtInicio_ciclo, dtFin_ciclo) 
-                VALUES 
-                ('{nombreCiclo}', '{fechaInicio:yyyy-MM-dd}', '{fechaFin:yyyy-MM-dd}')";
-        
-            _dal.UpdateSql(sqlInsert);
-        }
-
-        public List<dynamic> ObtenerCiclos()
-        {
-            string sql = "SELECT id_ciclo, strNombre_ciclo FROM INVGCCEJECUCION_PROYECTO_CICLOS ORDER BY dtInicio_ciclo DESC";
-            return _dal.SelectSql<dynamic>(sql);
-        }
-
-        public string ObtenerEmailCoordinador(int idEjecucion)
-        {
-            string sql = $@"
-                SELECT TOP 1 I.strCorreo_int 
-                FROM INVGCCEJECUCION_PROYECTO E
-                INNER JOIN INVGCCGRUPO_INTEGRANTES I ON E.strCedulaCoordinador_ejec = I.strCedula_int
-                WHERE E.strId_ejec = {idEjecucion} 
-                AND I.bitActivo_int = 1
-                ORDER BY I.strId_int DESC"; 
-
-            try
-            {
-                var resultado = _dal.SelectSql<dynamic>(sql);
-
-                if (resultado != null && resultado.Count > 0)
-                {
-                    var correo = resultado[0].strCorreo_int;
-                    return correo != null ? correo.ToString().Trim() : "";
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("Error en ObtenerEmailCoordinador: " + ex.Message);
-            }
-
-            return "";
-        }
-
-        //
-
         public List<dynamic> ObtenerRepositorioCompleto(int idEjecucion)
         {
             string sql = $@"
@@ -470,7 +469,46 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<dynamic>(sql);
         }
 
-        //
+        // =============================================================
+        // 4. UTILIDADES Y OTROS
+        // =============================================================
+
+        public List<InvgccInscripcionProyectos> ObtenerProyectosAprobadosSinEjecucion()
+        {
+            string sql = @"
+                SELECT strId_pro, strTema_pro, strCoordinador_pro 
+                FROM INVGCCINSCRIPCION_PROYECTOS 
+                WHERE strEstado_pro = 'Aprobado' 
+                AND strId_pro NOT IN (SELECT fkId_pro FROM INVGCCEJECUCION_PROYECTO)";
+
+            return _dal.SelectSql<InvgccInscripcionProyectos>(sql);
+        }
+
+        public void GuardarCiclo(DateTime fechaInicio, DateTime fechaFin)
+        {
+            string nombreCiclo = $"{fechaInicio.ToString("MMMM yyyy").ToUpper()} - {fechaFin.ToString("MMMM yyyy").ToUpper()}";
+
+            string sqlInsert = $@"
+                INSERT INTO INVGCCEJECUCION_PROYECTO_CICLOS 
+                (strNombre_ciclo, dtInicio_ciclo, dtFin_ciclo) 
+                VALUES 
+                ('{nombreCiclo}', '{fechaInicio:yyyy-MM-dd}', '{fechaFin:yyyy-MM-dd}')";
+
+            _dal.UpdateSql(sqlInsert);
+        }
+
+        public List<dynamic> ObtenerCiclos()
+        {
+            string sql = "SELECT id_ciclo, strNombre_ciclo FROM INVGCCEJECUCION_PROYECTO_CICLOS ORDER BY dtInicio_ciclo DESC";
+            return _dal.SelectSql<dynamic>(sql);
+        }
+
+        public List<dynamic> ObtenerCiclosConFechas()
+        {
+            string sql = "SELECT id_ciclo, strNombre_ciclo, dtInicio_ciclo, dtFin_ciclo FROM INVGCCEJECUCION_PROYECTO_CICLOS ORDER BY dtInicio_ciclo ASC";
+            return _dal.SelectSql<dynamic>(sql);
+        }
+
         public List<CicloAcademico> ObtenerTodosLosCiclos()
         {
             string sql = @"
@@ -481,19 +519,74 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<CicloAcademico>(sql);
         }
 
-        public List<dynamic> ObtenerCiclosConFechas()
-        {
-            string sql = "SELECT id_ciclo, strNombre_ciclo, dtInicio_ciclo, dtFin_ciclo FROM INVGCCEJECUCION_PROYECTO_CICLOS ORDER BY dtInicio_ciclo ASC";
-            return _dal.SelectSql<dynamic>(sql);
-        }
-
-        //
         public dynamic ObtenerDatosIntegranteGrupo(string idIntegranteGrupo)
         {
             string sql = $"SELECT * FROM INVGCCGRUPO_INTEGRANTES WHERE strId_int = '{idIntegranteGrupo}'";
-
             var lista = _dal.SelectSql<dynamic>(sql);
             return lista.Count > 0 ? lista[0] : null;
+        }
+
+        public List<InvgccEjecucionMiembros> ObtenerMiembrosActivos(int idEjecucion)
+        {
+            string sql = $@"
+                SELECT * FROM INVGCCEJECUCION_MIEMBROS 
+                WHERE fkId_ejec = {idEjecucion} 
+                AND bitActivo_miembro = 1
+                ORDER BY strApellidos_miembro ASC";
+            return _dal.SelectSql<InvgccEjecucionMiembros>(sql);
+        }
+
+        public List<InvgccEjecucionMiembros> ObtenerMiembrosPapelera(int idEjecucion)
+        {
+            string sql = $@"
+                SELECT * FROM INVGCCEJECUCION_MIEMBROS 
+                WHERE fkId_ejec = {idEjecucion} 
+                AND bitActivo_miembro = 0
+                ORDER BY strApellidos_miembro ASC";
+            return _dal.SelectSql<InvgccEjecucionMiembros>(sql);
+        }
+
+        public bool ExisteMiembroActivoPorCedula(string cedula, int idEjecucion)
+        {
+            string sql = $@"
+                SELECT TOP 1 strId_miembro
+                FROM INVGCCEJECUCION_MIEMBROS 
+                WHERE fkId_ejec = {idEjecucion} 
+                AND strCedula_miembro = '{cedula}' 
+                AND bitActivo_miembro = 1";
+
+            var resultado = _dal.SelectSql<dynamic>(sql);
+            return resultado != null && resultado.Count > 0;
+        }
+
+        public void RestaurarMiembro(int idMiembro, string usuario)
+        {
+            CambiarEstadoMiembro(idMiembro, true, "Recuperado desde Papelera", usuario);
+        }
+
+        public string ObtenerEmailCoordinador(int idEjecucion)
+        {
+            string sql = $@"
+                SELECT TOP 1 I.strCorreo_int 
+                FROM INVGCCEJECUCION_PROYECTO E
+                INNER JOIN INVGCCGRUPO_INTEGRANTES I ON E.strCedulaCoordinador_ejec = I.strCedula_int
+                WHERE E.strId_ejec = {idEjecucion} 
+                AND I.bitActivo_int = 1
+                ORDER BY I.strId_int DESC";
+
+            try
+            {
+                var resultado = _dal.SelectSql<dynamic>(sql);
+                if (resultado != null && resultado.Count > 0)
+                {
+                    return resultado[0].strCorreo_int?.ToString().Trim() ?? "";
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error en ObtenerEmailCoordinador: " + ex.Message);
+            }
+            return "";
         }
     }
 
@@ -508,5 +601,4 @@ namespace SistemaGestionCGI.BLL
         public DateTime FechaInicioCiclo { get; set; }
         public List<dynamic> Archivos { get; set; }
     }
-
 }

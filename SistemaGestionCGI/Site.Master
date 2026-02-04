@@ -75,6 +75,38 @@
 
             return false;
         }
+
+        function confirmarRestaurar(source, mensaje) {
+            if (source.dataset.confirmed === "true") {
+                return true;
+            }
+
+            event.preventDefault();
+
+            Swal.fire({
+                title: '<span style="color:#312783">¿Está seguro?</span>',
+                text: mensaje || "Esta acción restaurara el registro del integrante",
+                icon: 'warning',
+                iconColor: '#d9534f',
+                showCancelButton: true,
+                confirmButtonColor: '#d9534f',
+                cancelButtonColor: '#312783',
+                confirmButtonText: '<i class="fa-solid fa-trash"></i> Sí, restaurar',
+                cancelButtonText: 'Cancelar',
+                backdrop: `rgba(49, 39, 131, 0.1)`,
+                customClass: {
+                    popup: 'shadow-lg border-0 rounded-4'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    source.dataset.confirmed = "true";
+                    source.click();
+                }
+            });
+
+            return false;
+        }
+
     </script>
 
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>

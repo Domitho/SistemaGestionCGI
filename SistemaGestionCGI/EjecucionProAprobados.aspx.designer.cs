@@ -348,6 +348,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtCedulaMiembro;
 
         /// <summary>
+        /// Control btnValidarCedula.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnValidarCedula;
+
+        /// <summary>
         /// Control txtNombresMiembro.
         /// </summary>
         /// <remarks>
@@ -393,13 +402,13 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.DropDownList ddlFacultadMiembro;
 
         /// <summary>
-        /// Control txtCarreraMiembro.
+        /// Control ddlCarreraMiembro.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtCarreraMiembro;
+        protected global::System.Web.UI.WebControls.DropDownList ddlCarreraMiembro;
 
         /// <summary>
         /// Control txtEntidadMiembro.
