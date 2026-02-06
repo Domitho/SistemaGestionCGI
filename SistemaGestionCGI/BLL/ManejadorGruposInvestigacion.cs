@@ -338,18 +338,62 @@ namespace SistemaGestionCGI.BLL
 
         public void CambiarEstadoIntegrante(string id, bool estado, string motivo, string usuario)
         {
+            // 1. ACTUALIZAR ESTADO DEL INTEGRANTE EN EL GRUPO
             int bit = estado ? 1 : 0;
             string fechaFin = estado ? "NULL" : $"'{DateTime.Now:yyyyMMdd}'";
 
             string sql = $@"
-                UPDATE INVGCCGRUPO_INTEGRANTES 
-                SET bitActivo_int = {bit}, dtFechafin_int = {fechaFin}
-                WHERE strId_int = '{id}'";
+        UPDATE INVGCCGRUPO_INTEGRANTES 
+        SET bitActivo_int = {bit}, dtFechafin_int = {fechaFin}
+        WHERE strId_int = '{id}'";
 
             _dal.UpdateSql(sql);
 
             string accion = estado ? "REACTIVACIÓN" : "BAJA";
             RegistrarHistorial(id, accion, motivo, usuario);
+
+            // =========================================================================
+            // [NUEVO] EFECTO CASCADA: SI ES BAJA, LIMPIAR CARGOS DE COORDINADOR
+            // =========================================================================
+            if (!estado) // Si se está desactivando...
+            {
+                // A. OBTENER LA CÉDULA DEL INTEGRANTE QUE ACABAMOS DE APAGAR
+                var integrante = ObtenerIntegrantePorId(id);
+                if (integrante != null && !string.IsNullOrEmpty(integrante.strCedula_int))
+                {
+                    string cedula = integrante.strCedula_int.Trim();
+
+                    // B. DAR DE BAJA EN MÓDULO EJECUCIÓN (TABLA DE MIEMBROS)
+                    // Desactivamos cualquier rol activo que tenga esa cédula en cualquier proyecto
+                    string sqlBajaEjecucionMiembros = $@"
+                UPDATE INVGCCEJECUCION_MIEMBROS 
+                SET bitActivo_miembro = 0, dtFechaFin_miembro = GETDATE()
+                WHERE strCedula_miembro = '{cedula}' AND bitActivo_miembro = 1";
+
+                    _dal.UpdateSql(sqlBajaEjecucionMiembros);
+
+                    // C. LIMPIAR CABECERAS DE PROYECTOS ACTIVOS (EJECUCIÓN)
+                    // Si él figura como jefe en la cabecera, ponemos '-- SIN ASIGNAR --' pero mantenemos la cédula
+                    // (Igual que como hicimos en la lógica de baja manual del otro módulo)
+                    string sqlLimpiarCabeceraEjec = $@"
+                UPDATE INVGCCEJECUCION_PROYECTO 
+                SET strCoordinador_ejec = '-- SIN ASIGNAR --'
+                WHERE strCedulaCoordinador_ejec = '{cedula}'";
+
+                    _dal.UpdateSql(sqlLimpiarCabeceraEjec);
+
+                    // D. LIMPIAR CABECERAS DE PROYECTOS (INSCRIPCIÓN)
+                    // Rompemos el enlace FK para que no salga su nombre, pero mantenemos la cédula histórica
+                    string sqlLimpiarCabeceraInsc = $@"
+                UPDATE INVGCCINSCRIPCION_PROYECTOS 
+                SET strCoordinador_pro = '-- SIN ASIGNAR --',
+                    fkId_coordinador = NULL
+                WHERE strCedulaCoordinador_pro = '{cedula}'";
+
+                    _dal.UpdateSql(sqlLimpiarCabeceraInsc);
+                }
+            }
+            // =========================================================================
         }
 
         public void EliminarIntegranteFisico(string id)

@@ -14,8 +14,6 @@ namespace SistemaGestionCGI.BLL
         // LECTURA DE DATOS
         // =============================================================
 
-        // Cambia el tipo de retorno a dynamic o una clase DTO, 
-        // porque estas columnas "extras" no existen en tu entidad base.
         public List<dynamic> ObtenerTodos()
         {
             string sql = @"
