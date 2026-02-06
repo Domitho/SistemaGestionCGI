@@ -22,5 +22,8 @@ namespace SistemaGestionCGI.Models
 
         [JsonProperty("strCiclo_informe")]
         public string strCiclo_informe { get; set; }
+
+        [JsonProperty("strObservacion_informe")]
+        public string strObservacion_informe { get; set; }
     }
 }

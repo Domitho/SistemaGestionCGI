@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SistemaGestionCGI.Models;
 using SistemaGestionCGI.Settings;
-using System.Transactions; // IMPORTANTE: Agregar referencia a System.Transactions
+using System.Transactions; 
 
 namespace SistemaGestionCGI.BLL
 {
@@ -612,6 +612,20 @@ namespace SistemaGestionCGI.BLL
             }
             return "";
         }
+
+        //
+        public void GuardarObservacionInforme(int idInforme, string observacion)
+        {
+            string obsSegura = string.IsNullOrEmpty(observacion) ? "NULL" : $"'{observacion.Replace("'", "''")}'";
+
+            string sql = $@"
+                UPDATE INVGCCEJECUCION_INFORMES 
+                SET strObservacion_informe = {obsSegura}
+                WHERE strId_informe = {idInforme}";
+
+            _dal.UpdateSql(sql);
+        }
+
     }
 
     public class DtoCedulaTemp

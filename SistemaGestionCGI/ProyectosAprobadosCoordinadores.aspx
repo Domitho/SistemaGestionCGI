@@ -4,18 +4,12 @@
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
 
-    <%-- ==============================================================================
-         1. ESTILOS Y REFERENCIAS
-         ============================================================================== --%>
     <link href="DesignersUTC/Styles/utc-full-design.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/modal-informes.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/proyectos-pro-coordinador.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/informes-coordinadores-pro.css" rel="stylesheet" />
 
-    <%-- ==============================================================================
-         2. ENCABEZADO DE PÁGINA
-         ============================================================================== --%>
     <div class="utc-hero p-3 p-md-4 mb-4 d-flex justify-content-between align-items-start flex-wrap gap-3">
         <div>
             <h3 class="utc-title mb-1"><i class="fa-solid fa-layer-group me-2"></i> GESTIÓN DE PROYECTOS</h3>
@@ -24,9 +18,6 @@
         <span class="utc-chip"><i class="fa-solid fa-user-tie"></i> Rol: Coordinador</span>
     </div>
 
-    <%-- ==============================================================================
-         3. PANEL LISTADO DE PROYECTOS (VISTA PRINCIPAL)
-         ============================================================================== --%>
     <asp:Panel ID="pnlListadoTarjetas" runat="server">
         <div class="row g-4">
             <asp:Repeater ID="rptProyectosCoordinador" runat="server"
@@ -37,10 +28,8 @@
                         <div class="card card-hero-project shadow-utc rounded-4 mb-4">
                             <div class="row g-0 h-100">
                     
-                                <%-- LADO IZQUIERDO: INFORMACIÓN HERO (70%) --%>
                                 <div class="col-lg-8 p-4 p-md-5 d-flex flex-column justify-content-center">
                         
-                                    <%-- Encabezado: Estado + ID --%>
                                     <div class="d-flex align-items-center gap-3 mb-3">
                                         <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 fs-6">
                                             <i class="fa-solid fa-circle-play me-2"></i> <%# Eval("strEstado_ejec") %>
@@ -50,14 +39,11 @@
                                         </span>
                                     </div>
 
-                                    <%-- Título Grande --%>
                                     <h2 class="fw-bold text-dark mb-4 lh-sm" style="color: var(--utc-azul) !important;">
                                         <%# Eval("TituloProyecto") %>
                                     </h2>
 
-                                    <%-- Grid de Métricas (Aquí llenamos el espacio) --%>
                                     <div class="row g-3 mb-4">
-                                        <%-- Caja 1: Periodo --%>
                                         <div class="col-md-4">
                                             <div class="metric-box-hero">
                                                 <div class="metric-icon"><i class="fa-regular fa-calendar-check"></i></div>
@@ -66,7 +52,6 @@
                                             </div>
                                         </div>
                             
-                                        <%-- Caja 2: Fechas --%>
                                         <div class="col-md-4">
                                             <div class="metric-box-hero">
                                                 <div class="metric-icon"><i class="fa-solid fa-hourglass-start"></i></div>
@@ -77,7 +62,6 @@
                                             </div>
                                         </div>
 
-                                        <%-- Caja 3: Informes --%>
                                         <div class="col-md-4">
                                             <div class="metric-box-hero border-primary-subtle bg-primary-subtle bg-opacity-10">
                                                 <div class="metric-icon text-primary"><i class="fa-solid fa-file-invoice"></i></div>
@@ -87,7 +71,6 @@
                                         </div>
                                     </div>
 
-                                    <%-- Alerta de Plazo (Footer interno) --%>
                                     <div class="mt-auto pt-2 border-top">
                                         <div class="d-flex align-items-center gap-2">
                                             <span class="text-muted small">Estado del plazo:</span>
@@ -96,10 +79,8 @@
                                     </div>
                                 </div>
 
-                                <%-- LADO DERECHO: PANEL DE CONTROL (30%) --%>
                                 <div class="col-lg-4 action-column p-4 p-md-5 text-center position-relative">
                         
-                                    <%-- Icono de fondo decorativo --%>
                                     <i class="fa-solid fa-layer-group position-absolute text-muted opacity-10" 
                                        style="font-size: 10rem; right: -20px; bottom: -20px; transform: rotate(-15deg);"></i>
 
@@ -137,16 +118,11 @@
         </div>
     </asp:Panel>
 
-    <%-- ==============================================================================
-         4. PANEL GESTIÓN DE INFORMES (VISTA SPLIT 8/4)
-         ============================================================================== --%>
     <asp:Panel ID="pnlGestionProyecto" runat="server" Visible="false">
     
-        <%-- Cabecera --%>
         <div class="card shadow-utc border-0 rounded-4 mb-3">
             <div class="card-body p-3 px-4 d-flex justify-content-between align-items-center">
         
-                <%-- Lado Izquierdo: Título e Icono --%>
                 <div class="d-flex align-items-center gap-3">
                     <div class="bg-primary bg-opacity-10 p-2 rounded-circle d-flex align-items-center justify-content-center" style="width:45px; height:45px;">
                         <i class="fa-solid fa-folder-tree fa-lg" style="color: var(--utc-azul);"></i>
@@ -157,7 +133,6 @@
                     </div>
                 </div>
 
-                <%-- Lado Derecho: Botón Volver --%>
                 <asp:LinkButton ID="btnVolverDesdeGestion" runat="server" 
                     CssClass="btn btn-white border btn-pill px-4 text-muted shadow-sm hover-lift" 
                     OnClick="btnVolverTarjeta_Click">
@@ -169,7 +144,6 @@
 
         <div class="card shadow-utc border-0 rounded-4 overflow-hidden">
         
-            <%-- NUEVAS TABS DE DISEÑO LIMPIO --%>
             <div class="card-header bg-white pt-2 px-4 border-0">
                 <ul class="nav nav-tabs-utc" id="myTab" role="tablist">
                     <li class="nav-item" role="presentation">
@@ -188,7 +162,6 @@
             <div class="card-body p-4 bg-light bg-opacity-10">
                 <div class="tab-content" id="myTabContent">
                 
-                    <%-- PESTAÑA 1: GESTIÓN --%>
                     <div class="tab-pane fade show active" id="gestion-pane" role="tabpanel">
     
                         <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white rounded-3 border shadow-sm">
@@ -196,14 +169,12 @@
                             <asp:Literal ID="lblEstadoPeriodo" runat="server"></asp:Literal>
                             <div class="d-flex gap-2">
         
-                                <%-- Botón Generar --%>
                                 <asp:LinkButton ID="btnAbrirGenerador" runat="server" 
                                     CssClass="btn btn-outline-primary btn-sm btn-pill px-3 d-flex align-items-center gap-2" 
                                     OnClick="btnAbrirGenerador_Click">
                                     <i class="fa-solid fa-wand-magic-sparkles"></i> Generar
                                 </asp:LinkButton>
 
-                                <%-- Botón Subir (AHORA SÍ CON runat="server") --%>
                                 <button type="button" id="btnSubirEscaneado" runat="server"
                                     class="btn btn-primary-utc btn-sm btn-pill text-white px-4 d-flex align-items-center gap-2 shadow-sm"
                                     onclick="LimpiarYSubir()">
@@ -221,27 +192,22 @@
                     
                                             <div class="d-flex align-items-center gap-3 overflow-hidden me-3">
                         
-                                                <%-- 1. Icono Dinámico (PDF/Word/etc) --%>
                                                 <div class="bg-light p-3 rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 55px; height: 55px;">
                                                     <i class='<%# GetFileIconClass(Eval("strArchivo_path")) %> fa-2x'></i>
                                                 </div>
 
-                                                <%-- 2. Información Detallada --%>
                                                 <div class="overflow-hidden">
                                                     <p class="mb-1 fw-bold text-dark text-truncate" style="font-size: 1rem;" title='<%# Eval("strNombrePeriodo") %>'>
                                                         <%# Eval("strNombrePeriodo") %>
                                                     </p>
                             
                                                     <div class="d-flex align-items-center gap-2 flex-wrap">
-                                                        <%-- Etiqueta de Tipo (PDF, WORD, ETC) --%>
                                                         <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle" style="font-size: 0.7rem; font-weight: 600;">
                                                             <%# GetFileTypeLabel(Eval("strArchivo_path")) %>
                                                         </span>
 
-                                                        <%-- Separador --%>
                                                         <span class="text-muted small">|</span>
 
-                                                        <%-- Fecha Completa --%>
                                                         <small class="text-muted fw-semibold">
                                                             <i class="fa-regular fa-clock me-1"></i>
                                                             <%# Convert.ToDateTime(Eval("dtFechaSubida")).ToString("dd MMMM yyyy, HH:mm tt") %>
@@ -250,7 +216,6 @@
                                                 </div>
                                             </div>
 
-                                            <%-- 3. Botones de Acción Directos --%>
                                             <div class="d-flex gap-2 flex-shrink-0 ms-2">
                         
                                                 <a href='<%# ResolveUrl(Eval("strArchivo_path").ToString()) %>' target="_blank" 
@@ -283,7 +248,6 @@
                                 </ItemTemplate>
                             </asp:Repeater>
 
-                            <%-- Mensaje Vacío --%>
                             <div id="sinDatos" runat="server" visible="false" class="col-12 text-center py-5">
                                 <div class="mb-3 text-muted opacity-25"><i class="fa-regular fa-folder-open fa-4x"></i></div>
                                 <h6 class="text-muted fw-bold">Sin informes cargados</h6>
@@ -292,7 +256,6 @@
                         </div>
                     </div>
 
-                    <%-- PESTAÑA 2: TIMELINE REAL --%>
                     <div class="tab-pane fade" id="cronologia-pane" role="tabpanel">
     
                         <div class="d-flex align-items-center mb-3">
@@ -300,35 +263,28 @@
                             <span class="text-muted fw-bold small text-uppercase">Historial de Evidencias</span>
                         </div>
 
-                        <%-- Lista con Scroll --%>
                         <div class="scroll-cronologia pe-2" style="max-height: 600px; overflow-y: auto;">
     
-                            <%-- REPEATER PADRE: LOS PERIODOS --%>
                             <asp:Repeater ID="rptPeriodos" runat="server" OnItemDataBound="rptPeriodos_ItemDataBound">
                                 <ItemTemplate>
             
-                                    <%-- Encabezado del Periodo (Separador Visual) --%>
                                     <div class="d-flex align-items-center mb-3 mt-2">
                                         <span class="badge bg-warning bg-opacity-10 text-warning border border-warning fw-bold px-3 py-2 w-100 text-start">
                                             <i class="fa-solid fa-calendar-range me-2"></i> <%# Eval("NombrePeriodo") %>
                                         </span>
                                     </div>
 
-                                    <%-- Contenedor de la línea de tiempo para este grupo --%>
                                     <div class="timeline-group mb-4 ps-2">
                 
-                                        <%-- REPEATER HIJO: LOS ARCHIVOS DE ESTE PERIODO --%>
                                         <asp:Repeater ID="rptArchivosPeriodo" runat="server">
                                             <ItemTemplate>
                                                 <div class="history-card <%# GetBorderColor(Eval("TipoDoc").ToString()) %> mb-3">
                                                     <div class="d-flex align-items-center gap-3">
                                 
-                                                        <%-- Icono --%>
                                                         <div class="icon-box-history <%# GetIconBgClass(Eval("TipoDoc").ToString()) %>">
                                                             <i class='<%# GetIconClass(Eval("TipoDoc").ToString()) %>'></i>
                                                         </div>
 
-                                                        <%-- Info --%>
                                                         <div class="flex-grow-1 overflow-hidden">
                                                             <div class="d-flex justify-content-between align-items-center mb-1">
                                                                 <span class="badge bg-light text-dark border"><%# Eval("TipoDoc") %></span>
@@ -376,9 +332,6 @@
         </div>
     </asp:Panel>
 
-    <%-- ==============================================================================
-         5. PANEL EQUIPO (EXISTENTE - SIN CAMBIOS ESTRUCTURALES)
-         ============================================================================== --%>
     <asp:Panel ID="pnlEquipoListado" runat="server" Visible="false">
         <asp:HiddenField ID="hfIdEjecucionEquipo" runat="server" />
         <div class="utc-hero p-3 p-md-4 mb-3 d-flex justify-content-between align-items-start flex-wrap gap-3">
@@ -417,9 +370,6 @@
         </div>
     </asp:Panel>
 
-    <%-- ==============================================================================
-         6. MODAL DE SUBIDA DE ARCHIVOS (IMPRESCINDIBLE PARA UTC_FILEINPUT)
-         ============================================================================== --%>
     <div class="modal fade" id="modalSubirInforme" tabindex="-1" aria-hidden="true" ClientIDMode="Static" runat="server">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow-lg rounded-4 border-0 modal-utc-shell">
@@ -471,9 +421,6 @@
         </div>
     </div>
 
-    <%-- ==============================================================================
-         7. PANELES OCULTOS LEGACY (NO BORRAR PARA EVITAR ERRORES DE COMPILACIÓN)
-         ============================================================================== --%>
     <div style="display:none;">
         <asp:Panel ID="pnlFormularioMiembro" runat="server">
             <asp:Label ID="lblTituloFormMiembro" runat="server" />
@@ -500,9 +447,6 @@
 
     <uc:GeneradorInforme ID="ucGenerador" runat="server" OnInformeGuardado="ucGenerador_InformeGuardado" />
 
-    <%-- ==============================================================================
-         8. SCRIPTS
-         ============================================================================== --%>
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
 
     <script type="text/javascript">
@@ -525,7 +469,6 @@
             AbrirSubModalUpload();
         }
 
-        // Inicialización de componentes tras PostBack
         Sys.Application.add_load(function () {
             if ($('#tablaMiembros').length) {
                 if ($.fn.DataTable.isDataTable('#tablaMiembros')) $('#tablaMiembros').DataTable().destroy();

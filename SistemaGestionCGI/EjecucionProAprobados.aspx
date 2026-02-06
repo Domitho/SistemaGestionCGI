@@ -8,6 +8,7 @@
     <link href="DesignersUTC/Styles/modal-informes.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/modal-historial-reporte.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/papelera.css" rel="stylesheet" />
+    <link href="DesignersUTC/Styles/informe-observaciones.css" rel="stylesheet" />
 
     <style>
         .hover-lift {
@@ -589,47 +590,96 @@
                     </div>
 
                     <div class="row g-3">
-                        <asp:Repeater ID="rptInformes" runat="server" OnItemDataBound="rptInformes_ItemDataBound">
-                            <ItemTemplate>
+                        <div class="table-responsive">
+                            <table class="table table-borderless align-middle">
+                                <thead class="text-secondary small text-uppercase border-bottom">
+                                    <tr>
+                                        <th scope="col" class="ps-3">Documento / Periodo</th>
+                                        <th scope="col" class="text-end pe-3">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <asp:Repeater ID="rptInformes" runat="server" OnItemCommand="rptInformes_ItemCommand" OnItemDataBound="rptInformes_ItemDataBound">
+                                        <ItemTemplate>
+                                            <asp:PlaceHolder ID="phHeaderCiclo" runat="server" Visible="false">
+                                                <tr>
+                                                    <td colspan="2" class="pt-4 pb-2">
+                                                        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold">
+                                                            <i class="fa-solid fa-layer-group me-2"></i>
+                                                            <asp:Literal ID="litNombreCicloGroup" runat="server"></asp:Literal>
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </asp:PlaceHolder>
+
+                                            <tr class="report-row">
+                                                <td class="ps-3 py-3">
+                                                    <div class="d-flex align-items-start">
+                                                        <div class="report-icon-box me-3 flex-shrink-0">
+                                                            <i class="fa-solid fa-file-pdf"></i>
+                                                        </div>
+                                
+                                                        <div class="flex-grow-1">
+                                                            <div class="report-title"><%# Eval("strNombrePeriodo") %></div>
+                                                            <div class="report-date">
+                                                                <i class="fa-regular fa-clock me-1"></i> Subido el <%# Convert.ToDateTime(Eval("dtFechaSubida")).ToString("dd 'de' MMMM, yyyy - HH:mm") %>
+                                                            </div>
+
+                                                            <asp:Panel runat="server" Visible='<%# !string.IsNullOrEmpty(Eval("strObservacion_informe")?.ToString()) %>'>
+                                                                <div class="feedback-box animate__animated animate__fadeIn">
+                                                                    <i class="fa-solid fa-comment-dots mt-1"></i>
+                                                                    <div>
+                                                                        <strong>Revisión Admin:</strong> 
+                                                                        <span class="d-block fst-italic"><%# Eval("strObservacion_informe") %></span>
+                                                                    </div>
+                                                                </div>
+                                                            </asp:Panel>
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                <td class="text-end pe-3 align-middle">
+                                                    <div class="d-flex align-items-center justify-content-end gap-2">
         
-                                <%-- 1. ENCABEZADO DE GRUPO (Se controla desde el CodeBehind) --%>
-                                <asp:PlaceHolder ID="phHeaderCiclo" runat="server" Visible="false">
-                                    <div class="mt-3 mb-2 pb-1 border-bottom">
-                                        <span class="badge bg-primary bg-opacity-10 text-primary border px-3 py-2 rounded-pill fw-bold">
-                                            <i class="fa-solid fa-layer-group me-2"></i>
-                                            <asp:Literal ID="litNombreCicloGroup" runat="server"></asp:Literal>
-                                        </span>
-                                    </div>
-                                </asp:PlaceHolder>
+                                                        <a href='<%# ResolveUrl(Eval("strArchivo_path").ToString()) %>' target="_blank" 
+                                                           class="btn btn-white border shadow-sm text-secondary d-flex align-items-center justify-content-center" 
+                                                           style="width: 40px; height: 38px; border-radius: 10px; background-color: #fff;"
+                                                           title="Ver PDF">
+                                                            <i class="fa-solid fa-eye"></i>
+                                                        </a>
 
-                                <%-- 2. TU ITEM DE ARCHIVO (ESTILO ACTUAL) --%>
-                                <div class="list-group-item border-0 px-0 py-2">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="d-flex align-items-center">
-                                            <div class="me-3 text-primary fs-4"><i class="fa-regular fa-file-word"></i></div>
-                                            <div>
-                                                <h6 class="mb-0 fw-bold text-dark"><%# Eval("strNombrePeriodo") %></h6>
-                                                <small class="text-muted">
-                                                    <i class="fa-regular fa-calendar me-1"></i> <%# Eval("dtFechaSubida", "{0:dd/MM/yyyy}") %>
-                                                </small>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <a href='<%# ResolveUrl(Eval("strArchivo_path").ToString()) %>' target="_blank" class="btn btn-sm btn-outline-primary">
-                                                <i class="fa-solid fa-download"></i>
-                                            </a>
-                                            <asp:LinkButton ID="btnEditarInf" runat="server" CommandName="EditarInforme" CommandArgument='<%# Eval("strId_informe") %>' CssClass="btn btn-sm btn-outline-warning ms-1">
-                                                <i class="fa-solid fa-pen"></i>
-                                            </asp:LinkButton>
-                                            <asp:LinkButton ID="btnEliminarInf" runat="server" CommandName="EliminarInforme" CommandArgument='<%# Eval("strId_informe") %>' CssClass="btn btn-sm btn-outline-danger ms-1" OnClientClick="return confirm('¿Eliminar archivo?');">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </asp:LinkButton>
-                                        </div>
-                                    </div>
-                                </div>
+                                                        <asp:LinkButton ID="btnObservar" runat="server" 
+                                                            CommandName="ObservarInforme" 
+                                                            CommandArgument='<%# Eval("strId_informe") %>'
+            
+                                                            CssClass='<%# string.IsNullOrEmpty(Eval("strObservacion_informe")?.ToString()) 
+                                                                ? "btn btn-light border shadow-sm rounded-pill px-3 text-secondary fw-bold text-nowrap d-flex align-items-center gap-2" 
+                                                                : "btn border border-warning shadow-sm rounded-pill px-3 text-dark fw-bold text-nowrap d-flex align-items-center gap-2" %>'
+            
+                                                            Style='<%# string.IsNullOrEmpty(Eval("strObservacion_informe")?.ToString()) 
+                                                                ? "height: 38px;" 
+                                                                : "height: 38px; background-color: #fff9c4;" %>'
+            
+                                                            ToolTip="Gestionar Observación">
 
-                            </ItemTemplate>
-                        </asp:Repeater>
+                                                            <i class='<%# string.IsNullOrEmpty(Eval("strObservacion_informe")?.ToString()) ? "fa-solid fa-pen" : "fa-solid fa-pen-to-square" %>'></i> 
+            
+                                                            <span><%# string.IsNullOrEmpty(Eval("strObservacion_informe")?.ToString()) ? "Revisar" : "Edit. Nota" %></span>
+                                                        </asp:LinkButton>
+
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <asp:Panel ID="pnlSinInformes" runat="server" Visible="false" class="text-center py-5">
+                            <img src="https://cdn-icons-png.flaticon.com/512/7486/7486747.png" width="80" class="opacity-50 mb-3" />
+                            <h6 class="text-muted">No se han subido informes en este periodo.</h6>
+                        </asp:Panel>
 
                         <hr class="my-4" style="opacity: 0.1">
 
@@ -1326,6 +1376,50 @@
                         Cerrar Ventana
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalObservacion" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+            
+                <div class="modal-header modal-header-review py-3">
+                    <h5 class="modal-title fw-bold text-white">Revisión de Documento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <asp:HiddenField ID="hfIdInformeObservacion" runat="server" />
+                
+                    <div class="mb-4">
+                        <label class="fw-bold mb-1 text-muted text-uppercase small">Archivo a revisar:</label>
+                        <div class="p-2 bg-light border rounded d-flex align-items-center">
+                            <i class="fa-solid fa-file-pdf text-danger me-2"></i>
+                            <asp:Label ID="lblNombreInformeObs" runat="server" CssClass="fw-bold text-dark"></asp:Label>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="fw-bold mb-2 text-muted text-uppercase small">Observación / Feedback:</label>
+                        <asp:TextBox ID="txtObservacionAdmin" runat="server" 
+                            CssClass="form-control p-3" 
+                            TextMode="MultiLine" Rows="5"
+                            placeholder="Escriba aquí si aprueba el informe o si requiere correcciones..."></asp:TextBox>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light py-3">
+                    <button type="button" class="btn btn-link text-secondary text-decoration-none" data-bs-dismiss="modal">Cancelar</button>
+                
+                    <%-- Botón Guardar --%>
+                    <asp:LinkButton ID="btnGuardarObservacion" runat="server" 
+                        CssClass="btn btn-warning px-4 fw-bold rounded-pill shadow-sm" 
+                        OnClick="btnGuardarObservacion_Click">
+                        <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Revisión
+                    </asp:LinkButton>
+                </div>
+
             </div>
         </div>
     </div>

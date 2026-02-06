@@ -817,6 +817,30 @@ namespace SistemaGestionCGI
         {
             int idInforme = int.Parse(e.CommandArgument.ToString());
 
+            if (e.CommandName == "ObservarInforme")
+            {
+                try
+                {
+                    var inf = _manejador.ObtenerInformePorId(idInforme);
+
+                    if (inf != null)
+                    {
+                        hfIdInformeObservacion.Value = idInforme.ToString();
+
+                        lblNombreInformeObs.Text = inf.strNombrePeriodo;
+
+                        txtObservacionAdmin.Text = inf.strObservacion_informe ?? "";
+
+                        ScriptManager.RegisterStartupScript(this, GetType(), "OpenModal",
+                            "new bootstrap.Modal(document.getElementById('modalObservacion')).show();", true);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Msg("Error al cargar datos: " + ex.Message, "ee");
+                }
+            }
+
             if (e.CommandName == "EliminarInforme")
             {
                 try
@@ -1804,6 +1828,33 @@ namespace SistemaGestionCGI
                     ddlCarrera.Items.Add(new ListItem("AGRONOMÍA_LM", "AGRONOMÍA_LM"));
                     ddlCarrera.Items.Add(new ListItem("AGROINDUSTRIAS_LM", "AGROINDUSTRIAS_LM"));
                     break;
+            }
+        }
+
+        // Observaciones
+
+        protected void btnGuardarObservacion_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                int idInforme = int.Parse(hfIdInformeObservacion.Value);
+                string observacion = txtObservacionAdmin.Text.Trim();
+
+                _manejador.GuardarObservacionInforme(idInforme, observacion);
+
+                Msg("Observación enviada al Coordinador.", "ss");
+
+                if (int.TryParse(hfIdEjecucionInforme.Value, out int idEjec))
+                {
+                    CargarInformes(idEjec);
+                }
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "CloseModal",
+                    "bootstrap.Modal.getInstance(document.getElementById('modalObservacion')).hide();", true);
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al guardar: " + ex.Message, "ee");
             }
         }
 
