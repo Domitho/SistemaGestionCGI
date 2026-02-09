@@ -330,6 +330,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.HiddenField hfIdMiembroEdit;
 
         /// <summary>
+        /// Control hfTipoRealMiembro.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfTipoRealMiembro;
+
+        /// <summary>
         /// Control ddlTipoMiembro.
         /// </summary>
         /// <remarks>
@@ -337,6 +346,42 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlTipoMiembro;
+
+        /// <summary>
+        /// Control pnlSeleccionAutomatica.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlSeleccionAutomatica;
+
+        /// <summary>
+        /// Control litTituloSeleccion.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litTituloSeleccion;
+
+        /// <summary>
+        /// Control ddlCandidatos.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlCandidatos;
+
+        /// <summary>
+        /// Control btnVerDocumentoCandidato.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlAnchor btnVerDocumentoCandidato;
 
         /// <summary>
         /// Control txtCedulaMiembro.

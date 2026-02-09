@@ -664,6 +664,99 @@ namespace SistemaGestionCGI.BLL
             return null;
         }
 
+        //
+
+
+        // =========================================================================
+        // 1. OBTENER INTEGRANTES DEL GRUPO (Filtrados y Validados)
+        // =========================================================================
+        public List<dynamic> ObtenerCandidatosDelGrupo(int idEjecucion)
+        {
+            // REGLA: Traer integrantes del Grupo vinculado al Proyecto que NO estén ocupados.
+            // Usamos strCertificado_int como el archivo de evidencia.
+
+            string sql = $@"
+        SELECT 
+            I.strId_int,
+            (I.strApellidos_int + ' ' + I.strNombres_int) as NombreCompleto,
+            I.strCedula_int,
+            I.strNombres_int,
+            I.strApellidos_int,
+            I.strCorreo_int,
+            I.strFacultad_int,
+            I.strCarrera_int,
+            I.strTipo_int,
+            I.strEntidad_int,
+            I.strCertificado_int  -- <--- Archivo subido al grupo
+        FROM INVGCCGRUPO_INTEGRANTES I
+        INNER JOIN INVGCCINSCRIPCION_PROYECTOS P ON I.fkId_gru = P.fkId_gru
+        INNER JOIN INVGCCEJECUCION_PROYECTO E ON P.strId_pro = E.fkId_pro
+        WHERE E.strId_ejec = {idEjecucion}
+          AND I.bitActivo_int = 1  -- Solo miembros activos del grupo
+          AND I.strCedula_int NOT IN (
+              -- VALIDACIÓN CRÍTICA: Que NO estén activos en NINGÚN proyecto de ejecución
+              SELECT M.strCedula_miembro 
+              FROM INVGCCEJECUCION_MIEMBROS M 
+              WHERE M.bitActivo_miembro = 1
+          )
+        ORDER BY I.strApellidos_int";
+
+            return _dal.SelectSql<dynamic>(sql);
+        }
+
+        // Auxiliar para llenar el formulario cuando seleccionas a alguien del grupo
+        public dynamic ObtenerDatosCandidatoGrupo(string idIntegranteGrupo)
+        {
+            string sql = $"SELECT * FROM INVGCCGRUPO_INTEGRANTES WHERE strId_int = '{idIntegranteGrupo}'";
+            var lista = _dal.SelectSql<dynamic>(sql);
+            return lista.FirstOrDefault();
+        }
+
+        // =========================================================================
+        // 2. OBTENER DOCENTES CATEGORIZADOS LIBRES (Sin Grupo / Sin Proyecto)
+        // =========================================================================
+        public List<dynamic> ObtenerDocentesCategorizadosLibres()
+        {
+            // Usamos strCertificado_doc como el archivo de evidencia.
+
+            string sql = @"
+        SELECT 
+            D.strId_doc as ID_REAL,
+            (D.strApellidos_doc + ' ' + D.strNombres_doc) as NombreCompleto,
+            D.strCedula_doc,
+            D.strNombres_doc,
+            D.strApellidos_doc,
+            D.strCorreo_doc,
+            D.strFacultad_doc,
+            D.strCarrera_doc,
+            'Docente' as Tipo,
+            D.strCertificado_doc as RutaDocumento -- <--- Archivo de categorización
+        FROM INVGCCCATEGORIZACION_DOCENTES D
+        WHERE D.bitActivo_doc = 1
+          -- REGLA 1: Que NO pertenezcan a ningún Grupo de Investigación activo
+          AND D.strCedula_doc NOT IN (
+              SELECT I.strCedula_int 
+              FROM INVGCCGRUPO_INTEGRANTES I 
+              WHERE I.bitActivo_int = 1
+          )
+          -- REGLA 2: Que NO estén trabajando en otro proyecto actualmente
+          AND D.strCedula_doc NOT IN (
+              SELECT M.strCedula_miembro 
+              FROM INVGCCEJECUCION_MIEMBROS M 
+              WHERE M.bitActivo_miembro = 1
+          )
+        ORDER BY D.strApellidos_doc";
+
+            return _dal.SelectSql<dynamic>(sql);
+        }
+
+        // Auxiliar para llenar el formulario cuando seleccionas a un docente libre
+        public dynamic ObtenerDatosDocenteCategorizado(string idDocente)
+        {
+            string sql = $"SELECT * FROM INVGCCCATEGORIZACION_DOCENTES WHERE strId_doc = '{idDocente}'";
+            var lista = _dal.SelectSql<dynamic>(sql);
+            return lista.FirstOrDefault();
+        }
     }
 
     public class DtoCedulaTemp

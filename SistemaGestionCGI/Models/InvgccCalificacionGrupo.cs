@@ -12,7 +12,7 @@ namespace SistemaGestionCGI.Models
         public string fkId_gru { get; set; }
 
         [JsonProperty("intPuntaje_valo")]
-        public int intPuntaje_valo { get; set; }
+        public int? intPuntaje_valo { get; set; }
 
         [JsonProperty("strCategoria_valo")]
         public string strCategoria_valo { get; set; }
@@ -25,6 +25,9 @@ namespace SistemaGestionCGI.Models
 
         [JsonProperty("strInforme_valo")]
         public string strInforme_valo { get; set; }
+
+        [JsonProperty("strResolucion_valo")]
+        public string strResolucion_valo { get; set; }
 
         [JsonProperty("intAnioMetrica")]
         public int intAnioMetrica { get; set; }

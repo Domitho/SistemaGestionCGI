@@ -464,134 +464,137 @@
             </h4>
 
             <asp:HiddenField ID="hfIdMiembroEdit" runat="server" />
+            <asp:HiddenField ID="hfTipoRealMiembro" runat="server" />
 
             <div class="utc-section-header mb-3">
                 <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2">
-                    <i class="fa-solid fa-building-columns me-2"></i> Tipo de integrante
+                    <i class="fa-solid fa-database me-2"></i> 1. Origen del Integrante
                 </h6>
             </div>
 
             <div class="row g-3 mb-4">
                 <div class="col-12">
-                    <label class="form-label fw-bold">Tipo de Vinculación</label>
-                    <asp:DropDownList ID="ddlTipoMiembro" runat="server" CssClass="form-select shadow-sm" onchange="toggleTipoIntegrante()">
-                        <asp:ListItem Value="Interno" Selected="True">Interno (UTC)</asp:ListItem>
-                        <asp:ListItem Value="Externo">Externo (Otra Institución)</asp:ListItem>
+                    <label class="form-label fw-bold">Seleccione Origen</label>
+                    <asp:DropDownList ID="ddlTipoMiembro" runat="server" CssClass="form-select shadow-sm border-primary"
+                        AutoPostBack="true" OnSelectedIndexChanged="ddlTipoMiembro_SelectedIndexChanged">
+                        <asp:ListItem Value="Interno" Selected="True">Manual / Interno (Estudiante/Admin)</asp:ListItem>
+                        <asp:ListItem Value="DocenteGrupo" style="font-weight:bold; color:#0d6efd;">★ MIEMBRO DEL GRUPO (Recomendado)</asp:ListItem>
+                        <asp:ListItem Value="DocenteLibre" style="font-weight:bold; color:#198754;">★ DOCENTE CATEGORIZADO (Sin Grupo)</asp:ListItem>
+                        <asp:ListItem Value="Externo">Manual / Externo (Otra Institución)</asp:ListItem>
+                    </asp:DropDownList>
+                </div>
+
+                <asp:Panel ID="pnlSeleccionAutomatica" runat="server" Visible="false" CssClass="col-12 animate__animated animate__fadeIn">
+                    <div class="card border-primary border-opacity-25 bg-primary bg-opacity-10 shadow-sm">
+                        <div class="card-body">
+                            <label class="form-label fw-bold text-primary small">
+                                <i class="fa-solid fa-user-check me-1"></i> 
+                                <asp:Literal ID="litTituloSeleccion" runat="server">SELECCIONAR CANDIDATO</asp:Literal>
+                            </label>
+                        
+                            <div class="input-group">
+                                <span class="input-group-text bg-white text-primary border-primary"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                <asp:DropDownList ID="ddlCandidatos" runat="server" CssClass="form-select border-primary fw-bold"
+                                    AutoPostBack="true" OnSelectedIndexChanged="ddlCandidatos_SelectedIndexChanged">
+                                </asp:DropDownList>
+                            
+                                <a id="btnVerDocumentoCandidato" runat="server" target="_blank" visible="false"
+                                   class="btn btn-primary d-flex align-items-center shadow-sm" title="Ver Documento de Soporte">
+                                    <i class="fa-solid fa-file-pdf me-2"></i> Ver Archivo
+                                </a>
+                            </div>
+                        
+                            <div class="form-text small text-muted mt-2">
+                                <i class="fa-solid fa-filter me-1"></i> 
+                                El sistema solo muestra personas disponibles (no vinculadas a otros proyectos).
+                            </div>
+                        </div>
+                    </div>
+                </asp:Panel>
+            </div>
+
+            <div class="utc-section-header mb-3">
+                <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2">
+                    <i class="fa-regular fa-id-card me-2"></i> 2. Datos Personales
+                </h6>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label">Cédula <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <asp:TextBox ID="txtCedulaMiembro" runat="server" CssClass="form-control" placeholder="10 dígitos" MaxLength="15" />
+                        <asp:LinkButton ID="btnValidarCedula" runat="server" CssClass="btn btn-primary" OnClick="btnValidarCedula_Click" CausesValidation="false">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </asp:LinkButton>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                    <asp:TextBox ID="txtNombresMiembro" runat="server" CssClass="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                    <asp:TextBox ID="txtApellidosMiembro" runat="server" CssClass="form-control" />
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Correo Institucional <span class="text-danger">*</span></label>
+                    <asp:TextBox ID="txtCorreoMiembro" runat="server" CssClass="form-control" TextMode="Email" />
+                </div>
+            </div>
+
+            <div id="divCamposInternos" class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Facultad / Extensión</label>
+                    <asp:DropDownList ID="ddlFacultadMiembro" runat="server" CssClass="form-select" 
+                        AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadMiembro_SelectedIndexChanged">
+                        <asp:ListItem Text="-- Seleccione --" Value="" />
+                        <asp:ListItem Value="CAREN">FACULTAD DE CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
+                        <asp:ListItem Value="CIYA">FACULTAD DE CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
+                        <asp:ListItem Value="CAYE">FACULTAD DE CIENCIAS ADMINISTRATIVAS (CAYE)</asp:ListItem>
+                        <asp:ListItem Value="CSAYE">FACULTAD DE CIENCIAS SOCIALES (CSAYE)</asp:ListItem>
+                        <asp:ListItem Value="SALUD">FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
+                        <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
+                        <asp:ListItem Value="LAMANA">EXTENSION LA MANA</asp:ListItem>
+                    </asp:DropDownList>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Carrera</label>
+                    <asp:DropDownList ID="ddlCarreraMiembro" runat="server" CssClass="form-select">
+                        <asp:ListItem Text="-- Seleccione Facultad --" Value="" />
                     </asp:DropDownList>
                 </div>
             </div>
 
-            <div class="utc-section-header mb-3">
-                <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2">
-                    <i class="fa-regular fa-id-card me-2"></i> Datos Personales
-                </h6>
-            </div>
-
-            <div class="row g-3 mb-4">
+            <div id="divCamposExternos" class="row g-3 mb-4" style="display:none;">
                 <div class="col-12">
-                    <label class="form-label">Cédula de Identidad <span class="text-danger">*</span></label>
-                    <div class="input-group gap-2">
-                        <asp:TextBox ID="txtCedulaMiembro" runat="server" CssClass="form-control" placeholder="10 dígitos" MaxLength="15" />
-                        <asp:LinkButton ID="btnValidarCedula" runat="server" CssClass="btn btn-primary" OnClick="btnValidarCedula_Click" CausesValidation="false" ToolTip="Buscar en base de datos">
-                            <i class="fa-solid fa-magnifying-glass"></i> Validar
-                        </asp:LinkButton>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label">Nombres <span class="text-danger">*</span></label>
-                    <asp:TextBox ID="txtNombresMiembro" runat="server" CssClass="form-control" />
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label">Apellidos <span class="text-danger">*</span></label>
-                    <asp:TextBox ID="txtApellidosMiembro" runat="server" CssClass="form-control" />
-                </div>
-
-                <div class="col-12">
-                    <label class="form-label">Correo Electrónico <span class="text-danger">*</span></label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light"><i class="fa-solid fa-envelope text-secondary"></i></span>
-                        <asp:TextBox ID="txtCorreoMiembro" runat="server" CssClass="form-control" TextMode="Email" placeholder="ejemplo@utc.edu.ec" />
-                    </div>
-                </div>
-            </div>
-
-            <div class="utc-section-header mb-3">
-                <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2">
-                    <i class="fa-solid fa-building-columns me-2"></i> Afiliación Institucional
-                </h6>
-            </div>
-
-            <div class="row g-3 mb-4">
-
-                <div id="divCamposInternos" class="col-12 row g-3 m-0 p-0">
-                    <div class="col-md-6 ps-0">
-                        <label class="form-label">Facultad / Extensión</label>
-                        <asp:DropDownList ID="ddlFacultadMiembro" runat="server" CssClass="form-select" 
-                            AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadMiembro_SelectedIndexChanged">
-                            <asp:ListItem Text="-- Seleccione --" Value="" />
-                            <asp:ListItem Value="CAREN">FACULTAD DE CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
-                            <asp:ListItem Value="CIYA">FACULTAD DE CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
-                            <asp:ListItem Value="CAYE">FACULTAD DE CIENCIAS ADMINISTRATIVAS (CAYE)</asp:ListItem>
-                            <asp:ListItem Value="CSAYE">FACULTAD DE CIENCIAS SOCIALES (CSAYE)</asp:ListItem>
-                            <asp:ListItem Value="SALUD">FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
-                            <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
-                            <asp:ListItem Value="LAMANA">EXTENSION LA MANA</asp:ListItem>
-                        </asp:DropDownList>
-                    </div>
-                    <div class="col-md-6 pe-0">
-                        <label class="form-label">Carrera / Departamento</label>
-                        <asp:DropDownList ID="ddlCarreraMiembro" runat="server" CssClass="form-select">
-                            <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
-                        </asp:DropDownList>
-                    </div>
-                </div>
-
-                <div id="divCamposExternos" class="col-12" style="display:none;">
                     <label class="form-label fw-bold">Institución / Entidad de Origen</label>
-                    <asp:TextBox ID="txtEntidadMiembro" runat="server" CssClass="form-control" placeholder="Ej: Universidad Central, SENESCYT..." />
+                    <asp:TextBox ID="txtEntidadMiembro" runat="server" CssClass="form-control" placeholder="Ej: SENESCYT..." />
                 </div>
             </div>
 
             <div class="utc-section-header mb-3">
                 <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2">
-                    <i class="fa-solid fa-briefcase me-2"></i> Información del Proyecto
+                    <i class="fa-solid fa-briefcase me-2"></i> 3. Vinculación al Proyecto
                 </h6>
             </div>
 
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label">Fecha de Inicio / Vinculación <span class="text-danger">*</span></label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light"><i class="fa-regular fa-calendar"></i></span>
-                        <asp:TextBox ID="txtFechaInicioMiembro" runat="server" CssClass="form-control" TextMode="Date" />
-                    </div>
+                    <label class="form-label">Fecha de Inicio <span class="text-danger">*</span></label>
+                    <asp:TextBox ID="txtFechaInicioMiembro" runat="server" CssClass="form-control" TextMode="Date" />
                 </div>
-
                 <div class="col-md-6">
-                    <label class="form-label">Función / Rol Asignado</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light fw-bold text-primary"><i class="fa-solid fa-user-tag"></i></span>
-                        <asp:TextBox ID="txtRolMiembro" runat="server" 
-                            CssClass="form-control bg-light fw-bold text-primary" 
-                            ReadOnly="true" 
-                            Text="MIEMBRO DE PROYECTO" />
-                    </div>
-                    <div class="form-text small">
-                        <i class="fa-solid fa-circle-info me-1"></i> Rol predeterminado por el sistema.
-                    </div>
+                    <label class="form-label">Rol Asignado</label>
+                    <asp:TextBox ID="txtRolMiembro" runat="server" CssClass="form-control bg-light fw-bold text-primary" ReadOnly="true" Text="MIEMBRO DE PROYECTO" />
                 </div>
             </div>
 
-            <div class="d-flex justify-content-center gap-3 flex-wrap mt-5 pt-3 border-top">
-                <asp:LinkButton ID="btnGuardarMiembro" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow-sm"
-                    OnClick="btnGuardarMiembro_Click">
-                    <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Integrante
+            <div class="d-flex justify-content-center gap-3 mt-5">
+                <asp:LinkButton ID="btnGuardarMiembro" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow-sm" OnClick="btnGuardarMiembro_Click">
+                    <i class="fa-solid fa-floppy-disk me-2"></i> Guardar
                 </asp:LinkButton>
-
-                <asp:LinkButton ID="btnCancelarMiembro" runat="server" CssClass="btn btn-outline-secondary btn-pill px-5 shadow-sm"
-                    OnClick="btnCancelarMiembro_Click" CausesValidation="false">
+                <asp:LinkButton ID="btnCancelarMiembro" runat="server" CssClass="btn btn-outline-secondary btn-pill px-5" OnClick="btnCancelarMiembro_Click" CausesValidation="false">
                     <i class="fa-solid fa-ban me-2"></i> Cancelar
                 </asp:LinkButton>
             </div>

@@ -79,12 +79,13 @@ namespace SistemaGestionCGI
             catch (Exception ex) { Msg("Error cargando listas: " + ex.Message, "ee"); }
         }
 
-        private void CargarGruposPendientes()
+        private void CargarGruposPendientes(string idGrupoIncluir = "")
         {
             try
             {
                 int anioSeleccionado = int.TryParse(ddlAnioMetricaSeleccion.SelectedValue, out int a) ? a : DateTime.Now.Year;
-                var grupos = _manejador.ObtenerGruposParaCombo(anioSeleccionado);
+
+                var grupos = _manejador.ObtenerGruposParaCombo(anioSeleccionado, idGrupoIncluir);
 
                 ddlGrupoAdd.DataSource = grupos;
                 ddlGrupoAdd.DataTextField = "strNombre_gru";
@@ -94,9 +95,9 @@ namespace SistemaGestionCGI
                 if (grupos.Count > 0)
                     ddlGrupoAdd.Items.Insert(0, new ListItem("-- Seleccione Grupo --", ""));
                 else
-                    ddlGrupoAdd.Items.Insert(0, new ListItem("-- Todos los grupos ya fueron calificados este año --", ""));
+                    ddlGrupoAdd.Items.Insert(0, new ListItem("-- Todos calificados --", ""));
             }
-            catch (Exception ex) { Msg("Error al cargar grupos pendientes: " + ex.Message, "ee"); }
+            catch (Exception ex) { Msg("Error al cargar grupos: " + ex.Message, "ee"); }
         }
 
         // =============================================
@@ -118,6 +119,11 @@ namespace SistemaGestionCGI
         {
             CambiarVista(Vista.Formulario);
 
+            pnlInfoEvaluacion.Visible = false;
+            pnlUploadEvaluacion.Style["display"] = "block"; 
+
+            contenedorResolucionTotal.Visible = false;
+
             txtFechaAdd.Text = DateTime.Now.ToString("yyyy-MM-dd");
             txtPuntajeAdd.Text = "";
             txtReconocimientoAdd.Text = "";
@@ -130,6 +136,7 @@ namespace SistemaGestionCGI
                 ddlAnioMetricaSeleccion.SelectedValue = anioActual;
 
             CargarGruposPendientes();
+            LimpiarFormulario();
             ActualizarMetricaVisual();
         }
 
@@ -139,7 +146,7 @@ namespace SistemaGestionCGI
         }
 
         private void ActualizarMetricaVisual()
-        {
+        { 
             if (int.TryParse(ddlAnioMetricaSeleccion.SelectedValue, out int anio))
             {
                 int min = _manejador.ObtenerMinimoConsolidado(anio);
@@ -151,10 +158,6 @@ namespace SistemaGestionCGI
             }
         }
 
-        // =============================================
-        // CRUD CALIFICACIONES
-        // =============================================
-
         protected void btnGuardar_Click(object sender, EventArgs e)
         {
             try
@@ -162,38 +165,101 @@ namespace SistemaGestionCGI
                 if (ddlGrupoAdd.SelectedIndex <= 0) { Msg("Seleccione un grupo.", "ww"); return; }
                 if (string.IsNullOrWhiteSpace(txtFechaAdd.Text)) { Msg("Ingrese la fecha.", "ww"); return; }
 
-                if (!int.TryParse(txtPuntajeAdd.Text, out int puntaje))
+                bool esEdicion = !string.IsNullOrEmpty(IdCalificacionEnEdicion);
+
+                InvgccCalificacionGrupo registroAnterior = null;
+                if (esEdicion) registroAnterior = _manejador.ObtenerPorId(IdCalificacionEnEdicion);
+
+                int? puntaje = null;
+                if (!string.IsNullOrWhiteSpace(txtPuntajeAdd.Text))
                 {
-                    Msg("El puntaje debe ser un número entero válido.", "ww");
+                    if (int.TryParse(txtPuntajeAdd.Text, out int p))
+                    {
+                        if (p < 0 || p > 100) { Msg("Puntaje inválido (0-100).", "ww"); return; }
+                        puntaje = p;
+                    }
+                    else { Msg("El puntaje debe ser numérico.", "ww"); return; }
+                }
+
+                bool tieneResolucionFisica = flpResolucion.HasFile;
+                bool tieneResolucionAnterior = (esEdicion && registroAnterior != null && !string.IsNullOrEmpty(registroAnterior.strResolucion_valo));
+                bool existeResolucionFinal = tieneResolucionFisica || tieneResolucionAnterior;
+
+                if (puntaje.HasValue && !existeResolucionFinal)
+                {
+                    Msg("Para registrar un Puntaje, es OBLIGATORIO subir el Documento de Resolución.", "ww");
+                    return;
+                }
+                if (existeResolucionFinal && !puntaje.HasValue)
+                {
+                    Msg("Si sube una Resolución, debe asignar el Puntaje obtenido.", "ww");
                     return;
                 }
 
-                if (!flpArchivoAdd.HasFile) { Msg("Debe subir el informe PDF.", "ww"); return; }
-                if (Path.GetExtension(flpArchivoAdd.FileName).ToLower() != ".pdf") { Msg("Solo se permiten archivos PDF.", "ww"); return; }
+                bool tieneEvaluacionNueva = flpArchivoAdd.HasFile;
+                bool tieneEvaluacionAnterior = (esEdicion && registroAnterior != null && !string.IsNullOrEmpty(registroAnterior.strInforme_valo));
 
-                int anioM = int.Parse(ddlAnioMetricaSeleccion.SelectedValue);
-                int minConsolidado = _manejador.ObtenerMinimoConsolidado(anioM);
+                if (!tieneEvaluacionNueva && !tieneEvaluacionAnterior)
+                {
+                    Msg("El Informe de Evaluación es obligatorio.", "ww");
+                    return;
+                }
+
+                string rutaInforme = (esEdicion && registroAnterior != null) ? registroAnterior.strInforme_valo : "";
+                string rutaResolucion = (esEdicion && registroAnterior != null) ? registroAnterior.strResolucion_valo : "";
+
+                if (flpArchivoAdd.HasFile) rutaInforme = GuardarArchivoFisico(flpArchivoAdd, $"VAL_{DateTime.Now.Ticks}.pdf");
+                if (flpResolucion.HasFile) rutaResolucion = GuardarArchivoFisico(flpResolucion, $"RES_{DateTime.Now.Ticks}.pdf");
+
+                string categoria = "PENDIENTE";
+                if (puntaje.HasValue)
+                {
+                    if (!int.TryParse(ddlAnioMetricaSeleccion.SelectedValue, out int anioM))
+                    {
+                        Msg("Error: Debe seleccionar un Año de Métrica válido.", "ww");
+                        return;
+                    }
+                    int minConsolidado = _manejador.ObtenerMinimoConsolidado(anioM);
+                    categoria = (puntaje.Value >= minConsolidado) ? "CONSOLIDADO" : "EMERGENTE";
+                }
 
                 var obj = new InvgccCalificacionGrupo
                 {
+                    strId_valo = esEdicion ? IdCalificacionEnEdicion : null,
                     fkId_gru = ddlGrupoAdd.SelectedValue,
                     dtFecha_valo = DateTime.Parse(txtFechaAdd.Text),
-                    intPuntaje_valo = puntaje,
+                    intPuntaje_valo = puntaje, // Ahora acepta null
                     strReconocimiento_valo = txtReconocimientoAdd.Text.Trim(),
-                    intAnioMetrica = anioM,
-                    strCategoria_valo = (puntaje >= minConsolidado) ? "CONSOLIDADO" : "EMERGENTE",
-                    strInforme_valo = GuardarArchivoFisico(flpArchivoAdd, $"VAL_{DateTime.Now.Ticks}.pdf")
+                    intAnioMetrica = int.Parse(ddlAnioMetricaSeleccion.SelectedValue),
+                    strCategoria_valo = categoria,
+                    strInforme_valo = rutaInforme,
+                    strResolucion_valo = rutaResolucion
                 };
 
-                _manejador.GuardarCalificacion(obj);
-                Redireccionar($"Calificación registrada. El grupo ahora es <b>{obj.strCategoria_valo}</b>.", "ss");
+                // 9. PERSISTENCIA
+                if (esEdicion)
+                {
+                    _manejador.ActualizarCalificacion(obj);
+                    IdCalificacionEnEdicion = null;
+                    Redireccionar($"Actualización exitosa. Estado: <b>{categoria}</b>", "ss");
+                }
+                else
+                {
+                    _manejador.GuardarCalificacion(obj);
+                    Redireccionar($"Registro creado. Estado: <b>{categoria}</b> (Pendiente de Resolución)", "ss");
+                }
             }
-            catch (Exception ex) { Msg("Error al guardar: " + ex.Message, "ee"); }
+            catch (Exception ex) { Msg("Error: " + ex.Message, "ee"); }
         }
 
         protected void rptCalificaciones_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             string id = e.CommandArgument.ToString();
+
+            if (e.CommandName == "Editar")
+            {
+                CargarDatosParaEditar(id);
+            }
 
             if (e.CommandName == "Eliminar")
             {
@@ -328,6 +394,96 @@ namespace SistemaGestionCGI
             string script = $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema'); }});";
 
             ScriptManager.RegisterStartupScript(this, GetType(), "toast", script, true);
+        }
+
+        //
+
+        public string IdCalificacionEnEdicion
+        {
+            get { return ViewState["IdEdit"] as string; }
+            set { ViewState["IdEdit"] = value; }
+        }
+
+        private void CargarDatosParaEditar(string id)
+        {
+            var obj = _manejador.ObtenerPorId(id);
+            if (obj != null)
+            {
+                IdCalificacionEnEdicion = obj.strId_valo;
+
+                ddlAnioMetricaSeleccion.DataSource = _manejador.ObtenerAniosConMetricasConfiguradas();
+                ddlAnioMetricaSeleccion.DataBind();
+                string anioStr = obj.intAnioMetrica.ToString();
+                if (ddlAnioMetricaSeleccion.Items.FindByValue(anioStr) == null)
+                    ddlAnioMetricaSeleccion.Items.Add(new ListItem(anioStr, anioStr));
+                ddlAnioMetricaSeleccion.SelectedValue = anioStr;
+
+                CargarGruposPendientes(obj.fkId_gru);
+                ddlGrupoAdd.SelectedValue = obj.fkId_gru;
+
+                txtFechaAdd.Text = obj.dtFecha_valo.ToString("yyyy-MM-dd");
+                txtPuntajeAdd.Text = obj.intPuntaje_valo.HasValue ? obj.intPuntaje_valo.ToString() : "";
+                txtReconocimientoAdd.Text = obj.strReconocimiento_valo;
+
+                if (!string.IsNullOrEmpty(obj.strInforme_valo))
+                {
+                    pnlInfoEvaluacion.Visible = true;
+                    lnkVerEvaluacionActual.NavigateUrl = obj.strInforme_valo; 
+                    pnlUploadEvaluacion.Style["display"] = "none";
+                }
+                else
+                {
+                    pnlInfoEvaluacion.Visible = false;
+                    pnlUploadEvaluacion.Style["display"] = "block";
+                }
+
+                contenedorResolucionTotal.Visible = true; 
+
+                if (!string.IsNullOrEmpty(obj.strResolucion_valo))
+                {
+                    pnlInfoResolucion.Visible = true;
+                    lnkVerResolucionActual.NavigateUrl = obj.strResolucion_valo; 
+                    pnlUploadResolucion.Style["display"] = "none";
+                }
+                else
+                {
+                    pnlInfoResolucion.Visible = false;
+                    pnlUploadResolucion.Style["display"] = "block";
+                }
+
+                CambiarVista(Vista.Formulario);
+            }
+        }
+
+        private void LimpiarFormulario()
+        {
+            // 1. Limpiar Campos de Texto y Combos
+            ddlGrupoAdd.SelectedIndex = -1;
+            txtFechaAdd.Text = DateTime.Now.ToString("yyyy-MM-dd");
+            txtPuntajeAdd.Text = "";
+            txtReconocimientoAdd.Text = "";
+
+            // Resetear año al actual
+            string anioActual = DateTime.Now.Year.ToString();
+            if (ddlAnioMetricaSeleccion.Items.FindByValue(anioActual) != null)
+                ddlAnioMetricaSeleccion.SelectedValue = anioActual;
+
+            // Actualizar la etiqueta de regla (lblReglaMetrica)
+            ActualizarMetricaVisual();
+
+            // 2. Resetear Estado de Archivos (Modo "Subir Nuevo")
+
+            // A. Evaluación
+            pnlInfoEvaluacion.Visible = false;           // Ocultar tarjeta de archivo existente
+            pnlUploadEvaluacion.Style["display"] = "block"; // Mostrar zona de carga
+
+            // B. Resolución (Para nuevo registro, debe estar oculto todo el bloque)
+            contenedorResolucionTotal.Visible = false;
+            pnlInfoResolucion.Visible = false;
+            pnlUploadResolucion.Style["display"] = "block";
+
+            // Limpiar variable de edición
+            IdCalificacionEnEdicion = null;
         }
     }
 }

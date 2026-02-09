@@ -44,20 +44,26 @@ namespace SistemaGestionCGI.BLL
         {
             obj.strId_valo = GenerarCodigoAlfanumerico("INVGCCCALIFICACION_GRUPO", "strId_valo", "VAL");
 
+            string valPuntaje = obj.intPuntaje_valo.HasValue ? obj.intPuntaje_valo.Value.ToString() : "NULL";
+
+            string valResolucion = string.IsNullOrEmpty(obj.strResolucion_valo) ? "" : obj.strResolucion_valo;
+            string valInforme = string.IsNullOrEmpty(obj.strInforme_valo) ? "" : obj.strInforme_valo;
+            string valReconocimiento = string.IsNullOrEmpty(obj.strReconocimiento_valo) ? "" : obj.strReconocimiento_valo.Replace("'", "''");
+
             string sqlInsert = $@"
-                INSERT INTO INVGCCCALIFICACION_GRUPO
-                (strId_valo, fkId_gru, dtFecha_valo, intPuntaje_valo, 
-                 strReconocimiento_valo, strInforme_valo, intAnioMetrica, strCategoria_valo)
-                VALUES
-                ('{obj.strId_valo}', '{obj.fkId_gru}', '{obj.dtFecha_valo:yyyy-MM-dd}', {obj.intPuntaje_valo},
-                 '{obj.strReconocimiento_valo}', '{obj.strInforme_valo}', {obj.intAnioMetrica}, '{obj.strCategoria_valo}')";
+        INSERT INTO INVGCCCALIFICACION_GRUPO
+        (strId_valo, fkId_gru, dtFecha_valo, intPuntaje_valo, 
+         strReconocimiento_valo, strInforme_valo, strResolucion_valo, intAnioMetrica, strCategoria_valo)
+        VALUES
+        ('{obj.strId_valo}', '{obj.fkId_gru}', '{obj.dtFecha_valo:yyyy-MM-dd}', {valPuntaje},
+         '{valReconocimiento}', '{valInforme}', '{valResolucion}', {obj.intAnioMetrica}, '{obj.strCategoria_valo}')";
 
             _dal.InsertSql(sqlInsert);
 
             string sqlUpdateGrupo = $@"
-                UPDATE INVGCCGRUPO_INVESTIGACION 
-                SET strCategoria_gru = '{obj.strCategoria_valo}' 
-                WHERE strId_gru = '{obj.fkId_gru}'";
+        UPDATE INVGCCGRUPO_INVESTIGACION 
+        SET strCategoria_gru = '{obj.strCategoria_valo}' 
+        WHERE strId_gru = '{obj.fkId_gru}'";
 
             _dal.UpdateSql(sqlUpdateGrupo);
         }
@@ -121,16 +127,21 @@ namespace SistemaGestionCGI.BLL
         // =============================================================
         // 3. UTILIDADES Y COMBOS
         // =============================================================
-
-        public List<InvgccGrupoInvestigacion> ObtenerGruposParaCombo(int anio)
+        public List<InvgccGrupoInvestigacion> ObtenerGruposParaCombo(int anio, string idGrupoIncluir = "")
         {
+            string filtroExcepcion = "";
+            if (!string.IsNullOrEmpty(idGrupoIncluir))
+            {
+                filtroExcepcion = $" AND fkId_gru <> '{idGrupoIncluir}'";
+            }
+
             string sql = $@"
                 SELECT strId_gru, strNombre_gru
                 FROM INVGCCGRUPO_INVESTIGACION
                 WHERE strId_gru NOT IN (
                     SELECT DISTINCT fkId_gru
                     FROM INVGCCCALIFICACION_GRUPO
-                    WHERE intAnioMetrica = {anio}
+                    WHERE intAnioMetrica = {anio} {filtroExcepcion}
                 )
                 ORDER BY strNombre_gru";
 
@@ -210,6 +221,32 @@ namespace SistemaGestionCGI.BLL
             }
 
             return $"{prefijo}{siguienteNumero}";
+        }
+
+        //
+
+        public void ActualizarCalificacion(InvgccCalificacionGrupo obj)
+        {
+            string valPuntaje = obj.intPuntaje_valo.HasValue ? obj.intPuntaje_valo.Value.ToString() : "NULL";
+
+            string valResolucion = string.IsNullOrEmpty(obj.strResolucion_valo) ? "" : obj.strResolucion_valo;
+            string valInforme = string.IsNullOrEmpty(obj.strInforme_valo) ? "" : obj.strInforme_valo;
+            string valReconocimiento = string.IsNullOrEmpty(obj.strReconocimiento_valo) ? "" : obj.strReconocimiento_valo.Replace("'", "''");
+
+            string sql = $@"
+        UPDATE INVGCCCALIFICACION_GRUPO
+        SET intPuntaje_valo = {valPuntaje},
+            dtFecha_valo = '{obj.dtFecha_valo:yyyy-MM-dd}',
+            strCategoria_valo = '{obj.strCategoria_valo}',
+            strReconocimiento_valo = '{valReconocimiento}',
+            strInforme_valo = '{valInforme}',
+            strResolucion_valo = '{valResolucion}'
+        WHERE strId_valo = '{obj.strId_valo}'";
+
+            _dal.UpdateSql(sql);
+
+            string sqlGrupo = $"UPDATE INVGCCGRUPO_INVESTIGACION SET strCategoria_gru = '{obj.strCategoria_valo}' WHERE strId_gru = '{obj.fkId_gru}'";
+            _dal.UpdateSql(sqlGrupo);
         }
     }
 }
