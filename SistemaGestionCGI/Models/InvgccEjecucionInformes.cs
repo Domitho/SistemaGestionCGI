@@ -25,5 +25,8 @@ namespace SistemaGestionCGI.Models
 
         [JsonProperty("strObservacion_informe")]
         public string strObservacion_informe { get; set; }
+
+        [JsonProperty("dtFechaLectura_informe")]
+        public DateTime? dtFechaLectura_informe { get; set; }
     }
 }

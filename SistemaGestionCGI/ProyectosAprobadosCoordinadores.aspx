@@ -188,60 +188,84 @@
                             <asp:Repeater ID="rptInformes" runat="server" OnItemCommand="rptInformes_ItemCommand">
                                 <ItemTemplate>
                                     <div class="col-12">
-                                        <div class="bg-white p-3 border rounded-3 h-100 shadow-sm d-flex justify-content-between align-items-center position-relative hover-lift">
-                    
-                                            <div class="d-flex align-items-center gap-3 overflow-hidden me-3">
-                        
-                                                <div class="bg-light p-3 rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 55px; height: 55px;">
-                                                    <i class='<%# GetFileIconClass(Eval("strArchivo_path")) %> fa-2x'></i>
-                                                </div>
-
-                                                <div class="overflow-hidden">
-                                                    <p class="mb-1 fw-bold text-dark text-truncate" style="font-size: 1rem;" title='<%# Eval("strNombrePeriodo") %>'>
-                                                        <%# Eval("strNombrePeriodo") %>
-                                                    </p>
-                            
-                                                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle" style="font-size: 0.7rem; font-weight: 600;">
-                                                            <%# GetFileTypeLabel(Eval("strArchivo_path")) %>
-                                                        </span>
-
-                                                        <span class="text-muted small">|</span>
-
-                                                        <small class="text-muted fw-semibold">
-                                                            <i class="fa-regular fa-clock me-1"></i>
-                                                            <%# Convert.ToDateTime(Eval("dtFechaSubida")).ToString("dd MMMM yyyy, HH:mm tt") %>
-                                                        </small>
+                                        <div class="bg-white p-3 border rounded-3 h-100 shadow-sm position-relative hover-lift">
+            
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div class="d-flex align-items-center gap-3 overflow-hidden me-3">
+                                                    <div class="bg-light p-3 rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 55px; height: 55px;">
+                                                        <i class='<%# GetFileIconClass(Eval("strArchivo_path")) %> fa-2x'></i>
+                                                    </div>
+                                                    <div class="overflow-hidden">
+                                                        <p class="mb-1 fw-bold text-dark text-truncate" style="font-size: 1rem;">
+                                                            <%# Eval("strNombrePeriodo") %>
+                                                        </p>
+                                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle" style="font-size: 0.7rem;">
+                                                                <%# GetFileTypeLabel(Eval("strArchivo_path")) %>
+                                                            </span>
+                                                            <span class="text-muted small">|</span>
+                                                            <small class="text-muted fw-semibold">
+                                                                <i class="fa-regular fa-clock me-1"></i>
+                                                                <%# Convert.ToDateTime(Eval("dtFechaSubida")).ToString("dd MMM, HH:mm") %>
+                                                            </small>
+                                                        </div>
                                                     </div>
                                                 </div>
+
+                                                <div class="d-flex gap-2 flex-shrink-0 ms-2">
+                                                    <a href='<%# ResolveUrl(Eval("strArchivo_path").ToString()) %>' target="_blank" class="btn-action-icon text-primary border-0"><i class="fa-solid fa-eye"></i></a>
+                    
+                                                    <asp:LinkButton ID="btnEditarInf" runat="server" CommandName="EditarInforme" CommandArgument='<%# Eval("strId_informe") %>' CssClass="btn-action-icon text-primary border-0"><i class="fa-solid fa-pen"></i></asp:LinkButton>
+                                                    <asp:LinkButton ID="btnEliminarInf" runat="server" CommandName="EliminarInforme" CommandArgument='<%# Eval("strId_informe") %>' CssClass="btn-action-icon text-danger border-0" OnClientClick="return confirm('¿Eliminar informe?');"><i class="fa-solid fa-trash"></i></asp:LinkButton>
+                                                </div>
                                             </div>
 
-                                            <div class="d-flex gap-2 flex-shrink-0 ms-2">
-                        
-                                                <a href='<%# ResolveUrl(Eval("strArchivo_path").ToString()) %>' target="_blank" 
-                                                   class="btn-action-icon text-primary border-0 text-decoration-none" 
-                                                   title="Ver Documento">
-                                                    <i class="fa-solid fa-eye"></i>
-                                                </a>
+                                            <asp:Panel ID="pnlObservacion" runat="server" Visible='<%# !string.IsNullOrEmpty(Eval("strObservacion_informe") as string) %>' CssClass="mt-3">
+    
+                                                <div class="border border-warning rounded-2 overflow-hidden mb-2" style="background-color: #fffbf0;">
+        
+                                                    <div class="px-3 py-2 bg-warning bg-opacity-25 border-bottom border-warning border-opacity-25 d-flex align-items-center gap-2">
+                                                        <i class="fa-solid fa-circle-exclamation text-warning-emphasis"></i>
+                                                        <span class="fw-bold text-warning-emphasis small text-uppercase" style="letter-spacing: 0.5px;">Observación Administrativa</span>
+                                                    </div>
 
-                                                <asp:LinkButton ID="btnEditarInf" runat="server" 
-                                                    CommandName="EditarInforme" 
-                                                    CommandArgument='<%# Eval("strId_informe") %>' 
-                                                    CssClass="btn-action-icon text-primary border-0" 
-                                                    ToolTip="Editar Nombre">
-                                                    <i class="fa-solid fa-pen"></i>
-                                                </asp:LinkButton>
+                                                    <div class="p-3">
+                                                        <p class="mb-3 text-dark opacity-75 small" style="line-height: 1.5; font-family: 'Segoe UI', sans-serif;">
+                                                            <%# Eval("strObservacion_informe") %>
+                                                        </p>
 
-                                                <asp:LinkButton ID="btnEliminarInf" runat="server" 
-                                                    CommandName="EliminarInforme" 
-                                                    CommandArgument='<%# Eval("strId_informe") %>' 
-                                                    CssClass="btn-action-icon text-danger border-0" 
-                                                    ToolTip="Eliminar"
-                                                    OnClientClick="return confirm('¿Estás seguro de eliminar este informe?');">
-                                                    <i class="fa-solid fa-trash"></i>
-                                                </asp:LinkButton>
+                                                        <div class="d-flex justify-content-end">
+                
+                                                            <asp:PlaceHolder ID="phNoLeido" runat="server" Visible='<%# Eval("dtFechaLectura_informe") == null %>'>
+                                                                <div class="d-flex align-items-center gap-2 bg-white border rounded p-1 ps-3 shadow-sm">
+                                                                    <span class="small text-muted fw-semibold">Acción requerida:</span>
+                                                                   <asp:LinkButton ID="btnMarcarLeido" runat="server" 
+                                                                        CommandName="MarcarLeido" 
+                                                                        CommandArgument='<%# Eval("strId_informe") %>'
+                                                                        CssClass="btn-confirmar-utc">
+                                                                        <i class="fa-solid fa-file-signature"></i> 
+                                                                        <span>Confirmar Lectura</span>
+                                                                    </asp:LinkButton>
+                                                                </div>
+                                                            </asp:PlaceHolder>
 
-                                            </div>
+                                                            <asp:PlaceHolder ID="phLeido" runat="server" Visible='<%# Eval("dtFechaLectura_informe") != null %>'>
+                                                                <div class="d-flex align-items-center gap-2 text-success border border-success border-opacity-25 bg-success bg-opacity-10 px-3 py-1 rounded" 
+                                                                     title="Lectura confirmada por el coordinador">
+                                                                    <i class="fa-solid fa-clipboard-check"></i>
+                                                                    <div class="d-flex flex-column" style="line-height: 1;">
+                                                                        <span class="fw-bold text-uppercase" style="font-size: 0.65rem;">Revisión Confirmada</span>
+                                                                        <span class="small" style="font-size: 0.7rem;">
+                                                                            <%# Convert.ToDateTime(Eval("dtFechaLectura_informe")).ToString("dd/MM/yyyy HH:mm") %>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </asp:PlaceHolder>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </asp:Panel>
 
                                         </div>
                                     </div>

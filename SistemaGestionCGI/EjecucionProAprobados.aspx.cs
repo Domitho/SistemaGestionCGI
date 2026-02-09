@@ -532,97 +532,83 @@ namespace SistemaGestionCGI
         {
             pnlEquipoListado.Visible = false;
             pnlFormularioMiembro.Visible = true;
+
             hfIdMiembroEdit.Value = "";
             lblTituloFormMiembro.Text = "Nuevo Integrante";
 
             txtCedulaMiembro.Text = "";
             txtNombresMiembro.Text = "";
             txtApellidosMiembro.Text = "";
-            ddlRolMiembro.SelectedIndex = 0;
+            txtCorreoMiembro.Text = "";
+            txtEntidadMiembro.Text = "";
+            txtFechaInicioMiembro.Text = DateTime.Now.ToString("yyyy-MM-dd");
+
+            txtRolMiembro.Text = "MIEMBRO DE PROYECTO";
+
             ddlFacultadMiembro.SelectedIndex = 0;
+            ddlCarreraMiembro.Items.Clear();
+            ddlCarreraMiembro.Items.Add(new ListItem("-- Seleccione Facultad Primero --", ""));
         }
 
         protected void btnGuardarMiembro_Click(object sender, EventArgs e)
         {
             try
             {
-                string cedula = txtCedulaMiembro.Text.Trim();
-                string tipo = ddlTipoMiembro.SelectedValue;
-
-                if (tipo == "Interno")
-                {
-                    if (!EsCedulaValida(cedula))
-                    {
-                        txtCedulaMiembro.CssClass = "form-control is-invalid";
-                        Msg("Error Crítico: La cédula no es válida.", "ee");
-                        return;
-                    }
-                }
-
-                if (string.IsNullOrEmpty(hfIdMiembroEdit.Value))
-                {
-                    int idProyecto = int.Parse(hfIdEjecucionEquipo.Value);
-                    var miembros = _manejador.ObtenerMiembros(idProyecto);
-
-                    if (miembros.Any(x => x.strCedula_miembro == cedula && x.bitActivo_miembro == true))
-                    {
-                        Msg("Error: Esa persona ya está registrada en el equipo.", "ww");
-                        return;
-                    }
-                }
-
                 if (string.IsNullOrWhiteSpace(txtNombresMiembro.Text) || string.IsNullOrWhiteSpace(txtCorreoMiembro.Text))
                 {
-                    Msg("Complete Nombres y Correo.", "ww");
+                    Msg("Por favor complete los Datos Personales obligatorios.", "ww");
                     return;
                 }
 
-                string facultad = "";
-                string carrera = "";
-                string entidad = "";
-
-                if (tipo == "Externo")
+                DateTime fechaInicio;
+                if (!DateTime.TryParse(txtFechaInicioMiembro.Text, out fechaInicio))
                 {
-                    entidad = txtEntidadMiembro.Text.Trim();
-                    if (string.IsNullOrEmpty(entidad)) { Msg("Especifique la entidad externa.", "ww"); return; }
-                    facultad = "EXTERNO";
+                    Msg("La fecha de inicio no es válida.", "ww");
+                    return;
                 }
-                else
+
+                string cedulaObjetivo = txtCedulaMiembro.Text.Trim();
+                int idProyecto = int.Parse(hfIdEjecucionEquipo.Value);
+                int? idEdicion = string.IsNullOrEmpty(hfIdMiembroEdit.Value) ? (int?)null : int.Parse(hfIdMiembroEdit.Value);
+                string errorCedula;
+
+                if (!CumpleRequisitosCedula(cedulaObjetivo, idProyecto, idEdicion, out errorCedula))
                 {
-                    facultad = ddlFacultadMiembro.SelectedValue;
-                    carrera = ddlCarreraMiembro.SelectedValue;
+                    txtCedulaMiembro.CssClass = "form-control is-invalid"; 
+                    Msg("BLOQUEO DE SEGURIDAD: " + errorCedula, "ee");
+                    return;
                 }
 
                 var nuevoMiembro = new InvgccEjecucionMiembros
                 {
-                    fkId_ejec = int.Parse(hfIdEjecucionEquipo.Value),
-                    strCedula_miembro = cedula,
+                    fkId_ejec = idProyecto,
+                    strCedula_miembro = cedulaObjetivo, 
                     strNombres_miembro = txtNombresMiembro.Text.Trim().ToUpper(),
                     strApellidos_miembro = txtApellidosMiembro.Text.Trim().ToUpper(),
                     strCorreo_miembro = txtCorreoMiembro.Text.Trim().ToLower(),
-                    strTipo_miembro = tipo,
-                    strRol_miembro = ddlRolMiembro.SelectedValue,
-                    strEntidad_miembro = entidad,
-                    strFacultad_miembro = facultad,
-                    strCarrera_miembro = carrera,
+                    strTipo_miembro = ddlTipoMiembro.SelectedValue,
+                    strFacultad_miembro = (ddlTipoMiembro.SelectedValue == "Interno") ? ddlFacultadMiembro.SelectedValue : "EXTERNO",
+                    strCarrera_miembro = (ddlTipoMiembro.SelectedValue == "Interno") ? ddlCarreraMiembro.SelectedValue : "",
+                    strEntidad_miembro = (ddlTipoMiembro.SelectedValue == "Externo") ? txtEntidadMiembro.Text.Trim() : "",
                     bitActivo_miembro = true,
-                    dtFechaInicio_miembro = DateTime.Now
+                    dtFechaInicio_miembro = fechaInicio
                 };
 
-                // 4. GUARDAR
-                if (string.IsNullOrEmpty(hfIdMiembroEdit.Value))
+                if (idEdicion == null)
                 {
+                    nuevoMiembro.strRol_miembro = "MIEMBRO DE PROYECTO";
                     _manejador.GuardarMiembro(nuevoMiembro);
-                    SetFlashMessage("Integrante validado y guardado correctamente.", "ss");
+                    SetFlashMessage("Integrante agregado al equipo correctamente.", "ss");
                 }
                 else
                 {
-                    nuevoMiembro.strId_miembro = int.Parse(hfIdMiembroEdit.Value);
+                    nuevoMiembro.strId_miembro = idEdicion.Value;
+                    nuevoMiembro.strRol_miembro = txtRolMiembro.Text;
                     _manejador.ActualizarMiembro(nuevoMiembro);
                     SetFlashMessage("Datos del integrante actualizados.", "ss");
                 }
 
-                Response.Redirect($"EjecucionProAprobados.aspx?idTeam={nuevoMiembro.fkId_ejec}", false);
+                Response.Redirect($"EjecucionProAprobados.aspx", false);
             }
             catch (Exception ex)
             {
@@ -702,12 +688,30 @@ namespace SistemaGestionCGI
                     txtCedulaMiembro.Text = m.strCedula_miembro;
                     txtNombresMiembro.Text = m.strNombres_miembro;
                     txtApellidosMiembro.Text = m.strApellidos_miembro;
+                    txtCorreoMiembro.Text = m.strCorreo_miembro;
+                    txtFechaInicioMiembro.Text = m.dtFechaInicio_miembro != null
+                                                         ? Convert.ToDateTime(m.dtFechaInicio_miembro).ToString("yyyy-MM-dd")
+                                                         : DateTime.Now.ToString("yyyy-MM-dd");
 
-                    if (ddlRolMiembro.Items.FindByValue(m.strRol_miembro) != null)
-                        ddlRolMiembro.SelectedValue = m.strRol_miembro;
+                    txtRolMiembro.Text = m.strRol_miembro;
 
-                    if (ddlFacultadMiembro.Items.FindByValue(m.strFacultad_miembro) != null)
-                        ddlFacultadMiembro.SelectedValue = m.strFacultad_miembro;
+                    if (m.strTipo_miembro == "Externo")
+                    {
+                        ddlTipoMiembro.SelectedValue = "Externo";
+                        txtEntidadMiembro.Text = m.strEntidad_miembro;
+                    }
+                    else
+                    {
+                        ddlTipoMiembro.SelectedValue = "Interno";
+                        if (ddlFacultadMiembro.Items.FindByValue(m.strFacultad_miembro) != null)
+                        {
+                            ddlFacultadMiembro.SelectedValue = m.strFacultad_miembro;
+                            CargarCarrerasEnCombo(ddlCarreraMiembro, m.strFacultad_miembro);
+
+                            if (ddlCarreraMiembro.Items.FindByValue(m.strCarrera_miembro) != null)
+                                ddlCarreraMiembro.SelectedValue = m.strCarrera_miembro;
+                        }
+                    }
 
                     lblTituloFormMiembro.Text = "Editar Integrante";
                     pnlEquipoListado.Visible = false;
@@ -1695,30 +1699,34 @@ namespace SistemaGestionCGI
         protected void btnValidarCedula_Click(object sender, EventArgs e)
         {
             string cedula = txtCedulaMiembro.Text.Trim();
+            int idProyecto = int.Parse(hfIdEjecucionEquipo.Value);
 
-            if (!EsCedulaValida(cedula))
+            int? idEdicion = string.IsNullOrEmpty(hfIdMiembroEdit.Value) ? (int?)null : int.Parse(hfIdMiembroEdit.Value);
+
+            string mensajeError;
+
+            if (!CumpleRequisitosCedula(cedula, idProyecto, idEdicion, out mensajeError))
             {
                 txtCedulaMiembro.CssClass = "form-control is-invalid";
-                Msg("Cédula inválida. Verifique los dígitos.", "ee");
+                Msg(mensajeError, "ww"); 
                 return;
             }
 
-            int idProyecto = int.Parse(hfIdEjecucionEquipo.Value);
-            var miembros = _manejador.ObtenerMiembros(idProyecto);
+            txtCedulaMiembro.CssClass = "form-control is-valid";
 
-            bool existe = miembros.Any(m => m.strCedula_miembro == cedula && m.bitActivo_miembro == true);
-
-            if (existe)
+            var datosDocente = _manejador.BuscarDocentePorCedula(cedula);
+            if (datosDocente != null)
             {
-                txtCedulaMiembro.CssClass = "form-control is-invalid";
-                Msg("Esta persona YA está registrada en el equipo.", "ww");
+                txtNombresMiembro.Text = datosDocente.strNombres_doc;
+                txtApellidosMiembro.Text = datosDocente.strApellidos_doc;
+                Msg("Cédula válida. Datos recuperados.", "ss");
             }
             else
             {
-                txtCedulaMiembro.CssClass = "form-control is-valid";
                 Msg("Cédula válida y disponible.", "ss");
-                txtNombresMiembro.Focus();
             }
+
+            txtNombresMiembro.Focus();
         }
 
         private bool EsCedulaValida(string cedula)
@@ -1858,5 +1866,50 @@ namespace SistemaGestionCGI
             }
         }
 
+        //
+
+        // Método auxiliar para no repetir código
+        private bool CumpleRequisitosCedula(string cedula, int idProyecto, int? idMiembroEditando, out string mensajeError)
+        {
+            mensajeError = "";
+
+            if (!EsCedulaValida(cedula))
+            {
+                mensajeError = "La cédula ingresada no tiene un formato válido.";
+                return false;
+            }
+
+            bool existeEnEquipo = _manejador.ExisteMiembroActivoPorCedula(cedula, idProyecto);
+
+            if (idMiembroEditando == null && existeEnEquipo)
+            {
+                mensajeError = "Esta persona YA forma parte de este equipo de trabajo.";
+                return false;
+            }
+
+            if (idMiembroEditando != null)
+            {
+                var miembroDueñoCedula = _manejador.ObtenerMiembros(idProyecto)
+                                                   .FirstOrDefault(x => x.strCedula_miembro == cedula && x.bitActivo_miembro);
+
+                if (miembroDueñoCedula != null && miembroDueñoCedula.strId_miembro != idMiembroEditando)
+                {
+                    mensajeError = "Esta cédula ya pertenece a otro integrante del equipo.";
+                    return false;
+                }
+            }
+
+            if (!existeEnEquipo)
+            {
+                string proyectoOcupado = _manejador.VerificarVinculacionEnOtrosProyectos(cedula);
+                if (!string.IsNullOrEmpty(proyectoOcupado))
+                {
+                    mensajeError = $"CONFLICTO: Esta persona ya se encuentra activa en el proyecto: '{proyectoOcupado}'.";
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 }

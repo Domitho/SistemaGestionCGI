@@ -274,6 +274,24 @@ namespace SistemaGestionCGI
                 }
                 catch (Exception ex) { Msg(ex.Message, "ee"); }
             }
+
+            if (e.CommandName == "MarcarLeido")
+            {
+                try
+                {
+
+                    _manejador.MarcarObservacionComoLeida(idInf);
+
+                    int idEjec = int.Parse(hfIdEjecucionInforme.Value);
+                    CargarVistaGestion(idEjec);
+
+                    Msg("Se ha registrado su confirmación de lectura exitosamente.", "ss");
+                }
+                catch (Exception ex)
+                {
+                    Msg("Error al confirmar lectura: " + ex.Message, "ee");
+                }
+            }
         }
 
         protected void btnAbrirGenerador_Click(object sender, EventArgs e)

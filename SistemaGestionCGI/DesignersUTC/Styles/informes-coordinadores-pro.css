@@ -225,3 +225,27 @@
 .letter-spacing-1 {
     letter-spacing: 1px;
 }
+
+.btn-confirmar-utc {
+    background-color: #312783 !important; /* Azul UTC */
+    color: #ffffff !important;
+    border: 1px solid #241d66 !important;
+    border-radius: 50rem !important; /* Redondeado tipo píldora */
+    padding: 6px 16px !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    display: inline-flex !important; /* Alinea icono y texto */
+    align-items: center !important;
+    gap: 8px !important; /* Espacio entre icono y texto */
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(49, 39, 131, 0.2);
+    cursor: pointer;
+}
+
+    .btn-confirmar-utc:hover {
+        background-color: #241d66 !important; /* Azul más oscuro al pasar mouse */
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(49, 39, 131, 0.3);
+        color: #ffffff !important;
+    }

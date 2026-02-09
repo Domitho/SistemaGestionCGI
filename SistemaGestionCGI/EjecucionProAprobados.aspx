@@ -465,21 +465,35 @@
 
             <asp:HiddenField ID="hfIdMiembroEdit" runat="server" />
 
-            <div class="row g-3">
+            <div class="utc-section-header mb-3">
+                <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2">
+                    <i class="fa-solid fa-building-columns me-2"></i> Tipo de integrante
+                </h6>
+            </div>
+
+            <div class="row g-3 mb-4">
                 <div class="col-12">
-                    <label class="form-label fw-bold text-primary">Tipo de Vinculación</label>
-                    <asp:DropDownList ID="ddlTipoMiembro" runat="server" CssClass="form-select shadow-sm border-primary" onchange="toggleTipoIntegrante()">
+                    <label class="form-label fw-bold">Tipo de Vinculación</label>
+                    <asp:DropDownList ID="ddlTipoMiembro" runat="server" CssClass="form-select shadow-sm" onchange="toggleTipoIntegrante()">
                         <asp:ListItem Value="Interno" Selected="True">Interno (UTC)</asp:ListItem>
                         <asp:ListItem Value="Externo">Externo (Otra Institución)</asp:ListItem>
                     </asp:DropDownList>
                 </div>
+            </div>
 
+            <div class="utc-section-header mb-3">
+                <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2">
+                    <i class="fa-regular fa-id-card me-2"></i> Datos Personales
+                </h6>
+            </div>
+
+            <div class="row g-3 mb-4">
                 <div class="col-12">
-                    <label class="form-label">Cédula<span class="text-danger">*</span></label>
+                    <label class="form-label">Cédula de Identidad <span class="text-danger">*</span></label>
                     <div class="input-group gap-2">
                         <asp:TextBox ID="txtCedulaMiembro" runat="server" CssClass="form-control" placeholder="10 dígitos" MaxLength="15" />
-                        <asp:LinkButton ID="btnValidarCedula" runat="server" CssClass="btn btn-primary" OnClick="btnValidarCedula_Click" CausesValidation="false">
-                            <i class="fa-solid fa-magnifying-glass"></i>
+                        <asp:LinkButton ID="btnValidarCedula" runat="server" CssClass="btn btn-primary" OnClick="btnValidarCedula_Click" CausesValidation="false" ToolTip="Buscar en base de datos">
+                            <i class="fa-solid fa-magnifying-glass"></i> Validar
                         </asp:LinkButton>
                     </div>
                 </div>
@@ -488,28 +502,31 @@
                     <label class="form-label">Nombres <span class="text-danger">*</span></label>
                     <asp:TextBox ID="txtNombresMiembro" runat="server" CssClass="form-control" />
                 </div>
+
                 <div class="col-md-6">
                     <label class="form-label">Apellidos <span class="text-danger">*</span></label>
                     <asp:TextBox ID="txtApellidosMiembro" runat="server" CssClass="form-control" />
                 </div>
- 
-                <div class="col-md-6">
+
+                <div class="col-12">
                     <label class="form-label">Correo Electrónico <span class="text-danger">*</span></label>
                     <div class="input-group">
-                        <span class="input-group-text"><i class="fa-solid fa-envelope"></i></span>
+                        <span class="input-group-text bg-light"><i class="fa-solid fa-envelope text-secondary"></i></span>
                         <asp:TextBox ID="txtCorreoMiembro" runat="server" CssClass="form-control" TextMode="Email" placeholder="ejemplo@utc.edu.ec" />
                     </div>
                 </div>
- 
-                <div class="col-md-6">
-                    <label class="form-label">Rol en el Proyecto</label>
-                    <asp:DropDownList ID="ddlRolMiembro" runat="server" CssClass="form-select">
-                        <asp:ListItem>MIEMBRO DE PROYECTO</asp:ListItem>
-                    </asp:DropDownList>
-                </div>
+            </div>
+
+            <div class="utc-section-header mb-3">
+                <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2">
+                    <i class="fa-solid fa-building-columns me-2"></i> Afiliación Institucional
+                </h6>
+            </div>
+
+            <div class="row g-3 mb-4">
 
                 <div id="divCamposInternos" class="col-12 row g-3 m-0 p-0">
-                    <div class="col-md-6">
+                    <div class="col-md-6 ps-0">
                         <label class="form-label">Facultad / Extensión</label>
                         <asp:DropDownList ID="ddlFacultadMiembro" runat="server" CssClass="form-select" 
                             AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadMiembro_SelectedIndexChanged">
@@ -523,7 +540,7 @@
                             <asp:ListItem Value="LAMANA">EXTENSION LA MANA</asp:ListItem>
                         </asp:DropDownList>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6 pe-0">
                         <label class="form-label">Carrera / Departamento</label>
                         <asp:DropDownList ID="ddlCarreraMiembro" runat="server" CssClass="form-select">
                             <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
@@ -537,13 +554,43 @@
                 </div>
             </div>
 
-            <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
-                <asp:LinkButton ID="btnGuardarMiembro" runat="server" CssClass="btn btn-primary btn-pill px-4"
+            <div class="utc-section-header mb-3">
+                <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2">
+                    <i class="fa-solid fa-briefcase me-2"></i> Información del Proyecto
+                </h6>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Fecha de Inicio / Vinculación <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="fa-regular fa-calendar"></i></span>
+                        <asp:TextBox ID="txtFechaInicioMiembro" runat="server" CssClass="form-control" TextMode="Date" />
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Función / Rol Asignado</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light fw-bold text-primary"><i class="fa-solid fa-user-tag"></i></span>
+                        <asp:TextBox ID="txtRolMiembro" runat="server" 
+                            CssClass="form-control bg-light fw-bold text-primary" 
+                            ReadOnly="true" 
+                            Text="MIEMBRO DE PROYECTO" />
+                    </div>
+                    <div class="form-text small">
+                        <i class="fa-solid fa-circle-info me-1"></i> Rol predeterminado por el sistema.
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center gap-3 flex-wrap mt-5 pt-3 border-top">
+                <asp:LinkButton ID="btnGuardarMiembro" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow-sm"
                     OnClick="btnGuardarMiembro_Click">
                     <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Integrante
                 </asp:LinkButton>
 
-                <asp:LinkButton ID="btnCancelarMiembro" runat="server" CssClass="btn btn-outline-primary btn-pill px-4"
+                <asp:LinkButton ID="btnCancelarMiembro" runat="server" CssClass="btn btn-outline-secondary btn-pill px-5 shadow-sm"
                     OnClick="btnCancelarMiembro_Click" CausesValidation="false">
                     <i class="fa-solid fa-ban me-2"></i> Cancelar
                 </asp:LinkButton>
@@ -638,34 +685,58 @@
                                                     </div>
                                                 </td>
 
-                                                <td class="text-end pe-3 align-middle">
-                                                    <div class="d-flex align-items-center justify-content-end gap-2">
+                                                <td class="text-end pe-4 py-3 align-middle"> <div class="d-flex flex-column align-items-end justify-content-center h-100 gap-2">
         
-                                                        <a href='<%# ResolveUrl(Eval("strArchivo_path").ToString()) %>' target="_blank" 
-                                                           class="btn btn-white border shadow-sm text-secondary d-flex align-items-center justify-content-center" 
-                                                           style="width: 40px; height: 38px; border-radius: 10px; background-color: #fff;"
-                                                           title="Ver PDF">
-                                                            <i class="fa-solid fa-eye"></i>
-                                                        </a>
+                                                        <asp:PlaceHolder runat="server" Visible='<%# !string.IsNullOrEmpty(Eval("strObservacion_informe") as string) %>'>
+                                                            <div class="mb-1">
+                
+                                                                <asp:PlaceHolder runat="server" Visible='<%# Eval("dtFechaLectura_informe") == null %>'>
+                                                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary rounded-pill px-3 py-1" 
+                                                                          style="font-size: 0.65rem; letter-spacing: 0.5px; font-weight: 600;">
+                                                                        <i class="fa-regular fa-clock me-1"></i> PENDIENTE
+                                                                    </span>
+                                                                </asp:PlaceHolder>
 
-                                                        <asp:LinkButton ID="btnObservar" runat="server" 
-                                                            CommandName="ObservarInforme" 
-                                                            CommandArgument='<%# Eval("strId_informe") %>'
-            
-                                                            CssClass='<%# string.IsNullOrEmpty(Eval("strObservacion_informe")?.ToString()) 
-                                                                ? "btn btn-light border shadow-sm rounded-pill px-3 text-secondary fw-bold text-nowrap d-flex align-items-center gap-2" 
-                                                                : "btn border border-warning shadow-sm rounded-pill px-3 text-dark fw-bold text-nowrap d-flex align-items-center gap-2" %>'
-            
-                                                            Style='<%# string.IsNullOrEmpty(Eval("strObservacion_informe")?.ToString()) 
-                                                                ? "height: 38px;" 
-                                                                : "height: 38px; background-color: #fff9c4;" %>'
-            
-                                                            ToolTip="Gestionar Observación">
+                                                                <asp:PlaceHolder runat="server" Visible='<%# Eval("dtFechaLectura_informe") != null %>'>
+                                                                    <div class="text-end" style="line-height: 1.2;">
+                                                                        <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-3 py-1" 
+                                                                              style="font-size: 0.65rem; letter-spacing: 0.5px; font-weight: 700;">
+                                                                            <i class="fa-solid fa-check-double me-1"></i> CONFIRMADO
+                                                                        </span>
+                                                                        <div class="text-muted mt-1" style="font-size: 0.6rem; opacity: 0.8;">
+                                                                            <%# Convert.ToDateTime(Eval("dtFechaLectura_informe")).ToString("dd/MM/yy HH:mm") %>
+                                                                        </div>
+                                                                    </div>
+                                                                </asp:PlaceHolder>
 
-                                                            <i class='<%# string.IsNullOrEmpty(Eval("strObservacion_informe")?.ToString()) ? "fa-solid fa-pen" : "fa-solid fa-pen-to-square" %>'></i> 
+                                                            </div>
+                                                        </asp:PlaceHolder>
+
+                                                        <div class="d-flex align-items-center gap-2">
             
-                                                            <span><%# string.IsNullOrEmpty(Eval("strObservacion_informe")?.ToString()) ? "Revisar" : "Edit. Nota" %></span>
-                                                        </asp:LinkButton>
+                                                            <a href='<%# ResolveUrl(Eval("strArchivo_path").ToString()) %>' target="_blank" 
+                                                               class="btn btn-white border shadow-sm text-secondary d-flex align-items-center justify-content-center hover-lift"
+                                                               style="width: 40px; height: 38px; border-radius: 8px; background-color: #fff;" 
+                                                               title="Ver Documento">
+                                                                <i class="fa-solid fa-eye"></i>
+                                                            </a>
+
+                                                            <asp:LinkButton ID="btnObservar" runat="server" 
+                                                                CommandName="ObservarInforme" 
+                                                                CommandArgument='<%# Eval("strId_informe") %>'
+                                                                CssClass='<%# string.IsNullOrEmpty(Eval("strObservacion_informe")?.ToString()) 
+                                                                    ? "btn btn-light border shadow-sm px-3 text-secondary fw-semibold d-flex align-items-center gap-2 hover-lift" 
+                                                                    : "btn border border-warning shadow-sm px-3 text-dark fw-bold d-flex align-items-center gap-2 hover-lift" %>'
+                                                                Style='<%# string.IsNullOrEmpty(Eval("strObservacion_informe")?.ToString()) 
+                                                                    ? "height: 38px; border-radius: 8px;" 
+                                                                    : "height: 38px; border-radius: 8px; background-color: #fff9c4;" %>'
+                                                                ToolTip="Gestionar Observación">
+                
+                                                                <i class='<%# string.IsNullOrEmpty(Eval("strObservacion_informe")?.ToString()) ? "fa-solid fa-pen" : "fa-solid fa-pen-to-square" %>'></i>
+                                                                <span><%# string.IsNullOrEmpty(Eval("strObservacion_informe")?.ToString()) ? "Revisar" : "Edit. Nota" %></span>
+                                                            </asp:LinkButton>
+
+                                                        </div>
 
                                                     </div>
                                                 </td>
@@ -1297,7 +1368,6 @@
         </div>
     </div>
 
-    <%-- MODAL PAPELERA PREMIUM: INTEGRANTES (ADAPTADO) --%>
     <div class="modal fade" id="modalPapeleraIntegrantes" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" runat="server" ClientIDMode="Static">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content utc-modal-premium">
@@ -1440,6 +1510,8 @@
                 initInput("wrapperCierre", "<%= flpCierre.ClientID %>");
                 initInput("wrapperFinal", "<%= flpFinal.ClientID %>");
             }
+
+            toggleTipoIntegrante();
         });
 
         function initTable(id) {
@@ -1608,16 +1680,21 @@
 
         function toggleTipoIntegrante() {
             var ddl = document.getElementById('<%= ddlTipoMiembro.ClientID %>');
+
+            if (!ddl) return;
+
             var val = ddl.value;
             var divInt = document.getElementById('divCamposInternos');
             var divExt = document.getElementById('divCamposExternos');
 
-            if (val === 'Externo') {
-                divInt.style.display = 'none';
-                divExt.style.display = 'block';
-            } else {
-                divInt.style.display = 'flex'; 
-                divExt.style.display = 'none';
+            if (divInt && divExt) {
+                if (val === 'Externo') {
+                    divInt.style.display = 'none';
+                    divExt.style.display = 'block';
+                } else {
+                    divInt.style.display = 'flex'; 
+                    divExt.style.display = 'none';
+                }
             }
         }
 

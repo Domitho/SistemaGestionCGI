@@ -626,6 +626,44 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sql);
         }
 
+        public void MarcarObservacionComoLeida(int idInforme)
+        {
+            string sql = $@"
+                UPDATE INVGCCEJECUCION_INFORMES 
+                SET dtFechaLectura_informe = GETDATE()
+                WHERE strId_informe = {idInforme}";
+
+            _dal.UpdateSql(sql);
+        }
+
+        //
+
+        public string VerificarVinculacionEnOtrosProyectos(string cedula)
+        {
+
+            string sql = $@"
+                SELECT TOP 1 P.strTema_pro
+                FROM INVGCCEJECUCION_MIEMBROS M
+                INNER JOIN INVGCCEJECUCION_PROYECTO E ON M.fkId_ejec = E.strId_ejec
+                INNER JOIN INVGCCINSCRIPCION_PROYECTOS P ON E.fkId_pro = P.strId_pro
+                WHERE M.strCedula_miembro = '{cedula}'
+                  AND M.bitActivo_miembro = 1
+                  AND E.strEstado_ejec != 'FINALIZADO'";
+
+            try
+            {
+                var resultado = _dal.SelectSql<dynamic>(sql);
+
+                if (resultado != null && resultado.Count > 0)
+                {
+                    return resultado[0].strTema_pro;
+                }
+            }
+            catch {}
+
+            return null;
+        }
+
     }
 
     public class DtoCedulaTemp
