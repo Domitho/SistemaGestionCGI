@@ -672,76 +672,76 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.Label lblCentroDocNombre;
 
         /// <summary>
-        /// Control lblEstadoRes.
+        /// Control hfIdCentroDocModal.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblEstadoRes;
+        protected global::System.Web.UI.WebControls.HiddenField hfIdCentroDocModal;
 
         /// <summary>
-        /// Control pnlAccionesRes.
+        /// Control hfResModalActual.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlAccionesRes;
+        protected global::System.Web.UI.WebControls.HiddenField hfResModalActual;
 
         /// <summary>
-        /// Control lnkVerRes.
+        /// Control hfAceModalActual.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkVerRes;
+        protected global::System.Web.UI.WebControls.HiddenField hfAceModalActual;
 
         /// <summary>
-        /// Control lnkDescargarRes.
+        /// Control flpResModal.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkDescargarRes;
+        protected global::System.Web.UI.WebControls.FileUpload flpResModal;
 
         /// <summary>
-        /// Control lblEstadoAce.
+        /// Control lnkDescargarResModal.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblEstadoAce;
+        protected global::System.Web.UI.WebControls.HyperLink lnkDescargarResModal;
 
         /// <summary>
-        /// Control pnlAccionesAce.
+        /// Control flpAceModal.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlAccionesAce;
+        protected global::System.Web.UI.WebControls.FileUpload flpAceModal;
 
         /// <summary>
-        /// Control lnkVerAce.
+        /// Control lnkDescargarAceModal.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkVerAce;
+        protected global::System.Web.UI.WebControls.HyperLink lnkDescargarAceModal;
 
         /// <summary>
-        /// Control lnkDescargarAce.
+        /// Control btnActualizarDocs.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkDescargarAce;
+        protected global::System.Web.UI.WebControls.LinkButton btnActualizarDocs;
 
         /// <summary>
         /// Control rptPapelera.

@@ -89,11 +89,11 @@
         </div>
 
         <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4">
-        
+    
             <h4 class="utc-subtitle mb-4 text-center">
                 <i class="fa-solid fa-file-pen me-2"></i> Datos del Grupo
             </h4>
-        
+    
             <asp:HiddenField ID="hfIdGrupo" runat="server" />
             <asp:HiddenField ID="hfFotoActual" runat="server" />
             <asp:HiddenField ID="hfArchivoActual" runat="server" />
@@ -108,32 +108,54 @@
             <asp:HiddenField ID="hfCoordFacultad" runat="server" />
 
             <div class="row g-3">
+            
                 <div class="col-12">
                     <label class="form-label">Centro de Investigación</label>
                     <asp:DropDownList ID="ddlCentro" runat="server" CssClass="form-select"></asp:DropDownList>
                 </div>
 
+                <div class="col-md-6">
+                    <label class="form-label">Facultad / Extensión <span class="text-danger">*</span></label>
+                    <asp:DropDownList ID="ddlFacultadGrupo" runat="server" CssClass="form-select"
+                        AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadGrupo_SelectedIndexChanged">
+                        <asp:ListItem Text="-- Seleccione --" Value="" />
+                        <asp:ListItem Value="CAREN">FACULTAD DE CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
+                        <asp:ListItem Value="CIYA">FACULTAD DE CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
+                        <asp:ListItem Value="CAYE">FACULTAD DE CIENCIAS ADMINISTRATIVAS (CAYE)</asp:ListItem>
+                        <asp:ListItem Value="CSAYE">FACULTAD DE CIENCIAS SOCIALES (CSAYE)</asp:ListItem>
+                        <asp:ListItem Value="SALUD">FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
+                        <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
+                        <asp:ListItem Value="LAMANA">EXTENSION LA MANÁ</asp:ListItem>
+                    </asp:DropDownList>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Carrera / Departamento <span class="text-danger">*</span></label>
+                    <asp:DropDownList ID="ddlCarreraGrupo" runat="server" CssClass="form-select">
+                        <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
+                    </asp:DropDownList>
+                </div>
                 <div class="col-12">
                     <label class="form-label">Nombre del Grupo <span class="text-danger">*</span></label>
                     <asp:TextBox ID="txtNombreGru" runat="server" CssClass="form-control" autocomplete="off" />
                 </div>
-            
+        
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Coordinador</label>
                     <div class="input-group gap-2">
                         <asp:TextBox ID="txtCoordinadorGru" runat="server" CssClass="form-control" ReadOnly="true" placeholder="Asigne el coordinador..."></asp:TextBox>
-        
+    
                         <asp:LinkButton ID="btnAgregarCoordinador" runat="server" CssClass="btn btn-primary" OnClick="btnAgregarCoordinador_Click">
                             <i class="fa-solid fa-user-plus"></i> Asignar
                         </asp:LinkButton>
                     </div>
                 </div>
-            
+        
                 <div class="col-md-6">
                     <label class="form-label">Fecha de Creación</label>
                     <asp:TextBox ID="txtFechaCreaGru" runat="server" CssClass="form-control" TextMode="Date" />
                 </div>
-            
+        
                 <div class="col-md-6">
                     <label class="form-label">Categoría</label>
                     <asp:DropDownList ID="ddlCategoriaGru" runat="server" CssClass="form-select">
@@ -156,12 +178,6 @@
                         <asp:ListItem Value="Planificación y gestión del turismo sostenible y sustentable.">Planificación y gestión del turismo sostenible y sustentable.</asp:ListItem>
                         <asp:ListItem Value="Educación, derecho, equidad y estudio de género para el desarrollo biopsicosocial.">Educación, derecho, equidad y estudio de género para el desarrollo biopsicosocial.</asp:ListItem>
                         <asp:ListItem Value="Cultura, arte, diseño y comunicación para la transformación del ser humano y la sociedad.">Cultura, arte, diseño y comunicación para la transformación del ser humano y la sociedad.</asp:ListItem>
-                    </asp:DropDownList>
-                </div>
-                <div class="col-12">
-                    <label class="form-label">Sublínea de Investigación</label>
-                    <asp:DropDownList ID="ddlSublineaInv" runat="server" CssClass="form-select">
-                        <asp:ListItem Value="Inteligencia artificial e inteligencia de negocios">Inteligencia artificial e inteligencia de negocios</asp:ListItem>
                     </asp:DropDownList>
                 </div>
 
@@ -196,9 +212,8 @@
                         <asp:FileUpload ID="flpArchivoGrupo" runat="server" CssClass="utc-fileinput-input" accept=".pdf,.doc,.docx" />
                     </div>
                 </div>
-            </div>
 
-            <div class="d-flex justify-content-center gap-3 mt-5">
+            </div> <div class="d-flex justify-content-center gap-3 mt-5">
                 <asp:LinkButton ID="btnGuardarGrupo" runat="server" 
                     CssClass="btn btn-primary btn-pill px-5 shadow-sm" 
                     OnClientClick="return ValidarFormularioGrupo();" 

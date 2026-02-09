@@ -23,9 +23,6 @@ namespace SistemaGestionCGI.Models
         [JsonProperty("strLineasinv_gru")]
         public string strLineasinv_gru { get; set; }
 
-        [JsonProperty("strSublineasinv_gru")]
-        public string strSublineasinv_gru { get; set; }
-
         [JsonProperty("strArchivo_gru")]
         public string strArchivo_gru { get; set; }
 
@@ -40,5 +37,11 @@ namespace SistemaGestionCGI.Models
 
         [JsonProperty("TotalProyectos")]
         public int TotalProyectos { get; set; }
+
+        [JsonProperty("strFacultad_gru")]
+        public string strFacultad_gru { get; set; }
+
+        [JsonProperty("strCarrera_gru")]
+        public string strCarrera_gru { get; set; }
     }
 }

@@ -455,47 +455,46 @@ namespace SistemaGestionCGI
             if (centro == null) return;
 
             lblCentroDocNombre.Text = centro.strNombre_cen;
+            hfIdCentroDocModal.Value = centro.strId_cen;
 
-            // --- 1. CONFIGURAR RESOLUCIÓN ---
+            hfResModalActual.Value = centro.strResolucion_cen;
             if (!string.IsNullOrEmpty(centro.strResolucion_cen))
             {
-                lblEstadoRes.Text = "Archivo disponible";
-                lblEstadoRes.ForeColor = System.Drawing.Color.Green;
-                pnlAccionesRes.Visible = true;
-
-                // ResolveUrl convierte ~/Ruta en /Aplicacion/Ruta para que funcione el link
-                string urlRes = ResolveUrl(centro.strResolucion_cen);
-                lnkVerRes.NavigateUrl = urlRes;
-                lnkDescargarRes.NavigateUrl = urlRes;
+                lnkDescargarResModal.NavigateUrl = ResolveUrl(centro.strResolucion_cen);
+                lnkDescargarResModal.Visible = true;
             }
             else
             {
-                lblEstadoRes.Text = "Sin archivo cargado";
-                lblEstadoRes.ForeColor = System.Drawing.Color.Gray;
-                pnlAccionesRes.Visible = false;
+                lnkDescargarResModal.Visible = false;
             }
 
-            // --- 2. CONFIGURAR ACEPTACIÓN ---
+            hfAceModalActual.Value = centro.strAceptacion_cen;
             if (!string.IsNullOrEmpty(centro.strAceptacion_cen))
             {
-                lblEstadoAce.Text = "Archivo disponible";
-                lblEstadoAce.ForeColor = System.Drawing.Color.Green;
-                pnlAccionesAce.Visible = true;
-
-                string urlAce = ResolveUrl(centro.strAceptacion_cen);
-                lnkVerAce.NavigateUrl = urlAce;
-                lnkDescargarAce.NavigateUrl = urlAce;
+                lnkDescargarAceModal.NavigateUrl = ResolveUrl(centro.strAceptacion_cen);
+                lnkDescargarAceModal.Visible = true;
             }
             else
             {
-                lblEstadoAce.Text = "Sin archivo cargado";
-                lblEstadoAce.ForeColor = System.Drawing.Color.Gray;
-                pnlAccionesAce.Visible = false;
+                lnkDescargarAceModal.Visible = false;
             }
 
-            // Abrir Modal
-            ScriptManager.RegisterStartupScript(this, GetType(), "OpenDocs",
-                "new bootstrap.Modal(document.getElementById('modalDocumentos')).show();", true);
+            string script = @"
+                var m = new bootstrap.Modal(document.getElementById('modalDocumentos')); 
+                m.show();
+        
+                // Inicializar FileInput del Modal
+                if(typeof initMyFileInput === 'function') {
+                    initMyFileInput('wrapperResModal', '" + flpResModal.ClientID + @"');
+                    initMyFileInput('wrapperAceModal', '" + flpAceModal.ClientID + @"');
+                }
+
+                // Cargar vista previa si ya existen
+                cargarEstadoEdicion('wrapperResModal', '" + hfResModalActual.ClientID + @"');
+                cargarEstadoEdicion('wrapperAceModal', '" + hfAceModalActual.ClientID + @"');
+            ";
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "OpenDocsEditable", script, true);
         }
 
         private void CargarModalEstado(string idInt)
@@ -1036,6 +1035,50 @@ namespace SistemaGestionCGI
                 pnlIntExterno.Visible = true;
             }
 
+        }
+
+        //
+
+        protected void btnActualizarDocs_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string idCentro = hfIdCentroDocModal.Value;
+                string rutaRes = "";
+                string rutaAce = "";
+                bool huboCambios = false;
+
+                if (flpResModal.HasFile)
+                {
+                    rutaRes = GuardarArchivo(flpResModal, "RES"); 
+                    huboCambios = true;
+                }
+
+                if (flpAceModal.HasFile)
+                {
+                    rutaAce = GuardarArchivo(flpAceModal, "ACEP");
+                    huboCambios = true;
+                }
+
+                if (huboCambios)
+                {
+                    _manejador.ActualizarArchivosCentro(idCentro, rutaRes, rutaAce);
+
+                    Msg("Documentación actualizada correctamente.", "ss");
+                }
+                else
+                {
+                    Msg("No se detectaron nuevos archivos para actualizar.", "ii");
+                }
+
+                string scriptCerrar = "var m = bootstrap.Modal.getInstance(document.getElementById('modalDocumentos')); if(m) m.hide();";
+                ScriptManager.RegisterStartupScript(this, GetType(), "CloseDocs", scriptCerrar, true);
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al actualizar documentos: " + ex.Message, "ee");
+                ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenDocs", "new bootstrap.Modal(document.getElementById('modalDocumentos')).show();", true);
+            }
         }
 
     }

@@ -95,10 +95,11 @@ namespace SistemaGestionCGI
                 {
                     strNombre_gru = txtNombreGru.Text.Trim(),
                     fkId_cen = (ddlCentro.SelectedValue == "") ? null : ddlCentro.SelectedValue,
+                    strFacultad_gru = ddlFacultadGrupo.SelectedValue,
+                    strCarrera_gru = ddlCarreraGrupo.SelectedValue,
                     strCoordinador_gru = txtCoordinadorGru.Text.Trim(),
                     strCategoria_gru = ddlCategoriaGru.SelectedValue,
                     strLineasinv_gru = ddlLineaInv.SelectedValue,
-                    strSublineasinv_gru = ddlSublineaInv.SelectedValue,
                     dtFechacrea_gru = !string.IsNullOrEmpty(txtFechaCreaGru.Text) ? DateTime.Parse(txtFechaCreaGru.Text) : DateTime.Now,
                     strFoto_gru = hfFotoActual.Value,
                     strArchivo_gru = hfArchivoActual.Value
@@ -255,6 +256,20 @@ namespace SistemaGestionCGI
 
             if (ddlCategoriaGru.Items.FindByValue(g.strCategoria_gru) != null)
                 ddlCategoriaGru.SelectedValue = g.strCategoria_gru;
+
+            if (ddlFacultadGrupo.Items.FindByValue(g.strFacultad_gru) != null)
+            {
+                ddlFacultadGrupo.SelectedValue = g.strFacultad_gru;
+                CargarCarrerasEnCombo(ddlCarreraGrupo, g.strFacultad_gru);
+
+                if (ddlCarreraGrupo.Items.FindByValue(g.strCarrera_gru) != null)
+                    ddlCarreraGrupo.SelectedValue = g.strCarrera_gru;
+            }
+            else
+            {
+                ddlFacultadGrupo.SelectedIndex = 0;
+                CargarCarrerasEnCombo(ddlCarreraGrupo, "");
+            }
 
             var coordinadorActivo = _manejador.ObtenerInvestigadorPrincipalActivo(g.strId_gru);
 
@@ -903,6 +918,11 @@ namespace SistemaGestionCGI
         {
             hfIdGrupo.Value = "";
             txtNombreGru.Text = "";
+
+            ddlFacultadGrupo.SelectedIndex = 0;
+            ddlCarreraGrupo.Items.Clear();
+            ddlCarreraGrupo.Items.Add(new ListItem("-- Seleccione Facultad Primero --", ""));
+
             txtCoordinadorGru.Text = "";
             txtFechaCreaGru.Text = DateTime.Now.ToString("yyyy-MM-dd");
             ddlCentro.SelectedIndex = 0;
@@ -1521,6 +1541,14 @@ namespace SistemaGestionCGI
 
             string script = $"RenderizarModalCoord('{tipo}');";
             ScriptManager.RegisterStartupScript(this, GetType(), "UI_Coord", script, true);
+        }
+
+        //
+
+        protected void ddlFacultadGrupo_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Reutilizamos tu método existente "CargarCarrerasEnCombo"
+            CargarCarrerasEnCombo(ddlCarreraGrupo, ddlFacultadGrupo.SelectedValue);
         }
 
     }

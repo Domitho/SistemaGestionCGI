@@ -382,5 +382,28 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<InvgccCentroIntegrantes>(sql)?.FirstOrDefault();
         }
 
+        //
+
+        // ==========================================
+        // MÉTODO ESPECÍFICO PARA ACTUALIZAR ARCHIVOS
+        // ==========================================
+        public void ActualizarArchivosCentro(string idCentro, string rutaResolucion, string rutaAceptacion)
+        {
+            string setSql = "";
+
+            if (!string.IsNullOrEmpty(rutaResolucion))
+                setSql += $"strResolucion_cen = '{rutaResolucion}', ";
+
+            if (!string.IsNullOrEmpty(rutaAceptacion))
+                setSql += $"strAceptacion_cen = '{rutaAceptacion}', ";
+
+            if (string.IsNullOrEmpty(setSql)) return;
+
+            setSql = setSql.TrimEnd(',', ' ');
+
+            string sql = $"UPDATE INVGCCCENTRO_INVESTIGACION SET {setSql} WHERE strId_cen = '{idCentro}'";
+
+            _dal.UpdateSql(sql);
+        }
     }
 }

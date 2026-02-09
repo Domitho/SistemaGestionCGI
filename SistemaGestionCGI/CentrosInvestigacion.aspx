@@ -814,70 +814,107 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
 
-                <div class="modal-body p-4 bg-light text-center">
-                
-                    <h6 class="text-primary fw-bold mb-4 text-uppercase border-bottom pb-3">
-                        <asp:Label ID="lblCentroDocNombre" runat="server" Text="Nombre del Centro"></asp:Label>
-                    </h6>
-
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <div class="card h-100 border-0 shadow-sm rounded-3 overflow-hidden">
-                                <div class="card-header bg-white border-0 pt-4 pb-0">
-                                    <i class="fa-solid fa-file-contract fa-4x text-primary mb-2"></i>
-                                </div>
-                                <div class="card-body">
-                                    <h6 class="card-title fw-bold text-dark">Resolución de Creación</h6>
-                                    <p class="card-text small text-muted mb-4">
-                                        <asp:Label ID="lblEstadoRes" runat="server" Text="No cargado"></asp:Label>
-                                    </p>
-                                
-                                    <asp:Panel ID="pnlAccionesRes" runat="server" Visible="false" CssClass="d-grid gap-2">
-                                        <asp:HyperLink ID="lnkVerRes" runat="server" Target="_blank" 
-                                            CssClass="btn btn-outline-primary btn-sm shadow-sm w-100 rounded-3">
-                                            <i class="fa-solid fa-eye me-2"></i> Visualizar
-                                        </asp:HyperLink>
-                                        <asp:HyperLink ID="lnkDescargarRes" runat="server" download 
-                                            CssClass="btn btn-primary btn-sm text-white shadow-sm w-100 rounded-3"
-                                            style="border-radius: 8px !important;">
-                                            <i class="fa-solid fa-download me-2"></i> Descargar PDF
-                                        </asp:HyperLink>
-                                    </asp:Panel>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="card h-100 border-0 shadow-sm rounded-3 overflow-hidden">
-                                <div class="card-header bg-white border-0 pt-4 pb-0">
-                                    <i class="fa-solid fa-file-circle-check fa-4x text-success mb-2"></i>
-                                </div>
-                                <div class="card-body">
-                                    <h6 class="card-title fw-bold text-dark">Documento de Aceptación</h6>
-                                    <p class="card-text small text-muted mb-4">
-                                        <asp:Label ID="lblEstadoAce" runat="server" Text="No cargado"></asp:Label>
-                                    </p>
-                                
-                                    <asp:Panel ID="pnlAccionesAce" runat="server" Visible="false" CssClass="d-grid gap-2">
-                                        <asp:HyperLink ID="lnkVerAce" runat="server" Target="_blank" 
-                                            CssClass="btn btn-outline-success btn-sm shadow-sm w-100 rounded-3">
-                                            <i class="fa-solid fa-eye me-2"></i> Visualizar
-                                        </asp:HyperLink>
-                                        <asp:HyperLink ID="lnkDescargarAce" runat="server" download 
-                                            CssClass="btn btn-success btn-sm text-white shadow-sm w-100 rounded-3"
-                                            style="border-radius: 8px !important;">
-                                            <i class="fa-solid fa-download me-2"></i> Descargar Documento
-                                        </asp:HyperLink>
-                                    </asp:Panel>
-                                </div>
-                            </div>
-                        </div>
+                <div class="modal-body p-4 bg-light text-start">
+    
+                    <div class="text-center border-bottom pb-3 mb-4">
+                        <h6 class="text-primary fw-bold text-uppercase mb-1">
+                            <asp:Label ID="lblCentroDocNombre" runat="server" Text="Nombre del Centro"></asp:Label>
+                        </h6>
+                        <small class="text-muted">Gestión rápida de documentación digital</small>
                     </div>
 
+                    <asp:HiddenField ID="hfIdCentroDocModal" runat="server" />
+                    <asp:HiddenField ID="hfResModalActual" runat="server" />
+                    <asp:HiddenField ID="hfAceModalActual" runat="server" />
+
+                    <div class="row g-4">
+        
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-header bg-white fw-bold text-primary border-bottom-0 pt-3">
+                                    <i class="fa-solid fa-file-contract me-2"></i> Resolución de Creación
+                                </div>
+                                <div class="card-body">
+                    
+                                    <div class="utc-fileinput-wrapper" id="wrapperResModal">
+                                        <div class="utc-fileinput-header">
+                                            <div class="utc-fileinput-icon"><i class="fa-solid fa-file-pdf"></i></div>
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="utc-fileinput-name">Sin archivo</span>
+                                                <div class="utc-fileinput-buttons d-flex gap-2">
+                                                     <button type="button" class="btn btn-outline-danger utc-btn-small remove-btn"><i class="fa-solid fa-xmark"></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                        
+                                        <div class="utc-fileinput-preview" id="previewResModal"></div>
+                        
+                                        <div class="utc-fileinput-loader" id="loaderResModal">
+                                            <i class="fa-solid fa-spinner fa-spin me-2"></i> Procesando...
+                                        </div>
+
+                                        <div class="utc-dropzone" id="dropzoneResModal">
+                                            <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-primary"></i><br />
+                                            <small>Arrastre o Click para cambiar</small>
+                                        </div>
+                                        <asp:FileUpload ID="flpResModal" runat="server" CssClass="utc-fileinput-input" />
+                                    </div>
+                    
+                                    <asp:HyperLink ID="lnkDescargarResModal" runat="server" Target="_blank" 
+                                        CssClass="btn btn-link btn-sm text-decoration-none mt-2 d-block text-center">
+                                        <i class="fa-solid fa-external-link-alt"></i> Ver documento actual
+                                    </asp:HyperLink>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-header bg-white fw-bold text-success border-bottom-0 pt-3">
+                                    <i class="fa-solid fa-file-circle-check me-2"></i> Documento de Aceptación
+                                </div>
+                                <div class="card-body">
+                    
+                                    <div class="utc-fileinput-wrapper" id="wrapperAceModal">
+                                        <div class="utc-fileinput-header">
+                                            <div class="utc-fileinput-icon"><i class="fa-solid fa-check-double"></i></div>
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="utc-fileinput-name">Sin archivo</span>
+                                                <div class="utc-fileinput-buttons d-flex gap-2">
+                                                     <button type="button" class="btn btn-outline-danger utc-btn-small remove-btn"><i class="fa-solid fa-xmark"></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                        
+                                        <div class="utc-fileinput-preview" id="previewAceModal"></div>
+
+                                        <div class="utc-fileinput-loader" id="loaderAceModal">
+                                            <i class="fa-solid fa-spinner fa-spin me-2"></i> Procesando...
+                                        </div>
+
+                                        <div class="utc-dropzone" id="dropzoneAceModal">
+                                            <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-success"></i><br />
+                                            <small>Arrastre o Click para cambiar</small>
+                                        </div>
+                                        <asp:FileUpload ID="flpAceModal" runat="server" CssClass="utc-fileinput-input" />
+                                    </div>
+
+                                    <asp:HyperLink ID="lnkDescargarAceModal" runat="server" Target="_blank" 
+                                        CssClass="btn btn-link btn-sm text-decoration-none mt-2 d-block text-center text-success">
+                                        <i class="fa-solid fa-external-link-alt"></i> Ver documento actual
+                                    </asp:HyperLink>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
-            
+
                 <div class="modal-footer justify-content-center border-0 pt-0 pb-4 bg-light">
-                    <button type="button" class="btn btn-secondary px-5" data-bs-dismiss="modal">Cerrar</button>
+                    <asp:LinkButton ID="btnActualizarDocs" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow-sm" OnClick="btnActualizarDocs_Click">
+                        <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Cambios
+                    </asp:LinkButton>
+                    <button type="button" class="btn btn-outline-secondary btn-pill px-4" data-bs-dismiss="modal">Cerrar</button>
                 </div>
 
             </div>

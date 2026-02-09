@@ -33,6 +33,9 @@ namespace SistemaGestionCGI.BLL
                     G.dtFechacrea_gru,
                     G.strFoto_gru,
                     G.strArchivo_gru,
+                    G.strFacultad_gru,
+                    G.strCarrera_gru,
+                    G.strLineasinv_gru,
             
                     ISNULL(
                         (SELECT TOP 1 (I.strApellidos_int + ' ' + I.strNombres_int)
@@ -75,32 +78,27 @@ namespace SistemaGestionCGI.BLL
         {
             grupo.strId_gru = GenerarCodigoAlfanumerico("INVGCCGRUPO_INVESTIGACION", "strId_gru", "G");
 
-            string valorCentro = string.IsNullOrEmpty(grupo.fkId_cen)
-                         ? "NULL"
-                         : $"'{grupo.fkId_cen}'";
-
             string sql = $@"
                 INSERT INTO INVGCCGRUPO_INVESTIGACION
                 (
                     strId_gru, strNombre_gru, fkId_cen, strCoordinador_gru, 
                     strCategoria_gru, dtFechacrea_gru, strLineasinv_gru, 
-                    strSublineasinv_gru, strFoto_gru, strArchivo_gru
+                    strFoto_gru, strArchivo_gru,
+                    strFacultad_gru, strCarrera_gru
                 )
                 VALUES
                 (
                     '{grupo.strId_gru}', 
                     '{grupo.strNombre_gru}', 
-            
-                    -- ESTA ES LA LÍNEA MÁGICA:
                     {(string.IsNullOrEmpty(grupo.fkId_cen) ? "NULL" : $"'{grupo.fkId_cen}'")}, 
-
                     '{grupo.strCoordinador_gru}',
                     '{grupo.strCategoria_gru}', 
                     '{grupo.dtFechacrea_gru:yyyy-MM-dd}', 
                     '{grupo.strLineasinv_gru}', 
-                    '{grupo.strSublineasinv_gru}',
                     '{grupo.strFoto_gru}', 
-                    '{grupo.strArchivo_gru}'
+                    '{grupo.strArchivo_gru}',
+                    '{grupo.strFacultad_gru}',
+                    '{grupo.strCarrera_gru}'
                 )";
 
             _dal.InsertSql(sql);
@@ -115,10 +113,12 @@ namespace SistemaGestionCGI.BLL
                     dtFechacrea_gru = '{grupo.dtFechacrea_gru:yyyy-MM-dd HH:mm:ss}',
                     strCategoria_gru = '{grupo.strCategoria_gru}',
                     strLineasinv_gru = '{grupo.strLineasinv_gru}',
-                    strSublineasinv_gru = '{grupo.strSublineasinv_gru}',
                     strArchivo_gru = '{grupo.strArchivo_gru}',
                     strFoto_gru = '{grupo.strFoto_gru}',
-                    fkId_cen = {(string.IsNullOrEmpty(grupo.fkId_cen) ? "NULL" : $"'{grupo.fkId_cen}'")}
+                    fkId_cen = {(string.IsNullOrEmpty(grupo.fkId_cen) ? "NULL" : $"'{grupo.fkId_cen}'")},
+                    strFacultad_gru = '{grupo.strFacultad_gru}',
+                    strCarrera_gru = '{grupo.strCarrera_gru}' 
+
                 WHERE strId_gru = '{grupo.strId_gru}'";
 
             _dal.UpdateSql(sql);
@@ -152,13 +152,15 @@ namespace SistemaGestionCGI.BLL
             string sqlGrupo = $@"
                 INSERT INTO INVGCCGRUPO_INVESTIGACION
                 (strId_gru, strNombre_gru, strCoordinador_gru, dtFechacrea_gru, 
-                 strCategoria_gru, strLineasinv_gru, strSublineasinv_gru, 
-                 strArchivo_gru, strFoto_gru, fkId_cen)
+                 strCategoria_gru, strLineasinv_gru,
+                 strArchivo_gru, strFoto_gru, fkId_cen,
+                 strFacultad_gru, strCarrera_gru) 
                 VALUES
                 ('{grupo.strId_gru}', '{grupo.strNombre_gru}', '{grupo.strCoordinador_gru}', 
                  '{grupo.dtFechacrea_gru:yyyy-MM-dd HH:mm:ss}', '{grupo.strCategoria_gru}', 
-                 '{grupo.strLineasinv_gru}', '{grupo.strSublineasinv_gru}', 
-                 '{grupo.strArchivo_gru}', '{grupo.strFoto_gru}', {valorCentro});";
+                 '{grupo.strLineasinv_gru}',
+                 '{grupo.strArchivo_gru}', '{grupo.strFoto_gru}', {valorCentro},
+                 '{grupo.strFacultad_gru}', '{grupo.strCarrera_gru}');";
 
             string sqlCoord = $@"
                 INSERT INTO INVGCCGRUPO_INTEGRANTES

@@ -177,6 +177,24 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.DropDownList ddlCentro;
 
         /// <summary>
+        /// Control ddlFacultadGrupo.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlFacultadGrupo;
+
+        /// <summary>
+        /// Control ddlCarreraGrupo.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlCarreraGrupo;
+
+        /// <summary>
         /// Control txtNombreGru.
         /// </summary>
         /// <remarks>
@@ -229,15 +247,6 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlLineaInv;
-
-        /// <summary>
-        /// Control ddlSublineaInv.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlSublineaInv;
 
         /// <summary>
         /// Control imgFotoActual.
