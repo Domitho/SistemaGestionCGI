@@ -11,9 +11,6 @@ namespace SistemaGestionCGI
 {
     public partial class GruposInvestigacion : System.Web.UI.Page
     {
-        // =============================================
-        // 1. CONFIGURACIÓN Y CARGA INICIAL
-        // =============================================
         private readonly ManejadorGruposInvestigacion _manejador = new ManejadorGruposInvestigacion();
         private const string RUTA_VIRTUAL_BASE = "~/RepositorioUTC/Grupos/";
 
@@ -287,16 +284,14 @@ namespace SistemaGestionCGI
             }
 
             hfFotoActual.Value = g.strFoto_gru;
-            hfArchivoActual.Value = g.strArchivo_gru;
 
             if (!string.IsNullOrEmpty(g.strFoto_gru))
             {
-                imgFotoActual.ImageUrl = ObtenerImagenBase64(g.strFoto_gru);
-                imgFotoActual.Visible = true;
+                imgFotoVisual.ImageUrl = ObtenerImagenBase64(g.strFoto_gru);
             }
             else
             {
-                imgFotoActual.Visible = false;
+                imgFotoVisual.ImageUrl = "~/DesignersUTC/Images/default-group.png";
             }
 
             CambiarVista(Vista.FormularioGrupo);
@@ -929,7 +924,16 @@ namespace SistemaGestionCGI
             ddlCategoriaGru.SelectedIndex = 0;
             hfFotoActual.Value = "";
             hfArchivoActual.Value = "";
-            imgFotoActual.Visible = false;
+            imgFotoVisual.ImageUrl = "~/DesignersUTC/Images/default-group.png";
+        }
+
+        // FOTOS
+        protected void btnEliminarFoto_Click(object sender, EventArgs e)
+        {
+            imgFotoVisual.ImageUrl = "~/DesignersUTC/Images/default-group.png";
+            hfFotoActual.Value = "";
+
+            pnlFormularioGrupo.Visible = true;
         }
 
         private void LimpiarFormularioIntegrante()

@@ -229,7 +229,7 @@
             </div>
 
             <div class="d-flex justify-content-center gap-3 mt-5">
-                <asp:LinkButton ID="btnGuardar" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow-sm" OnClick="btnGuardar_Click">
+                <asp:LinkButton ID="btnGuardar" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow-sm" OnClick="btnGuardar_Click" OnClientClick="return UTC_BloquearBoton(this);" UseSubmitBehavior="false">
                     <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Datos
                 </asp:LinkButton>
                 <asp:LinkButton ID="btnCancelarCentro" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="btnRegresar_Click" CausesValidation="false">

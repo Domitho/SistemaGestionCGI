@@ -216,7 +216,7 @@
             </div>
 
             <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
-                <asp:LinkButton ID="btnGuardar" runat="server" CssClass="btn btn-primary btn-pill px-5 py-2 shadow-sm" OnClick="btnGuardar_Click">
+                <asp:LinkButton ID="btnGuardar" runat="server" CssClass="btn btn-primary btn-pill px-5 py-2 shadow-sm" OnClick="btnGuardar_Click" OnClientClick="return UTC_BloquearBoton(this);" UseSubmitBehavior="false">
                     <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Ficha
                 </asp:LinkButton>
                 <asp:LinkButton ID="btnCancelar" runat="server" CssClass="btn btn-outline-secondary btn-pill px-5 py-2" 

@@ -168,6 +168,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.HiddenField hfCoordFacultad;
 
         /// <summary>
+        /// Control txtNombreGru.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtNombreGru;
+
+        /// <summary>
         /// Control ddlCentro.
         /// </summary>
         /// <remarks>
@@ -195,13 +204,31 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.DropDownList ddlCarreraGrupo;
 
         /// <summary>
-        /// Control txtNombreGru.
+        /// Control ddlCategoriaGru.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtNombreGru;
+        protected global::System.Web.UI.WebControls.DropDownList ddlCategoriaGru;
+
+        /// <summary>
+        /// Control txtFechaCreaGru.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtFechaCreaGru;
+
+        /// <summary>
+        /// Control ddlLineaInv.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlLineaInv;
 
         /// <summary>
         /// Control txtCoordinadorGru.
@@ -222,40 +249,22 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.LinkButton btnAgregarCoordinador;
 
         /// <summary>
-        /// Control txtFechaCreaGru.
+        /// Control flpArchivoGrupo.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtFechaCreaGru;
+        protected global::System.Web.UI.WebControls.FileUpload flpArchivoGrupo;
 
         /// <summary>
-        /// Control ddlCategoriaGru.
+        /// Control imgFotoVisual.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlCategoriaGru;
-
-        /// <summary>
-        /// Control ddlLineaInv.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlLineaInv;
-
-        /// <summary>
-        /// Control imgFotoActual.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Image imgFotoActual;
+        protected global::System.Web.UI.WebControls.Image imgFotoVisual;
 
         /// <summary>
         /// Control flpFotoGrupo.
@@ -267,13 +276,13 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.FileUpload flpFotoGrupo;
 
         /// <summary>
-        /// Control flpArchivoGrupo.
+        /// Control btnEliminarFoto.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.FileUpload flpArchivoGrupo;
+        protected global::System.Web.UI.WebControls.LinkButton btnEliminarFoto;
 
         /// <summary>
         /// Control btnGuardarGrupo.

@@ -6,6 +6,7 @@
     <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/modal-historial-reporte.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/papelera.css" rel="stylesheet" />
+    <link href="DesignersUTC/Styles/utc-images.css" rel="stylesheet" />
 
     <style>
         .transition-hover {
@@ -77,10 +78,10 @@
     </asp:Panel>
 
     <asp:Panel ID="pnlFormularioGrupo" runat="server" Visible="false">
-    
+
         <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-4 rounded shadow-utc border header-utc-line">
             <h3 class="utc-title mb-0">
-                <i class="fa-solid fa-people-group me-2"></i> 
+                <i class="fa-solid fa-people-group me-2"></i>
                 <asp:Label ID="lblTituloFormulario" runat="server" Text="Gestión de Grupo"></asp:Label>
             </h3>
             <asp:LinkButton ID="btnRegresarTop" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="btnRegresar_Click" CausesValidation="false">
@@ -88,34 +89,36 @@
             </asp:LinkButton>
         </div>
 
-        <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4">
-    
-            <h4 class="utc-subtitle mb-4 text-center">
-                <i class="fa-solid fa-file-pen me-2"></i> Datos del Grupo
-            </h4>
-    
+        <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4 bg-white">
+
             <asp:HiddenField ID="hfIdGrupo" runat="server" />
             <asp:HiddenField ID="hfFotoActual" runat="server" />
             <asp:HiddenField ID="hfArchivoActual" runat="server" />
-
             <asp:HiddenField ID="hfCoordNombre" runat="server" />
             <asp:HiddenField ID="hfCoordCedula" runat="server" />
             <asp:HiddenField ID="hfCoordArchivo" runat="server" />
-
             <asp:HiddenField ID="hfCoordApellidos" runat="server" />
             <asp:HiddenField ID="hfCoordCorreo" runat="server" />
             <asp:HiddenField ID="hfCoordCarrera" runat="server" />
             <asp:HiddenField ID="hfCoordFacultad" runat="server" />
 
-            <div class="row g-3">
-            
+            <h5 class="text-primary fw-bold mb-3 border-bottom pb-2">
+                <i class="fa-solid fa-layer-group me-2"></i> DATOS GENERALES Y AFILIACIÓN
+            </h5>
+
+            <div class="row g-3 mb-4">
                 <div class="col-12">
-                    <label class="form-label">Centro de Investigación</label>
+                    <label class="form-label text-muted small fw-bold">Nombre del Grupo <span class="text-danger">*</span></label>
+                    <asp:TextBox ID="txtNombreGru" runat="server" CssClass="form-control" autocomplete="off" placeholder="Ingrese el nombre oficial..." />
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label text-muted small fw-bold">Centro de Investigación</label>
                     <asp:DropDownList ID="ddlCentro" runat="server" CssClass="form-select"></asp:DropDownList>
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Facultad / Extensión <span class="text-danger">*</span></label>
+                    <label class="form-label text-muted small fw-bold">Facultad / Extensión <span class="text-danger">*</span></label>
                     <asp:DropDownList ID="ddlFacultadGrupo" runat="server" CssClass="form-select"
                         AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadGrupo_SelectedIndexChanged">
                         <asp:ListItem Text="-- Seleccione --" Value="" />
@@ -130,34 +133,14 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Carrera / Departamento <span class="text-danger">*</span></label>
+                    <label class="form-label text-muted small fw-bold">Carrera / Departamento <span class="text-danger">*</span></label>
                     <asp:DropDownList ID="ddlCarreraGrupo" runat="server" CssClass="form-select">
                         <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
                     </asp:DropDownList>
                 </div>
-                <div class="col-12">
-                    <label class="form-label">Nombre del Grupo <span class="text-danger">*</span></label>
-                    <asp:TextBox ID="txtNombreGru" runat="server" CssClass="form-control" autocomplete="off" />
-                </div>
-        
+
                 <div class="col-md-6">
-                    <label class="form-label fw-bold">Coordinador</label>
-                    <div class="input-group gap-2">
-                        <asp:TextBox ID="txtCoordinadorGru" runat="server" CssClass="form-control" ReadOnly="true" placeholder="Asigne el coordinador..."></asp:TextBox>
-    
-                        <asp:LinkButton ID="btnAgregarCoordinador" runat="server" CssClass="btn btn-primary" OnClick="btnAgregarCoordinador_Click">
-                            <i class="fa-solid fa-user-plus"></i> Asignar
-                        </asp:LinkButton>
-                    </div>
-                </div>
-        
-                <div class="col-md-6">
-                    <label class="form-label">Fecha de Creación</label>
-                    <asp:TextBox ID="txtFechaCreaGru" runat="server" CssClass="form-control" TextMode="Date" />
-                </div>
-        
-                <div class="col-md-6">
-                    <label class="form-label">Categoría</label>
+                    <label class="form-label text-muted small fw-bold">Categoría</label>
                     <asp:DropDownList ID="ddlCategoriaGru" runat="server" CssClass="form-select">
                         <asp:ListItem Value="NUEVO">NUEVO</asp:ListItem>
                         <asp:ListItem Value="EMERGENTE">EMERGENTE</asp:ListItem>
@@ -165,36 +148,53 @@
                     </asp:DropDownList>
                 </div>
 
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-bold">Fecha de Creación</label>
+                    <asp:TextBox ID="txtFechaCreaGru" runat="server" CssClass="form-control" TextMode="Date" />
+                </div>
+
                 <div class="col-12">
-                    <label class="form-label">Línea de Investigación</label>
+                    <label class="form-label text-muted small fw-bold">Línea de Investigación</label>
                     <asp:DropDownList ID="ddlLineaInv" runat="server" CssClass="form-select">
-                        <asp:ListItem Value="Análisis, conservación y aprovechamiento racional de la biodiversidad, fauna y recursos naturales para el desarrollo sustentable y la prevención de desastres naturales.">Análisis, conservación y aprovechamiento racional de la biodiversidad, fauna y recursos naturales para el desarrollo sustentable y la prevención de desastres naturales.</asp:ListItem>
-                        <asp:ListItem Value="Procesos tecnológicos, bioquímica, biomateriales, desarrollo y seguridad alimentaria.">Procesos tecnológicos, bioquímica, biomateriales, desarrollo y seguridad alimentaria.</asp:ListItem>
-                        <asp:ListItem Value="Tecnología industrial, gestión de la producción, riesgos y seguridad laboral.">Tecnología industrial, gestión de la producción, riesgos y seguridad laboral.</asp:ListItem>
-                        <asp:ListItem Value="Energías alternativas y renovables, eficiencia energética y protección ambiental.">Energías alternativas y renovables, eficiencia energética y protección ambiental.</asp:ListItem>
-                        <asp:ListItem Value="Tecnología de la información y las comunicaciones, robótica, automatización y optimización de sistemas.">Tecnología de la información y las comunicaciones, robótica, automatización y optimización de sistemas.</asp:ListItem>
-                        <asp:ListItem Value="Meteorología, hidrología, mecánica de fluidos, sistemas y obras hidráulicas.">Meteorología, hidrología, mecánica de fluidos, sistemas y obras hidráulicas.</asp:ListItem>
-                        <asp:ListItem Value="Administración y economía para el desarrollo sostenible de organizaciones y sociedad.">Administración y economía para el desarrollo sostenible de organizaciones y sociedad.</asp:ListItem>
-                        <asp:ListItem Value="Planificación y gestión del turismo sostenible y sustentable.">Planificación y gestión del turismo sostenible y sustentable.</asp:ListItem>
-                        <asp:ListItem Value="Educación, derecho, equidad y estudio de género para el desarrollo biopsicosocial.">Educación, derecho, equidad y estudio de género para el desarrollo biopsicosocial.</asp:ListItem>
-                        <asp:ListItem Value="Cultura, arte, diseño y comunicación para la transformación del ser humano y la sociedad.">Cultura, arte, diseño y comunicación para la transformación del ser humano y la sociedad.</asp:ListItem>
+                        <asp:ListItem Value="Análisis, conservación y aprovechamiento racional de la biodiversidad, fauna y recursos naturales para el desarrollo sustentable y la prevención de desastres naturales.">Análisis, conservación y aprovechamiento racional de la biodiversidad...</asp:ListItem>
+                        <asp:ListItem Value="Procesos tecnológicos, bioquímica, biomateriales, desarrollo y seguridad alimentaria.">Procesos tecnológicos, bioquímica, biomateriales...</asp:ListItem>
+                        <asp:ListItem Value="Tecnología industrial, gestión de la producción, riesgos y seguridad laboral.">Tecnología industrial, gestión de la producción...</asp:ListItem>
+                        <asp:ListItem Value="Energías alternativas y renovables, eficiencia energética y protección ambiental.">Energías alternativas y renovables...</asp:ListItem>
+                        <asp:ListItem Value="Tecnología de la información y las comunicaciones, robótica, automatización y optimización de sistemas.">Tecnología de la información y las comunicaciones...</asp:ListItem>
+                        <asp:ListItem Value="Meteorología, hidrología, mecánica de fluidos, sistemas y obras hidráulicas.">Meteorología, hidrología, mecánica de fluidos...</asp:ListItem>
+                        <asp:ListItem Value="Administración y economía para el desarrollo sostenible de organizaciones y sociedad.">Administración y economía para el desarrollo sostenible...</asp:ListItem>
+                        <asp:ListItem Value="Planificación y gestión del turismo sostenible y sustentable.">Planificación y gestión del turismo sostenible...</asp:ListItem>
+                        <asp:ListItem Value="Educación, derecho, equidad y estudio de género para el desarrollo biopsicosocial.">Educación, derecho, equidad y estudio de género...</asp:ListItem>
+                        <asp:ListItem Value="Cultura, arte, diseño y comunicación para la transformación del ser humano y la sociedad.">Cultura, arte, diseño y comunicación...</asp:ListItem>
                     </asp:DropDownList>
                 </div>
+            </div>
 
-                <div class="col-12 text-center mt-4">
-                    <label class="form-label fw-bold d-block">Foto del Grupo</label>
-                    <asp:Image ID="imgFotoActual" runat="server" CssClass="img-thumbnail rounded-circle mb-2" Width="100" Height="100" Visible="false" />
-                    <div class="d-flex justify-content-center">
-                        <div class="col-md-6">
-                            <asp:FileUpload ID="flpFotoGrupo" runat="server" CssClass="form-control form-control-sm" onchange="previewImage(this, 'previewFoto')" />
-                        </div>
+            <h5 class="text-primary fw-bold mb-3 border-bottom pb-2 pt-2">
+                <i class="fa-solid fa-user-tie me-2"></i> RESPONSABLE DEL GRUPO
+            </h5>
+
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <label class="form-label text-muted small fw-bold">Coordinador Asignado</label>
+                    <div class="input-group gap-2">
+                        <span class="input-group-text bg-light border-0"><i class="fa-solid fa-user-check text-primary"></i></span>
+                        <asp:TextBox ID="txtCoordinadorGru" runat="server" CssClass="form-control" ReadOnly="true" placeholder="No se ha asignado un coordinador..."></asp:TextBox>
+                        <asp:LinkButton ID="btnAgregarCoordinador" runat="server" CssClass="btn btn-primary px-4" OnClick="btnAgregarCoordinador_Click">
+                            <i class="fa-solid fa-magnifying-glass me-2"></i> Asignar / Buscar
+                        </asp:LinkButton>
                     </div>
-                    <img id="previewFoto" src="#" class="img-thumbnail rounded-circle mt-2" style="width:100px; height:100px; object-fit:cover; display:none;" />
                 </div>
+            </div>
 
-                <div class="col-12 mt-4">
-                    <label class="form-label fw-semibold">Archivo de Resolución</label>
-                    <div class="utc-fileinput-wrapper" id="wrapperArchivoGrupo">
+            <h5 class="text-primary fw-bold mb-3 border-bottom pb-2 pt-2">
+                <i class="fa-solid fa-folder-open me-2"></i> DOCUMENTACIÓN E IDENTIDAD
+            </h5>
+
+            <div class="row g-4"> <div class="col-md-6 d-flex flex-column">
+                    <label class="form-label text-muted small fw-bold">Resolución de Creación (PDF)</label>
+        
+                    <div class="utc-fileinput-wrapper flex-grow-1" id="wrapperArchivoGrupo">
                         <div class="utc-fileinput-header">
                             <div class="utc-fileinput-icon"><i class="fa-solid fa-paperclip"></i></div>
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -208,22 +208,66 @@
                         <input type="text" class="form-control form-control-sm utc-edit-name-field" placeholder="Renombrar..." />
                         <div class="utc-fileinput-preview" id="previewArchivoGrupo"></div>
                         <div class="utc-fileinput-loader" id="loaderArchivoGrupo"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
-                        <div class="utc-dropzone" id="dropzoneArchivoGrupo"><i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-primary"></i><br />Arrastra archivo aquí</div>
+                        <div class="utc-dropzone" id="dropzoneArchivoGrupo">
+                            <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-primary"></i><br />
+                            <span class="small">Arrastre la resolución aquí</span>
+                        </div>
                         <asp:FileUpload ID="flpArchivoGrupo" runat="server" CssClass="utc-fileinput-input" accept=".pdf,.doc,.docx" />
                     </div>
                 </div>
 
-            </div> <div class="d-flex justify-content-center gap-3 mt-5">
+                <div class="col-md-6 d-flex flex-column">
+                    <label class="form-label text-muted small fw-bold">Identidad Visual</label>
+        
+                    <div class="p-4 bg-white rounded-3 shadow-sm text-center position-relative overflow-hidden flex-grow-1 d-flex flex-column justify-content-center mt-3" 
+                         style="border: 2px solid #312783;"> 
+
+                        <div class="d-flex flex-column align-items-center justify-content-center w-100 h-100">
+                
+                            <div class="utc-avatar-wrapper mb-4" onclick="triggerFotoUpload()">
+                                <asp:Image ID="imgFotoVisual" runat="server" CssClass="utc-avatar-img" ImageUrl="~/DesignersUTC/Images/default-group.png" />
+                                <div class="utc-avatar-overlay">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                    <span>Cambiar</span>
+                                </div>
+                            </div>
+
+                            <asp:FileUpload ID="flpFotoGrupo" runat="server" style="display:none;" onchange="previewAvatar(this)" accept="image/*" />
+
+                            <div class="d-flex justify-content-center align-items-center gap-3 w-100">
+                                <button type="button" class="btn btn-primary btn-pill px-4 py-2 shadow-sm d-inline-flex align-items-center justify-content-center" 
+                                        onclick="triggerFotoUpload()" style="min-width: 180px;">
+                                    <i class="fa-solid fa-upload me-2"></i> 
+                                    <span class="fw-bold">Elegir Imagen</span>
+                                </button>
+
+                                <asp:LinkButton ID="btnEliminarFoto" runat="server" 
+                                    CssClass="btn btn-outline-danger btn-pill px-3 py-2 shadow-sm d-inline-flex align-items-center justify-content-center" 
+                                    OnClick="btnEliminarFoto_Click" ToolTip="Eliminar foto actual">
+                                    <i class="fa-solid fa-trash"></i>
+                                    <span class="fw-bold">Eliminar Imagen</span>
+                                </asp:LinkButton>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center gap-3 mt-5">
                 <asp:LinkButton ID="btnGuardarGrupo" runat="server" 
-                    CssClass="btn btn-primary btn-pill px-5 shadow-sm" 
+                    CssClass="btn btn-primary btn-pill px-5 shadow-sm fw-bold" 
                     OnClientClick="return ValidarFormularioGrupo();" 
                     OnClick="btnGuardarGrupo_Click">
-                    <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Datos
+                    <i class="fa-solid fa-floppy-disk me-2"></i> GUARDAR DATOS
                 </asp:LinkButton>
-                <asp:LinkButton ID="btnCancelarGrupo" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="btnRegresar_Click" CausesValidation="false">
-                    <i class="fa-solid fa-ban me-2"></i> Cancelar
+            
+                <asp:LinkButton ID="btnCancelarGrupo" runat="server" 
+                    CssClass="btn btn-outline-secondary btn-pill px-4 fw-bold" 
+                    OnClick="btnRegresar_Click" CausesValidation="false">
+                    <i class="fa-solid fa-ban me-2"></i> CANCELAR
                 </asp:LinkButton>
             </div>
+
         </div>
     </asp:Panel>
 
@@ -1358,6 +1402,28 @@
                 ventana.print();
                 ventana.close();
             }, 500);
+        }
+    </script>
+
+    <script>    
+        function triggerFotoUpload() {
+            var fileInput = document.getElementById('<%= flpFotoGrupo.ClientID %>');
+            if(fileInput) fileInput.click();
+        }
+
+        function previewAvatar(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+            
+                reader.onload = function (e) {
+                    var img = document.getElementById('<%= imgFotoVisual.ClientID %>');
+                    if (img) {
+                        img.src = e.target.result;
+                    }
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
         }
     </script>
 

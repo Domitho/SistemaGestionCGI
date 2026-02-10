@@ -267,5 +267,28 @@
             pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
         }
     </script>
+
+    <script type="text/javascript">
+        function UTC_BloquearBoton(btn) {
+            if (typeof (Page_ClientValidate) == 'function') {
+                if (Page_ClientValidate() == false) {
+                    return false;
+                }
+            }
+
+            btn.style.width = getComputedStyle(btn).width;
+
+            btn.classList.add('utc-btn-loading');
+
+            btn.innerHTML = '<span class="utc-spinner"></span> Procesando...';
+
+            setTimeout(function () {
+                btn.disabled = true;
+            }, 0);
+
+            return true;
+        }
+    </script>
+
 </body>
 </html>
