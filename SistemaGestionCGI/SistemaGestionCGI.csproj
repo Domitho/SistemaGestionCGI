@@ -50,6 +50,8 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Transactions" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
@@ -126,6 +128,7 @@
     <Content Include="DesignersUTC\Styles\informe-observaciones.css" />
     <Content Include="DesignersUTC\Styles\informes-coordinadores-pro.css" />
     <Content Include="DesignersUTC\Styles\login-full.css" />
+    <Content Include="DesignersUTC\Styles\modal-calificacion-informe.css" />
     <Content Include="DesignersUTC\Styles\modal-form-docentes.css" />
     <Content Include="DesignersUTC\Styles\modal-historial-reporte.css" />
     <Content Include="DesignersUTC\Styles\modal-informes.css" />

@@ -5,20 +5,7 @@
     <%-- RECURSOS UTC --%>
     <link href="DesignersUTC/Styles/utc-full-design.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
-
-    <style>
-        .modal-header.bg-utc {
-            background: linear-gradient(90deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%) !important;
-            color: #fff !important;
-            border-top-left-radius: 10px !important;
-            border-top-right-radius: 10px !important;
-        }
-        .modal-header.bg-utc .modal-title {
-            color: #fff !important;
-            font-weight: 600 !important;
-        }
-        .form-stack { max-width: 100% !important; }
-    </style>
+    <link href="DesignersUTC/Styles/modal-calificacion-informe.css" rel="stylesheet" />
 
     <%-- HEADER PRINCIPAL --%>
     <div id="headerCalificacion" runat="server" class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
@@ -174,7 +161,9 @@
                             <div class="utc-fileinput-preview" id="previewArchivoAdd"></div>
                             <div class="utc-fileinput-loader" id="loaderArchivoAdd"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
                             <div class="utc-dropzone" id="dropzoneArchivoAdd"><i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-primary"></i><br />Arrastra el PDF aquí</div>
-                            <asp:FileUpload ID="flpArchivoAdd" runat="server" CssClass="utc-fileinput-input" />
+                            <asp:FileUpload ID="flpArchivoAdd" runat="server" CssClass="utc-fileinput-input" 
+                                AllowMultiple="true" 
+                                accept=".pdf,.doc,.docx,.zip,.rar" />
                         </div>
                     </div>
                 </div>
@@ -262,6 +251,95 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalArchivos" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg"> <div class="modal-content border-0 shadow-lg rounded-4">
+            
+                <div class="modal-header modal-header-utc border-0">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-white bg-opacity-25 p-2 rounded-circle me-3">
+                            <i class="fa-solid fa-folder-tree text-white"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0">Documentación del Grupo</h5>
+                            <small class="text-white-50" style="font-size: 0.85rem;">Visualización y Descarga de Evidencias</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body bg-light p-4">
+                    <div class="row g-4">
+                    
+                        <div class="col-md-6">
+                            <div class="card h-100 file-card rounded-4 p-3 shadow-sm">
+                                <div class="card-body text-center">
+                                    <span class="position-absolute top-0 start-50 translate-middle-x badge bg-primary bg-opacity-10 text-primary mt-3 rounded-pill px-3">
+                                        Requisito Obligatorio
+                                    </span>
+
+                                    <div class="mx-auto mt-4 mb-3">
+                                        <div id="iconInforme" runat="server" class="file-icon-box mx-auto shadow-sm">
+                                            </div>
+                                    </div>
+
+                                    <h6 class="fw-bold text-dark mb-1">Informe de Evaluación</h6>
+                                    <div id="divEstadoInforme" runat="server" class="mb-4">
+                                        </div>
+
+                                    <div class="d-grid">
+                                        <asp:HyperLink ID="lnkDescargarInforme" runat="server" Target="_blank" CssClass="btn btn-outline-primary btn-pill fw-bold">
+                                            </asp:HyperLink>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card h-100 file-card rounded-4 p-3 shadow-sm">
+                                <div class="card-body text-center">
+                                    <span class="position-absolute top-0 start-50 translate-middle-x badge bg-success bg-opacity-10 text-success mt-3 rounded-pill px-3">
+                                        Respaldo Legal
+                                    </span>
+
+                                    <div class="mx-auto mt-4 mb-3">
+                                        <div id="iconResolucion" runat="server" class="file-icon-box mx-auto shadow-sm">
+                                            </div>
+                                    </div>
+
+                                    <h6 class="fw-bold text-dark mb-1">Resolución Final</h6>
+                                    <div id="divEstadoResolucion" runat="server" class="mb-4">
+                                        </div>
+
+                                    <div class="d-grid">
+                                        <asp:HyperLink ID="lnkDescargarResolucion" runat="server" Target="_blank" CssClass="btn btn-outline-success btn-pill fw-bold">
+                                            </asp:HyperLink>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            
+                <div class="modal-footer border-0 bg-light justify-content-center pb-4">
+                    <button type="button" class="btn btn-secondary btn-pill px-5 shadow-sm" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-xmark me-2"></i> Cerrar Ventana
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function AbrirModalArchivos() {
+            var el = document.getElementById('modalArchivos');
+            if (el) {
+                var modal = new bootstrap.Modal(el);
+                modal.show();
+            }
+        }
+    </script>
+
     <%-- SCRIPTS OPTIMIZADOS --%>
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
     <script type="text/javascript">
@@ -295,6 +373,7 @@
         };
 
         Sys.Application.add_load(function () {
+
             const tabla = '#tablaCalificaciones';
             if ($.fn.DataTable && $.fn.DataTable.isDataTable(tabla)) {
                 $(tabla).DataTable().destroy();
@@ -322,7 +401,12 @@
                 preview: 'previewResolucion',
                 loader: 'loaderResolucion',
                 input: '<%= flpResolucion.ClientID %>'
-                });
+            });
+        }
+
+        var inputAdd = document.getElementById('<%= flpArchivoAdd.ClientID %>');
+        if (inputAdd) {
+            inputAdd.setAttribute("multiple", "");
             }
         });
 
@@ -353,10 +437,10 @@
             var idGrupo = '<%= ddlGrupoAdd.ClientID %>';
             var idFecha = '<%= txtFechaAdd.ClientID %>';
             var idPuntaje = '<%= txtPuntajeAdd.ClientID %>';
-    
+   
             var grupo = document.getElementById(idGrupo);
             if (!grupo || grupo.value === "" || grupo.value === "0") { mostrarError(idGrupo, 'Seleccione Grupo.'); return false; }
-    
+   
             var fecha = document.getElementById(idFecha);
             if (!fecha || fecha.value === "") { mostrarError(idFecha, 'Ingrese Fecha.'); return false; }
 
@@ -365,7 +449,7 @@
 
             var linkResolucion = document.getElementById('<%= lnkVerResolucionActual.ClientID %>');
             var existeResolucionVieja = linkResolucion && linkResolucion.offsetParent !== null;
-    
+   
             var inputResFile = document.getElementById('<%= flpResolucion.ClientID %>');
             var subiendoResolucionNueva = inputResFile && inputResFile.files.length > 0;
 
@@ -380,7 +464,7 @@
                 mostrarError(idPuntaje, 'Si sube resolución, DEBE ingresar el Puntaje.');
                 return false;
             }
-        
+   
             if (tienePuntaje) {
                  var val = parseFloat(inputPuntaje.value);
                  if (isNaN(val) || val < 0 || val > 100) {

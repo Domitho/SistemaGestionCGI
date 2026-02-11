@@ -145,6 +145,7 @@
                         <asp:ListItem Value="NUEVO">NUEVO</asp:ListItem>
                         <asp:ListItem Value="EMERGENTE">EMERGENTE</asp:ListItem>
                         <asp:ListItem Value="CONSOLIDADO">CONSOLIDADO</asp:ListItem>
+                        <asp:ListItem Value="DISUELTO">DISUELTO</asp:ListItem>
                     </asp:DropDownList>
                 </div>
 
@@ -156,16 +157,16 @@
                 <div class="col-12">
                     <label class="form-label text-muted small fw-bold">Línea de Investigación</label>
                     <asp:DropDownList ID="ddlLineaInv" runat="server" CssClass="form-select">
-                        <asp:ListItem Value="Análisis, conservación y aprovechamiento racional de la biodiversidad, fauna y recursos naturales para el desarrollo sustentable y la prevención de desastres naturales.">Análisis, conservación y aprovechamiento racional de la biodiversidad...</asp:ListItem>
-                        <asp:ListItem Value="Procesos tecnológicos, bioquímica, biomateriales, desarrollo y seguridad alimentaria.">Procesos tecnológicos, bioquímica, biomateriales...</asp:ListItem>
-                        <asp:ListItem Value="Tecnología industrial, gestión de la producción, riesgos y seguridad laboral.">Tecnología industrial, gestión de la producción...</asp:ListItem>
-                        <asp:ListItem Value="Energías alternativas y renovables, eficiencia energética y protección ambiental.">Energías alternativas y renovables...</asp:ListItem>
-                        <asp:ListItem Value="Tecnología de la información y las comunicaciones, robótica, automatización y optimización de sistemas.">Tecnología de la información y las comunicaciones...</asp:ListItem>
-                        <asp:ListItem Value="Meteorología, hidrología, mecánica de fluidos, sistemas y obras hidráulicas.">Meteorología, hidrología, mecánica de fluidos...</asp:ListItem>
-                        <asp:ListItem Value="Administración y economía para el desarrollo sostenible de organizaciones y sociedad.">Administración y economía para el desarrollo sostenible...</asp:ListItem>
-                        <asp:ListItem Value="Planificación y gestión del turismo sostenible y sustentable.">Planificación y gestión del turismo sostenible...</asp:ListItem>
-                        <asp:ListItem Value="Educación, derecho, equidad y estudio de género para el desarrollo biopsicosocial.">Educación, derecho, equidad y estudio de género...</asp:ListItem>
-                        <asp:ListItem Value="Cultura, arte, diseño y comunicación para la transformación del ser humano y la sociedad.">Cultura, arte, diseño y comunicación...</asp:ListItem>
+                        <asp:ListItem Value="Análisis, conservación y aprovechamiento racional de la biodiversidad, fauna y recursos naturales para el desarrollo sustentable y la prevención de desastres naturales.">Análisis, conservación y aprovechamiento racional de la biodiversidad, fauna y recursos naturales para el desarrollo sustentable y la prevención de desastres naturales.</asp:ListItem>
+                        <asp:ListItem Value="Procesos tecnológicos, bioquímica, biomateriales, desarrollo y seguridad alimentaria.">Procesos tecnológicos, bioquímica, biomateriales, desarrollo y seguridad alimentaria.</asp:ListItem>
+                        <asp:ListItem Value="Tecnología industrial, gestión de la producción, riesgos y seguridad laboral.">Tecnología industrial, gestión de la producción, riesgos y seguridad laboral.</asp:ListItem>
+                        <asp:ListItem Value="Energías alternativas y renovables, eficiencia energética y protección ambiental.">Energías alternativas y renovables, eficiencia energética y protección ambiental.</asp:ListItem>
+                        <asp:ListItem Value="Tecnología de la información y las comunicaciones, robótica, automatización y optimización de sistemas.">Tecnología de la información y las comunicaciones, robótica, automatización y optimización de sistemas.</asp:ListItem>
+                        <asp:ListItem Value="Meteorología, hidrología, mecánica de fluidos, sistemas y obras hidráulicas.">Meteorología, hidrología, mecánica de fluidos, sistemas y obras hidráulicas.</asp:ListItem>
+                        <asp:ListItem Value="Administración y economía para el desarrollo sostenible de organizaciones y sociedad.">Administración y economía para el desarrollo sostenible de organizaciones y sociedad.</asp:ListItem>
+                        <asp:ListItem Value="Planificación y gestión del turismo sostenible y sustentable.">Planificación y gestión del turismo sostenible y sustentable.</asp:ListItem>
+                        <asp:ListItem Value="Educación, derecho, equidad y estudio de género para el desarrollo biopsicosocial.">Educación, derecho, equidad y estudio de género para el desarrollo biopsicosocial.</asp:ListItem>
+                        <asp:ListItem Value="Cultura, arte, diseño y comunicación para la transformación del ser humano y la sociedad.">Cultura, arte, diseño y comunicación para la transformación del ser humano y la sociedad.</asp:ListItem>
                     </asp:DropDownList>
                 </div>
             </div>

@@ -1329,6 +1329,7 @@ namespace SistemaGestionCGI
                     ddlCarrera.Items.Add(new ListItem("SOFTWARE", "SOFTWARE"));
                     break;
                 case "CAREN":
+                    ddlCarrera.Items.Add(new ListItem("AGROINDUSTRIAL", "AGROINDUSTRIAL"));
                     ddlCarrera.Items.Add(new ListItem("AGRONOMÍA", "AGRONOMIA"));
                     ddlCarrera.Items.Add(new ListItem("VETERINARIA", "VETERINARIA"));
                     ddlCarrera.Items.Add(new ListItem("AMBIENTE", "AMBIENTE"));
@@ -1337,6 +1338,7 @@ namespace SistemaGestionCGI
                     ddlCarrera.Items.Add(new ListItem("BIOTECNOLOGIA", "BIOTECNOLOGIA"));
                     break;
                 case "CAYE":
+                    ddlCarrera.Items.Add(new ListItem("GESTIÓN DE LA INFORMACION GERENCIAL", "GESTIÓN DE LA INFORMACION GERENCIAL"));
                     ddlCarrera.Items.Add(new ListItem("ADMINISTRACIÓN DE EMPRESAS", "ADMINISTRACIÓN DE EMPRESAS"));
                     ddlCarrera.Items.Add(new ListItem("CONTABILIDAD", "CONTABILIDAD"));
                     ddlCarrera.Items.Add(new ListItem("ECONOMIA", "ECONOMIA"));
@@ -1347,7 +1349,7 @@ namespace SistemaGestionCGI
                 case "CSAYE":
                     ddlCarrera.Items.Add(new ListItem("DISEÑO GRAFICO", "DISEÑO GRAFICO"));
                     ddlCarrera.Items.Add(new ListItem("DISEÑO GRAFICO INTERACTIVO", "DISEÑO GRAFICO INTERACTIVO"));
-                    ddlCarrera.Items.Add(new ListItem("COMUNICACIÓN", "COMUNICACIÓN"));
+                    ddlCarrera.Items.Add(new ListItem("COMUNICACIÓN DIGITAL ESTRATEGICA", "COMUNICACIÓN DIGITAL ESTRATEGICA"));
                     ddlCarrera.Items.Add(new ListItem("TRABAJO SOCIAL", "TRABAJO SOCIAL"));
                     ddlCarrera.Items.Add(new ListItem("ANIMACIÓN DIGITAL", "ANIMACIÓN DIGITAL"));
                     ddlCarrera.Items.Add(new ListItem("PSICOLOGÍA SOCIAL", "PSICOLOGÍA SOCIAL"));

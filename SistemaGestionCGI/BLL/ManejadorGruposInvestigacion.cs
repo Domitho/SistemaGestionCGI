@@ -78,6 +78,11 @@ namespace SistemaGestionCGI.BLL
         {
             grupo.strId_gru = GenerarCodigoAlfanumerico("INVGCCGRUPO_INVESTIGACION", "strId_gru", "G");
 
+            string nombre = grupo.strNombre_gru?.Trim().ToUpper();
+            string coordNombre = grupo.strCoordinador_gru?.Trim().ToUpper();
+            string facultad = grupo.strFacultad_gru?.Trim().ToUpper();
+            string carrera = grupo.strCarrera_gru?.Trim().ToUpper();
+
             string sql = $@"
                 INSERT INTO INVGCCGRUPO_INVESTIGACION
                 (
@@ -89,16 +94,16 @@ namespace SistemaGestionCGI.BLL
                 VALUES
                 (
                     '{grupo.strId_gru}', 
-                    '{grupo.strNombre_gru}', 
+                    '{nombre}',  -- <--- YA EN MAYÚSCULAS
                     {(string.IsNullOrEmpty(grupo.fkId_cen) ? "NULL" : $"'{grupo.fkId_cen}'")}, 
-                    '{grupo.strCoordinador_gru}',
+                    '{coordNombre}',
                     '{grupo.strCategoria_gru}', 
                     '{grupo.dtFechacrea_gru:yyyy-MM-dd}', 
                     '{grupo.strLineasinv_gru}', 
                     '{grupo.strFoto_gru}', 
                     '{grupo.strArchivo_gru}',
-                    '{grupo.strFacultad_gru}',
-                    '{grupo.strCarrera_gru}'
+                    '{facultad}',
+                    '{carrera}'
                 )";
 
             _dal.InsertSql(sql);
@@ -106,18 +111,24 @@ namespace SistemaGestionCGI.BLL
 
         public void ActualizarGrupo(InvgccGrupoInvestigacion grupo)
         {
+            string nombre = grupo.strNombre_gru?.Trim().ToUpper();
+            string coordNombre = grupo.strCoordinador_gru?.Trim().ToUpper();
+            string facultad = grupo.strFacultad_gru?.Trim().ToUpper();
+            string carrera = grupo.strCarrera_gru?.Trim().ToUpper();
+
             string sql = $@"
                 UPDATE INVGCCGRUPO_INVESTIGACION SET
-                    strNombre_gru = '{grupo.strNombre_gru}',
-                    strCoordinador_gru = '{grupo.strCoordinador_gru}',
+                    strNombre_gru = '{nombre}',
+                    strCoordinador_gru = '{coordNombre}',
                     dtFechacrea_gru = '{grupo.dtFechacrea_gru:yyyy-MM-dd HH:mm:ss}',
                     strCategoria_gru = '{grupo.strCategoria_gru}',
                     strLineasinv_gru = '{grupo.strLineasinv_gru}',
                     strArchivo_gru = '{grupo.strArchivo_gru}',
                     strFoto_gru = '{grupo.strFoto_gru}',
                     fkId_cen = {(string.IsNullOrEmpty(grupo.fkId_cen) ? "NULL" : $"'{grupo.fkId_cen}'")},
-                    strFacultad_gru = '{grupo.strFacultad_gru}',
-                    strCarrera_gru = '{grupo.strCarrera_gru}' 
+            
+                    strFacultad_gru = '{facultad}',
+                    strCarrera_gru = '{carrera}'
 
                 WHERE strId_gru = '{grupo.strId_gru}'";
 
@@ -142,38 +153,47 @@ namespace SistemaGestionCGI.BLL
         {
             grupo.strId_gru = GenerarCodigoAlfanumerico("INVGCCGRUPO_INVESTIGACION", "strId_gru", "G");
             coordinador.fkId_gru = grupo.strId_gru;
-
             coordinador.strId_int = GenerarCodigoAlfanumerico("INVGCCGRUPO_INTEGRANTES", "strId_int", "I");
 
             string valorCentro = string.IsNullOrEmpty(grupo.fkId_cen) ? "NULL" : $"'{grupo.fkId_cen}'";
-            string fechaHoy = DateTime.Now.ToString("yyyy-MM-dd");
             string fechaHist = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            string gNombre = grupo.strNombre_gru?.Trim().ToUpper();
+            string gCoord = grupo.strCoordinador_gru?.Trim().ToUpper();
+            string gFacu = grupo.strFacultad_gru?.Trim().ToUpper();
+            string gCarrera = grupo.strCarrera_gru?.Trim().ToUpper();
+
+            string iNombres = coordinador.strNombres_int?.Trim().ToUpper();
+            string iApellidos = coordinador.strApellidos_int?.Trim().ToUpper();
+            string iCorreo = coordinador.strCorreo_int?.Trim().ToLower(); 
+            string iEntidad = coordinador.strEntidad_int?.Trim().ToUpper();
+            string iFuncion = coordinador.strFuncion_int?.Trim().ToUpper();
 
             string sqlGrupo = $@"
                 INSERT INTO INVGCCGRUPO_INVESTIGACION
                 (strId_gru, strNombre_gru, strCoordinador_gru, dtFechacrea_gru, 
-                 strCategoria_gru, strLineasinv_gru,
-                 strArchivo_gru, strFoto_gru, fkId_cen,
+                 strCategoria_gru, strLineasinv_gru, strArchivo_gru, strFoto_gru, fkId_cen,
                  strFacultad_gru, strCarrera_gru) 
                 VALUES
-                ('{grupo.strId_gru}', '{grupo.strNombre_gru}', '{grupo.strCoordinador_gru}', 
+                ('{grupo.strId_gru}', '{gNombre}', '{gCoord}', 
                  '{grupo.dtFechacrea_gru:yyyy-MM-dd HH:mm:ss}', '{grupo.strCategoria_gru}', 
-                 '{grupo.strLineasinv_gru}',
-                 '{grupo.strArchivo_gru}', '{grupo.strFoto_gru}', {valorCentro},
-                 '{grupo.strFacultad_gru}', '{grupo.strCarrera_gru}');";
+                 '{grupo.strLineasinv_gru}', '{grupo.strArchivo_gru}', '{grupo.strFoto_gru}', {valorCentro},
+                 '{gFacu}', '{gCarrera}');";
 
             string sqlCoord = $@"
                 INSERT INTO INVGCCGRUPO_INTEGRANTES
                 (strId_int, fkId_gru, strCedula_int, strNombres_int, strApellidos_int, strCorreo_int,
                  strCarrera_int, strFuncion_int, dtFechaini_int, bitActivo_int, 
-                 strTipo_int, strFacultad_int, strEntidad_int, strCertificado_int, fkId_docente_origen) -- <--- AGREGADO
+                 strTipo_int, strFacultad_int, strEntidad_int, strCertificado_int, fkId_docente_origen)
                 VALUES
-                ('{coordinador.strId_int}', '{coordinador.fkId_gru}', '{coordinador.strCedula_int}', '{coordinador.strNombres_int}',
-                 '{coordinador.strApellidos_int}', '{coordinador.strCorreo_int}',
-                 '{coordinador.strCarrera_int}', '{coordinador.strFuncion_int}', '{DateTime.Now:yyyy-MM-dd}',
+                ('{coordinador.strId_int}', '{coordinador.fkId_gru}', '{coordinador.strCedula_int}', 
+                 '{iNombres}', '{iApellidos}', '{iCorreo}',
+                 '{coordinador.strCarrera_int}', '{iFuncion}', '{DateTime.Now:yyyy-MM-dd}',
                  1, 
-                 '{coordinador.strTipo_int}', '{coordinador.strFacultad_int}', '{coordinador.strEntidad_int}', '{coordinador.strCertificado_int}',
-                 {(string.IsNullOrEmpty(coordinador.fkId_docente_origen) ? "NULL" : $"'{coordinador.fkId_docente_origen}'")} -- <--- AGREGADO
+                 '{coordinador.strTipo_int}', '{coordinador.strFacultad_int}', 
+                 {(string.IsNullOrEmpty(iEntidad) ? "NULL" : $"'{iEntidad}'")}, 
+                 '{coordinador.strCertificado_int}',
+                 {(string.IsNullOrEmpty(coordinador.fkId_docente_origen) ? "NULL" : $"'{coordinador.fkId_docente_origen}'")}
                 );";
 
             string sqlHist = $@"
@@ -192,7 +212,7 @@ namespace SistemaGestionCGI.BLL
                 END TRY
                 BEGIN CATCH
                     ROLLBACK TRANSACTION;
-                    THROW; -- Re-lanza el error para que C# lo capture
+                    THROW;
                 END CATCH";
 
             _dal.InsertSql(sqlFinal);
@@ -220,29 +240,35 @@ namespace SistemaGestionCGI.BLL
         {
             integrante.strId_int = GenerarCodigoAlfanumerico("INVGCCGRUPO_INTEGRANTES", "strId_int", "I");
 
+            string nombres = integrante.strNombres_int?.Trim().ToUpper();
+            string apellidos = integrante.strApellidos_int?.Trim().ToUpper();
+            string entidad = integrante.strEntidad_int?.Trim().ToUpper();
+            string funcion = integrante.strFuncion_int?.Trim().ToUpper();
+            string correo = integrante.strCorreo_int?.Trim().ToLower();
+
             string sql = $@"
                 INSERT INTO INVGCCGRUPO_INTEGRANTES
                 (
                     strId_int, fkId_gru, strCedula_int, strNombres_int, strApellidos_int, 
                     strCorreo_int, strCarrera_int, strFuncion_int, dtFechaini_int, bitActivo_int, 
                     strTipo_int, strFacultad_int, strEntidad_int, strCertificado_int, 
-                    fkId_docente_origen  -- <--- 1. AGREGADO AQUÍ
+                    fkId_docente_origen
                 ) 
                 VALUES
                 (
                     '{integrante.strId_int}', 
                     '{integrante.fkId_gru}', 
                     '{integrante.strCedula_int}', 
-                    '{integrante.strNombres_int}',
-                    '{integrante.strApellidos_int}', 
-                    '{integrante.strCorreo_int}',
+                    '{nombres}',    -- <--- MAYÚSCULAS
+                    '{apellidos}',  -- <--- MAYÚSCULAS
+                    '{correo}',     -- <--- MINÚSCULAS
                     {(string.IsNullOrEmpty(integrante.strCarrera_int) ? "NULL" : $"'{integrante.strCarrera_int}'")},
-                    '{integrante.strFuncion_int}', 
+                    '{funcion}', 
                     '{integrante.dtFechaini_int:yyyy-MM-dd}',
                     1,
                     '{integrante.strTipo_int}',
                     {(string.IsNullOrEmpty(integrante.strFacultad_int) ? "NULL" : $"'{integrante.strFacultad_int}'")},
-                    {(string.IsNullOrEmpty(integrante.strEntidad_int) ? "NULL" : $"'{integrante.strEntidad_int}'")},
+                    {(string.IsNullOrEmpty(entidad) ? "NULL" : $"'{entidad}'")}, -- <--- MAYÚSCULAS
                     {(string.IsNullOrEmpty(integrante.strCertificado_int) ? "NULL" : $"'{integrante.strCertificado_int}'")},
                     {(string.IsNullOrEmpty(integrante.fkId_docente_origen) ? "NULL" : $"'{integrante.fkId_docente_origen}'")}
                 )";
@@ -258,23 +284,28 @@ namespace SistemaGestionCGI.BLL
                 ? $"'{integrante.dtFechafin_int.Value:yyyyMMdd}'"
                 : "NULL";
 
+            string nombres = integrante.strNombres_int?.Trim().ToUpper();
+            string apellidos = integrante.strApellidos_int?.Trim().ToUpper();
+            string entidad = integrante.strEntidad_int?.Trim().ToUpper();
+            string funcion = integrante.strFuncion_int?.Trim().ToUpper();
+            string correo = integrante.strCorreo_int?.Trim().ToLower();
+
             int activo = integrante.bitActivo_int ? 1 : 0;
 
             string sql = $@"
                 UPDATE INVGCCGRUPO_INTEGRANTES SET
                     strCedula_int = '{integrante.strCedula_int}',
-                    strNombres_int = '{integrante.strNombres_int}',
-                    strApellidos_int = '{integrante.strApellidos_int}',
-                    strCorreo_int = '{integrante.strCorreo_int}',
+                    strNombres_int = '{nombres}',
+                    strApellidos_int = '{apellidos}',
+                    strCorreo_int = '{correo}',
                     strCarrera_int = {(string.IsNullOrEmpty(integrante.strCarrera_int) ? "NULL" : $"'{integrante.strCarrera_int}'")},
-                    strFuncion_int = '{integrante.strFuncion_int}',
+                    strFuncion_int = '{funcion}',
                     dtFechaini_int = '{integrante.dtFechaini_int:yyyy-MM-dd}',
                     strTipo_int = '{integrante.strTipo_int}',
                     strFacultad_int = {(string.IsNullOrEmpty(integrante.strFacultad_int) ? "NULL" : $"'{integrante.strFacultad_int}'")},
-                    strEntidad_int = {(string.IsNullOrEmpty(integrante.strEntidad_int) ? "NULL" : $"'{integrante.strEntidad_int}'")},
+                    strEntidad_int = {(string.IsNullOrEmpty(entidad) ? "NULL" : $"'{entidad}'")},
             
                     strCertificado_int = {(string.IsNullOrEmpty(integrante.strCertificado_int) ? "strCertificado_int" : $"'{integrante.strCertificado_int}'")},
-
                     fkId_docente_origen = {(string.IsNullOrEmpty(integrante.fkId_docente_origen) ? "NULL" : $"'{integrante.fkId_docente_origen}'")}
 
                 WHERE strId_int = '{integrante.strId_int}'";

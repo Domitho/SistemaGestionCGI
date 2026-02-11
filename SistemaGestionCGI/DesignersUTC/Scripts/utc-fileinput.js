@@ -1,9 +1,5 @@
-﻿
-function UTC_FileInput(config) {
+﻿function UTC_FileInput(config) {
 
-    /* ============================
-       ELEMENTOS BASE
-    ============================ */
     const wrapper = document.getElementById(config.wrapper);
     const dropzone = document.getElementById(config.dropzone);
     const preview = document.getElementById(config.preview);
@@ -12,17 +8,11 @@ function UTC_FileInput(config) {
 
     if (!wrapper || !dropzone || !preview || !realInput) return;
 
-    /* ============================
-       BOTONES (Renombrar / Eliminar)
-    ============================ */
     const renameBtn = wrapper.querySelector(".rename-btn");
     const removeBtn = wrapper.querySelector(".remove-btn");
     const renameField = wrapper.querySelector(".utc-edit-name-field");
     const fileNameLabel = wrapper.querySelector(".utc-fileinput-name");
 
-    /* ============================
-       VISOR PDF
-    ============================ */
     let pdfDoc = null;
     let currentPage = 1;
     let totalPages = 1;
@@ -40,9 +30,6 @@ function UTC_FileInput(config) {
             pdfCtx = pdfCanvas.getContext("2d");
     }
 
-    /* ============================
-       MOSTRAR PREVIEW DEL PDF
-    ============================ */
     async function renderPDFPage(pageNumber) {
         const page = await pdfDoc.getPage(pageNumber);
         const viewport = page.getViewport({ scale });
@@ -122,9 +109,6 @@ function UTC_FileInput(config) {
         };
     }
 
-    /* ============================
-       MOSTRAR PREVIEW IMAGEN
-    ============================ */
     function showImage(file) {
         loader.style.display = "none";
         preview.style.display = "block";
@@ -133,9 +117,22 @@ function UTC_FileInput(config) {
         `;
     }
 
-    /* ============================
-       MOSTRAR PREVIEW ARCHIVO NO SOPORTADO
-    ============================ */
+    // --- NUEVA FUNCIÓN PARA MOSTRAR ZIP/CARPETA ---
+    function showZip(file, isFolder = false) {
+        loader.style.display = "none";
+        preview.style.display = "block";
+        let label = isFolder ? "Carpeta / Múltiples Archivos" : file.name;
+        let icon = isFolder ? "fa-folder-open" : "fa-file-zipper";
+
+        preview.innerHTML = `
+            <div class="utc-generic-preview p-3 border rounded bg-light text-center text-primary">
+                <i class="fa-solid ${icon} fa-3x mb-2"></i><br>
+                <strong>${label}</strong><br>
+                <span class="small text-muted">${isFolder ? "Se comprimirá automáticamente" : "Archivo Comprimido"}</span>
+            </div>
+        `;
+    }
+
     function showGeneric(file) {
         loader.style.display = "none";
         preview.style.display = "block";
@@ -146,32 +143,59 @@ function UTC_FileInput(config) {
         `;
     }
 
-    /* ============================
-       PROCESAR ARCHIVO SELECCIONADO
-    ============================ */
+    // --- FUNCIÓN PRINCIPAL CORREGIDA ---
     function handleFile(file) {
-        const extensionesPermitidas = /(\.pdf|\.doc|\.docx)$/i;
-        if (!extensionesPermitidas.exec(file.name)) {
+        // 1. Detectar si es una subida masiva (Carpeta)
+        const isMultiple = realInput.files && realInput.files.length > 1;
+
+        // 2. Regex Actualizado: Incluye ZIP, RAR, 7Z
+        const extensionesPermitidas = /(\.pdf|\.doc|\.docx|\.zip|\.rar|\.7z)$/i;
+
+        // 3. Validación Inteligente:
+        // Si NO es múltiple Y NO cumple la extensión -> Error
+        // (Si es múltiple, asumimos que es carpeta y confiamos en el backend)
+        if (!isMultiple && !extensionesPermitidas.exec(file.name)) {
             if (typeof toastify === 'function') {
-                toastify('ww', 'Formato no permitido. Solo se aceptan PDF y WORD.', 'Sistema');
+                toastify('ww', 'Formato no permitido. Solo PDF, WORD o ZIP.', 'Sistema');
             } else {
-                alert('Formato no permitido. Solo PDF y WORD.');
+                alert('Formato no permitido. Solo PDF, WORD o ZIP.');
             }
 
             realInput.value = "";
             fileNameLabel.textContent = "Ningún archivo seleccionado";
-            return; 
+            return;
         }
 
         dropzone.style.display = "none";
         loader.style.display = "block";
 
-        fileNameLabel.textContent = file.name;
+        if (isMultiple) {
+            fileNameLabel.textContent = "Carpeta / Múltiples Archivos";
+        } else {
+            fileNameLabel.textContent = file.name;
+        }
 
         setTimeout(() => {
-            if (file.type.includes("pdf")) showPDF(file);
-            else if (file.type.includes("image")) showImage(file);
-            else showGeneric(file); 
+            // Obtenemos extensión para decidir qué visor usar
+            let ext = file.name.split('.').pop().toLowerCase();
+
+            if (isMultiple) {
+                // Si son varios archivos, mostramos el icono de carpeta/zip
+                showZip(file, true);
+            }
+            else if (file.type.includes("pdf") || ext === 'pdf') {
+                showPDF(file);
+            }
+            else if (file.type.includes("image") || ['jpg', 'jpeg', 'png'].includes(ext)) {
+                showImage(file);
+            }
+            else if (file.type.includes("zip") || file.type.includes("compressed") || ['zip', 'rar', '7z'].includes(ext)) {
+                // Si es un archivo ZIP único
+                showZip(file, false);
+            }
+            else {
+                showGeneric(file);
+            }
         }, 400);
     }
 

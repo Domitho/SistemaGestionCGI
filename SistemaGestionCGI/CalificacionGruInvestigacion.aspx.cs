@@ -6,6 +6,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using SistemaGestionCGI.BLL;
 using SistemaGestionCGI.Models;
+using System.IO.Compression;
 
 namespace SistemaGestionCGI
 {
@@ -205,11 +206,27 @@ namespace SistemaGestionCGI
                     return;
                 }
 
+                if (tieneEvaluacionNueva)
+                {
+                    if (flpArchivoAdd.PostedFiles.Count == 1)
+                    {
+                        string ext = Path.GetExtension(flpArchivoAdd.FileName).ToLower();
+                        if (ext != ".pdf" && ext != ".doc" && ext != ".docx" && ext != ".zip" && ext != ".rar")
+                        {
+                            Msg("Formato no permitido. Solo se aceptan PDF, WORD o ZIP/RAR.", "ww");
+                            return;
+                        }
+                    }
+                }
+
                 string rutaInforme = (esEdicion && registroAnterior != null) ? registroAnterior.strInforme_valo : "";
                 string rutaResolucion = (esEdicion && registroAnterior != null) ? registroAnterior.strResolucion_valo : "";
 
-                if (flpArchivoAdd.HasFile) rutaInforme = GuardarArchivoFisico(flpArchivoAdd, $"VAL_{DateTime.Now.Ticks}.pdf");
-                if (flpResolucion.HasFile) rutaResolucion = GuardarArchivoFisico(flpResolucion, $"RES_{DateTime.Now.Ticks}.pdf");
+                if (flpArchivoAdd.HasFile)
+                    rutaInforme = GuardarArchivoFisico(flpArchivoAdd, $"VAL_{DateTime.Now.Ticks}.pdf");
+
+                if (flpResolucion.HasFile)
+                    rutaResolucion = GuardarArchivoFisico(flpResolucion, $"RES_{DateTime.Now.Ticks}.pdf");
 
                 string categoria = "PENDIENTE";
                 if (puntaje.HasValue)
@@ -228,7 +245,7 @@ namespace SistemaGestionCGI
                     strId_valo = esEdicion ? IdCalificacionEnEdicion : null,
                     fkId_gru = ddlGrupoAdd.SelectedValue,
                     dtFecha_valo = DateTime.Parse(txtFechaAdd.Text),
-                    intPuntaje_valo = puntaje, // Ahora acepta null
+                    intPuntaje_valo = puntaje,
                     strReconocimiento_valo = txtReconocimientoAdd.Text.Trim(),
                     intAnioMetrica = int.Parse(ddlAnioMetricaSeleccion.SelectedValue),
                     strCategoria_valo = categoria,
@@ -236,7 +253,6 @@ namespace SistemaGestionCGI
                     strResolucion_valo = rutaResolucion
                 };
 
-                // 9. PERSISTENCIA
                 if (esEdicion)
                 {
                     _manejador.ActualizarCalificacion(obj);
@@ -260,8 +276,7 @@ namespace SistemaGestionCGI
             {
                 CargarDatosParaEditar(id);
             }
-
-            if (e.CommandName == "Eliminar")
+            else if (e.CommandName == "Eliminar")
             {
                 try
                 {
@@ -274,14 +289,83 @@ namespace SistemaGestionCGI
             {
                 var calificacion = _manejador.ObtenerPorId(id);
 
-                if (calificacion != null && !string.IsNullOrEmpty(calificacion.strInforme_valo))
+                if (calificacion != null)
                 {
-                    VisualizarArchivo(calificacion.strInforme_valo);
+                    ConfigurarVisualizacionArchivo(
+                        calificacion.strInforme_valo,
+                        lnkDescargarInforme,
+                        iconInforme,
+                        divEstadoInforme
+                    );
+
+                    ConfigurarVisualizacionArchivo(
+                        calificacion.strResolucion_valo,
+                        lnkDescargarResolucion,
+                        iconResolucion,
+                        divEstadoResolucion
+                    );
+
+                    ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalArchivos", "AbrirModalArchivos();", true);
                 }
                 else
                 {
-                    Msg("Esta calificación no tiene un archivo adjunto válido.", "ww");
+                    Msg("No se encontró la calificación.", "ww");
                 }
+            }
+        }
+
+        // MODAL DOCUMENTOS
+        private void ConfigurarVisualizacionArchivo(string ruta, HyperLink lnk, System.Web.UI.HtmlControls.HtmlGenericControl divIcon, System.Web.UI.HtmlControls.HtmlGenericControl divEstado)
+        {
+            divIcon.InnerHtml = "";
+            divEstado.InnerHtml = "";
+
+            if (!string.IsNullOrEmpty(ruta))
+            {
+                string ext = System.IO.Path.GetExtension(ruta).ToLower();
+                string nombreArchivo = System.IO.Path.GetFileName(ruta);
+
+                string nombreCorto = nombreArchivo.Length > 25 ? nombreArchivo.Substring(0, 22) + "..." : nombreArchivo;
+
+                lnk.Visible = true;
+                lnk.NavigateUrl = ruta;
+
+                if (ext == ".zip" || ext == ".rar" || ext == ".7z")
+                {
+                    lnk.Text = "<i class='fa-solid fa-cloud-arrow-down me-2'></i> DESCARGAR ZIP";
+                    lnk.CssClass = "btn btn-success btn-pill fw-bold shadow-sm";
+
+                    divIcon.InnerHtml = "<i class='fa-solid fa-file-zipper fa-3x text-warning'></i>";
+
+                    divEstado.InnerHtml = $"<span class='badge bg-warning text-dark'><i class='fa-solid fa-box-archive me-1'></i> {nombreCorto}</span>";
+                }
+                else
+                {
+                    lnk.Text = "<i class='fa-solid fa-eye me-2'></i> VISUALIZAR";
+                    lnk.CssClass = "btn btn-primary btn-pill fw-bold shadow-sm"; 
+
+                    if (ext == ".pdf")
+                        divIcon.InnerHtml = "<i class='fa-solid fa-file-pdf fa-3x text-danger'></i>";
+                    else if (ext.Contains("doc"))
+                        divIcon.InnerHtml = "<i class='fa-solid fa-file-word fa-3x text-primary'></i>";
+                    else
+                        divIcon.InnerHtml = "<i class='fa-solid fa-file-lines fa-3x text-secondary'></i>";
+
+                    divEstado.InnerHtml = $"<span class='badge bg-light text-secondary border'><i class='fa-solid fa-check-circle text-success me-1'></i> {nombreCorto}</span>";
+                }
+            }
+            else
+            {
+                lnk.Visible = false;
+
+                divIcon.InnerHtml = "<i class='fa-solid fa-folder-open fa-3x text-muted opacity-25'></i>";
+
+                divEstado.InnerHtml = "<span class='badge bg-danger bg-opacity-10 text-danger'><i class='fa-solid fa-circle-xmark me-1'></i> No cargado</span>";
+
+                lnk.Visible = true;
+                lnk.NavigateUrl = "#";
+                lnk.CssClass = "btn btn-outline-secondary btn-pill disabled";
+                lnk.Text = "No Disponible";
             }
         }
 
@@ -357,7 +441,7 @@ namespace SistemaGestionCGI
             pnlFormulario.Visible = vista == Vista.Formulario;
         }
 
-        private string GuardarArchivoFisico(FileUpload control, string nombre)
+        private string GuardarArchivoFisico(FileUpload control, string nombreBase)
         {
             string rutaFisicaCarpeta = Server.MapPath(RUTA_VIRTUAL);
 
@@ -366,10 +450,52 @@ namespace SistemaGestionCGI
                 Directory.CreateDirectory(rutaFisicaCarpeta);
             }
 
-            string rutaFisicaCompleta = Path.Combine(rutaFisicaCarpeta, nombre);
-            control.SaveAs(rutaFisicaCompleta);
+            if (control.PostedFiles.Count > 1)
+            {
+                string nombreCarpetaTemp = "TEMP_" + DateTime.Now.Ticks;
+                string rutaTemp = Path.Combine(rutaFisicaCarpeta, nombreCarpetaTemp);
+                Directory.CreateDirectory(rutaTemp);
 
-            return Path.Combine(RUTA_VIRTUAL, nombre).Replace("\\", "/");
+                try
+                {
+                    foreach (var archivo in control.PostedFiles)
+                    {
+                        string nombreArchivo = Path.GetFileName(archivo.FileName);
+                        archivo.SaveAs(Path.Combine(rutaTemp, nombreArchivo));
+                    }
+
+                    string nombreZip = nombreBase.Replace(".pdf", ".zip").Replace(".docx", ".zip"); 
+                    if (!nombreZip.EndsWith(".zip")) nombreZip += ".zip";
+
+                    string rutaZipFinal = Path.Combine(rutaFisicaCarpeta, nombreZip);
+
+                    if (File.Exists(rutaZipFinal)) File.Delete(rutaZipFinal);
+
+                    ZipFile.CreateFromDirectory(rutaTemp, rutaZipFinal);
+
+                    return Path.Combine(RUTA_VIRTUAL, nombreZip).Replace("\\", "/");
+                }
+                finally
+                {
+                    if (Directory.Exists(rutaTemp)) Directory.Delete(rutaTemp, true);
+                }
+            }
+            else if (control.HasFile)
+            {
+                string nombreFinal = nombreBase;
+
+                string ext = Path.GetExtension(control.FileName).ToLower();
+                if (ext == ".zip" || ext == ".rar")
+                {
+                    nombreFinal = Path.ChangeExtension(nombreBase, ext);
+                }
+
+                string rutaFisicaCompleta = Path.Combine(rutaFisicaCarpeta, nombreFinal);
+                control.SaveAs(rutaFisicaCompleta);
+                return Path.Combine(RUTA_VIRTUAL, nombreFinal).Replace("\\", "/");
+            }
+
+            return "";
         }
 
         private void Redireccionar(string msg, string type)
@@ -457,32 +583,24 @@ namespace SistemaGestionCGI
 
         private void LimpiarFormulario()
         {
-            // 1. Limpiar Campos de Texto y Combos
             ddlGrupoAdd.SelectedIndex = -1;
             txtFechaAdd.Text = DateTime.Now.ToString("yyyy-MM-dd");
             txtPuntajeAdd.Text = "";
             txtReconocimientoAdd.Text = "";
 
-            // Resetear año al actual
             string anioActual = DateTime.Now.Year.ToString();
             if (ddlAnioMetricaSeleccion.Items.FindByValue(anioActual) != null)
                 ddlAnioMetricaSeleccion.SelectedValue = anioActual;
 
-            // Actualizar la etiqueta de regla (lblReglaMetrica)
             ActualizarMetricaVisual();
 
-            // 2. Resetear Estado de Archivos (Modo "Subir Nuevo")
+            pnlInfoEvaluacion.Visible = false;     
+            pnlUploadEvaluacion.Style["display"] = "block"; 
 
-            // A. Evaluación
-            pnlInfoEvaluacion.Visible = false;           // Ocultar tarjeta de archivo existente
-            pnlUploadEvaluacion.Style["display"] = "block"; // Mostrar zona de carga
-
-            // B. Resolución (Para nuevo registro, debe estar oculto todo el bloque)
             contenedorResolucionTotal.Visible = false;
             pnlInfoResolucion.Visible = false;
             pnlUploadResolucion.Style["display"] = "block";
 
-            // Limpiar variable de edición
             IdCalificacionEnEdicion = null;
         }
     }
