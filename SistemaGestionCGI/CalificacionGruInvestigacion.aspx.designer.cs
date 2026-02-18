@@ -276,6 +276,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtMinConsolidado;
 
         /// <summary>
+        /// Control txtMinEmergente.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtMinEmergente;
+
+        /// <summary>
         /// Control btnGuardarMetricas.
         /// </summary>
         /// <remarks>

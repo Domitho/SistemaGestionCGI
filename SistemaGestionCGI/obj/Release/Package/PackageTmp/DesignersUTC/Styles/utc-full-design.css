@@ -372,3 +372,33 @@ h5, .h5 {
         font-size: 0.9rem !important;
     }
 }
+
+
+/* === BLOQUEO Y SPINNER UTC === */
+
+/* Estado del botón cuando está cargando */
+.utc-btn-loading {
+    cursor: not-allowed !important;
+    opacity: 0.75;
+    pointer-events: none; /* Bloquea clics adicionales físicamente */
+    transition: all 0.2s ease;
+}
+
+/* Spinner animado minimalista (blanco para resaltar sobre azul/verde UTC) */
+.utc-spinner {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.15em;
+    border: 0.15em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: utc-spin 0.75s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes utc-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

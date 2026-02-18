@@ -57,9 +57,11 @@
                                 <td class="text-start fw-bold text-primary"><%# Eval("NombreGrupo") %></td>
                                 <td><span class="badge bg-secondary fs-6"><%# Eval("intPuntaje_valo") %></span></td>
                                 <td>
-                                    <span class='badge <%# Eval("strCategoria_valo").ToString() == "CONSOLIDADO" ? "bg-success" : "bg-warning text-dark" %>'>
-                                        <%# Eval("strCategoria_valo") %>
-                                    </span>
+                                    <%# 
+                                        Eval("strCategoria_valo").ToString() == "CONSOLIDADO" ? "<span class='badge bg-success'>CONSOLIDADO</span>" : 
+                                        (Eval("strCategoria_valo").ToString() == "EMERGENTE" ? "<span class='badge bg-warning text-dark'>EMERGENTE</span>" : 
+                                        "<span class='badge bg-danger'>DISUELTO</span>")
+                                    %>
                                 </td>
                                 <td><%# Eval("intAnioMetrica") %></td>
                                 <td><%# Convert.ToDateTime(Eval("dtFecha_valo")).ToString("dd/MM/yyyy") %></td>
@@ -112,12 +114,15 @@
                 </div>
 
                 <div class="col-12">
-                    <div class="alert alert-info d-flex align-items-center shadow-sm py-2" role="alert">
-                        <i class="fa-solid fa-circle-info fa-2x me-3"></i>
-                        <div>
-                            <strong>Regla Aplicada:</strong>
-                            <asp:Label ID="lblReglaMetrica" runat="server" Text="Seleccione un año para ver la regla."></asp:Label>
+                    <div class="bg-light p-3 rounded-3 border shadow-sm">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-2 text-primary">
+                                <i class="fa-solid fa-scale-balanced"></i>
+                            </div>
+                            <h6 class="mb-0 fw-bold text-primary">Criterios de Evaluación Aplicados</h6>
                         </div>
+        
+                        <asp:Label ID="lblReglaMetrica" runat="server" CssClass="d-block w-100"></asp:Label>
                     </div>
                 </div>
 
@@ -128,7 +133,7 @@
 
                 <div class="col-12 mt-4">
                     <label class="form-label fw-bold mb-2">1. Informe de Evaluación (PDF) <span class="text-danger">*</span></label>
-                
+                 
                     <div id="pnlInfoEvaluacion" runat="server" class="d-flex align-items-center justify-content-between p-3 border rounded shadow-sm bg-white" visible="false">
                         <div class="d-flex align-items-center">
                             <div class="me-3 bg-light rounded p-2 text-danger"><i class="fa-solid fa-file-pdf fa-2x"></i></div>
@@ -170,7 +175,7 @@
 
                 <div class="col-12 mt-3" id="contenedorResolucionTotal" runat="server" visible="false">
                     <label class="form-label fw-bold mb-2 text-success">2. Documento de Resolución (PDF)</label>
-                
+                 
                     <div id="pnlInfoResolucion" runat="server" class="d-flex align-items-center justify-content-between p-3 border rounded shadow-sm bg-white" visible="false">
                         <div class="d-flex align-items-center">
                             <div class="me-3 bg-light rounded p-2 text-success"><i class="fa-solid fa-gavel fa-2x"></i></div>
@@ -220,7 +225,7 @@
         </div>
     </asp:Panel>
 
-    <%-- MODAL MÉTRICAS --%>
+    <%-- MODAL MÉTRICAS ACTUALIZADO (Paso clave) --%>
     <div class="modal fade" id="modalMetricas" tabindex="-1" aria-hidden="true" ClientIDMode="Static" runat="server">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow-utc border-0">
@@ -230,13 +235,27 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Año:</label>
+                        <label class="form-label fw-bold">Año a configurar:</label>
                         <asp:DropDownList ID="ddlAnioMetricas" runat="server" CssClass="form-select"></asp:DropDownList>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Puntaje Mínimo para <strong>CONSOLIDADO</strong>:</label>
-                        <asp:TextBox ID="txtMinConsolidado" runat="server" CssClass="form-control" TextMode="Number"></asp:TextBox>
-                        <div class="form-text">Menos de este puntaje será EMERGENTE.</div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-success fw-bold">
+                                <i class="fa-solid fa-circle-check me-1"></i> Mínimo CONSOLIDADO
+                            </label>
+                            <asp:TextBox ID="txtMinConsolidado" runat="server" CssClass="form-control text-center fw-bold" TextMode="Number" placeholder="Ej: 80"></asp:TextBox>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-warning fw-bold">
+                                <i class="fa-solid fa-triangle-exclamation me-1"></i> Mínimo EMERGENTE
+                            </label>
+                            <asp:TextBox ID="txtMinEmergente" runat="server" CssClass="form-control text-center fw-bold" TextMode="Number" placeholder="Ej: 60"></asp:TextBox>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-secondary py-2 small">
+                        <i class="fa-solid fa-info-circle me-1"></i> Regla: Puntajes inferiores al mínimo emergente (o 0) serán <strong>DISUELTO</strong>.
                     </div>
                 </div>
                 <div class="modal-footer justify-content-center">
@@ -251,6 +270,7 @@
         </div>
     </div>
 
+    <%-- MODAL ARCHIVOS (Sin Cambios) --%>
     <div class="modal fade" id="modalArchivos" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg"> <div class="modal-content border-0 shadow-lg rounded-4">
             
@@ -279,16 +299,16 @@
 
                                     <div class="mx-auto mt-4 mb-3">
                                         <div id="iconInforme" runat="server" class="file-icon-box mx-auto shadow-sm">
-                                            </div>
+                                        </div>
                                     </div>
 
                                     <h6 class="fw-bold text-dark mb-1">Informe de Evaluación</h6>
                                     <div id="divEstadoInforme" runat="server" class="mb-4">
-                                        </div>
+                                    </div>
 
                                     <div class="d-grid">
                                         <asp:HyperLink ID="lnkDescargarInforme" runat="server" Target="_blank" CssClass="btn btn-outline-primary btn-pill fw-bold">
-                                            </asp:HyperLink>
+                                        </asp:HyperLink>
                                     </div>
                                 </div>
                             </div>
@@ -303,16 +323,16 @@
 
                                     <div class="mx-auto mt-4 mb-3">
                                         <div id="iconResolucion" runat="server" class="file-icon-box mx-auto shadow-sm">
-                                            </div>
+                                        </div>
                                     </div>
 
                                     <h6 class="fw-bold text-dark mb-1">Resolución Final</h6>
                                     <div id="divEstadoResolucion" runat="server" class="mb-4">
-                                        </div>
+                                    </div>
 
                                     <div class="d-grid">
                                         <asp:HyperLink ID="lnkDescargarResolucion" runat="server" Target="_blank" CssClass="btn btn-outline-success btn-pill fw-bold">
-                                            </asp:HyperLink>
+                                        </asp:HyperLink>
                                     </div>
                                 </div>
                             </div>
@@ -390,25 +410,45 @@
                     preview: 'previewArchivoAdd',
                     loader: 'loaderArchivoAdd',
                     input: '<%= flpArchivoAdd.ClientID %>'
-            });
-        }
-
-        var wrapperRes = document.getElementById('wrapperResolucion');
-        if (wrapperRes && typeof UTC_FileInput === 'function') {
-            UTC_FileInput({
-                wrapper: 'wrapperResolucion',
-                dropzone: 'dropzoneResolucion',
-                preview: 'previewResolucion',
-                loader: 'loaderResolucion',
-                input: '<%= flpResolucion.ClientID %>'
-            });
-        }
-
-        var inputAdd = document.getElementById('<%= flpArchivoAdd.ClientID %>');
-        if (inputAdd) {
-            inputAdd.setAttribute("multiple", "");
+                });
             }
-        });
+
+            var wrapperRes = document.getElementById('wrapperResolucion');
+            if (wrapperRes && typeof UTC_FileInput === 'function') {
+                UTC_FileInput({
+                    wrapper: 'wrapperResolucion',
+                    dropzone: 'dropzoneResolucion',
+                    preview: 'previewResolucion',
+                    loader: 'loaderResolucion',
+                    input: '<%= flpResolucion.ClientID %>'
+            });
+            }
+
+            var inputAdd = document.getElementById('<%= flpArchivoAdd.ClientID %>');
+        if (inputAdd) inputAdd.setAttribute("multiple", "");
+
+        var txtPuntaje = document.getElementById('<%= txtPuntajeAdd.ClientID %>');
+        var divResolucion = document.getElementById('<%= contenedorResolucionTotal.ClientID %>');
+
+        if (txtPuntaje && divResolucion) {
+
+            var evaluarVisibilidad = function () {
+                if (txtPuntaje.value.trim() !== "") {
+                    if (divResolucion.style.display === 'none') $(divResolucion).slideDown();
+                } else {
+                    var pnlInfo = document.getElementById('<%= pnlInfoResolucion.ClientID %>');
+                    if (!pnlInfo || pnlInfo.style.display === 'none') {
+                        $(divResolucion).slideUp();
+                    }
+                }
+            };
+
+            txtPuntaje.addEventListener('input', evaluarVisibilidad);
+
+                evaluarVisibilidad();
+            }
+
+        }); 
 
         function AbrirModalMetricas() {
             var el = document.getElementById('modalMetricas');
@@ -477,17 +517,42 @@
         }
 
         function ValidarMetricas() {
-            var idMin = '<%= txtMinConsolidado.ClientID %>';
-            var inputMin = document.getElementById(idMin);
+            var idMinCons = '<%= txtMinConsolidado.ClientID %>';
+            var idMinEmer = '<%= txtMinEmergente.ClientID %>'; // Nuevo campo
 
-            if (inputMin) {
-                var val = parseFloat(inputMin.value);
-                if (isNaN(val) || val < 0 || val > 100) {
-                    mostrarError(idMin, 'El puntaje de métrica debe estar entre 0 y 100.');
-                    return false;
-                }
+            var inputCons = document.getElementById(idMinCons);
+            var inputEmer = document.getElementById(idMinEmer);
+
+            if (inputCons && inputCons.value.trim() === "") {
+                mostrarError(idMinCons, 'Ingrese el puntaje para CONSOLIDADO.');
+                return false;
             }
+
+            if (inputEmer && inputEmer.value.trim() === "") {
+                mostrarError(idMinEmer, 'Ingrese el puntaje para EMERGENTE.');
+                return false;
+            }
+
+            var valCons = parseFloat(inputCons.value);
+            var valEmer = parseFloat(inputEmer.value);
+
+            if (isNaN(valCons) || valCons < 0 || valCons > 100) {
+                mostrarError(idMinCons, 'El puntaje debe estar entre 0 y 100.');
+                return false;
+            }
+
+            if (isNaN(valEmer) || valEmer < 0 || valEmer > 100) {
+                mostrarError(idMinEmer, 'El puntaje debe estar entre 0 y 100.');
+                return false;
+            }
+
+            if (valEmer >= valCons) {
+                mostrarError(idMinEmer, 'El mínimo emergente debe ser MENOR que el consolidado.');
+                return false;
+            }
+
             return true;
         }
     </script>
+
 </asp:Content>

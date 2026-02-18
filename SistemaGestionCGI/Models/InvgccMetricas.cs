@@ -10,5 +10,8 @@ namespace SistemaGestionCGI.Models
 
         [JsonProperty("minConsolidado")]
         public int minConsolidado { get; set; }
+
+        [JsonProperty("minEmergente")]
+        public int minEmergente { get; set; }
     }
 }

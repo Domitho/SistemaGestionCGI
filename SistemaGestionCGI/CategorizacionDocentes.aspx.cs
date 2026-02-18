@@ -208,15 +208,9 @@ namespace SistemaGestionCGI
                     return;
                 }
 
-                if (ddlFacultad.SelectedIndex == 0 || ddlCarrera.SelectedIndex == 0 || ddlCategoria.SelectedIndex == 0)
+                if (ddlFacultad.SelectedIndex == 0 || ddlCategoria.SelectedIndex == 0)
                 {
-                    Msg("Debe seleccionar Facultad, Carrera y Categoría.", "ww");
-                    return;
-                }
-
-                if (string.IsNullOrWhiteSpace(txtCorreo.Text))
-                {
-                    Msg("El Correo Institucional es obligatorio.", "ww");
+                    Msg("Debe seleccionar obligatoriamente la FACULTAD y la CATEGORÍA.", "ww");
                     return;
                 }
 
@@ -243,11 +237,6 @@ namespace SistemaGestionCGI
                     {
                         obj.strCertificado_doc = rutaNueva;
                     }
-                }
-                if (string.IsNullOrEmpty(obj.strCertificado_doc))
-                {
-                    Msg("EL CERTIFICADO ES OBLIGATORIO. Por favor, suba el documento antes de guardar.", "ee");
-                    return;
                 }
 
                 string usuario = Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA";

@@ -123,7 +123,7 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Correo Institucional <span class="text-danger">*</span></label>
+                    <label class="form-label">Correo Institucional <span class="text-muted small fw-normal">(Opcional)</span></label>
                     <asp:TextBox ID="txtCorreo" runat="server" CssClass="form-control" TextMode="Email" placeholder="ejemplo@utc.edu.ec"></asp:TextBox>
                 </div>
 
@@ -143,7 +143,7 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Carrera <span class="text-danger">*</span></label>
+                    <label class="form-label">Carrera <span class="text-muted small fw-normal">(Opcional)</span></label>
                     <asp:DropDownList ID="ddlCarrera" runat="server" CssClass="form-select">
                         <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
                     </asp:DropDownList>
@@ -175,7 +175,7 @@
 
                 <div class="col-12 mt-4">
                     <label class="form-label fw-semibold text-primary">
-                        <i class="fa-solid fa-certificate me-1"></i> Certificado de Categorización <span class="text-danger">*</span>
+                        <i class="fa-solid fa-certificate me-1"></i> Certificado de Categorización <span class="text-muted small fw-normal">(Opcional)</span>
                     </label>
     
                     <asp:HiddenField ID="hfCertificadoActual" runat="server" ClientIDMode="Static" />

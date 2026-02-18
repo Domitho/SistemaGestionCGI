@@ -919,9 +919,9 @@
                             </div>
 
                             <div class="col-12">
-                                <label class="form-label small text-muted">Correo Electrónico <span class="text-danger">*</span></label>
+                                <label class="form-label small text-muted">Correo Electrónico</label>
                                 <asp:TextBox ID="txtCorreoCoord" runat="server" CssClass="form-control form-control-sm" TextMode="Email" autocomplete="off"/>
-                                <asp:RequiredFieldValidator ID="rfvCorreo" runat="server" ControlToValidate="txtCorreoCoord" ErrorMessage="Requerido" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" />
+                                <asp:RequiredFieldValidator ID="rfvCorreo" runat="server" ControlToValidate="txtCorreoCoord" ErrorMessage="Requerido" Display="Dynamic" CssClass="text-danger small fw-bold" ValidationGroup="Coord" Enabled="false" />
                             </div>
                         </div>
 
@@ -1308,8 +1308,9 @@
             }
 
             var valCorreo = document.getElementById(idCorreo).value.trim();
-            if (!esEmailValido(valCorreo) || valCorreo === "") {
-                mostrarError(idCorreo, 'El correo electrónico es inválido o está vacío.');
+
+            if (valCorreo !== "" && !esEmailValido(valCorreo)) {
+                mostrarError(idCorreo, 'El formato del correo electrónico es inválido.');
                 return false;
             }
             return true;

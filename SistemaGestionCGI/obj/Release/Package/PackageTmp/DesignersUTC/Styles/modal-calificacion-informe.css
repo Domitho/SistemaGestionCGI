@@ -1,0 +1,57 @@
+﻿.modal-header.bg-utc {
+    background: linear-gradient(90deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%) !important;
+    color: #fff !important;
+    border-top-left-radius: 10px !important;
+    border-top-right-radius: 10px !important;
+}
+
+    .modal-header.bg-utc .modal-title {
+        color: #fff !important;
+        font-weight: 600 !important;
+    }
+
+.form-stack {
+    max-width: 100% !important;
+}
+
+.file-card {
+    transition: all 0.3s ease;
+    border: 1px solid #eee;
+    background: #fff;
+    position: relative;
+    overflow: hidden;
+}
+
+    .file-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(49, 39, 131, 0.15) !important;
+        border-color: var(--utc-celeste-info);
+    }
+
+.file-icon-box {
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    transition: background-color 0.3s;
+}
+
+.file-card:hover .file-icon-box {
+    background-color: #eef1ff; /* Azul muy suave al pasar el mouse */
+}
+
+.modal-header-utc {
+    background: linear-gradient(90deg, #312783 0%, #241d66 100%); /* Gradiente Institucional */
+    color: white;
+}
+
+.status-dot {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+}

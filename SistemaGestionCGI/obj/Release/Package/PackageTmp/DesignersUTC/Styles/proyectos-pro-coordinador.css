@@ -1,0 +1,382 @@
+﻿/* =====================================================
+   MODULO: ProyectosAprobadosCoordinadores
+   CSS institucional (sin degradados, cards blancos)
+   ===================================================== */
+
+/* Variables */
+:root {
+    --utc-azul: #312783;
+    --utc-border: rgba(49, 39, 131, 0.18);
+    --utc-border-soft: rgba(0, 0, 0, 0.08);
+    --utc-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+    --utc-shadow-hover: 0 18px 40px rgba(15, 23, 42, 0.14);
+}
+
+/* =====================================================
+   HEADER
+   ===================================================== */
+.utc-hero {
+    border-radius: 1.25rem;
+    background: #ffffff;
+    border: 1px solid var(--utc-border);
+    box-shadow: var(--utc-shadow);
+}
+
+.utc-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid var(--utc-border);
+    background: #fff;
+    font-weight: 800;
+    font-size: 0.85rem;
+    color: var(--utc-azul);
+}
+
+/* =====================================================
+   TARJETAS PROYECTO
+   ===================================================== */
+.project-card {
+    border-radius: 1.25rem !important;
+    border: 1px solid var(--utc-border) !important;
+    background: #ffffff !important;
+    box-shadow: var(--utc-shadow) !important;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    overflow: hidden;
+    height: 100%;
+}
+
+    .project-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--utc-shadow-hover) !important;
+        border-color: rgba(49, 39, 131, 0.28) !important;
+    }
+
+.project-top {
+    padding: 1rem 1.25rem 0.75rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.project-id {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: rgba(15, 23, 42, 0.6);
+}
+
+.project-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 0.78rem;
+    border: 1px solid var(--utc-border);
+    background: #ffffff;
+    color: var(--utc-azul);
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
+
+.project-title {
+    padding: 0 1.25rem;
+    margin: 0.3rem 0 0.7rem 0;
+    font-weight: 900;
+    color: var(--utc-azul);
+    min-height: 3rem;
+    line-height: 1.2;
+}
+
+/* =====================================================
+   METRICAS
+   ===================================================== */
+.metric-row {
+    padding: 0 1.25rem 1rem 1.25rem;
+}
+
+.metric-box {
+    background: #f8fafc;
+    border: 1px solid var(--utc-border-soft);
+    border-radius: 1.1rem;
+    padding: 0.85rem 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.metric-item {
+    flex: 1;
+    text-align: center;
+}
+
+.metric-label {
+    font-weight: 800;
+    font-size: 0.78rem;
+    color: var(--utc-azul);
+}
+
+.metric-value {
+    font-weight: 900;
+    font-size: 0.95rem;
+    color: rgba(15, 23, 42, 0.9);
+}
+
+.utc-alert-slot {
+    padding: 0 0.75rem 0.5rem 0.75rem;
+    min-height: 34px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* =====================================================
+   DETALLE INFORMATIVO (solo lectura)
+   ===================================================== */
+.project-detail {
+    padding: 0 1.25rem 1rem 1.25rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 992px) {
+    .project-detail {
+        grid-template-columns: 1fr;
+    }
+}
+
+.project-detail-box {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #f8fafc;
+    border-radius: 1.1rem;
+    padding: 0.9rem 1rem;
+}
+
+.muted-strong {
+    color: rgba(15, 23, 42, 0.65);
+    font-weight: 800;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.55rem;
+    font-size: 0.9rem;
+}
+
+    .info-row.mt-0 {
+        margin-top: 0;
+    }
+
+    .info-row .left {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: rgba(15, 23, 42, 0.65);
+        font-weight: 800;
+    }
+
+    .info-row .right {
+        font-weight: 900;
+        color: rgba(15, 23, 42, 0.9);
+        text-align: right;
+    }
+
+/* =====================================================
+   ACCIONES (únicas)
+   ===================================================== */
+.project-actions {
+    padding: 1rem 1.25rem 1.25rem 1.25rem;
+    border-top: 1px solid var(--utc-border-soft);
+    display: flex;
+    gap: 0.75rem;
+    margin-top: auto;
+}
+
+/* Botones */
+.btn-pill {
+    border-radius: 999px !important;
+    height: 44px !important;
+    font-weight: 900 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+    .btn-pill:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 22px rgba(49, 39, 131, 0.18) !important;
+    }
+
+    .btn-pill:active {
+        transform: translateY(0);
+        box-shadow: none !important;
+    }
+
+/* =====================================================
+   MODO UNICO PROYECTO (layout)
+   ===================================================== */
+.single-project-layout {
+    justify-content: center !important;
+}
+
+.project-col {
+    transition: all 0.3s ease;
+}
+
+.single-project-layout .project-col {
+    flex: 0 0 78%;
+    max-width: 78%;
+}
+
+@media (max-width: 992px) {
+    .single-project-layout .project-col {
+        flex: 0 0 92%;
+        max-width: 92%;
+    }
+}
+
+@media (max-width: 576px) {
+    .single-project-layout .project-col {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+/* =====================================================
+   PANEL EQUIPO (NO CARD)
+   ===================================================== */
+#tablaMiembros th,
+#tablaMiembros td {
+    vertical-align: middle !important;
+    white-space: normal !important;
+}
+
+/* =====================================================
+   MODALES
+   ===================================================== */
+.modal-utc-shell {
+    border-radius: 1.35rem !important;
+    overflow: hidden;
+}
+
+.modal-utc-header {
+    background: var(--utc-azul) !important;
+}
+
+.modal-utc-body {
+    background: #f8fafc !important;
+}
+
+.repo-summary {
+    background: #ffffff;
+    border: 1px solid var(--utc-border);
+    border-radius: 1.25rem;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+}
+
+.repo-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    min-width: 280px;
+}
+
+.btn-utc-modal {
+    border-radius: 999px !important;
+    height: 44px !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.2px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .btn-utc-modal:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 26px rgba(49, 39, 131, 0.16) !important;
+    }
+
+.btn-primary-utc {
+    background-color: var(--utc-azul) !important;
+    color: #fff !important;
+    border: none !important;
+}
+
+.btn-outline-utc {
+    border: 2px solid var(--utc-azul) !important;
+    color: var(--utc-azul) !important;
+    background-color: transparent !important;
+}
+
+/* =====================================================
+   DOC TILES
+   ===================================================== */
+.doc-tile {
+    border-radius: 1.15rem;
+    border: 1px solid var(--utc-border-soft);
+    background: #ffffff;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+    padding: 0.95rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+    cursor: default;
+}
+
+    .doc-tile:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--utc-shadow-hover);
+    }
+
+.doc-ico {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: rgba(49, 39, 131, 0.12);
+    color: var(--utc-azul);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex: 0 0 auto;
+}
+
+.doc-title {
+    font-weight: 900;
+    color: rgba(15, 23, 42, 0.9);
+    margin: 0;
+}
+
+.doc-meta {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: rgba(15, 23, 42, 0.55);
+}
+
+/* =====================================================
+   Z-INDEX MODALES (Generador)
+   ===================================================== */
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+#modalInformes,
+#modalSubirInforme {
+    z-index: 1050 !important;
+}
+
+#ucGenerador_pnlModal,
+.modal-generador-utc,
+[id*="ucGenerador"] {
+    z-index: 1080 !important;
+}

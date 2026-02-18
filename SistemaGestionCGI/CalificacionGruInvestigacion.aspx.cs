@@ -69,13 +69,30 @@ namespace SistemaGestionCGI
                     ddlFiltroAnio.Items.Add(new ListItem(y.ToString(), y.ToString()));
                 }
 
-                int currentYear = DateTime.Now.Year;
-                ddlAnioMetricas.Items.Clear();
-                for (int i = currentYear - 2; i <= currentYear + 2; i++)
+                var aniosEnBd = _manejador.ObtenerAniosConMetricasConfiguradas();
+
+                int anioInicio = 2015;
+                int anioFin = DateTime.Now.Year + 5;
+
+                var listaAnios = new List<int>();
+                for (int i = anioInicio; i <= anioFin; i++)
                 {
-                    ddlAnioMetricas.Items.Add(new ListItem(i.ToString(), i.ToString()));
+                    listaAnios.Add(i);
                 }
-                ddlAnioMetricas.SelectedValue = currentYear.ToString();
+
+                var aniosConsolidados = aniosEnBd
+                                        .Union(listaAnios)         
+                                        .Distinct()               
+                                        .OrderByDescending(x => x) 
+                                        .ToList();
+
+                ddlAnioMetricas.Items.Clear();
+                ddlAnioMetricas.DataSource = aniosConsolidados;
+                ddlAnioMetricas.DataBind();
+
+                string currentYear = DateTime.Now.Year.ToString();
+                if (ddlAnioMetricas.Items.FindByValue(currentYear) != null)
+                    ddlAnioMetricas.SelectedValue = currentYear;
             }
             catch (Exception ex) { Msg("Error cargando listas: " + ex.Message, "ee"); }
         }
@@ -121,9 +138,10 @@ namespace SistemaGestionCGI
             CambiarVista(Vista.Formulario);
 
             pnlInfoEvaluacion.Visible = false;
-            pnlUploadEvaluacion.Style["display"] = "block"; 
+            pnlUploadEvaluacion.Style["display"] = "block";
 
-            contenedorResolucionTotal.Visible = false;
+            contenedorResolucionTotal.Visible = true;
+            contenedorResolucionTotal.Style["display"] = "none";
 
             txtFechaAdd.Text = DateTime.Now.ToString("yyyy-MM-dd");
             txtPuntajeAdd.Text = "";
@@ -147,15 +165,51 @@ namespace SistemaGestionCGI
         }
 
         private void ActualizarMetricaVisual()
-        { 
+        {
             if (int.TryParse(ddlAnioMetricaSeleccion.SelectedValue, out int anio))
             {
-                int min = _manejador.ObtenerMinimoConsolidado(anio);
-                lblReglaMetrica.Text = $"Según la normativa del <b>{anio}</b>, se requiere un mínimo de <b>{min} puntos</b> para ser <span class='badge bg-success'>CONSOLIDADO</span>. Menos de eso será <span class='badge bg-warning text-dark'>EMERGENTE</span>.";
+                var metricas = _manejador.ObtenerConfiguracionMetricas(anio);
+
+                lblReglaMetrica.Text = $@"
+                    <div class='row g-3 text-center'>
+                        <div class='col-md-4'>
+                            <div class='p-2 border border-success bg-success bg-opacity-10 rounded-3'>
+                                <h5 class='fw-bold text-success mb-0'>{metricas.minConsolidado} - 100</h5>
+                                <small class='text-uppercase fw-bold text-success' style='font-size:0.75rem'>
+                                    <i class='fa-solid fa-circle-check me-1'></i>Consolidado
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class='col-md-4'>
+                            <div class='p-2 border border-warning bg-warning bg-opacity-10 rounded-3'>
+                                <h5 class='fw-bold text-warning text-dark mb-0'>{metricas.minEmergente} - {metricas.minConsolidado - 1}</h5>
+                                <small class='text-uppercase fw-bold text-dark' style='font-size:0.75rem'>
+                                    <i class='fa-solid fa-circle-exclamation me-1'></i>Emergente
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class='col-md-4'>
+                            <div class='p-2 border border-danger bg-danger bg-opacity-10 rounded-3'>
+                                <h5 class='fw-bold text-danger mb-0'>0 - {metricas.minEmergente - 1}</h5>
+                                <small class='text-uppercase fw-bold text-danger' style='font-size:0.75rem'>
+                                    <i class='fa-solid fa-circle-xmark me-1'></i>Disuelto
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='text-end mt-2'>
+                        <small class='text-muted fst-italic'>* Normativa vigente del año <b>{anio}</b></small>
+                    </div>";
             }
             else
             {
-                lblReglaMetrica.Text = "No hay métricas configuradas para este año. Se usará el estándar (70 pts).";
+                lblReglaMetrica.Text = @"
+            <div class='text-center text-muted py-3'>
+                <i class='fa-solid fa-arrow-up mb-2'></i><br/>
+                Seleccione un <b>Año de Métrica</b> para visualizar las reglas.
+            </div>";
             }
         }
 
@@ -167,9 +221,6 @@ namespace SistemaGestionCGI
                 if (string.IsNullOrWhiteSpace(txtFechaAdd.Text)) { Msg("Ingrese la fecha.", "ww"); return; }
 
                 bool esEdicion = !string.IsNullOrEmpty(IdCalificacionEnEdicion);
-
-                InvgccCalificacionGrupo registroAnterior = null;
-                if (esEdicion) registroAnterior = _manejador.ObtenerPorId(IdCalificacionEnEdicion);
 
                 int? puntaje = null;
                 if (!string.IsNullOrWhiteSpace(txtPuntajeAdd.Text))
@@ -183,12 +234,14 @@ namespace SistemaGestionCGI
                 }
 
                 bool tieneResolucionFisica = flpResolucion.HasFile;
-                bool tieneResolucionAnterior = (esEdicion && registroAnterior != null && !string.IsNullOrEmpty(registroAnterior.strResolucion_valo));
+                InvgccCalificacionGrupo registroAnterior = esEdicion ? _manejador.ObtenerPorId(IdCalificacionEnEdicion) : null;
+
+                bool tieneResolucionAnterior = (registroAnterior != null && !string.IsNullOrEmpty(registroAnterior.strResolucion_valo));
                 bool existeResolucionFinal = tieneResolucionFisica || tieneResolucionAnterior;
 
                 if (puntaje.HasValue && !existeResolucionFinal)
                 {
-                    Msg("Para registrar un Puntaje, es OBLIGATORIO subir el Documento de Resolución.", "ww");
+                    Msg("Para registrar un Puntaje, es OBLIGATORIO subir la Resolución.", "ww");
                     return;
                 }
                 if (existeResolucionFinal && !puntaje.HasValue)
@@ -198,7 +251,7 @@ namespace SistemaGestionCGI
                 }
 
                 bool tieneEvaluacionNueva = flpArchivoAdd.HasFile;
-                bool tieneEvaluacionAnterior = (esEdicion && registroAnterior != null && !string.IsNullOrEmpty(registroAnterior.strInforme_valo));
+                bool tieneEvaluacionAnterior = (registroAnterior != null && !string.IsNullOrEmpty(registroAnterior.strInforme_valo));
 
                 if (!tieneEvaluacionNueva && !tieneEvaluacionAnterior)
                 {
@@ -206,21 +259,8 @@ namespace SistemaGestionCGI
                     return;
                 }
 
-                if (tieneEvaluacionNueva)
-                {
-                    if (flpArchivoAdd.PostedFiles.Count == 1)
-                    {
-                        string ext = Path.GetExtension(flpArchivoAdd.FileName).ToLower();
-                        if (ext != ".pdf" && ext != ".doc" && ext != ".docx" && ext != ".zip" && ext != ".rar")
-                        {
-                            Msg("Formato no permitido. Solo se aceptan PDF, WORD o ZIP/RAR.", "ww");
-                            return;
-                        }
-                    }
-                }
-
-                string rutaInforme = (esEdicion && registroAnterior != null) ? registroAnterior.strInforme_valo : "";
-                string rutaResolucion = (esEdicion && registroAnterior != null) ? registroAnterior.strResolucion_valo : "";
+                string rutaInforme = (registroAnterior != null) ? registroAnterior.strInforme_valo : "";
+                string rutaResolucion = (registroAnterior != null) ? registroAnterior.strResolucion_valo : "";
 
                 if (flpArchivoAdd.HasFile)
                     rutaInforme = GuardarArchivoFisico(flpArchivoAdd, $"VAL_{DateTime.Now.Ticks}.pdf");
@@ -229,15 +269,29 @@ namespace SistemaGestionCGI
                     rutaResolucion = GuardarArchivoFisico(flpResolucion, $"RES_{DateTime.Now.Ticks}.pdf");
 
                 string categoria = "PENDIENTE";
+
                 if (puntaje.HasValue)
                 {
                     if (!int.TryParse(ddlAnioMetricaSeleccion.SelectedValue, out int anioM))
                     {
-                        Msg("Error: Debe seleccionar un Año de Métrica válido.", "ww");
+                        Msg("Error: Año de métrica inválido.", "ww");
                         return;
                     }
-                    int minConsolidado = _manejador.ObtenerMinimoConsolidado(anioM);
-                    categoria = (puntaje.Value >= minConsolidado) ? "CONSOLIDADO" : "EMERGENTE";
+
+                    var reglas = _manejador.ObtenerConfiguracionMetricas(anioM);
+
+                    if (puntaje.Value >= reglas.minConsolidado)
+                    {
+                        categoria = "CONSOLIDADO";
+                    }
+                    else if (puntaje.Value >= reglas.minEmergente)
+                    {
+                        categoria = "EMERGENTE";
+                    }
+                    else
+                    {
+                        categoria = "DISUELTO";
+                    }
                 }
 
                 var obj = new InvgccCalificacionGrupo
@@ -257,12 +311,12 @@ namespace SistemaGestionCGI
                 {
                     _manejador.ActualizarCalificacion(obj);
                     IdCalificacionEnEdicion = null;
-                    Redireccionar($"Actualización exitosa. Estado: <b>{categoria}</b>", "ss");
+                    Redireccionar($"Actualización exitosa. Estado resultante: <b>{categoria}</b>", "ss");
                 }
                 else
                 {
                     _manejador.GuardarCalificacion(obj);
-                    Redireccionar($"Registro creado. Estado: <b>{categoria}</b> (Pendiente de Resolución)", "ss");
+                    Redireccionar($"Registro creado. Estado resultante: <b>{categoria}</b>", "ss");
                 }
             }
             catch (Exception ex) { Msg("Error: " + ex.Message, "ee"); }
@@ -377,20 +431,36 @@ namespace SistemaGestionCGI
         {
             try
             {
-                if (string.IsNullOrEmpty(txtMinConsolidado.Text))
+                if (string.IsNullOrEmpty(txtMinConsolidado.Text) || string.IsNullOrEmpty(txtMinEmergente.Text))
                 {
-                    Msg("Ingrese el puntaje mínimo.", "ww");
+                    Msg("Debe ingresar ambos puntajes mínimos (Consolidado y Emergente).", "ww");
+                    return;
+                }
+
+                int minCons = int.Parse(txtMinConsolidado.Text);
+                int minEmer = int.Parse(txtMinEmergente.Text);
+
+                if (minEmer >= minCons)
+                {
+                    Msg("Error Lógico: El mínimo para EMERGENTE debe ser menor que el de CONSOLIDADO.", "ww");
                     return;
                 }
 
                 var m = new InvgccMetricas
                 {
                     anio = int.Parse(ddlAnioMetricas.SelectedValue),
-                    minConsolidado = int.Parse(txtMinConsolidado.Text)
+                    minConsolidado = minCons,
+                    minEmergente = minEmer
                 };
 
                 _manejador.GuardarMetrica(m);
-                Redireccionar($"Métrica del año {m.anio} actualizada correctamente.", "ss");
+
+                if (ddlAnioMetricaSeleccion.SelectedValue == m.anio.ToString())
+                {
+                    ActualizarMetricaVisual();
+                }
+
+                Redireccionar($"Métricas {m.anio} actualizadas correctamente.", "ss");
             }
             catch (Exception ex) { Msg("Error al guardar métrica: " + ex.Message, "ee"); }
         }
@@ -595,9 +665,11 @@ namespace SistemaGestionCGI
             ActualizarMetricaVisual();
 
             pnlInfoEvaluacion.Visible = false;     
-            pnlUploadEvaluacion.Style["display"] = "block"; 
+            pnlUploadEvaluacion.Style["display"] = "block";
 
-            contenedorResolucionTotal.Visible = false;
+            contenedorResolucionTotal.Visible = true; 
+            contenedorResolucionTotal.Style["display"] = "none";
+
             pnlInfoResolucion.Visible = false;
             pnlUploadResolucion.Style["display"] = "block";
 

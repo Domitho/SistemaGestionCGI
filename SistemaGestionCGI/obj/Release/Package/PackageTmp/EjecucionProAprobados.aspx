@@ -7,6 +7,8 @@
     <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/modal-informes.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/modal-historial-reporte.css" rel="stylesheet" />
+    <link href="DesignersUTC/Styles/papelera.css" rel="stylesheet" />
+    <link href="DesignersUTC/Styles/informe-observaciones.css" rel="stylesheet" />
 
     <style>
         .hover-lift {
@@ -120,8 +122,21 @@
                                     <div class="fw-bold text-secondary mb-1">
                                         <%# Eval("strPeriodo_ejec") %>
                                     </div>
-    
+
                                     <asp:Literal ID="litNotificacionPlazo" runat="server"></asp:Literal>
+
+                                    <div class="mt-1">
+                                        <asp:LinkButton ID="btnRenovarCiclo" runat="server" 
+                                            CommandName="RenovarCiclo" 
+                                            CommandArgument='<%# Eval("strId_ejec") %>'
+                                            Visible="false"
+                                            CssClass="badge bg-danger text-white text-decoration-none border-0 py-2 px-3 shadow-sm hover-lift" 
+                                            ToolTip="El ciclo académico ha terminado. Haga clic para actualizar.">
+            
+                                            <i class="fa-solid fa-arrows-rotate fa-spin me-1" style="--fa-animation-duration: 3s;"></i>
+                                            VENCIDO - RENOVAR
+                                        </asp:LinkButton>
+                                    </div>
                                 </td>
                                 <td><%# Convert.ToDateTime(Eval("dtFechaini_ejec")).ToString("dd/MM/yyyy") %></td>
                                 <td>
@@ -167,14 +182,6 @@
                                         ToolTip="Eliminar Registro"
                                         OnClientClick="return confirmarEliminar(this, '¿Desea eliminar esta ejecución de proyecto?');">
                                         <i class="fa-solid fa-trash"></i>
-                                    </asp:LinkButton>
-
-                                    <asp:LinkButton ID="btnNotificar" runat="server" 
-                                        CommandName="Notificar" 
-                                        CommandArgument='<%# Eval("strId_ejec") %>'
-                                        CssClass="btn btn-dark btn-sm rounded-circle me-1 position-relative" 
-                                        ToolTip="Enviar Recordatorio por Correo">
-                                        <i class="fa-solid fa-bell"></i>
                                     </asp:LinkButton>
 
                                 </td>
@@ -336,6 +343,13 @@
             </h3>
 
             <div class="d-flex gap-2">
+
+                <asp:LinkButton runat="server" ID="btnVerPapeleraInt" 
+                    CssClass="btn btn-outline-danger btn-pill" 
+                    OnClick="btnVerPapeleraInt_Click">
+                    <i class="fa-solid fa-trash-can me-2"></i> PAPELERA
+                </asp:LinkButton>
+
                 <asp:LinkButton runat="server" ID="btnAbrirFormMiembro"
                     CssClass="btn btn-primary btn-pill d-flex align-items-center"
                     OnClick="btnAbrirFormMiembro_Click">
@@ -376,7 +390,7 @@
                                 <td class="text-start">
                                     <div class="fw-bold"><%# Eval("strApellidos_miembro") %> <%# Eval("strNombres_miembro") %></div>
                                     <div class="small text-muted fst-italic">
-                                        <%# Eval("strTipo_miembro") %> - <%# Eval("strFacultad_miembro") == "EXTERNO" ? Eval("strEntidad_miembro") : Eval("strFacultad_miembro") %>
+                                        <%# Eval("strTipo_miembro") != null ? Eval("strTipo_miembro").ToString().ToUpper() : "" %>
                                     </div>
                                 </td>
 
@@ -433,9 +447,8 @@
     <asp:Panel ID="pnlFormularioMiembro" runat="server" Visible="false">
         <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-4 rounded shadow-utc border header-utc-line">
             <h3 class="utc-title mb-0">
-                <i class="fa-solid fa-users-gear me-2"></i> EQUIPO DE TRABAJO
+                <i class="fa-solid fa-users-gear me-2"></i> GESTIÓN DE EQUIPO
             </h3>
-
             <asp:LinkButton ID="btnVolverFormMiembro" runat="server"
                 CssClass="btn btn-outline-primary btn-pill px-4"
                 OnClick="btnCancelarMiembro_Click" CausesValidation="false">
@@ -444,26 +457,77 @@
         </div>
 
         <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4">
-            
+        
             <h4 class="utc-subtitle mb-4 text-center">
                 <i class="fa-solid fa-user-plus me-2"></i>
                 <asp:Label runat="server" ID="lblTituloFormMiembro" Text="Nuevo Integrante" />
             </h4>
 
             <asp:HiddenField ID="hfIdMiembroEdit" runat="server" />
+            <asp:HiddenField ID="hfTipoRealMiembro" runat="server" />
 
-            <div class="row g-3">
+            <div class="utc-section-header mb-3">
+                <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2">
+                    <i class="fa-solid fa-database me-2"></i> 1. Origen del Integrante
+                </h6>
+            </div>
+
+            <div class="row g-3 mb-4">
                 <div class="col-12">
-                    <label class="form-label fw-bold text-primary">Tipo de Vinculación</label>
-                    <asp:DropDownList ID="ddlTipoMiembro" runat="server" CssClass="form-select" onchange="toggleTipoIntegrante()">
-                        <asp:ListItem Value="Interno" Selected="True">Interno (Docente/Estudiante UTC)</asp:ListItem>
-                        <asp:ListItem Value="Externo">Externo (Inv. Invitado / Otra Institución)</asp:ListItem>
+                    <label class="form-label fw-bold">Seleccione Origen</label>
+                    <asp:DropDownList ID="ddlTipoMiembro" runat="server" CssClass="form-select shadow-sm border-primary"
+                        AutoPostBack="true" OnSelectedIndexChanged="ddlTipoMiembro_SelectedIndexChanged">
+                        <asp:ListItem Value="Interno" Selected="True">Manual / Interno (Estudiante/Admin)</asp:ListItem>
+                        <asp:ListItem Value="DocenteGrupo" style="font-weight:bold; color:#0d6efd;">★ MIEMBRO DEL GRUPO (Recomendado)</asp:ListItem>
+                        <asp:ListItem Value="DocenteLibre" style="font-weight:bold; color:#198754;">★ DOCENTE CATEGORIZADO (Sin Grupo)</asp:ListItem>
+                        <asp:ListItem Value="Externo">Manual / Externo (Otra Institución)</asp:ListItem>
                     </asp:DropDownList>
                 </div>
 
+                <asp:Panel ID="pnlSeleccionAutomatica" runat="server" Visible="false" CssClass="col-12 animate__animated animate__fadeIn">
+                    <div class="card border-primary border-opacity-25 bg-primary bg-opacity-10 shadow-sm">
+                        <div class="card-body">
+                            <label class="form-label fw-bold text-primary small">
+                                <i class="fa-solid fa-user-check me-1"></i> 
+                                <asp:Literal ID="litTituloSeleccion" runat="server">SELECCIONAR CANDIDATO</asp:Literal>
+                            </label>
+                        
+                            <div class="input-group">
+                                <span class="input-group-text bg-white text-primary border-primary"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                <asp:DropDownList ID="ddlCandidatos" runat="server" CssClass="form-select border-primary fw-bold"
+                                    AutoPostBack="true" OnSelectedIndexChanged="ddlCandidatos_SelectedIndexChanged">
+                                </asp:DropDownList>
+                            
+                                <a id="btnVerDocumentoCandidato" runat="server" target="_blank" visible="false"
+                                   class="btn btn-primary d-flex align-items-center shadow-sm" title="Ver Documento de Soporte">
+                                    <i class="fa-solid fa-file-pdf me-2"></i> Ver Archivo
+                                </a>
+                            </div>
+                        
+                            <div class="form-text small text-muted mt-2">
+                                <i class="fa-solid fa-filter me-1"></i> 
+                                El sistema solo muestra personas disponibles (no vinculadas a otros proyectos).
+                            </div>
+                        </div>
+                    </div>
+                </asp:Panel>
+            </div>
+
+            <div class="utc-section-header mb-3">
+                <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2">
+                    <i class="fa-regular fa-id-card me-2"></i> 2. Datos Personales
+                </h6>
+            </div>
+
+            <div class="row g-3 mb-4">
                 <div class="col-md-4">
-                    <label class="form-label">Cédula / Pasaporte <span class="text-danger">*</span></label>
-                    <asp:TextBox ID="txtCedulaMiembro" runat="server" CssClass="form-control" placeholder="10 dígitos" MaxLength="15" />
+                    <label class="form-label">Cédula <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <asp:TextBox ID="txtCedulaMiembro" runat="server" CssClass="form-control" placeholder="10 dígitos" MaxLength="15" />
+                        <asp:LinkButton ID="btnValidarCedula" runat="server" CssClass="btn btn-primary" OnClick="btnValidarCedula_Click" CausesValidation="false">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </asp:LinkButton>
+                    </div>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Nombres <span class="text-danger">*</span></label>
@@ -473,63 +537,64 @@
                     <label class="form-label">Apellidos <span class="text-danger">*</span></label>
                     <asp:TextBox ID="txtApellidosMiembro" runat="server" CssClass="form-control" />
                 </div>
-    
-                <div class="col-md-6">
-                    <label class="form-label">Correo Electrónico <span class="text-danger">*</span></label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="fa-solid fa-envelope"></i></span>
-                        <asp:TextBox ID="txtCorreoMiembro" runat="server" CssClass="form-control" TextMode="Email" placeholder="ejemplo@utc.edu.ec" />
-                    </div>
-                </div>
-    
-                <div class="col-md-6">
-                    <label class="form-label">Rol en el Proyecto</label>
-                    <asp:DropDownList ID="ddlRolMiembro" runat="server" CssClass="form-select">
-                        <asp:ListItem>Investigador Principal</asp:ListItem>
-                        <asp:ListItem>Co-Investigador</asp:ListItem>
-                        <asp:ListItem>Ayudante de Investigación</asp:ListItem>
-                        <asp:ListItem>Tesista de Pregrado</asp:ListItem>
-                        <asp:ListItem>Tesista de Posgrado</asp:ListItem>
-                        <asp:ListItem>Técnico de Apoyo</asp:ListItem>
-                        <asp:ListItem>Director</asp:ListItem>
-                    </asp:DropDownList>
-                </div>
-
-                <div id="divCamposInternos" class="col-12 row g-3 m-0 p-0">
-                    <div class="col-md-6">
-                        <label class="form-label">Facultad / Extensión</label>
-                        <asp:DropDownList ID="ddlFacultadMiembro" runat="server" CssClass="form-select">
-                            <asp:ListItem Text="-- Seleccione --" Value="" />
-                            <asp:ListItem>FACULTAD DE CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
-                            <asp:ListItem>FACULTAD DE CIENCIAS DE LA INGENIERIA Y APLICADAS (CIYA)</asp:ListItem>
-                            <asp:ListItem>FACULTAD DE CIENCIAS ADMINISTRATIVAS Y ECONOMICAS (CAYE)</asp:ListItem>
-                            <asp:ListItem>FACULTAD DE CIENCIAS SOCIALES ARTES Y EDUCACION (CSAYE)</asp:ListItem>
-                            <asp:ListItem>FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
-                            <asp:ListItem>EXTENSIÓN PUJILÍ</asp:ListItem>
-                            <asp:ListItem>EXTENSION LA MANÁ</asp:ListItem>
-                        </asp:DropDownList>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Carrera / Departamento</label>
-                        <asp:TextBox ID="txtCarreraMiembro" runat="server" CssClass="form-control" placeholder="Ej: Sistemas de Información" />
-                    </div>
-                </div>
-
-                <div id="divCamposExternos" class="col-12" style="display:none;">
-                    <label class="form-label fw-bold">Institución / Entidad de Origen</label>
-                    <asp:TextBox ID="txtEntidadMiembro" runat="server" CssClass="form-control" placeholder="Ej: Universidad Central, SENESCYT, Empresa Privada..." />
-                    <div class="form-text">Especifique la organización a la que pertenece el investigador invitado.</div>
+                <div class="col-12">
+                    <label class="form-label">Correo Institucional <span class="text-danger">*</span></label>
+                    <asp:TextBox ID="txtCorreoMiembro" runat="server" CssClass="form-control" TextMode="Email" />
                 </div>
             </div>
 
-            <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
-                <asp:LinkButton ID="btnGuardarMiembro" runat="server" CssClass="btn btn-primary btn-pill px-4"
-                    OnClick="btnGuardarMiembro_Click">
-                    <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Integrante
-                </asp:LinkButton>
+            <div id="divCamposInternos" class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Facultad / Extensión</label>
+                    <asp:DropDownList ID="ddlFacultadMiembro" runat="server" CssClass="form-select" 
+                        AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadMiembro_SelectedIndexChanged">
+                        <asp:ListItem Text="-- Seleccione --" Value="" />
+                        <asp:ListItem Value="CAREN">FACULTAD DE CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
+                        <asp:ListItem Value="CIYA">FACULTAD DE CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
+                        <asp:ListItem Value="CAYE">FACULTAD DE CIENCIAS ADMINISTRATIVAS (CAYE)</asp:ListItem>
+                        <asp:ListItem Value="CSAYE">FACULTAD DE CIENCIAS SOCIALES (CSAYE)</asp:ListItem>
+                        <asp:ListItem Value="SALUD">FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
+                        <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
+                        <asp:ListItem Value="LAMANA">EXTENSION LA MANA</asp:ListItem>
+                    </asp:DropDownList>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Carrera</label>
+                    <asp:DropDownList ID="ddlCarreraMiembro" runat="server" CssClass="form-select">
+                        <asp:ListItem Text="-- Seleccione Facultad --" Value="" />
+                    </asp:DropDownList>
+                </div>
+            </div>
 
-                <asp:LinkButton ID="btnCancelarMiembro" runat="server" CssClass="btn btn-outline-primary btn-pill px-4"
-                    OnClick="btnCancelarMiembro_Click" CausesValidation="false">
+            <div id="divCamposExternos" class="row g-3 mb-4" style="display:none;">
+                <div class="col-12">
+                    <label class="form-label fw-bold">Institución / Entidad de Origen</label>
+                    <asp:TextBox ID="txtEntidadMiembro" runat="server" CssClass="form-control" placeholder="Ej: SENESCYT..." />
+                </div>
+            </div>
+
+            <div class="utc-section-header mb-3">
+                <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2">
+                    <i class="fa-solid fa-briefcase me-2"></i> 3. Vinculación al Proyecto
+                </h6>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Fecha de Inicio <span class="text-danger">*</span></label>
+                    <asp:TextBox ID="txtFechaInicioMiembro" runat="server" CssClass="form-control" TextMode="Date" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Rol Asignado</label>
+                    <asp:TextBox ID="txtRolMiembro" runat="server" CssClass="form-control bg-light fw-bold text-primary" ReadOnly="true" Text="MIEMBRO DE PROYECTO" />
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center gap-3 mt-5">
+                <asp:LinkButton ID="btnGuardarMiembro" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow-sm" OnClick="btnGuardarMiembro_Click">
+                    <i class="fa-solid fa-floppy-disk me-2"></i> Guardar
+                </asp:LinkButton>
+                <asp:LinkButton ID="btnCancelarMiembro" runat="server" CssClass="btn btn-outline-secondary btn-pill px-5" OnClick="btnCancelarMiembro_Click" CausesValidation="false">
                     <i class="fa-solid fa-ban me-2"></i> Cancelar
                 </asp:LinkButton>
             </div>
@@ -575,65 +640,120 @@
                     </div>
 
                     <div class="row g-3">
-                        <asp:Repeater ID="rptInformes" runat="server" OnItemCommand="rptInformes_ItemCommand">
-                            <ItemTemplate>
-                                <div class="col-md-4 col-sm-6">
+                        <div class="table-responsive">
+                            <table class="table table-borderless align-middle">
+                                <thead class="text-secondary small text-uppercase border-bottom">
+                                    <tr>
+                                        <th scope="col" class="ps-3">Documento / Periodo</th>
+                                        <th scope="col" class="text-end pe-3">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <asp:Repeater ID="rptInformes" runat="server" OnItemCommand="rptInformes_ItemCommand" OnItemDataBound="rptInformes_ItemDataBound">
+                                        <ItemTemplate>
+                                            <asp:PlaceHolder ID="phHeaderCiclo" runat="server" Visible="false">
+                                                <tr>
+                                                    <td colspan="2" class="pt-4 pb-2">
+                                                        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold">
+                                                            <i class="fa-solid fa-layer-group me-2"></i>
+                                                            <asp:Literal ID="litNombreCicloGroup" runat="server"></asp:Literal>
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </asp:PlaceHolder>
 
-                                    <div class="file-card" onclick="GestionarArchivoDirecto('<%# ResolveUrl(Eval("strArchivo_path").ToString()) %>')">
+                                            <tr class="report-row">
+                                                <td class="ps-3 py-3">
+                                                    <div class="d-flex align-items-start">
+                                                        <div class="report-icon-box me-3 flex-shrink-0">
+                                                            <i class="fa-solid fa-file-pdf"></i>
+                                                        </div>
+                                
+                                                        <div class="flex-grow-1">
+                                                            <div class="report-title"><%# Eval("strNombrePeriodo") %></div>
+                                                            <div class="report-date">
+                                                                <i class="fa-regular fa-clock me-1"></i> Subido el <%# Convert.ToDateTime(Eval("dtFechaSubida")).ToString("dd 'de' MMMM, yyyy - HH:mm") %>
+                                                            </div>
 
-                                        <div class="position-absolute top-0 end-0 p-2 d-flex gap-1" style="z-index: 10;">
+                                                            <asp:Panel runat="server" Visible='<%# !string.IsNullOrEmpty(Eval("strObservacion_informe")?.ToString()) %>'>
+                                                                <div class="feedback-box animate__animated animate__fadeIn">
+                                                                    <i class="fa-solid fa-comment-dots mt-1"></i>
+                                                                    <div>
+                                                                        <strong>Revisión Admin:</strong> 
+                                                                        <span class="d-block fst-italic"><%# Eval("strObservacion_informe") %></span>
+                                                                    </div>
+                                                                </div>
+                                                            </asp:Panel>
+                                                        </div>
+                                                    </div>
+                                                </td>
 
-                                            <asp:LinkButton ID="btnEditarInf" runat="server"
-                                                CommandName="EditarInforme" CommandArgument='<%# Eval("strId_informe") %>'
-                                                CssClass="btn btn-sm btn-light rounded-circle shadow-sm text-primary"
-                                                OnClientClick="event.stopPropagation();"
-                                                ToolTip="Corregir archivo">
-                                                <i class="fa-solid fa-pen"></i>
-                                            </asp:LinkButton>
+                                                <td class="text-end pe-4 py-3 align-middle"> <div class="d-flex flex-column align-items-end justify-content-center h-100 gap-2">
+        
+                                                        <asp:PlaceHolder runat="server" Visible='<%# !string.IsNullOrEmpty(Eval("strObservacion_informe") as string) %>'>
+                                                            <div class="mb-1">
+                
+                                                                <asp:PlaceHolder runat="server" Visible='<%# Eval("dtFechaLectura_informe") == null %>'>
+                                                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary rounded-pill px-3 py-1" 
+                                                                          style="font-size: 0.65rem; letter-spacing: 0.5px; font-weight: 600;">
+                                                                        <i class="fa-regular fa-clock me-1"></i> PENDIENTE
+                                                                    </span>
+                                                                </asp:PlaceHolder>
 
-                                            <asp:LinkButton ID="btnEliminarInf" runat="server"
-                                                CommandName="EliminarInforme" CommandArgument='<%# Eval("strId_informe") %>'
-                                                CssClass="btn btn-sm btn-light rounded-circle shadow-sm text-danger"
-                                                OnClientClick="event.stopPropagation(); return confirm('¿CONFIRMACIÓN:\n\nVa a eliminar este documento permanentemente.\n¿Continuar?');"
-                                                ToolTip="Eliminar">
-                                                <i class="fa-solid fa-trash-can"></i>
-                                            </asp:LinkButton>
-                                        </div>
+                                                                <asp:PlaceHolder runat="server" Visible='<%# Eval("dtFechaLectura_informe") != null %>'>
+                                                                    <div class="text-end" style="line-height: 1.2;">
+                                                                        <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-3 py-1" 
+                                                                              style="font-size: 0.65rem; letter-spacing: 0.5px; font-weight: 700;">
+                                                                            <i class="fa-solid fa-check-double me-1"></i> CONFIRMADO
+                                                                        </span>
+                                                                        <div class="text-muted mt-1" style="font-size: 0.6rem; opacity: 0.8;">
+                                                                            <%# Convert.ToDateTime(Eval("dtFechaLectura_informe")).ToString("dd/MM/yy HH:mm") %>
+                                                                        </div>
+                                                                    </div>
+                                                                </asp:PlaceHolder>
 
-                                        <div class="file-card-preview">
-                                            <i class='<%# Eval("strArchivo_path").ToString().ToLower().EndsWith(".pdf") 
-                                                ? "fa-solid fa-file-pdf text-danger" 
-                                                : "fa-solid fa-file-word text-primary" %>'>
-                                            </i>
-                                        </div>
+                                                            </div>
+                                                        </asp:PlaceHolder>
 
-                                        <div class="file-card-body">
-                                            <div class="file-card-title" title='<%# Eval("strNombrePeriodo") %>'>
-                                                <%# Eval("strNombrePeriodo") %>
-                                            </div>
-                                            <div class="file-card-meta">
-                                                <span>
-                                                    <i class="fa-solid fa-calendar-days me-1"></i>
-                                                    <%# Convert.ToDateTime(Eval("dtFechaSubida")).ToString("dd MMM") %>
-                                                </span>
-                                                <span><i class="fa-solid fa-download text-muted"></i></span>
-                                            </div>
-                                        </div>
+                                                        <div class="d-flex align-items-center gap-2">
+            
+                                                            <a href='<%# ResolveUrl(Eval("strArchivo_path").ToString()) %>' target="_blank" 
+                                                               class="btn btn-white border shadow-sm text-secondary d-flex align-items-center justify-content-center hover-lift"
+                                                               style="width: 40px; height: 38px; border-radius: 8px; background-color: #fff;" 
+                                                               title="Ver Documento">
+                                                                <i class="fa-solid fa-eye"></i>
+                                                            </a>
 
-                                    </div>
-                                </div>
-                            </ItemTemplate>
+                                                            <asp:LinkButton ID="btnObservar" runat="server" 
+                                                                CommandName="ObservarInforme" 
+                                                                CommandArgument='<%# Eval("strId_informe") %>'
+                                                                CssClass='<%# string.IsNullOrEmpty(Eval("strObservacion_informe")?.ToString()) 
+                                                                    ? "btn btn-light border shadow-sm px-3 text-secondary fw-semibold d-flex align-items-center gap-2 hover-lift" 
+                                                                    : "btn border border-warning shadow-sm px-3 text-dark fw-bold d-flex align-items-center gap-2 hover-lift" %>'
+                                                                Style='<%# string.IsNullOrEmpty(Eval("strObservacion_informe")?.ToString()) 
+                                                                    ? "height: 38px; border-radius: 8px;" 
+                                                                    : "height: 38px; border-radius: 8px; background-color: #fff9c4;" %>'
+                                                                ToolTip="Gestionar Observación">
+                
+                                                                <i class='<%# string.IsNullOrEmpty(Eval("strObservacion_informe")?.ToString()) ? "fa-solid fa-pen" : "fa-solid fa-pen-to-square" %>'></i>
+                                                                <span><%# string.IsNullOrEmpty(Eval("strObservacion_informe")?.ToString()) ? "Revisar" : "Edit. Nota" %></span>
+                                                            </asp:LinkButton>
 
-                            <FooterTemplate>
-                                <asp:Panel ID="pnlNoData" runat="server" Visible='<%# rptInformes.Items.Count == 0 %>'>
-                                    <div class="text-center py-5 text-muted opacity-50">
-                                        <i class="fa-regular fa-folder-open fa-4x mb-3"></i>
-                                        <h5>Carpeta vacía</h5>
-                                        <p>Usa el botón "Subir Nuevo" para agregar informes.</p>
-                                    </div>
-                                </asp:Panel>
-                            </FooterTemplate>
-                        </asp:Repeater>
+                                                        </div>
+
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <asp:Panel ID="pnlSinInformes" runat="server" Visible="false" class="text-center py-5">
+                            <img src="https://cdn-icons-png.flaticon.com/512/7486/7486747.png" width="80" class="opacity-50 mb-3" />
+                            <h6 class="text-muted">No se han subido informes en este periodo.</h6>
+                        </asp:Panel>
 
                         <hr class="my-4" style="opacity: 0.1">
 
@@ -771,47 +891,109 @@
     </div>
 
     <div class="modal fade" id="modalSubirCierre" tabindex="-1" aria-hidden="true" style="z-index: 1080;" ClientIDMode="Static" runat="server">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg"> 
             <div class="modal-content shadow-lg border-0 rounded-4">
-                
-                <div class="modal-header border-bottom-0 pb-0 bg-warning bg-opacity-10">
-                    <h5 class="modal-title fw-bold text-dark">
-                        <i class="fa-solid fa-file-signature me-2"></i> Informe de Cierre
-                    </h5>
+            
+                <div class="modal-header border-bottom-0 pb-0 bg-warning bg-opacity-10 py-3">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                            <i class="fa-solid fa-file-signature fs-4"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold text-dark mb-0">Informe de Cierre</h5>
+                            <small class="text-muted">Gestión de documentos finales</small>
+                        </div>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                
-                <div class="modal-body pt-3 px-4 pb-4">
-    
-                    <div id="divAlertaCierre" runat="server" class="alert alert-warning border-0 d-flex align-items-center small mb-3" role="alert">
-                        <i class="fa-solid fa-triangle-exclamation me-2"></i>
-                        <div>Al subir este documento, el proyecto pasará a estado <strong>EN REVISIÓN</strong>.</div>
+
+                <div class="modal-body px-4 pb-4 pt-3">
+
+                    <div class="d-flex justify-content-end mb-2">
+                        <a class="btn btn-sm btn-light border text-secondary fw-bold shadow-sm" data-bs-toggle="collapse" href="#collapseHistorial" role="button">
+                            <i class="fa-solid fa-clock-rotate-left me-1"></i> Historial de Versiones
+                        </a>
                     </div>
 
-                    <asp:Panel ID="pnlCierreBloqueado" runat="server" Visible="false" CssClass="text-center py-4 mb-3 bg-success bg-opacity-10 rounded-3 border border-success">
-                        <div class="mb-2">
-                            <i class="fa-solid fa-circle-check fa-3x text-success"></i>
+                    <div class="collapse mb-4" id="collapseHistorial">
+                        <div class="p-3 bg-light rounded-3 border" style="max-height: 250px; overflow-y: auto;">
+                            <h6 class="small fw-bold text-uppercase text-muted mb-3 ls-1">Versiones Anteriores</h6>
+                        
+                            <asp:Repeater ID="rptHistorialCierre" runat="server">
+                                <ItemTemplate>
+                                    <div class="d-flex gap-3 mb-3 position-relative">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="bg-white border rounded-circle d-flex align-items-center justify-content-center text-secondary shadow-sm" style="width: 32px; height: 32px; z-index: 2;">
+                                                <i class="fa-solid fa-file-pdf small"></i>
+                                            </div>
+                                            <div class="bg-secondary opacity-25" style="width: 2px; flex-grow: 1; margin-top: -5px; margin-bottom: -10px;"></div>
+                                        </div>
+
+                                        <div class="card card-body border-0 shadow-sm p-2 flex-fill">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div style="overflow: hidden; padding-right: 10px;">
+                                                    <span class="d-block fw-bold text-dark text-truncate" title='<%# Eval("strNombreArchivo") %>'>
+                                                        <%# Eval("strNombreArchivo") %>
+                                                    </span>
+                                                    <div class="d-flex align-items-center gap-3 mt-1 text-muted small">
+                                                        <span><i class="fa-regular fa-calendar me-1"></i> <%# Eval("dtFechaSubida", "{0:dd/MM/yyyy HH:mm}") %></span>
+                                                        <span><i class="fa-regular fa-user me-1"></i> <%# Eval("strUsuarioSubida") %></span>
+                                                    </div>
+                                                </div>
+                                                <a href='<%# ResolveUrl(Eval("strRutaArchivo").ToString()) %>' target="_blank" class="btn btn-sm btn-outline-primary bg-white border-0 shadow-sm" title="Descargar">
+                                                    <i class="fa-solid fa-download"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ItemTemplate>
+                            </asp:Repeater>
+
+                            <asp:Label ID="lblSinHistorial" runat="server" Visible="false" CssClass="d-block text-center py-4">
+                                <div class="text-muted opacity-50 mb-2"><i class="fa-regular fa-folder-open fa-2x"></i></div>
+                                <small class="text-muted">No existen versiones previas registradas.</small>
+                            </asp:Label>
                         </div>
-                        <h5 class="fw-bold text-success mb-1">Informe Aprobado</h5>
-                        <p class="text-muted small mb-0">Este documento ha sido validado. No se permiten más cambios.</p>
+                    </div>
+                    <div id="divAlertaCierre" runat="server" class="alert alert-warning border-0 d-flex align-items-center shadow-sm mb-4" role="alert">
+                        <div class="fs-4 me-3 text-warning"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div>
+                            <h6 class="fw-bold mb-0">Atención</h6>
+                            <small>Al subir este documento, el proyecto pasará automáticamente a estado <strong>EN REVISIÓN</strong>.</small>
+                        </div>
+                    </div>
+
+                    <asp:Panel ID="pnlCierreBloqueado" runat="server" Visible="false" CssClass="text-center py-5 mb-3 bg-success bg-opacity-10 rounded-4 border border-success border-opacity-25">
+                        <div class="mb-3">
+                            <div class="d-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle shadow-sm" style="width: 60px; height: 60px;">
+                                <i class="fa-solid fa-check fa-2x"></i>
+                            </div>
+                        </div>
+                        <h4 class="fw-bold text-success mb-1">Informe Aprobado</h4>
+                        <p class="text-muted mb-0 px-5">Este documento ha sido revisado y validado exitosamente. La fase de cierre ha concluido.</p>
                     </asp:Panel>
 
-                    <asp:Panel ID="pnlArchivoCierreActual" runat="server" Visible="false" CssClass="mb-3">
-                        <label class="form-label fw-bold small text-primary">Archivo en Sistema:</label>
-                        <div class="d-flex align-items-center justify-content-between p-2 border rounded bg-light">
-                            <div class="d-flex align-items-center text-truncate">
-                                <i class="fa-solid fa-file-pdf text-danger fs-4 me-2"></i>
-                                <asp:Label ID="lblNombreArchivoCierre" runat="server" CssClass="small fw-bold text-dark text-truncate" style="max-width: 200px;"></asp:Label>
+                    <asp:Panel ID="pnlArchivoCierreActual" runat="server" Visible="false" CssClass="mb-4">
+                        <label class="form-label fw-bold small text-uppercase text-muted ls-1">Versión Vigente (En Revisión)</label>
+                        <div class="d-flex align-items-center justify-content-between p-3 border rounded-3 bg-white shadow-sm">
+                            <div class="d-flex align-items-center overflow-hidden">
+                                <div class="bg-danger bg-opacity-10 text-danger rounded p-2 me-3">
+                                    <i class="fa-solid fa-file-pdf fs-4"></i>
+                                </div>
+                                <div class="text-truncate">
+                                    <asp:Label ID="lblNombreArchivoCierre" runat="server" CssClass="d-block fw-bold text-dark text-truncate"></asp:Label>
+                                    <small class="text-success"><i class="fa-solid fa-circle-check me-1"></i> Archivo cargado correctamente</small>
+                                </div>
                             </div>
-                            <a id="lnkVerCierreActual" runat="server" target="_blank" class="btn btn-sm btn-outline-primary rounded-circle" title="Ver archivo">
-                                <i class="fa-solid fa-eye"></i>
+                            <a id="lnkVerCierreActual" runat="server" target="_blank" class="btn btn-light border shadow-sm text-primary ms-3">
+                                <i class="fa-solid fa-eye me-2"></i> Ver
                             </a>
                         </div>
                     </asp:Panel>
 
                     <asp:Panel ID="pnlCargaCierre" runat="server">
-                        <label class="form-label fw-bold small text-secondary" id="lblTituloInputCierre" runat="server">Documento de Cierre</label>
-        
+                        <label class="form-label fw-bold small text-uppercase text-muted ls-1" id="lblTituloInputCierre" runat="server">Cargar Nueva Versión</label>
+                    
                         <div class="utc-fileinput-wrapper" id="wrapperCierre">
                             <div class="utc-fileinput-header">
                                 <div class="utc-fileinput-icon"><i class="fa-solid fa-file-pdf"></i></div>
@@ -826,32 +1008,30 @@
                             <input type="text" class="form-control form-control-sm utc-edit-name-field" placeholder="Renombrar..." />
                             <div class="utc-fileinput-preview" id="previewCierre"></div>
                             <div class="utc-fileinput-loader" id="loaderCierre"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
-                            <div class="utc-dropzone" id="dropzoneCierre">
-                                <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-warning"></i><br />
-                                <span id="lblTextoDropzoneCierre" runat="server">Subir Informe de Cierre</span>
+                            <div class="utc-dropzone" id="dropzoneCierre" style="border: 2px dashed #dee2e6; background: #f8f9fa;">
+                                <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-secondary opacity-50"></i><br />
+                                <span id="lblTextoDropzoneCierre" runat="server" class="fw-bold text-secondary">Arrastre su archivo PDF aquí</span>
                             </div>
                             <asp:FileUpload ID="flpCierre" runat="server" CssClass="utc-fileinput-input" accept=".pdf" />
                         </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <asp:LinkButton ID="btnGuardarCierre" runat="server" 
+                                CssClass="btn btn-warning text-dark fw-bold btn-lg shadow hover-scale"
+                                OnClick="btnGuardarCierre_Click">
+                                <i class="fa-solid fa-paper-plane me-2"></i> <asp:Literal ID="litBtnCierreTexto" runat="server">Enviar a Revisión</asp:Literal>
+                            </asp:LinkButton>
+
+                            <asp:LinkButton ID="btnAprobarCierre" runat="server" Visible="false"
+                                CssClass="btn btn-success fw-bold btn-lg shadow hover-scale"
+                                OnClientClick="return confirm('¿Está seguro de APROBAR este informe?\n\n- Se bloqueará la edición.\n- Se habilitará el Informe Final.');"
+                                OnClick="btnAprobarCierre_Click">
+                                <i class="fa-solid fa-check-double me-2"></i> APROBAR DOCUMENTO
+                            </asp:LinkButton>
+                        </div>
                     </asp:Panel>
 
-                    <div class="d-grid gap-2 mt-4">
-        
-                        <asp:LinkButton ID="btnGuardarCierre" runat="server" 
-                            CssClass="btn btn-warning text-dark fw-bold btn-lg shadow-sm"
-                            OnClick="btnGuardarCierre_Click">
-                            <i class="fa-solid fa-paper-plane me-2"></i> <asp:Literal ID="litBtnCierreTexto" runat="server">Enviar a Revisión</asp:Literal>
-                        </asp:LinkButton>
-
-                        <asp:LinkButton ID="btnAprobarCierre" runat="server" Visible="false"
-                            CssClass="btn btn-success fw-bold btn-lg shadow-sm"
-                            OnClientClick="return confirm('¿Está seguro de APROBAR este informe?\n\n- Se bloqueará la edición.\n- Se habilitará el Informe Final.');"
-                            OnClick="btnAprobarCierre_Click">
-                            <i class="fa-solid fa-check-double me-2"></i> APROBAR DOCUMENTO
-                        </asp:LinkButton>
-
-                    </div>
                 </div>
-                
             </div>
         </div>
     </div>
@@ -976,6 +1156,8 @@
                         <strong id="lblNombreMiembroEstado">...</strong><br />
                         <span id="lblRolMiembroEstado" class="text-muted">...</span>
                     </div>
+
+                    <div id="divAlertaDirector" class="text-center mb-2" style="display:none;"></div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Motivo del cambio (Obligatorio)</label>
@@ -1143,6 +1325,178 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalRenovarCiclo" tabindex="-1" aria-hidden="true" ClientIDMode="Static" runat="server">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-utc rounded-4">
+            
+                <div class="modal-header bg-warning bg-opacity-10 border-bottom-0">
+                    <h5 class="modal-title fw-bold text-dark">
+                        <i class="fa-solid fa-clock-rotate-left me-2"></i> Transición de Periodo
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-warning bg-opacity-10 rounded-circle mb-3" style="width: 60px; height: 60px;">
+                            <i class="fa-solid fa-calendar-check fs-3 text-warning"></i>
+                        </div>
+                        <h6 class="fw-bold">El ciclo académico actual ha finalizado</h6>
+                        <p class="text-muted small mb-0">
+                            El proyecto sigue vigente según su duración total. <br />
+                            Para continuar, asigne el siguiente periodo académico.
+                        </p>
+                    </div>
+
+                    <div class="bg-light p-3 rounded border mb-3">
+                        <label class="form-label fw-bold small text-secondary mb-1">Siguiente Periodo / Ciclo</label>
+                        <asp:DropDownList ID="ddlCiclosFuturos" runat="server" CssClass="form-select shadow-sm fw-bold text-primary">
+                        </asp:DropDownList>
+                        <div class="form-text small"><i class="fa-solid fa-circle-info me-1"></i> Se actualizará el registro para la carga de nuevos informes.</div>
+                    </div>
+
+                    <asp:HiddenField ID="hfIdEjecRenovar" runat="server" ClientIDMode="Static" />
+
+                    <div class="d-grid">
+                        <asp:LinkButton ID="btnConfirmarRenovacion" runat="server" 
+                            CssClass="btn btn-warning fw-bold shadow-sm py-2" 
+                            OnClick="btnConfirmarRenovacion_Click">
+                            <i class="fa-solid fa-check me-2"></i> Confirmar Transición
+                        </asp:LinkButton>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalPapeleraIntegrantes" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" runat="server" ClientIDMode="Static">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content utc-modal-premium">
+            
+                <div class="modal-header papelera-header-premium d-flex flex-column align-items-center justify-content-center text-white position-relative">
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-4" data-bs-dismiss="modal"></button>
+                    <div class="bg-white bg-opacity-25 rounded-circle p-3 mb-3 backdrop-blur">
+                        <i class="fa-solid fa-trash-arrow-up fa-2x"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">Papelera de Equipo</h4>
+                    <p class="mb-0 small opacity-75">Recuperación de miembros dados de baja</p>
+                </div>
+
+                <div class="modal-body p-4 bg-light">
+                    <asp:Repeater ID="rptPapeleraIntegrantes" runat="server" OnItemCommand="rptPapeleraIntegrantes_ItemCommand">
+                        <ItemTemplate>
+                            <div class="docente-trash-card p-3">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="bg-light rounded-circle p-3 text-secondary border">
+                                            <i class="fa-solid fa-user-xmark fa-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-bold text-dark mb-1 text-uppercase">
+                                                <%# Eval("strApellidos_miembro") %> <%# Eval("strNombres_miembro") %>
+                                            </h6>
+                                            <span class="status-badge-inactive">INACTIVO</span>
+                                        </div>
+                                    </div>
+                                
+                                    <asp:LinkButton runat="server" CommandName="Restaurar" CommandArgument='<%# Eval("strId_miembro") %>' 
+                                        CssClass="btn btn-sm btn-success rounded-pill px-4 shadow-sm fw-bold" 
+                                        OnClientClick="return confirmarRestaurar(this, '¿Está seguro de restaurar a este integrante al proyecto?');">
+                                        <i class="fa-solid fa-rotate-left me-2"></i> RESTAURAR
+                                    </asp:LinkButton>
+                                </div>
+
+                                <div class="d-flex mt-2 pt-3 border-top bg-white text-center">
+                                    <div class="data-grid-item flex-fill">
+                                        <span class="label-mini">Cédula</span>
+                                        <span class="value-bold"><%# Eval("strCedula_miembro") %></span>
+                                    </div>
+                                    <div class="data-grid-item flex-fill">
+                                        <span class="label-mini">Rol</span>
+                                        <span class="value-bold text-primary"><%# Eval("strRol_miembro") %></span>
+                                    </div>
+                                    <div class="data-grid-item flex-fill">
+                                        <span class="label-mini">Tipo</span>
+                                        <span class="value-bold"><%# Eval("strTipo_miembro") %></span>
+                                    </div>
+                                    <div class="data-grid-item flex-fill">
+                                        <span class="label-mini">Origen</span>
+                                        <span class="value-bold text-muted" style="font-size: 0.7rem;">
+                                            <%# Eval("strTipo_miembro") != null && Eval("strTipo_miembro").ToString() == "Externo" ? Eval("strEntidad_miembro") : Eval("strFacultad_miembro") %>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </ItemTemplate>
+                        <FooterTemplate>
+                            <asp:Panel ID="pnlVacio" runat="server" Visible='<%# rptPapeleraIntegrantes.Items.Count == 0 %>'>
+                                <div class="text-center py-5">
+                                    <div class="mb-3 text-muted opacity-25">
+                                        <i class="fa-solid fa-trash-can fa-4x"></i>
+                                    </div>
+                                    <h6 class="fw-bold text-secondary">Papelera Vacía</h6>
+                                    <p class="text-muted small mb-0">No hay integrantes inactivos en este proyecto.</p>
+                                </div>
+                            </asp:Panel>
+                        </FooterTemplate>
+                    </asp:Repeater>
+                </div>
+
+                <div class="modal-footer border-0 bg-light justify-content-center pb-4">
+                    <button type="button" class="btn btn-outline-secondary btn-pill px-5" data-bs-dismiss="modal">
+                        Cerrar Ventana
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalObservacion" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+            
+                <div class="modal-header modal-header-review py-3">
+                    <h5 class="modal-title fw-bold text-white">Revisión de Documento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <asp:HiddenField ID="hfIdInformeObservacion" runat="server" />
+                
+                    <div class="mb-4">
+                        <label class="fw-bold mb-1 text-muted text-uppercase small">Archivo a revisar:</label>
+                        <div class="p-2 bg-light border rounded d-flex align-items-center">
+                            <i class="fa-solid fa-file-pdf text-danger me-2"></i>
+                            <asp:Label ID="lblNombreInformeObs" runat="server" CssClass="fw-bold text-dark"></asp:Label>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="fw-bold mb-2 text-muted text-uppercase small">Observación / Feedback:</label>
+                        <asp:TextBox ID="txtObservacionAdmin" runat="server" 
+                            CssClass="form-control p-3" 
+                            TextMode="MultiLine" Rows="5"
+                            placeholder="Escriba aquí si aprueba el informe o si requiere correcciones..."></asp:TextBox>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light py-3">
+                    <button type="button" class="btn btn-link text-secondary text-decoration-none" data-bs-dismiss="modal">Cancelar</button>
+                
+                    <%-- Botón Guardar --%>
+                    <asp:LinkButton ID="btnGuardarObservacion" runat="server" 
+                        CssClass="btn btn-warning px-4 fw-bold rounded-pill shadow-sm" 
+                        OnClick="btnGuardarObservacion_Click">
+                        <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Revisión
+                    </asp:LinkButton>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
 
     <script type="text/javascript">
@@ -1159,6 +1513,8 @@
                 initInput("wrapperCierre", "<%= flpCierre.ClientID %>");
                 initInput("wrapperFinal", "<%= flpFinal.ClientID %>");
             }
+
+            toggleTipoIntegrante();
         });
 
         function initTable(id) {
@@ -1327,16 +1683,21 @@
 
         function toggleTipoIntegrante() {
             var ddl = document.getElementById('<%= ddlTipoMiembro.ClientID %>');
+
+            if (!ddl) return;
+
             var val = ddl.value;
             var divInt = document.getElementById('divCamposInternos');
             var divExt = document.getElementById('divCamposExternos');
 
-            if (val === 'Externo') {
-                divInt.style.display = 'none';
-                divExt.style.display = 'block';
-            } else {
-                divInt.style.display = 'flex'; 
-                divExt.style.display = 'none';
+            if (divInt && divExt) {
+                if (val === 'Externo') {
+                    divInt.style.display = 'none';
+                    divExt.style.display = 'block';
+                } else {
+                    divInt.style.display = 'flex'; 
+                    divExt.style.display = 'none';
+                }
             }
         }
 
