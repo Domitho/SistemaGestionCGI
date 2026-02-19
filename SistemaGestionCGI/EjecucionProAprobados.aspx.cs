@@ -14,12 +14,10 @@ namespace SistemaGestionCGI
 {
     public partial class EjecucionProAprobados : System.Web.UI.Page
     {
-        // INSTANCIAS Y VARIABLES GLOBALES
         private readonly ManejadorEjecucionProyectos _manejador = new ManejadorEjecucionProyectos();
         private readonly ManejadorInscripcionProyectos _manejadorProyectos = new ManejadorInscripcionProyectos();
         private const string RUTA_VIRTUAL_ARCHIVOS = "~/RepositorioUTC/EjecucionInformes/";
         private bool EsAdmin => Session["RolUsuario"]?.ToString() == "ADMINISTRADOR";
-
         private string _ultimoCicloVisto = "";
 
         protected void Page_Load(object sender, EventArgs e)
@@ -58,10 +56,6 @@ namespace SistemaGestionCGI
             ddlCiclo.DataBind();
             ddlCiclo.Items.Insert(0, new ListItem("-- Seleccione Ciclo --", "0"));
         }
-
-        // ==========================================
-        // 2. GESTIÓN PRINCIPAL (PROYECTOS)
-        // ==========================================
 
         private void CargarGrillaEjecucion()
         {
@@ -246,8 +240,6 @@ namespace SistemaGestionCGI
             }
         }
 
-        // PERIODOS
-
         private void CargarCiclosFuturos(int idEjecucion)
         {
             try
@@ -330,8 +322,6 @@ namespace SistemaGestionCGI
                 Msg("Error al renovar: " + ex.Message, "ee");
             }
         }
-
-        // FIN PERIODOS
 
         protected void rptEjecucion_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
@@ -464,10 +454,6 @@ namespace SistemaGestionCGI
             }
         }
 
-        // ==========================================
-        // 3. NAVEGACIÓN Y BOTONES CANCELAR (RESTAURADOS)
-        // ==========================================
-
         protected void btnRegresar_Click(object sender, EventArgs e)
         {
             pnlAgregar.Visible = false;
@@ -492,11 +478,6 @@ namespace SistemaGestionCGI
         {
             btnRegresar_Click(sender, e);
         }
-
-
-        // ==========================================
-        // 4. GESTIÓN DE EQUIPO
-        // ==========================================
 
         private void CargarEquipo(int idEjecucion)
         {
@@ -829,10 +810,6 @@ namespace SistemaGestionCGI
                 Msg("Error al crear ciclo: " + ex.Message, "ee");
             }
         }
-
-        // ==========================================
-        // 5. GESTIÓN DE INFORMES
-        // ==========================================
 
         private void CargarInformes(int idEjecucion)
         {
@@ -1199,10 +1176,6 @@ namespace SistemaGestionCGI
             string estado = proyecto.strEstado_ejec.ToUpper();
             bool tieneCierre = !string.IsNullOrEmpty(proyecto.strInforme_Cierre);
 
-            // ====================================================
-            // LÓGICA DE BLOQUEO (STATE MACHINE)
-            // ====================================================
-
             btnInformeCierre.CssClass = "btn btn-white border shadow-sm p-3 text-start position-relative hover-lift";
             btnInformeCierre.Enabled = true;
 
@@ -1326,10 +1299,6 @@ namespace SistemaGestionCGI
         }
 
 
-        // ==========================================
-        // 6. GENERACIÓN DE REPORTES (HTML)
-        // ==========================================
-
         protected void btnGenerarReporteHistorial_Click(object sender, EventArgs e)
         {
             try
@@ -1359,28 +1328,23 @@ namespace SistemaGestionCGI
 
         private string ConstruirReporteHistorial(int idMiembro)
         {
-            // 1. Obtener Datos
             var miembro = _manejador.ObtenerMiembroPorId(idMiembro);
             var historial = _manejador.ObtenerHistorialMiembro(idMiembro);
             var ejecucion = _manejador.ObtenerEjecucionPorId(miembro.fkId_ejec);
 
             StringBuilder sb = new StringBuilder();
 
-            // 2. HERO BANNER (LOGO)
             sb.Append("<div class='header-hero-banner'>");
             sb.Append("<img src='https://aplicaciones.utc.edu.ec/sigutc/img/bnUTC.png' alt='UTC Logo' />");
             sb.Append("</div>");
 
-            // 3. CABECERA DIVIDIDA (TÍTULO Y METADATA)
             sb.Append("<div class='header-info-split'>");
 
-            // Lado Izquierdo
             sb.Append("<div class='info-left'>");
             sb.Append("<span class='system-label'>Dirección de Investigación</span>");
             sb.Append("<h1 class='doc-title'>Historial de Movimientos</h1>");
             sb.Append("</div>");
 
-            // Lado Derecho
             sb.Append("<div class='info-right'>");
             sb.Append("<div class='meta-group'>");
             sb.Append($"<span class='meta-label'>Referencia ID</span>");
@@ -1395,10 +1359,8 @@ namespace SistemaGestionCGI
 
             sb.Append("<div class='mt-5'></div>");
 
-            // 4. TARJETA DE INFORMACIÓN (RESEARCHER CARD)
             sb.Append("<div class='researcher-card'>");
 
-            // Fila 1
             sb.Append("<div class='card-row'>");
             sb.Append("<div class='card-item'>");
             sb.Append("<span class='label'>INTEGRANTE</span>");
@@ -1410,7 +1372,6 @@ namespace SistemaGestionCGI
             sb.Append("</div>");
             sb.Append("</div>");
 
-            // Fila 2
             sb.Append("<div class='card-row'>");
             sb.Append("<div class='card-item'>");
             sb.Append("<span class='label'>PROYECTO</span>");
@@ -1418,7 +1379,6 @@ namespace SistemaGestionCGI
             sb.Append("</div>");
             sb.Append("</div>");
 
-            // Fila 3
             sb.Append("<div class='card-row'>");
             sb.Append("<div class='card-item'>");
             sb.Append("<span class='label'>ROL / FUNCIÓN</span>");
@@ -1434,7 +1394,6 @@ namespace SistemaGestionCGI
 
             sb.Append("</div>");
 
-            // 5. TIMELINE (LÍNEA DE TIEMPO)
             sb.Append("<div class='timeline-container'>");
             sb.Append("<h4 class='timeline-title'>Registro Cronológico</h4>");
             sb.Append("<ul class='timeline-list'>");
@@ -1447,23 +1406,18 @@ namespace SistemaGestionCGI
                     sb.Append("<div class='timeline-marker'></div>");
                     sb.Append("<div class='timeline-content'>");
 
-                    // Header del item
                     sb.Append("<div class='timeline-header'>");
                     sb.Append($"<span class='date'>{h.dtFecha:dd 'de' MMMM, yyyy}</span>");
                     sb.Append($"<span class='time'>{h.dtFecha:HH:mm}</span>");
                     sb.Append("</div>");
 
-                    // Body del item
                     sb.Append("<div class='timeline-body'>");
 
-                    // Badge Acción
                     string badgeClass = h.strAccion.Contains("BAJA") ? "bad" : "good";
                     sb.Append($"<div class='action-badge {badgeClass}'>{h.strAccion}</div>");
 
-                    // Motivo
                     sb.Append($"<p class='description'><strong>Detalle:</strong> {h.strMotivo}</p>");
 
-                    // Firma Usuario
                     sb.Append($"<div class='user-signature'><i class='fa-solid fa-user-check'></i> Procesado por: {h.strUsuario}</div>");
 
                     sb.Append("</div>");
@@ -1479,7 +1433,6 @@ namespace SistemaGestionCGI
             sb.Append("</ul>");
             sb.Append("</div>");
 
-            // 6. FOOTER LEGAL
             sb.Append("<div class='report-legal-footer'>");
             sb.Append("Documento generado automáticamente por el Sistema de Gestión CGI-UTC.<br>");
             sb.Append("La validez de este reporte está sujeta a los registros digitales institucionales.");
@@ -1508,10 +1461,6 @@ namespace SistemaGestionCGI
                 Msg("Documento generado y guardado correctamente.", "ss");
             }
         }
-
-        // ==========================================
-        // 7. UTILIDADES
-        // ==========================================
 
         private void ConfigurarPermisosModalInformes()
         {
@@ -1599,10 +1548,6 @@ namespace SistemaGestionCGI
             }
         }
 
-        //
-        // ==========================================
-        // LÓGICA DE CÁLCULO DE FECHAS 
-        // ==========================================
         private DateTime CalcularFechaFinReal(DateTime fechaInicio, string textoDuracion)
         {
             if (string.IsNullOrWhiteSpace(textoDuracion)) return fechaInicio.AddMonths(6);
@@ -1651,8 +1596,6 @@ namespace SistemaGestionCGI
             return fechaCalculada;
         }
 
-        //
-
         protected void rptInformes_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
             if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
@@ -1675,8 +1618,6 @@ namespace SistemaGestionCGI
                 }
             }
         }
-
-        // papelera
 
         protected void btnVerPapeleraInt_Click(object sender, EventArgs e)
         {
@@ -1731,8 +1672,6 @@ namespace SistemaGestionCGI
                 }
             }
         }
-
-        // CEDULA
 
         protected void btnValidarCedula_Click(object sender, EventArgs e)
         {
@@ -1789,8 +1728,6 @@ namespace SistemaGestionCGI
             }
             catch { return false; }
         }
-
-        // FACULTAD -CARRERA
 
         protected void ddlFacultadMiembro_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -1867,8 +1804,6 @@ namespace SistemaGestionCGI
             }
         }
 
-        // Observaciones
-
         protected void btnGuardarObservacion_Click(object sender, EventArgs e)
         {
             try
@@ -1939,7 +1874,6 @@ namespace SistemaGestionCGI
             return true;
         }
 
-        // INTEGRANTES
         protected void ddlTipoMiembro_SelectedIndexChanged(object sender, EventArgs e)
         {
             string seleccion = ddlTipoMiembro.SelectedValue;

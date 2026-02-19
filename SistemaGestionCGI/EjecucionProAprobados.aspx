@@ -231,7 +231,7 @@
                 </div>
 
                 <div class="col-12">
-                    <label class="form-label fw-semibold">Informe Inicial / Planificación (Opcional)</label>
+                    <label class="form-label fw-semibold">Informe Inicial / Planificación </label>
                     
                     <div class="utc-fileinput-wrapper" id="wrapperArchivoAdd">
                         <div class="utc-fileinput-header">

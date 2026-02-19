@@ -12,7 +12,6 @@ namespace SistemaGestionCGI
 {
     public partial class InscripcionProyectos : System.Web.UI.Page
     {
-        // 1. Instancias y Constantes
         private readonly ManejadorInscripcionProyectos _manejador = new ManejadorInscripcionProyectos();
         private const string RUTA_VIRTUAL_PROYECTOS = "~/Archivos/InscripcionProyectos/";
 
@@ -32,11 +31,9 @@ namespace SistemaGestionCGI
                 return;
             }
 
-            // Carga Inicial
             CargarCombos();
             CargarGrilla();
 
-            // Mensajes Flash
             if (Session["TempMsg"] != null)
             {
                 Msg(Session["TempMsg"].ToString(), Session["TempTipo"].ToString());
@@ -44,10 +41,6 @@ namespace SistemaGestionCGI
                 Session["TempTipo"] = null;
             }
         }
-
-        // =============================================
-        // CARGA DE DATOS
-        // =============================================
 
         private void CargarGrilla()
         {
@@ -98,10 +91,6 @@ namespace SistemaGestionCGI
             ddl.Items.Insert(0, new ListItem("-- Seleccione Coordinador Disponible --", ""));
         }
 
-        // =============================================
-        // EVENTOS DE INTERFAZ (DROPDOWNS)
-        // =============================================
-
         protected void ddlGrupo_SelectedIndexChanged(object sender, EventArgs e)
         {
             string idGrupo = ddlGrupo.SelectedValue;
@@ -150,10 +139,6 @@ namespace SistemaGestionCGI
 
             ScriptManager.RegisterStartupScript(this, GetType(), "showModal", "AbrirModalNuevoIntegrante();", true);
         }
-
-        // =============================================
-        // GESTIÓN DE INTEGRANTES (MODAL)
-        // =============================================
 
         protected void btnGuardarIntegrante_Click(object sender, EventArgs e)
         {
@@ -240,10 +225,6 @@ namespace SistemaGestionCGI
                 return "";
             }
         }
-
-        // =============================================
-        // CRUD PRINCIPAL: GUARDAR Y ACTUALIZAR
-        // =============================================
 
         protected void btnNuevo_Click(object sender, EventArgs e)
         {
@@ -445,10 +426,6 @@ namespace SistemaGestionCGI
             catch (Exception ex) { Msg("Error al procesar: " + ex.Message, "ee"); }
         }
 
-        // =============================================
-        // ACCIONES DE GRILLA (COMANDOS)
-        // =============================================
-
         protected void rptProyectos_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             string id = e.CommandArgument.ToString();
@@ -552,10 +529,6 @@ namespace SistemaGestionCGI
             }
         }
 
-        // =============================================
-        // NAVEGACIÓN Y CANCELACIÓN
-        // =============================================
-
         private void LimpiarCamposModal()
         {
             hfIdDocenteInt.Value = "";
@@ -610,10 +583,6 @@ namespace SistemaGestionCGI
         {
             btnRegresar_Click(sender, e);
         }
-
-        // =============================================
-        // UTILIDADES Y ARCHIVOS
-        // =============================================
 
         private string ConstruirDuracion(string anios, string meses, string semanas, string dias)
         {
