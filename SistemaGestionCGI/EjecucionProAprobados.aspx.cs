@@ -286,7 +286,7 @@ namespace SistemaGestionCGI
                 if (contadorOpciones == 0)
                 {
                     string finStr = fechaFinTeoricaProyecto.ToString("dd/MMM/yyyy").ToUpper();
-                    ddlCiclosFuturos.Items.Add(new ListItem($"⛔ PROYECTO FINALIZA EL {finStr}", "0"));
+                    ddlCiclosFuturos.Items.Add(new ListItem($"PROYECTO FINALIZA EL {finStr}", "0"));
                     ddlCiclosFuturos.Enabled = false;
                     btnConfirmarRenovacion.Enabled = false;
                 }

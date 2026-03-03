@@ -25,22 +25,18 @@ namespace SistemaGestionCGI
         {
             try
             {
-                // 1. Cargar KPIs (Tarjetas)
                 var kpis = _bll.ObtenerContadoresGenerales();
 
-                // Formato combinado: "5 Centros (12 Integrantes)"
                 lblCentros.Text = $"{kpis.TotalCentros}";
-                lblIntegrantesCentros.Text = $"{kpis.TotalIntegrantesCentros} Integrantes"; // Nuevo Label
+                lblIntegrantesCentros.Text = $"{kpis.TotalIntegrantesCentros} Integrantes";
 
                 lblConvocatorias.Text = kpis.TotalConvocatorias.ToString();
 
                 lblGrupos.Text = $"{kpis.TotalGrupos}";
-                lblIntegrantesGrupos.Text = $"{kpis.TotalIntegrantesGrupos} Integrantes"; // Nuevo Label
+                lblIntegrantesGrupos.Text = $"{kpis.TotalIntegrantesGrupos} Integrantes"; 
 
-                // Tarjeta Extra: Total Docentes
                 lblTotalDocentes.Text = kpis.TotalDocentes.ToString();
 
-                // 2. Cargar Gráficos (JSON)
                 var proyectos = _bll.ObtenerProyectosPorEstado();
                 var docentes = _bll.ObtenerDocentesPorCategoria();
 
@@ -49,7 +45,6 @@ namespace SistemaGestionCGI
             }
             catch (Exception ex)
             {
-                // Loguear error
                 Console.WriteLine("Error Dashboard: " + ex.Message);
             }
         }

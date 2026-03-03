@@ -478,8 +478,8 @@
                     <asp:DropDownList ID="ddlTipoMiembro" runat="server" CssClass="form-select shadow-sm border-primary"
                         AutoPostBack="true" OnSelectedIndexChanged="ddlTipoMiembro_SelectedIndexChanged">
                         <asp:ListItem Value="Interno" Selected="True">Manual / Interno (Estudiante/Admin)</asp:ListItem>
-                        <asp:ListItem Value="DocenteGrupo" style="font-weight:bold; color:#0d6efd;">★ MIEMBRO DEL GRUPO (Recomendado)</asp:ListItem>
-                        <asp:ListItem Value="DocenteLibre" style="font-weight:bold; color:#198754;">★ DOCENTE CATEGORIZADO (Sin Grupo)</asp:ListItem>
+                        <asp:ListItem Value="DocenteGrupo" style="font-weight:bold; color:#0d6efd;">MIEMBRO DEL GRUPO (Recomendado)</asp:ListItem>
+                        <asp:ListItem Value="DocenteLibre" style="font-weight:bold; color:#198754;">DOCENTE CATEGORIZADO (Sin Grupo)</asp:ListItem>
                         <asp:ListItem Value="Externo">Manual / Externo (Otra Institución)</asp:ListItem>
                     </asp:DropDownList>
                 </div>

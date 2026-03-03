@@ -78,7 +78,6 @@ namespace SistemaGestionCGI
 
                 if (!ValidarArchivo(flpArchivoAdd.FileName)) return;
 
-                // CAMBIO 2: Uso del nuevo método de guardado virtual
                 string rutaRelativa = GuardarArchivoVirtual(flpArchivoAdd, $"CONV_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivoAdd.FileName)}");
 
                 var conv = new InvgccConvocatoriaGruInvestigacion

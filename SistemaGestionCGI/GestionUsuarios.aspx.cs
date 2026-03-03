@@ -70,7 +70,6 @@ namespace SistemaGestionCGI
             ddlRol.SelectedIndex = 0;
             chkActivo.Checked = true;
 
-            // Limpieza
             pnlSeleccionCoordinador.Visible = false;
             txtUsername.ReadOnly = false;
             ViewState["CedulaVinculada"] = null;
@@ -92,14 +91,12 @@ namespace SistemaGestionCGI
 
         protected void ddlRol_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Solo activamos la búsqueda si es COORDINADOR
             if (ddlRol.SelectedValue == "COORDINADOR")
             {
                 CargarCandidatosCoordinadores();
             }
             else
             {
-                // Si es ADMINISTRADOR (u otro), ocultamos y limpiamos
                 pnlSeleccionCoordinador.Visible = false;
                 txtUsername.ReadOnly = false;
                 txtUsername.Text = "";
@@ -208,8 +205,6 @@ namespace SistemaGestionCGI
 
                 string cedulaFinal = ViewState["CedulaVinculada"] as string;
 
-                // CORRECCIÓN SOLICITADA:
-                // Si NO es Coordinador, la cédula DEBE ser NULL.
                 if (ddlRol.SelectedValue != "COORDINADOR")
                 {
                     cedulaFinal = null;
@@ -224,7 +219,7 @@ namespace SistemaGestionCGI
                     strCedula_ref = cedulaFinal
                 };
 
-                if (string.IsNullOrEmpty(hfIdUsuario.Value)) // CREAR
+                if (string.IsNullOrEmpty(hfIdUsuario.Value)) 
                 {
                     if (string.IsNullOrEmpty(u.strClave_usu)) { Msg("Ingrese contraseña.", "ww"); return; }
 
