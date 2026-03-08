@@ -303,13 +303,13 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.Panel pnlFormularioMiembro;
 
         /// <summary>
-        /// Control btnVolverFormMiembro.
+        /// Control btnCancelarMiembroTop.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnVolverFormMiembro;
+        protected global::System.Web.UI.WebControls.LinkButton btnCancelarMiembroTop;
 
         /// <summary>
         /// Control lblTituloFormMiembro.
@@ -328,6 +328,15 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.HiddenField hfIdMiembroEdit;
+
+        /// <summary>
+        /// Control hfIdCandidatoSeleccionado.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfIdCandidatoSeleccionado;
 
         /// <summary>
         /// Control hfTipoRealMiembro.
@@ -357,15 +366,6 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.Panel pnlSeleccionAutomatica;
 
         /// <summary>
-        /// Control litTituloSeleccion.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTituloSeleccion;
-
-        /// <summary>
         /// Control ddlCandidatos.
         /// </summary>
         /// <remarks>
@@ -375,13 +375,13 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.DropDownList ddlCandidatos;
 
         /// <summary>
-        /// Control btnVerDocumentoCandidato.
+        /// Control pnlDatosPersonalesMiembro.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor btnVerDocumentoCandidato;
+        protected global::System.Web.UI.WebControls.Panel pnlDatosPersonalesMiembro;
 
         /// <summary>
         /// Control txtCedulaMiembro.
@@ -429,13 +429,13 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtCorreoMiembro;
 
         /// <summary>
-        /// Control divCamposInternos.
+        /// Control divInterno.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divCamposInternos;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divInterno;
 
         /// <summary>
         /// Control ddlFacultadMiembro.
@@ -456,13 +456,13 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.DropDownList ddlCarreraMiembro;
 
         /// <summary>
-        /// Control divCamposExternos.
+        /// Control divExterno.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divCamposExternos;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divExterno;
 
         /// <summary>
         /// Control txtEntidadMiembro.
@@ -474,15 +474,6 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtEntidadMiembro;
 
         /// <summary>
-        /// Control txtFechaInicioMiembro.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtFechaInicioMiembro;
-
-        /// <summary>
         /// Control txtRolMiembro.
         /// </summary>
         /// <remarks>
@@ -490,6 +481,15 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtRolMiembro;
+
+        /// <summary>
+        /// Control txtFechaInicioMiembro.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtFechaInicioMiembro;
 
         /// <summary>
         /// Control btnGuardarMiembro.

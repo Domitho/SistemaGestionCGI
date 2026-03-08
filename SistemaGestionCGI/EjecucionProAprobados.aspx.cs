@@ -532,6 +532,8 @@ namespace SistemaGestionCGI
             txtRolMiembro.Text = "MIEMBRO DE PROYECTO";
 
             CargarFacultadesEnCombo();
+
+            ddlTipoMiembro_SelectedIndexChanged(null, null);
         }
 
         protected void btnGuardarMiembro_Click(object sender, EventArgs e)
@@ -1854,57 +1856,35 @@ namespace SistemaGestionCGI
 
         protected void ddlTipoMiembro_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string seleccion = ddlTipoMiembro.SelectedValue;
+            string tipo = ddlTipoMiembro.SelectedValue;
 
-            pnlSeleccionAutomatica.Visible = false;
-            btnVerDocumentoCandidato.Visible = false;
-            hfTipoRealMiembro.Value = "";
-
+            hfIdCandidatoSeleccionado.Value = "";
             txtCedulaMiembro.Text = "";
             txtNombresMiembro.Text = "";
             txtApellidosMiembro.Text = "";
             txtCorreoMiembro.Text = "";
             txtEntidadMiembro.Text = "";
 
-            if (seleccion == "DocenteGrupo")
+            if (tipo == "MiembroGrupo" || tipo == "Docente")
             {
                 pnlSeleccionAutomatica.Visible = true;
-                litTituloSeleccion.Text = "INTEGRANTES DEL GRUPO (Disponibles)";
-                CargarCandidatos("GRUPO");
 
-                AlternarBloqueoCampos(true);
-                OcultarPanelesManuales();
-            }
-            else if (seleccion == "DocenteLibre")
-            {
-                pnlSeleccionAutomatica.Visible = true;
-                litTituloSeleccion.Text = "DOCENTES CATEGORIZADOS (Sin Grupo)";
-                CargarCandidatos("LIBRE");
+                divInterno.Visible = false;
+                divExterno.Visible = false;
+                pnlDatosPersonalesMiembro.Visible = false;
 
-                AlternarBloqueoCampos(true);
-                OcultarPanelesManuales();
-            }
-            else if (seleccion == "Externo")
-            {
-                AlternarBloqueoCampos(false);
-                ScriptManager.RegisterStartupScript(this, GetType(), "ShowExt", "toggleTipoIntegrante();", true);
+                CargarCandidatos(tipo == "MiembroGrupo" ? "GRUPO" : "LIBRE");
             }
             else
             {
-                AlternarBloqueoCampos(false);
-                ScriptManager.RegisterStartupScript(this, GetType(), "ShowInt", "toggleTipoIntegrante();", true);
-            }
-        }
+                pnlSeleccionAutomatica.Visible = false;
+                pnlDatosPersonalesMiembro.Visible = true;
 
-        private void AlternarBloqueoCampos(bool bloquear)
-        {
-            txtCedulaMiembro.ReadOnly = bloquear;
-            txtNombresMiembro.ReadOnly = bloquear;
-            txtApellidosMiembro.ReadOnly = bloquear;
-            txtCorreoMiembro.ReadOnly = bloquear;
-            string clase = bloquear ? "form-control bg-light" : "form-control";
-            txtCedulaMiembro.CssClass = clase;
-            txtNombresMiembro.CssClass = clase;
+                divInterno.Visible = tipo == "Interno";
+                divExterno.Visible = tipo == "Externo";
+
+                BloquearCamposIntegrante(false);
+            }
         }
 
         private void OcultarPanelesManuales()
@@ -1959,94 +1939,49 @@ namespace SistemaGestionCGI
         protected void ddlCandidatos_SelectedIndexChanged(object sender, EventArgs e)
         {
             string idSeleccionado = ddlCandidatos.SelectedValue;
-            string tipoOrigen = ddlTipoMiembro.SelectedValue;
+            if (string.IsNullOrEmpty(idSeleccionado)) return;
 
-            if (string.IsNullOrEmpty(idSeleccionado))
+            dynamic datos = ddlTipoMiembro.SelectedValue == "MiembroGrupo"
+                             ? _manejador.ObtenerDatosCandidatoGrupo(idSeleccionado)
+                             : _manejador.ObtenerDatosDocenteCategorizado(idSeleccionado);
+
+            if (datos != null)
             {
-                btnVerDocumentoCandidato.Visible = false;
-                return;
+                txtCedulaMiembro.Text = datos.strCedula_int ?? datos.strCedula_doc;
+                txtNombresMiembro.Text = datos.strNombres_int ?? datos.strNombres_doc;
+                txtApellidosMiembro.Text = datos.strApellidos_int ?? datos.strApellidos_doc;
+                txtCorreoMiembro.Text = datos.strCorreo_int ?? datos.strCorreo_doc;
+
+                hfTipoRealMiembro.Value = ddlTipoMiembro.SelectedValue;
+                hfIdCandidatoSeleccionado.Value = idSeleccionado;
+
+                pnlDatosPersonalesMiembro.Visible = true;
+                pnlSeleccionAutomatica.Visible = true;
+
+                BloquearCamposIntegrante(true);
+                Msg("Integrante seleccionado y datos cargados correctamente.", "ss");
             }
+        }
 
-            string rutaPdf = "";
-            string idFacultad = "";
-            string idCarrera = "";
-            string entidad = "";
-            string tipoReal = "";
+        private void BloquearCamposIntegrante(bool bloquear)
+        {
+            var campos = new List<Control> {
+                txtCedulaMiembro, txtNombresMiembro, txtApellidosMiembro, txtCorreoMiembro, txtEntidadMiembro
+            };
 
-            if (tipoOrigen == "DocenteGrupo")
+            foreach (var campo in campos)
             {
-                var datos = _manejador.ObtenerDatosCandidatoGrupo(idSeleccionado);
-                if (datos != null)
+                if (campo is TextBox txt)
                 {
-                    txtCedulaMiembro.Text = datos.strCedula_int;
-                    txtNombresMiembro.Text = datos.strNombres_int;
-                    txtApellidosMiembro.Text = datos.strApellidos_int;
-                    txtCorreoMiembro.Text = datos.strCorreo_int;
-
-                    rutaPdf = datos.strCertificado_int;
-
-                    tipoReal = "MiembroGrupo";
-                    hfTipoRealMiembro.Value = tipoReal;
-
-                    if (datos.strTipo_int == "Externo")
-                    {
-                        entidad = datos.strEntidad_int;
-                    }
-                    else
-                    {
-                        idFacultad = datos.strFacultad_int;
-                        idCarrera = datos.strCarrera_int;
-                    }
-
-                    txtRolMiembro.Text = "MIEMBRO DE GRUPO";
+                    txt.ReadOnly = bloquear;
+                    txt.CssClass = bloquear ? "form-control bg-light" : "form-control";
+                }
+                else if (campo is DropDownList ddl)
+                {
+                    ddl.Enabled = !bloquear;
+                    ddl.CssClass = bloquear ? ddl.CssClass + " disabled" : ddl.CssClass.Replace(" disabled", "");
                 }
             }
-            else if (tipoOrigen == "DocenteLibre")
-            {
-                var datos = _manejador.ObtenerDatosDocenteCategorizado(idSeleccionado);
-                if (datos != null)
-                {
-                    txtCedulaMiembro.Text = datos.strCedula_doc;
-                    txtNombresMiembro.Text = datos.strNombres_doc;
-                    txtApellidosMiembro.Text = datos.strApellidos_doc;
-                    txtCorreoMiembro.Text = datos.strCorreo_doc;
-
-                    rutaPdf = datos.strCertificado_doc;
-
-                    tipoReal = "Docente";
-                    hfTipoRealMiembro.Value = tipoReal;
-
-                    idFacultad = datos.strFacultad_doc;
-                    idCarrera = datos.strCarrera_doc;
-
-                    txtRolMiembro.Text = "DOCENTE";
-                }
-            }
-
-            if (tipoReal == "Interno" || tipoReal == "Externo")
-            {
-                divCamposInternos.Style["display"] = tipoReal == "Interno" ? "flex" : "none";
-                divCamposExternos.Style["display"] = tipoReal == "Externo" ? "flex" : "none";
-
-                if (!string.IsNullOrEmpty(idFacultad) && int.TryParse(idFacultad, out int idFac))
-                {
-                    ddlFacultadMiembro.SelectedValue = idFacultad;
-                    CargarCarrerasEnCombo(ddlCarreraMiembro, idFac);
-                    if (ddlCarreraMiembro.Items.FindByValue(idCarrera) != null)
-                        ddlCarreraMiembro.SelectedValue = idCarrera;
-                }
-            }
-            else
-            {
-                divCamposInternos.Style["display"] = "none";
-                divCamposExternos.Style["display"] = "none";
-            }
-
-            btnVerDocumentoCandidato.Visible = !string.IsNullOrEmpty(rutaPdf);
-            if (btnVerDocumentoCandidato.Visible)
-                btnVerDocumentoCandidato.HRef = ResolveUrl(rutaPdf);
-
-            pnlFormularioMiembro.Visible = true;
         }
 
         //
