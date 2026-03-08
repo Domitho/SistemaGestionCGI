@@ -742,6 +742,20 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<dynamic>(sql);
         }
 
+        public dynamic ObtenerDatosCandidatoGrupoPorCedula(string cedula)
+        {
+            string sql = $"SELECT * FROM INVGCCGRUPO_INTEGRANTES WHERE strCedula_int = '{cedula}'";
+            var lista = _dal.SelectSql<dynamic>(sql);
+            return lista.FirstOrDefault();
+        }
+
+        public dynamic ObtenerDatosDocenteCategorizadoPorCedula(string cedula)
+        {
+            string sql = $"SELECT * FROM INVGCCCATEGORIZACION_DOCENTES WHERE strCedula_doc = '{cedula}'";
+            var lista = _dal.SelectSql<dynamic>(sql);
+            return lista.FirstOrDefault();
+        }
+
     }
 
     public class DtoCedulaTemp

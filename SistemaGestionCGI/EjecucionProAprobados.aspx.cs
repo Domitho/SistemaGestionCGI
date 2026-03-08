@@ -731,42 +731,87 @@ namespace SistemaGestionCGI
                 if (m != null)
                 {
                     hfIdMiembroEdit.Value = m.strId_miembro.ToString();
-                    txtCedulaMiembro.Text = m.strCedula_miembro;
-                    txtNombresMiembro.Text = m.strNombres_miembro;
-                    txtApellidosMiembro.Text = m.strApellidos_miembro;
-                    txtCorreoMiembro.Text = m.strCorreo_miembro;
+                    lblTituloFormMiembro.Text = "Editar Integrante";
+
+                    pnlFormularioMiembro.Visible = true;
+                    pnlEquipoListado.Visible = false;
+
+                    ddlTipoMiembro.SelectedValue = m.strTipo_miembro;
+
                     txtFechaInicioMiembro.Text = m.dtFechaInicio_miembro != null
-                                                         ? Convert.ToDateTime(m.dtFechaInicio_miembro).ToString("yyyy-MM-dd")
-                                                         : DateTime.Now.ToString("yyyy-MM-dd");
+                        ? Convert.ToDateTime(m.dtFechaInicio_miembro).ToString("yyyy-MM-dd")
+                        : DateTime.Now.ToString("yyyy-MM-dd");
 
-                    txtRolMiembro.Text = m.strRol_miembro;
-
-                    if (m.strTipo_miembro == "Externo")
+                    if (m.strTipo_miembro == "MiembroGrupo" || m.strTipo_miembro == "Docente")
                     {
-                        ddlTipoMiembro.SelectedValue = "Externo";
-                        txtEntidadMiembro.Text = m.strEntidad_miembro;
+                        pnlSeleccionAutomatica.Visible = false;
+                        pnlDatosPersonalesMiembro.Visible = true;
+
+                        divInterno.Visible = false;
+                        divExterno.Visible = false;
+
+                        dynamic datos = m.strTipo_miembro == "MiembroGrupo"
+                                         ? _manejador.ObtenerDatosCandidatoGrupoPorCedula(m.strCedula_miembro)
+                                         : _manejador.ObtenerDatosDocenteCategorizadoPorCedula(m.strCedula_miembro);
+
+                        if (datos != null)
+                        {
+                            txtCedulaMiembro.Text = datos.strCedula_int ?? datos.strCedula_doc;
+                            txtNombresMiembro.Text = datos.strNombres_int ?? datos.strNombres_doc;
+                            txtApellidosMiembro.Text = datos.strApellidos_int ?? datos.strApellidos_doc;
+                            txtCorreoMiembro.Text = datos.strCorreo_int ?? datos.strCorreo_doc;
+
+                            CargarFacultadesEnCombo();
+                            string fac = datos.strFacultad_int ?? datos.strFacultad_doc;
+                            if (!string.IsNullOrEmpty(fac) && ddlFacultadMiembro.Items.FindByValue(fac) != null)
+                                ddlFacultadMiembro.SelectedValue = fac;
+
+                            int idFac = 0;
+                            int.TryParse(fac, out idFac);
+                            CargarCarrerasEnCombo(ddlCarreraMiembro, idFac);
+
+                            string car = datos.strCarrera_int ?? datos.strCarrera_doc;
+                            if (!string.IsNullOrEmpty(car) && ddlCarreraMiembro.Items.FindByValue(car) != null)
+                                ddlCarreraMiembro.SelectedValue = car;
+                        }
+
+                        BloquearCamposIntegrante(true);
+                        ddlTipoMiembro.Enabled = false;
                     }
                     else
                     {
-                        ddlTipoMiembro.SelectedValue = "Interno";
+                        pnlSeleccionAutomatica.Visible = false;
+                        pnlDatosPersonalesMiembro.Visible = true;
 
-                        CargarFacultadesEnCombo();
+                        divInterno.Visible = m.strTipo_miembro == "Interno";
+                        divExterno.Visible = m.strTipo_miembro == "Externo";
 
-                        if (ddlFacultadMiembro.Items.FindByValue(m.strFacultad_miembro) != null)
+                        txtCedulaMiembro.Text = m.strCedula_miembro;
+                        txtNombresMiembro.Text = m.strNombres_miembro;
+                        txtApellidosMiembro.Text = m.strApellidos_miembro;
+                        txtCorreoMiembro.Text = m.strCorreo_miembro;
+                        txtEntidadMiembro.Text = m.strEntidad_miembro;
+
+                        if (m.strTipo_miembro == "Interno")
                         {
-                            ddlFacultadMiembro.SelectedValue = m.strFacultad_miembro;
+                            CargarFacultadesEnCombo();
 
-                            int idFacultad = int.Parse(m.strFacultad_miembro);
-                            CargarCarrerasEnCombo(ddlCarreraMiembro, idFacultad);
+                            if (!string.IsNullOrEmpty(m.strFacultad_miembro) &&
+                                ddlFacultadMiembro.Items.FindByValue(m.strFacultad_miembro) != null)
+                                ddlFacultadMiembro.SelectedValue = m.strFacultad_miembro;
 
-                            if (!string.IsNullOrEmpty(m.strCarrera_miembro) && ddlCarreraMiembro.Items.FindByValue(m.strCarrera_miembro) != null)
+                            int idFac = 0;
+                            int.TryParse(m.strFacultad_miembro, out idFac);
+                            CargarCarrerasEnCombo(ddlCarreraMiembro, idFac);
+
+                            if (!string.IsNullOrEmpty(m.strCarrera_miembro) &&
+                                ddlCarreraMiembro.Items.FindByValue(m.strCarrera_miembro) != null)
                                 ddlCarreraMiembro.SelectedValue = m.strCarrera_miembro;
                         }
-                    }
 
-                    lblTituloFormMiembro.Text = "Editar Integrante";
-                    pnlEquipoListado.Visible = false;
-                    pnlFormularioMiembro.Visible = true;
+                        ddlTipoMiembro.Enabled = false;
+                        BloquearCamposIntegrante(false);
+                    }
                 }
             }
         }
