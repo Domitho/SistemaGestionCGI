@@ -695,10 +695,10 @@ namespace SistemaGestionCGI
                     }
 
                     string script = $@"
-                document.getElementById('lblNombreMiembroEstado').innerText = '{nombre}';
-                {jsRolUpdate} 
-                document.getElementById('txtMotivoCambio').value = ''; 
-                new bootstrap.Modal(document.getElementById('modalEstadoMiembro')).show();";
+                        document.getElementById('lblNombreMiembroEstado').innerText = '{nombre}';
+                        {jsRolUpdate} 
+                        document.getElementById('txtMotivoCambio').value = ''; 
+                        new bootstrap.Modal(document.getElementById('modalEstadoMiembro')).show();";
 
                     ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalEstado", script, true);
                 }
@@ -742,47 +742,62 @@ namespace SistemaGestionCGI
                         ? Convert.ToDateTime(m.dtFechaInicio_miembro).ToString("yyyy-MM-dd")
                         : DateTime.Now.ToString("yyyy-MM-dd");
 
+                    pnlSeleccionAutomatica.Visible = false;
+                    pnlDatosPersonalesMiembro.Visible = true;
+
+                    dynamic datos = null;
+
                     if (m.strTipo_miembro == "MiembroGrupo" || m.strTipo_miembro == "Docente")
                     {
-                        pnlSeleccionAutomatica.Visible = false;
-                        pnlDatosPersonalesMiembro.Visible = true;
-
-                        divInterno.Visible = false;
+                        divInterno.Visible = true;
                         divExterno.Visible = false;
 
-                        dynamic datos = m.strTipo_miembro == "MiembroGrupo"
-                                         ? _manejador.ObtenerDatosCandidatoGrupoPorCedula(m.strCedula_miembro)
-                                         : _manejador.ObtenerDatosDocenteCategorizadoPorCedula(m.strCedula_miembro);
+                        datos = m.strTipo_miembro == "MiembroGrupo"
+                                 ? _manejador.ObtenerDatosCandidatoGrupoPorCedula(m.strCedula_miembro)
+                                 : _manejador.ObtenerDatosDocenteCategorizadoPorCedula(m.strCedula_miembro);
 
                         if (datos != null)
                         {
-                            txtCedulaMiembro.Text = datos.strCedula_int ?? datos.strCedula_doc;
-                            txtNombresMiembro.Text = datos.strNombres_int ?? datos.strNombres_doc;
-                            txtApellidosMiembro.Text = datos.strApellidos_int ?? datos.strApellidos_doc;
-                            txtCorreoMiembro.Text = datos.strCorreo_int ?? datos.strCorreo_doc;
+                            string cedula = datos.strCedula_int?.ToString() ?? datos.strCedula_doc?.ToString() ?? m.strCedula_miembro;
+                            string nombres = (datos.strNombres_int?.ToString() ?? datos.strNombres_doc?.ToString() ?? m.strNombres_miembro)?.ToUpper();
+                            string apellidos = (datos.strApellidos_int?.ToString() ?? datos.strApellidos_doc?.ToString() ?? m.strApellidos_miembro)?.ToUpper();
+                            string correo = (datos.strCorreo_int?.ToString() ?? datos.strCorreo_doc?.ToString() ?? m.strCorreo_miembro)?.ToLower();
+                            string facTexto = datos.strFacultad_int?.ToString() ?? datos.strFacultad_doc?.ToString() ?? m.strFacultad_miembro;
+                            string carTexto = datos.strCarrera_int?.ToString() ?? datos.strCarrera_doc?.ToString() ?? m.strCarrera_miembro;
+
+                            txtCedulaMiembro.Text = cedula;
+                            txtNombresMiembro.Text = nombres;
+                            txtApellidosMiembro.Text = apellidos;
+                            txtCorreoMiembro.Text = correo;
 
                             CargarFacultadesEnCombo();
-                            string fac = datos.strFacultad_int ?? datos.strFacultad_doc;
-                            if (!string.IsNullOrEmpty(fac) && ddlFacultadMiembro.Items.FindByValue(fac) != null)
-                                ddlFacultadMiembro.SelectedValue = fac;
-
                             int idFac = 0;
-                            int.TryParse(fac, out idFac);
-                            CargarCarrerasEnCombo(ddlCarreraMiembro, idFac);
+                            int.TryParse(facTexto, out idFac);
+                            if (ddlFacultadMiembro.Items.FindByValue(idFac.ToString()) != null)
+                                ddlFacultadMiembro.SelectedValue = idFac.ToString();
+                            else
+                                ddlFacultadMiembro.SelectedIndex = 0;
 
-                            string car = datos.strCarrera_int ?? datos.strCarrera_doc;
-                            if (!string.IsNullOrEmpty(car) && ddlCarreraMiembro.Items.FindByValue(car) != null)
-                                ddlCarreraMiembro.SelectedValue = car;
+                            CargarCarrerasEnCombo(ddlCarreraMiembro, idFac);
+                            int idCar = 0;
+                            int.TryParse(carTexto, out idCar);
+                            if (ddlCarreraMiembro.Items.FindByValue(idCar.ToString()) != null)
+                                ddlCarreraMiembro.SelectedValue = idCar.ToString();
+                            else
+                                ddlCarreraMiembro.SelectedIndex = 0;
+
+                            txtRolMiembro.Text = string.IsNullOrWhiteSpace(m.strRol_miembro)
+                                                 ? "MIEMBRO DE PROYECTO"
+                                                 : m.strRol_miembro.ToUpper();
                         }
 
                         BloquearCamposIntegrante(true);
                         ddlTipoMiembro.Enabled = false;
+                        ddlFacultadMiembro.Enabled = false;
+                        ddlCarreraMiembro.Enabled = false;
                     }
                     else
                     {
-                        pnlSeleccionAutomatica.Visible = false;
-                        pnlDatosPersonalesMiembro.Visible = true;
-
                         divInterno.Visible = m.strTipo_miembro == "Interno";
                         divExterno.Visible = m.strTipo_miembro == "Externo";
 
@@ -795,18 +810,20 @@ namespace SistemaGestionCGI
                         if (m.strTipo_miembro == "Interno")
                         {
                             CargarFacultadesEnCombo();
-
-                            if (!string.IsNullOrEmpty(m.strFacultad_miembro) &&
-                                ddlFacultadMiembro.Items.FindByValue(m.strFacultad_miembro) != null)
-                                ddlFacultadMiembro.SelectedValue = m.strFacultad_miembro;
-
                             int idFac = 0;
                             int.TryParse(m.strFacultad_miembro, out idFac);
-                            CargarCarrerasEnCombo(ddlCarreraMiembro, idFac);
+                            if (ddlFacultadMiembro.Items.FindByValue(idFac.ToString()) != null)
+                                ddlFacultadMiembro.SelectedValue = idFac.ToString();
+                            else
+                                ddlFacultadMiembro.SelectedIndex = 0;
 
-                            if (!string.IsNullOrEmpty(m.strCarrera_miembro) &&
-                                ddlCarreraMiembro.Items.FindByValue(m.strCarrera_miembro) != null)
-                                ddlCarreraMiembro.SelectedValue = m.strCarrera_miembro;
+                            CargarCarrerasEnCombo(ddlCarreraMiembro, idFac);
+                            int idCar = 0;
+                            int.TryParse(m.strCarrera_miembro, out idCar);
+                            if (ddlCarreraMiembro.Items.FindByValue(idCar.ToString()) != null)
+                                ddlCarreraMiembro.SelectedValue = idCar.ToString();
+                            else
+                                ddlCarreraMiembro.SelectedIndex = 0;
                         }
 
                         ddlTipoMiembro.Enabled = false;

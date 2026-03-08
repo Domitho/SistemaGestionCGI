@@ -3,46 +3,8 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
 
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <link href="DesignersUTC/Styles/Dashboard.css" rel="stylesheet" />
 
-    <style>
-        /* Estilos Específicos del Dashboard basados en UTC Design */
-        .kpi-card {
-            transition: transform 0.2s ease-in-out;
-        }
-        .kpi-card:hover {
-            transform: translateY(-5px);
-        }
-        .kpi-icon {
-            font-size: 2.5rem;
-            opacity: 0.15;
-            position: absolute;
-            right: 20px;
-            top: 20px;
-        }
-        .kpi-value {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--utc-azul); /* [cite: 17] */
-            line-height: 1;
-        }
-        .kpi-label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: #6c757d;
-            letter-spacing: 0.5px;
-        }
-        /* Badge para subtotales (Integrantes) */
-        .badge-subtotal {
-            font-size: 0.75rem;
-            font-weight: 500;
-            padding: 5px 10px;
-            border-radius: 50rem;
-            display: inline-flex;
-            align-items: center;
-            width: fit-content;
-        }
-    </style>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
@@ -169,7 +131,7 @@
                     toolbar: { show: false },
                     fontFamily: 'Segoe UI, sans-serif'
                 },
-                colors: [utcAzul], // Color principal UTC
+                colors: [utcAzul], 
                 plotOptions: {
                     bar: {
                         borderRadius: 4,

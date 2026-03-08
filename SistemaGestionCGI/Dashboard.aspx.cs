@@ -8,7 +8,6 @@ namespace SistemaGestionCGI
     {
         private readonly ManejadorDashboard _bll = new ManejadorDashboard();
 
-        // Variables públicas para JS
         public string JsonProyectos { get; set; } = "[]";
         public string JsonDocentes { get; set; } = "[]";
 
