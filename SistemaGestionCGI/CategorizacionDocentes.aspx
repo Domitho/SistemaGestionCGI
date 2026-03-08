@@ -49,11 +49,11 @@
                             <tr>
                                 <td><%# Eval("strCedula_doc") %></td>
                                 <td class="text-start fw-semibold text-primary"><%# Eval("NombreCompleto") %></td>
-                                <td class="small text-muted"><%# Eval("strFacultad_doc") %></td>
+                                <td class="small text-muted"><%# Eval("NombreFacultad") %></td>
                                 
                                 <td>
-                                    <span class='<%# string.IsNullOrEmpty(Eval("strCategorizacion")?.ToString()) ? "badge bg-secondary opacity-50 rounded-pill px-3" : "badge bg-primary rounded-pill px-3" %>'>
-                                        <%# string.IsNullOrEmpty(Eval("strCategorizacion")?.ToString()) ? "SIN ASIGNAR" : Eval("strCategorizacion") %>
+                                    <span class='<%# string.IsNullOrEmpty(Eval("NombreCategoria")?.ToString()) ? "badge bg-secondary opacity-50 rounded-pill px-3" : "badge bg-primary rounded-pill px-3" %>'>
+                                        <%# string.IsNullOrEmpty(Eval("NombreCategoria")?.ToString()) ? "SIN ASIGNAR" : Eval("NombreCategoria") %>
                                     </span>
                                 </td>
                                 
@@ -81,9 +81,8 @@
 
                                     <asp:LinkButton ID="btnEliminar" runat="server" CommandName="eliminar" CommandArgument='<%# Eval("strId_doc") %>'
                                         CssClass="btn btn-eliminar btn-sm rounded-circle"
-                                        Visible='<%# !string.IsNullOrEmpty(Eval("strCategorizacion")?.ToString()) %>'
-                                        OnClientClick="return confirmarEliminar(this, '¿Está seguro de QUITAR la categoría actual de este docente? Esta acción quedará registrada en el historial.');"
-                                        ToolTip="Quitar Categoría">
+                                        OnClientClick="return confirmarEliminar(this, '¿Está seguro de ENVIAR este docente a la papelera? Podrá restaurarlo posteriormente.');"
+                                        ToolTip="Enviar a Papelera">
                                         <i class="fa-solid fa-trash"></i>
                                     </asp:LinkButton>
                                 </td>
@@ -129,23 +128,14 @@
 
                 <div class="col-12">
                     <label class="form-label">Facultad <span class="text-danger">*</span></label>
-                    <asp:DropDownList ID="ddlFacultad" runat="server" CssClass="form-select" 
+                    <asp:DropDownList ID="ddlFacultad" runat="server" CssClass="form-select"
                         AutoPostBack="true" OnSelectedIndexChanged="ddlFacultad_SelectedIndexChanged">
-                        <asp:ListItem Text="-- Seleccione --" Value="" />
-                        <asp:ListItem Value="CIYA">CIENCIAS DE LA INGENIERÍA Y APLICADAS (CIYA)</asp:ListItem>
-                        <asp:ListItem Value="CAREN">CIENCIAS AGROPECUARIAS Y RECURSOS NATURALES (CAREN)</asp:ListItem>
-                        <asp:ListItem Value="CAYE">CIENCIAS ADMINISTRATIVAS Y ECONÓMICAS (CAYE)</asp:ListItem>
-                        <asp:ListItem Value="CSAYE">CIENCIAS SOCIALES, ARTES Y EDUCACIÓN (CSAYE)</asp:ListItem>
-                        <asp:ListItem Value="SALUD">CIENCIAS DE LA SALUD (CS)</asp:ListItem>
-                        <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
-                        <asp:ListItem Value="LAMANA">EXTENSIÓN LA MANÁ</asp:ListItem>
                     </asp:DropDownList>
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label">Carrera <span class="text-muted small fw-normal">(Opcional)</span></label>
                     <asp:DropDownList ID="ddlCarrera" runat="server" CssClass="form-select">
-                        <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
                     </asp:DropDownList>
                 </div>
 
@@ -154,17 +144,6 @@
                 <div class="col-md-6">
                     <label class="form-label">Categoría Asignada <span class="text-danger">*</span></label>
                     <asp:DropDownList ID="ddlCategoria" runat="server" CssClass="form-select">
-                        <asp:ListItem Text="-- Seleccione --" Value="" />
-                        <asp:ListItem Value="TITULAR PRINCIPAL 1">TITULAR PRINCIPAL 1</asp:ListItem>
-                        <asp:ListItem Value="TITULAR PRINCIPAL 2">TITULAR PRINCIPAL 2</asp:ListItem>
-                        <asp:ListItem Value="TITULAR PRINCIPAL 3">TITULAR PRINCIPAL 3</asp:ListItem>
-                        <asp:ListItem Value="TITULAR AGREGADO 1">TITULAR AGREGADO 1</asp:ListItem>
-                        <asp:ListItem Value="TITULAR AGREGADO 2">TITULAR AGREGADO 2</asp:ListItem>
-                        <asp:ListItem Value="TITULAR AGREGADO 3">TITULAR AGREGADO 3</asp:ListItem>
-                        <asp:ListItem Value="TITULAR AUXILIAR 1">TITULAR AUXILIAR 1</asp:ListItem>
-                        <asp:ListItem Value="TITULAR AUXILIAR 2">TITULAR AUXILIAR 2</asp:ListItem>
-                        <asp:ListItem Value="OCASIONAL 1">OCASIONAL 1</asp:ListItem>
-                        <asp:ListItem Value="OCASIONAL 2">OCASIONAL 2</asp:ListItem>
                     </asp:DropDownList>
                 </div>
 
@@ -471,11 +450,11 @@
                                         <div class="bg-light rounded-3 p-3 d-flex mb-4">
                                             <div class="data-grid-item flex-fill">
                                                 <span class="label-mini">Facultad</span>
-                                                <span class="value-bold"><%# Eval("strFacultad_doc") %></span>
+                                                <span class="value-bold"><%# Eval("NombreFacultad") %></span>
                                             </div>
                                             <div class="data-grid-item flex-fill">
                                                 <span class="label-mini">Categoría</span>
-                                                <span class="value-bold text-primary"><%# Eval("strCategorizacion") ?? "Pte. Asignar" %></span>
+                                                <span class="value-bold text-primary"><%# string.IsNullOrEmpty(Eval("NombreCategoria")?.ToString()) ? "Pte. Asignar" : Eval("NombreCategoria") %></span>
                                             </div>
                                         </div>
 

@@ -17,28 +17,50 @@ namespace SistemaGestionCGI.BLL
         {
             string sql = @"
                 SELECT 
-                    strId_doc, 
-                    strCedula_doc,
-                    strCorreo_doc,
-                    strFacultad_doc, 
-                    strCarrera_doc,
-                    bitActivo_doc,
-                    (ISNULL(strApellidos_doc, '') + ' ' + ISNULL(strNombres_doc, '')) AS NombreCompleto,
-                    strCategorizacion, 
-                    dtFechaCategorizacion,
-                    strCertificado_doc
-                FROM INVGCCCATEGORIZACION_DOCENTES
-                WHERE bitActivo_doc = 1
-                ORDER BY strApellidos_doc";
+                    d.strId_doc,
+                    d.strCedula_doc,
+                    d.strCorreo_doc,
+                    d.strFacultad_doc,
+                    d.strCarrera_doc,
+                    d.bitActivo_doc,
+                    (ISNULL(d.strApellidos_doc, '') + ' ' + ISNULL(d.strNombres_doc, '')) AS NombreCompleto,
+                    d.strCategorizacion,
+                    d.dtFechaCategorizacion,
+                    d.strCertificado_doc,
+                    f.Nombre AS NombreFacultad,
+                    c.Nombre AS NombreCarrera,
+                    cat.Nombre AS NombreCategoria
+                FROM INVGCCCATEGORIZACION_DOCENTES d
+                LEFT JOIN INVGCCFACULTADES f 
+                    ON TRY_CAST(d.strFacultad_doc AS INT) = f.IdFacultad
+                LEFT JOIN INVGCCCARRERAS c 
+                    ON TRY_CAST(d.strCarrera_doc AS INT) = c.IdCarrera
+                LEFT JOIN INVGCCCATEGORIAS cat
+                    ON TRY_CAST(d.strCategorizacion AS INT) = cat.IdCategoria
+                WHERE d.bitActivo_doc = 1
+                ORDER BY d.strApellidos_doc";
 
             return _dal.SelectSql<InvgccCategorizacionDocentes>(sql);
         }
 
         public InvgccCategorizacionDocentes ObtenerPorId(string id)
         {
-            // Sanitizamos el ID por seguridad
             string idSanitizado = Limpiar(id);
-            string sql = $"SELECT * FROM INVGCCCATEGORIZACION_DOCENTES WHERE strId_doc = '{idSanitizado}'";
+
+            string sql = $@"
+                SELECT 
+                    d.*,
+                    f.Nombre AS NombreFacultad,
+                    c.Nombre AS NombreCarrera,
+                    cat.Nombre AS NombreCategoria
+                FROM INVGCCCATEGORIZACION_DOCENTES d
+                LEFT JOIN INVGCCFACULTADES f 
+                    ON TRY_CAST(d.strFacultad_doc AS INT) = f.IdFacultad
+                LEFT JOIN INVGCCCARRERAS c 
+                    ON TRY_CAST(d.strCarrera_doc AS INT) = c.IdCarrera
+                LEFT JOIN INVGCCCATEGORIAS cat
+                    ON TRY_CAST(d.strCategorizacion AS INT) = cat.IdCategoria
+                WHERE d.strId_doc = '{idSanitizado}'";
 
             var lista = _dal.SelectSql<InvgccCategorizacionDocentes>(sql);
             return lista?.FirstOrDefault();
@@ -248,8 +270,79 @@ namespace SistemaGestionCGI.BLL
 
         public List<InvgccCategorizacionDocentes> ObtenerPapelera()
         {
-            string sql = "SELECT *, (strApellidos_doc + ' ' + strNombres_doc) as NombreCompleto FROM INVGCCCATEGORIZACION_DOCENTES WHERE bitActivo_doc = 0";
+            string sql = @"
+                SELECT 
+                    d.*,
+                    (ISNULL(d.strApellidos_doc, '') + ' ' + ISNULL(d.strNombres_doc, '')) AS NombreCompleto,
+                    f.Nombre AS NombreFacultad,
+                    c.Nombre AS NombreCarrera,
+                    cat.Nombre AS NombreCategoria
+                FROM INVGCCCATEGORIZACION_DOCENTES d
+                LEFT JOIN INVGCCFACULTADES f 
+                    ON TRY_CAST(d.strFacultad_doc AS INT) = f.IdFacultad
+                LEFT JOIN INVGCCCARRERAS c 
+                    ON TRY_CAST(d.strCarrera_doc AS INT) = c.IdCarrera
+                LEFT JOIN INVGCCCATEGORIAS cat
+                    ON TRY_CAST(d.strCategorizacion AS INT) = cat.IdCategoria
+                WHERE d.bitActivo_doc = 0
+                ORDER BY d.strApellidos_doc";
+
             return _dal.SelectSql<InvgccCategorizacionDocentes>(sql);
+        }
+
+        //
+
+        public List<InvgccFacultades> ObtenerFacultades()
+        {
+            string sql = @"
+                SELECT 
+                    IdFacultad,
+                    Codigo,
+                    Nombre
+                FROM INVGCCFACULTADES
+                ORDER BY Nombre";
+
+            return _dal.SelectSql<InvgccFacultades>(sql);
+        }
+
+        public List<InvgccCarreras> ObtenerCarrerasPorFacultad(int idFacultad)
+        {
+            string sql = $@"
+                SELECT 
+                    IdCarrera,
+                    IdFacultad,
+                    Nombre
+                FROM INVGCCCARRERAS
+                WHERE IdFacultad = {idFacultad}
+                ORDER BY Nombre";
+
+            return _dal.SelectSql<InvgccCarreras>(sql);
+        }
+
+        public InvgccFacultades ObtenerFacultadPorCodigo(string codigo)
+        {
+            string codigoSanitizado = Limpiar(codigo);
+            string sql = $@"
+                SELECT TOP 1
+                    IdFacultad,
+                    Codigo,
+                    Nombre
+                FROM INVGCCFACULTADES
+                WHERE Codigo = '{codigoSanitizado}'";
+
+            return _dal.SelectSql<InvgccFacultades>(sql)?.FirstOrDefault();
+        }
+
+        //
+        public List<InvgccCategoria> ObtenerCategorias()
+        {
+            string sql = @"
+                SELECT IdCategoria, Nombre, Estado
+                FROM INVGCCCATEGORIAS
+                WHERE Estado = 1
+                ORDER BY Nombre";
+
+            return _dal.SelectSql<InvgccCategoria>(sql);
         }
 
     }

@@ -41,9 +41,6 @@ namespace SistemaGestionCGI
             }
         }
 
-        // ==========================
-        // 1. GESTIÓN DE CENTROS
-        // ==========================
         private void CargarCentros()
         {
             rptCentros.DataSource = _manejador.ObtenerTodos();
@@ -257,9 +254,6 @@ namespace SistemaGestionCGI
             ScriptManager.RegisterStartupScript(this, GetType(), "InitFilesEdit", scriptFiles + scriptEstado, true);
         }
 
-        // ==========================
-        // 2. GESTIÓN DE INTEGRANTES
-        // ==========================
 
         private void CargarIntegrantes(string idCentro)
         {
@@ -614,9 +608,6 @@ namespace SistemaGestionCGI
             return sb.ToString();
         }
 
-        // ==========================
-        // 4. UTILIDADES
-        // ==========================
         private enum Vista { ListaCentros, FormularioCentro, ListaIntegrantes, FormularioIntegrante }
 
         private void CambiarVista(Vista v)
@@ -747,7 +738,6 @@ namespace SistemaGestionCGI
             }
         }
 
-        // Método para guardar archivos físicos en el servidor
         private string GuardarArchivo(FileUpload control, string tipo)
         {
             if (!control.HasFile) return "";
@@ -782,9 +772,6 @@ namespace SistemaGestionCGI
             ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenDirCascada", script, true);
         }
 
-        // ==========================================
-        // 5. GESTIÓN DE PAPELERA (FALTABA ESTO)
-        // ==========================================
 
         protected void btnVerPapelera_Click(object sender, EventArgs e)
         {

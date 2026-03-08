@@ -19,7 +19,7 @@ namespace SistemaGestionCGI
             if (Session["UsuarioLogueado"] == null)
             {
                 Response.Redirect("Login.aspx");
-                return; 
+                return;
             }
 
             if (Session["RolUsuario"]?.ToString() == "COORDINADOR")
@@ -28,26 +28,34 @@ namespace SistemaGestionCGI
                 return;
             }
 
-            if (IsPostBack) return;
-
             try
             {
-                CargarCombosGlobales();
-                CargarGrillaGrupos();
-
-                string idGrupoRedirect = Request.QueryString["idGrupo"];
-                if (!string.IsNullOrEmpty(idGrupoRedirect))
+                if (!IsPostBack)
                 {
-                    CargarIntegrantesPanel(idGrupoRedirect);
+                    CargarCombosGlobales();
+                    CargarFacultadesEnCombo(ddlFacultadGrupo);
+                    CargarFacultadesEnCombo(ddlFacultadCoord);
+                    CargarFacultadesEnCombo(ddlFacultadInt);
+
+                    CargarGrillaGrupos();
+
+                    string idGrupoRedirect = Request.QueryString["idGrupo"];
+                    if (!string.IsNullOrEmpty(idGrupoRedirect))
+                    {
+                        CargarIntegrantesPanel(idGrupoRedirect);
+                    }
+                }
+
+                if (Session["TempMsg"] != null)
+                {
+                    Msg(Session["TempMsg"].ToString(), Session["TempTipo"].ToString());
+                    Session["TempMsg"] = null;
+                    Session["TempTipo"] = null;
                 }
             }
-            catch (Exception ex) { Msg("Error al iniciar módulo: " + ex.Message, "ee"); }
-
-            if (Session["TempMsg"] != null)
+            catch (Exception ex)
             {
-                Msg(Session["TempMsg"].ToString(), Session["TempTipo"].ToString());
-                Session["TempMsg"] = null;
-                Session["TempTipo"] = null;
+                Msg("Error al iniciar módulo: " + ex.Message, "ee");
             }
         }
 
@@ -67,9 +75,6 @@ namespace SistemaGestionCGI
             rptGrupoInv.DataBind();
         }
 
-        // =============================================
-        // 2. GESTIÓN DE GRUPOS (CRUD UNIFICADO)
-        // =============================================
 
         protected void btnNuevoGrupo_Click(object sender, EventArgs e)
         {
@@ -92,8 +97,8 @@ namespace SistemaGestionCGI
                 {
                     strNombre_gru = txtNombreGru.Text.Trim(),
                     fkId_cen = (ddlCentro.SelectedValue == "") ? null : ddlCentro.SelectedValue,
-                    strFacultad_gru = ddlFacultadGrupo.SelectedValue,
-                    strCarrera_gru = ddlCarreraGrupo.SelectedValue,
+                    strFacultad_gru = ddlFacultadGrupo.SelectedValue, 
+                    strCarrera_gru = ddlCarreraGrupo.SelectedValue,    
                     strCoordinador_gru = txtCoordinadorGru.Text.Trim(),
                     strCategoria_gru = ddlCategoriaGru.SelectedValue,
                     strLineasinv_gru = ddlLineaInv.SelectedValue,
@@ -299,19 +304,19 @@ namespace SistemaGestionCGI
 
         protected void btnAgregarCoordinador_Click(object sender, EventArgs e)
         {
+            CargarFacultadesEnCombo(ddlFacultadCoord, "-- Seleccione --");
+            CargarCarrerasEnCombo(ddlCarreraCoord, "");
+
             var docentes = _manejador.ObtenerDocentesCategorizadosCombo();
             ddlDocentesCoord.Items.Clear();
             ddlDocentesCoord.Items.Add(new ListItem("-- Seleccione Docente --", ""));
-
             foreach (var d in docentes)
-            {
                 ddlDocentesCoord.Items.Add(new ListItem(d.NombreCompleto, d.strId_doc));
-            }
 
             LimpiarCamposCoordinador();
 
-            string script = "RenderizarModalCoord('Interno');";
-            ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalCoord", script, true);
+            ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalCoord",
+                "RenderizarModalCoord('Interno');", true);
         }
 
         protected void btnGuardarCoordModal_Click(object sender, EventArgs e)
@@ -438,26 +443,6 @@ namespace SistemaGestionCGI
             pnlCargaArchivo.Visible = true;
             pnlArchivoRecuperado.Visible = false;
         }
-
-        private string GetProp(object obj, string propName)
-        {
-            if (obj == null) return "";
-            try
-            {
-                if (obj is Newtonsoft.Json.Linq.JObject jobj)
-                    return jobj[propName]?.ToString() ?? "";
-
-                return obj.GetType().GetProperty(propName)?.GetValue(obj, null)?.ToString() ?? "";
-            }
-            catch
-            {
-                return "";
-            }
-        }
-
-        // =============================================
-        // 3. GESTIÓN DE INTEGRANTES
-        // =============================================
 
         private void CargarIntegrantesPanel(string idGrupo)
         {
@@ -703,10 +688,6 @@ namespace SistemaGestionCGI
             Response.Redirect("GruposInvestigacion.aspx");
         }
 
-        
-        // =============================================
-        // 4. MODALS (PROYECTOS, ESTADO, HISTORIAL)
-        // =============================================
 
         private void CargarModalProyectos(string idGrupo)
         {
@@ -894,9 +875,6 @@ namespace SistemaGestionCGI
             return sb.ToString();
         }
 
-        // =============================================
-        // 5. UTILIDADES Y AYUDAS
-        // =============================================
 
         private enum Vista { ListaGrupos, FormularioGrupo, ListaIntegrantes, FormularioIntegrante }
 
@@ -1209,6 +1187,9 @@ namespace SistemaGestionCGI
 
         protected void ddlDocentesCoord_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (ddlFacultadCoord.Items.Count <= 1)
+                CargarFacultadesEnCombo(ddlFacultadCoord, "-- Seleccione --");
+
             string idDocente = ddlDocentesCoord.SelectedValue;
 
             if (string.IsNullOrEmpty(idDocente))
@@ -1307,79 +1288,44 @@ namespace SistemaGestionCGI
 
         //
 
-        private void CargarCarrerasEnCombo(DropDownList ddlCarrera, string facultad)
+        private void CargarCarrerasEnCombo(DropDownList ddlCarrera, string facultadId)
         {
             ddlCarrera.Items.Clear();
-
-            if (string.IsNullOrEmpty(facultad) || facultad == "-- Seleccione --")
-            {
-                ddlCarrera.Items.Add(new ListItem("-- Seleccione Facultad Primero --", ""));
-                return; 
-            }
-
             ddlCarrera.Items.Add(new ListItem("-- Seleccione Carrera --", ""));
-            switch (facultad)
+
+            if (!string.IsNullOrEmpty(facultadId))
             {
-                case "CIYA":
-                    ddlCarrera.Items.Add(new ListItem("SISTEMAS DE INFORMACIÓN", "SISTEMAS DE INFORMACIÓN"));
-                    ddlCarrera.Items.Add(new ListItem("INDUSTRIAL", "INDUSTRIAL"));
-                    ddlCarrera.Items.Add(new ListItem("ELECTROMECÁNICA", "ELECTROMECANICA"));
-                    ddlCarrera.Items.Add(new ListItem("ELECTRICIDAD", "ELECTRICIDAD"));
-                    ddlCarrera.Items.Add(new ListItem("HIDRAULICA", "HIDRAULICA"));
-                    ddlCarrera.Items.Add(new ListItem("SOFTWARE", "SOFTWARE"));
-                    break;
-                case "CAREN":
-                    ddlCarrera.Items.Add(new ListItem("AGROINDUSTRIAL", "AGROINDUSTRIAL"));
-                    ddlCarrera.Items.Add(new ListItem("AGRONOMÍA", "AGRONOMIA"));
-                    ddlCarrera.Items.Add(new ListItem("VETERINARIA", "VETERINARIA"));
-                    ddlCarrera.Items.Add(new ListItem("AMBIENTE", "AMBIENTE"));
-                    ddlCarrera.Items.Add(new ListItem("TURISMO", "TURISMO"));
-                    ddlCarrera.Items.Add(new ListItem("AGROPECUARIAS", "AGROPECUARIAS"));
-                    ddlCarrera.Items.Add(new ListItem("BIOTECNOLOGIA", "BIOTECNOLOGIA"));
-                    break;
-                case "CAYE":
-                    ddlCarrera.Items.Add(new ListItem("GESTIÓN DE LA INFORMACION GERENCIAL", "GESTIÓN DE LA INFORMACION GERENCIAL"));
-                    ddlCarrera.Items.Add(new ListItem("ADMINISTRACIÓN DE EMPRESAS", "ADMINISTRACIÓN DE EMPRESAS"));
-                    ddlCarrera.Items.Add(new ListItem("CONTABILIDAD", "CONTABILIDAD"));
-                    ddlCarrera.Items.Add(new ListItem("ECONOMIA", "ECONOMIA"));
-                    ddlCarrera.Items.Add(new ListItem("FINANZAS", "FINANZAS"));
-                    ddlCarrera.Items.Add(new ListItem("MERCADOTÉCNIA", "MERCADOTÉCNIA"));
-                    ddlCarrera.Items.Add(new ListItem("GESTIÓN DEL TALENTO HUMANO", "GESTIÓN DEL TALENTO HUMANO"));
-                    break;
-                case "CSAYE":
-                    ddlCarrera.Items.Add(new ListItem("DISEÑO GRAFICO", "DISEÑO GRAFICO"));
-                    ddlCarrera.Items.Add(new ListItem("DISEÑO GRAFICO INTERACTIVO", "DISEÑO GRAFICO INTERACTIVO"));
-                    ddlCarrera.Items.Add(new ListItem("COMUNICACIÓN DIGITAL ESTRATEGICA", "COMUNICACIÓN DIGITAL ESTRATEGICA"));
-                    ddlCarrera.Items.Add(new ListItem("TRABAJO SOCIAL", "TRABAJO SOCIAL"));
-                    ddlCarrera.Items.Add(new ListItem("ANIMACIÓN DIGITAL", "ANIMACIÓN DIGITAL"));
-                    ddlCarrera.Items.Add(new ListItem("PSICOLOGÍA SOCIAL", "PSICOLOGÍA SOCIAL"));
-                    break;
-                case "SALUD":
-                    ddlCarrera.Items.Add(new ListItem("ENFERMERIA", "ENFERMERIA"));
-                    break;
-                case "PUJILI":
-                    ddlCarrera.Items.Add(new ListItem("EDUCACIÓN INICIAL", "EDUCACIÓN INICIAL"));
-                    ddlCarrera.Items.Add(new ListItem("EDUCACIÓN BASICA", "EDUCACIÓN BASICA"));
-                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DEL IDIOMA INGLÉS", "PEDAGOGÍA DEL IDIOMA INGLÉS"));
-                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DE LA LENGUA Y LITERATURA", "PEDAGOGÍA DE LA LENGUA Y LITERATURA"));
-                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DE LAS MATEMÁTICAS Y LA FÍSICA", "PEDAGOGÍA DE LAS MATEMÁTICAS Y LA FÍSICA"));
-                    break;
-                case "LAMANA":
-                    ddlCarrera.Items.Add(new ListItem("CONTABILIDAD_LM", "CONTABILIDAD_LM"));
-                    ddlCarrera.Items.Add(new ListItem("ADMINISTRACIÓN_LM", "ADMINISTRACIÓN_LM"));
-                    ddlCarrera.Items.Add(new ListItem("ELECTROMECÁNICA_LM", "ELECTROMECÁNICA_LM"));
-                    ddlCarrera.Items.Add(new ListItem("SISTEMAS DE INFORMACIÓN_LM", "SISTEMAS DE INFORMACIÓN_LM"));
-                    ddlCarrera.Items.Add(new ListItem("TURISMO_LM", "TURISMO_LM"));
-                    ddlCarrera.Items.Add(new ListItem("AGRONOMÍA_LM", "AGRONOMÍA_LM"));
-                    ddlCarrera.Items.Add(new ListItem("AGROINDUSTRIAS_LM", "AGROINDUSTRIAS_LM"));
-                    break;
+                int facultadIdInt;
+                if (int.TryParse(facultadId, out facultadIdInt))
+                {
+                    var carreras = _manejador.ObtenerCarrerasPorFacultad(facultadIdInt);
+
+                    foreach (var carrera in carreras)
+                    {
+                        ddlCarrera.Items.Add(new ListItem(carrera.Nombre, carrera.IdCarrera.ToString()));
+                    }
+                }
+                else
+                {
+                    Msg("El ID de la facultad no es válido.", "ee");
+                }
             }
         }
 
         protected void ddlFacultadCoord_SelectedIndexChanged(object sender, EventArgs e)
         {
-            CargarCarrerasEnCombo(ddlCarreraCoord, ddlFacultadCoord.SelectedValue);
-            ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenC", "abrirModalCoord(); toggleTipoCoordinador();", true);
+            string facultadId = ddlFacultadCoord.SelectedValue;
+
+            if (string.IsNullOrEmpty(facultadId) || !int.TryParse(facultadId, out _))
+            {
+                Msg("Debe seleccionar una facultad válida.", "ww"); 
+                return;
+            }
+
+            CargarCarrerasEnCombo(ddlCarreraCoord, facultadId);
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenModalAfterFac",
+                $"RenderizarModalCoord('{ddlTipoCoord.SelectedValue}');", true);
         }
 
         protected void ddlFacultadInt_SelectedIndexChanged(object sender, EventArgs e)
@@ -1516,6 +1462,9 @@ namespace SistemaGestionCGI
 
         protected void ddlTipoCoord_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (ddlFacultadCoord.Items.Count <= 1)
+                CargarFacultadesEnCombo(ddlFacultadCoord, "-- Seleccione --");
+
             txtCedulaCoord.Text = "";
             txtNombreCoord.Text = "";
             txtApellidoCoord.Text = "";
@@ -1553,9 +1502,20 @@ namespace SistemaGestionCGI
 
         protected void ddlFacultadGrupo_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Reutilizamos tu método existente "CargarCarrerasEnCombo"
             CargarCarrerasEnCombo(ddlCarreraGrupo, ddlFacultadGrupo.SelectedValue);
         }
 
+        //
+
+        private void CargarFacultadesEnCombo(DropDownList ddl, string placeholder = "-- Seleccione Facultad --")
+        {
+            var facultades = _manejador.ObtenerFacultades();
+
+            ddl.Items.Clear();
+            ddl.Items.Add(new ListItem(placeholder, ""));
+
+            foreach (var f in facultades)
+                ddl.Items.Add(new ListItem(f.Nombre, f.IdFacultad.ToString()));
+        }
     }
 }

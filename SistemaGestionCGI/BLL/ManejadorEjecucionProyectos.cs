@@ -10,11 +10,6 @@ namespace SistemaGestionCGI.BLL
     public class ManejadorEjecucionProyectos
     {
         private readonly ConnectionSqlServer _dal = ConnectionSqlServer.Instance;
-
-        // =============================================================
-        // 1. GESTIÓN DE EJECUCIÓN
-        // =============================================================
-
         public List<InvgccEjecucionProyectos> ObtenerEjecuciones(string cedulaUsuario = null)
         {
             string sql = @"
@@ -126,10 +121,6 @@ namespace SistemaGestionCGI.BLL
 
             _dal.UpdateSql(sql);
         }
-
-        // =============================================================
-        // 2. GESTIÓN DE MIEMBROS Y ESTADOS (SOLUCIÓN A TU PROBLEMA)
-        // =============================================================
 
         public List<InvgccEjecucionMiembros> ObtenerMiembros(int idEjecucion)
         {
@@ -346,9 +337,6 @@ namespace SistemaGestionCGI.BLL
             return null;
         }
 
-        // =============================================================
-        // 3. GESTIÓN DE INFORMES
-        // =============================================================
 
         public List<InvgccEjecucionInformes> ObtenerInformes(int idEjecucion)
         {
@@ -493,9 +481,6 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<dynamic>(sql);
         }
 
-        // =============================================================
-        // 4. UTILIDADES Y OTROS
-        // =============================================================
 
         public List<InvgccInscripcionProyectos> ObtenerProyectosAprobadosSinEjecucion()
         {
@@ -665,15 +650,8 @@ namespace SistemaGestionCGI.BLL
         }
 
         //
-
-
-        // =========================================================================
-        // 1. OBTENER INTEGRANTES DEL GRUPO (Filtrados y Validados)
-        // =========================================================================
         public List<dynamic> ObtenerCandidatosDelGrupo(int idEjecucion)
         {
-            // REGLA: Traer integrantes del Grupo vinculado al Proyecto que NO estén ocupados.
-            // Usamos strCertificado_int como el archivo de evidencia.
 
             string sql = $@"
         SELECT 
@@ -704,7 +682,6 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<dynamic>(sql);
         }
 
-        // Auxiliar para llenar el formulario cuando seleccionas a alguien del grupo
         public dynamic ObtenerDatosCandidatoGrupo(string idIntegranteGrupo)
         {
             string sql = $"SELECT * FROM INVGCCGRUPO_INTEGRANTES WHERE strId_int = '{idIntegranteGrupo}'";
@@ -712,12 +689,8 @@ namespace SistemaGestionCGI.BLL
             return lista.FirstOrDefault();
         }
 
-        // =========================================================================
-        // 2. OBTENER DOCENTES CATEGORIZADOS LIBRES (Sin Grupo / Sin Proyecto)
-        // =========================================================================
         public List<dynamic> ObtenerDocentesCategorizadosLibres()
         {
-            // Usamos strCertificado_doc como el archivo de evidencia.
 
             string sql = @"
         SELECT 
@@ -750,13 +723,25 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<dynamic>(sql);
         }
 
-        // Auxiliar para llenar el formulario cuando seleccionas a un docente libre
         public dynamic ObtenerDatosDocenteCategorizado(string idDocente)
         {
             string sql = $"SELECT * FROM INVGCCCATEGORIZACION_DOCENTES WHERE strId_doc = '{idDocente}'";
             var lista = _dal.SelectSql<dynamic>(sql);
             return lista.FirstOrDefault();
         }
+
+        public List<dynamic> ObtenerFacultades()
+        {
+            string sql = "SELECT IdFacultad, Codigo, Nombre FROM INVGCCFACULTADES ORDER BY Nombre";
+            return _dal.SelectSql<dynamic>(sql);
+        }
+
+        public List<dynamic> ObtenerCarrerasPorFacultad(int idFacultad)
+        {
+            string sql = $"SELECT IdCarrera, IdFacultad, Nombre FROM INVGCCCARRERAS WHERE IdFacultad = {idFacultad} ORDER BY Nombre";
+            return _dal.SelectSql<dynamic>(sql);
+        }
+
     }
 
     public class DtoCedulaTemp
@@ -770,4 +755,5 @@ namespace SistemaGestionCGI.BLL
         public DateTime FechaInicioCiclo { get; set; }
         public List<dynamic> Archivos { get; set; }
     }
+
 }

@@ -119,16 +119,8 @@
 
                     <div class="col-md-6">
                         <label class="form-label text-muted small fw-bold">Facultad / Extensión <span class="text-danger">*</span></label>
-                        <asp:DropDownList ID="ddlFacultadGrupo" runat="server" CssClass="form-select"
-                            AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadGrupo_SelectedIndexChanged">
-                            <asp:ListItem Text="-- Seleccione --" Value="" />
-                            <asp:ListItem Value="CAREN">FACULTAD DE CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
-                            <asp:ListItem Value="CIYA">FACULTAD DE CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
-                            <asp:ListItem Value="CAYE">FACULTAD DE CIENCIAS ADMINISTRATIVAS (CAYE)</asp:ListItem>
-                            <asp:ListItem Value="CSAYE">FACULTAD DE CIENCIAS SOCIALES (CSAYE)</asp:ListItem>
-                            <asp:ListItem Value="SALUD">FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
-                            <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
-                            <asp:ListItem Value="LAMANA">EXTENSION LA MANÁ</asp:ListItem>
+                        <asp:DropDownList ID="ddlFacultadGrupo" runat="server" CssClass="form-select" AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadGrupo_SelectedIndexChanged">
+                            <asp:ListItem Text="-- Seleccione Facultad --" Value="" />
                         </asp:DropDownList>
                     </div>
 
@@ -439,14 +431,7 @@
                                 <label class="form-label">Facultad / Extensión</label>
                                 <asp:DropDownList ID="ddlFacultadInt" runat="server" CssClass="form-select"
                                     AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadInt_SelectedIndexChanged">
-                                    <asp:ListItem Text="-- Seleccione --" Value="" />
-                                    <asp:ListItem Value="CAREN">FACULTAD DE CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
-                                    <asp:ListItem Value="CIYA">FACULTAD DE CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
-                                    <asp:ListItem Value="CAYE">FACULTAD DE CIENCIAS ADMINISTRATIVAS (CAYE)</asp:ListItem>
-                                    <asp:ListItem Value="CSAYE">FACULTAD DE CIENCIAS SOCIALES (CSAYE)</asp:ListItem>
-                                    <asp:ListItem Value="SALUD">FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
-                                    <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
-                                    <asp:ListItem Value="LAMANA">EXTENSION LA MANÁ</asp:ListItem>
+                                    <asp:ListItem Text="-- Seleccione Facultad --" Value="" />
                                 </asp:DropDownList>
                             </div>
                             <div class="col-md-6">
@@ -934,16 +919,8 @@
                             <div id="divInterno" class="row g-3 mb-4">
                                 <div class="col-md-6">
                                     <label class="form-label small text-muted">Facultad / Extensión</label>
-                                    <asp:DropDownList ID="ddlFacultadCoord" runat="server" CssClass="form-select form-select-sm" 
-                                        AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadCoord_SelectedIndexChanged">
+                                    <asp:DropDownList ID="ddlFacultadCoord" runat="server" CssClass="form-select form-select-sm" AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadCoord_SelectedIndexChanged">
                                         <asp:ListItem Text="-- Seleccione --" Value="" />
-                                        <asp:ListItem Value="CAREN">FACULTAD DE CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
-                                        <asp:ListItem Value="CIYA">FACULTAD DE CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
-                                        <asp:ListItem Value="CAYE">FACULTAD DE CIENCIAS ADMINISTRATIVAS (CAYE)</asp:ListItem>
-                                        <asp:ListItem Value="CSAYE">FACULTAD DE CIENCIAS SOCIALES (CSAYE)</asp:ListItem>
-                                        <asp:ListItem Value="SALUD">FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
-                                        <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
-                                        <asp:ListItem Value="LAMANA">EXTENSION LA MANÁ</asp:ListItem>
                                     </asp:DropDownList>
                                 </div>
                                 <div class="col-md-6">
@@ -1318,19 +1295,19 @@
 
             function ValidarModalCoordinador() {
                 var ddlTipo = document.getElementById('<%= ddlTipoCoord.ClientID %>');
-        
+
                 if (ddlTipo && ddlTipo.value === 'Docente') {
-                     var hfIdDoc = document.getElementById('<%= hfCoordIdDocente.ClientID %>');
-                     if(!hfIdDoc || hfIdDoc.value === "") {
-                         toastify('ww', 'Seleccione un docente de la lista.', 'Validación');
-                         return false;
-                     }
-                     var email = document.getElementById('<%= txtCorreoCoord.ClientID %>').value;
-                     if(email.trim() === ""){
-                         mostrarError('<%= txtCorreoCoord.ClientID %>', 'El correo es obligatorio.');
-                         return false;
-                     }
-                     return true;
+                    var hfIdDoc = document.getElementById('<%= hfCoordIdDocente.ClientID %>');
+                    if (!hfIdDoc || hfIdDoc.value === "") {
+                        toastify('ww', 'Seleccione un docente de la lista.', 'Validación');
+                        return false;
+                    }
+                    var email = document.getElementById('<%= txtCorreoCoord.ClientID %>').value;
+                    if (email.trim() === "") {
+                        mostrarError('<%= txtCorreoCoord.ClientID %>', 'El correo es obligatorio.');
+                        return false;
+                    }
+                    return true;
                 }
 
                 if (ddlTipo && ddlTipo.value !== 'Docente') {

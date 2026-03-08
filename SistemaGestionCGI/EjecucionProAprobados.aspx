@@ -477,10 +477,10 @@
                     <label class="form-label fw-bold">Seleccione Origen</label>
                     <asp:DropDownList ID="ddlTipoMiembro" runat="server" CssClass="form-select shadow-sm border-primary"
                         AutoPostBack="true" OnSelectedIndexChanged="ddlTipoMiembro_SelectedIndexChanged">
-                        <asp:ListItem Value="Interno" Selected="True">Manual / Interno (Estudiante/Admin)</asp:ListItem>
-                        <asp:ListItem Value="DocenteGrupo" style="font-weight:bold; color:#0d6efd;">MIEMBRO DEL GRUPO (Recomendado)</asp:ListItem>
-                        <asp:ListItem Value="DocenteLibre" style="font-weight:bold; color:#198754;">DOCENTE CATEGORIZADO (Sin Grupo)</asp:ListItem>
-                        <asp:ListItem Value="Externo">Manual / Externo (Otra Institución)</asp:ListItem>
+                        <asp:ListItem Value="Interno" Selected="True">INTEGRANTE INTERNO</asp:ListItem>
+                        <asp:ListItem Value="Externo">INTEGRANTE EXTERNO</asp:ListItem>
+                        <asp:ListItem Value="DocenteGrupo" style="font-weight:bold; color:#0d6efd;">MIEMBRO DE GRUPO</asp:ListItem>
+                        <asp:ListItem Value="DocenteLibre" style="font-weight:bold; color:#198754;">DOCENTE CATEGORIZADO</asp:ListItem>
                     </asp:DropDownList>
                 </div>
 
@@ -543,30 +543,22 @@
                 </div>
             </div>
 
-            <div id="divCamposInternos" class="row g-3 mb-4">
+            <div id="divCamposInternos" runat="server" class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Facultad / Extensión</label>
-                    <asp:DropDownList ID="ddlFacultadMiembro" runat="server" CssClass="form-select" 
+                    <asp:DropDownList ID="ddlFacultadMiembro" runat="server" CssClass="form-select"
                         AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadMiembro_SelectedIndexChanged">
-                        <asp:ListItem Text="-- Seleccione --" Value="" />
-                        <asp:ListItem Value="CAREN">FACULTAD DE CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
-                        <asp:ListItem Value="CIYA">FACULTAD DE CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
-                        <asp:ListItem Value="CAYE">FACULTAD DE CIENCIAS ADMINISTRATIVAS (CAYE)</asp:ListItem>
-                        <asp:ListItem Value="CSAYE">FACULTAD DE CIENCIAS SOCIALES (CSAYE)</asp:ListItem>
-                        <asp:ListItem Value="SALUD">FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
-                        <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
-                        <asp:ListItem Value="LAMANA">EXTENSION LA MANA</asp:ListItem>
                     </asp:DropDownList>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Carrera</label>
                     <asp:DropDownList ID="ddlCarreraMiembro" runat="server" CssClass="form-select">
-                        <asp:ListItem Text="-- Seleccione Facultad --" Value="" />
+                        <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="" />
                     </asp:DropDownList>
                 </div>
             </div>
 
-            <div id="divCamposExternos" class="row g-3 mb-4" style="display:none;">
+            <div id="divCamposExternos" runat="server" class="row g-3 mb-4" style="display:none;">
                 <div class="col-12">
                     <label class="form-label fw-bold">Institución / Entidad de Origen</label>
                     <asp:TextBox ID="txtEntidadMiembro" runat="server" CssClass="form-control" placeholder="Ej: SENESCYT..." />
@@ -1620,7 +1612,7 @@
             } else {
                 var link = document.createElement('a');
                 link.href = url;
-                link.download = url.split('/').pop(); 
+                link.download = url.split('/').pop();
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -1683,21 +1675,33 @@
 
         function toggleTipoIntegrante() {
             var ddl = document.getElementById('<%= ddlTipoMiembro.ClientID %>');
-
             if (!ddl) return;
 
             var val = ddl.value;
             var divInt = document.getElementById('divCamposInternos');
             var divExt = document.getElementById('divCamposExternos');
+            var pnlForm = document.getElementById('<%= pnlFormularioMiembro.ClientID %>');
+            var pnlSeleccion = document.getElementById('<%= pnlSeleccionAutomatica.ClientID %>');
 
-            if (divInt && divExt) {
-                if (val === 'Externo') {
-                    divInt.style.display = 'none';
-                    divExt.style.display = 'block';
-                } else {
-                    divInt.style.display = 'flex'; 
-                    divExt.style.display = 'none';
-                }
+            if (!divInt || !divExt || !pnlForm || !pnlSeleccion) return;
+
+            if (val === 'Interno') {
+                divInt.style.display = 'flex';
+                divExt.style.display = 'none';
+                pnlForm.style.display = 'flex';
+                pnlSeleccion.style.display = 'none';
+            }
+            else if (val === 'Externo') {
+                divInt.style.display = 'none';
+                divExt.style.display = 'flex';
+                pnlForm.style.display = 'flex';
+                pnlSeleccion.style.display = 'none';
+            }
+            else if (val === 'DocenteGrupo' || val === 'DocenteLibre') {
+                divInt.style.display = 'none';
+                divExt.style.display = 'none';
+                pnlForm.style.display = 'none';
+                pnlSeleccion.style.display = 'block';
             }
         }
 

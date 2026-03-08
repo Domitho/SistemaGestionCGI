@@ -44,9 +44,6 @@ namespace SistemaGestionCGI
             }
         }
 
-        // =========================================================================================
-        // 1. DASHBOARD PRINCIPAL (LISTADO HORIZONTAL)
-        // =========================================================================================
         private void CargarMisProyectos()
         {
             try
@@ -122,9 +119,6 @@ namespace SistemaGestionCGI
             }
         }
 
-        // =========================================================================================
-        // 2. VISTA DE GESTIÓN (PANEL DIVIDIDO 8/4)
-        // =========================================================================================
         private void CargarVistaGestion(int idEjecucion)
         {
             hfIdEjecucionInforme.Value = idEjecucion.ToString();
@@ -190,9 +184,6 @@ namespace SistemaGestionCGI
             CargarMisProyectos();
         }
 
-        // =========================================================================================
-        // 3. GESTIÓN DE ARCHIVOS (SUBIDA Y ELIMINACIÓN)
-        // =========================================================================================
         protected void btnGuardarInforme_Click(object sender, EventArgs e)
         {
             try
@@ -308,9 +299,6 @@ namespace SistemaGestionCGI
             }
         }
 
-        // =========================================================================================
-        // 4. GESTIÓN DE EQUIPO
-        // =========================================================================================
         private void CargarEquipo(int idEjecucion)
         {
             hfIdEjecucionEquipo.Value = idEjecucion.ToString();
@@ -345,9 +333,6 @@ namespace SistemaGestionCGI
             }
         }
 
-        // =========================================================================================
-        // 5. UTILIDADES Y SEGURIDAD
-        // =========================================================================================
         private bool EsProyectoDelCoordinador(int idEjecucion)
         {
             var misProyectos = _manejador.ObtenerEjecuciones(CedulaUsuario);

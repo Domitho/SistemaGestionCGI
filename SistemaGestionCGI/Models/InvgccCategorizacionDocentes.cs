@@ -40,5 +40,9 @@ namespace SistemaGestionCGI.Models
 
         [JsonProperty("NombreCompleto")]
         public string NombreCompleto { get; set; }
+
+        public string NombreFacultad { get; set; }
+        public string NombreCarrera { get; set; }
+        public string NombreCategoria { get; set; }
     }
 }

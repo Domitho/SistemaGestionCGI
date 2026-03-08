@@ -11,10 +11,6 @@ namespace SistemaGestionCGI.BLL
     {
         private readonly ConnectionSqlServer _dal = ConnectionSqlServer.Instance;
 
-        // =============================================================
-        // 1. GESTIÓN DE GRUPOS
-        // =============================================================
-
         public List<InvgccCentroInvestigacion> ObtenerCentrosCombo()
         {
             string sql = "SELECT strId_cen, strNombre_cen FROM INVGCCCENTRO_INVESTIGACION WHERE bitActivo_cen = 1 ORDER BY strNombre_cen";
@@ -218,9 +214,6 @@ namespace SistemaGestionCGI.BLL
             _dal.InsertSql(sqlFinal);
         }
 
-        // =============================================================
-        // 2. GESTIÓN DE INTEGRANTES
-        // =============================================================
 
         public List<InvgccGrupoIntegrantes> ObtenerIntegrantes(string idGrupo)
         {
@@ -365,13 +358,9 @@ namespace SistemaGestionCGI.BLL
             return (resultado != null && resultado.Count > 0) ? resultado[0] : null;
         }
 
-        // =============================================================
-        // 3. GESTIÓN DE AUDITORÍA Y ESTADOS
-        // =============================================================
 
         public void CambiarEstadoIntegrante(string id, bool estado, string motivo, string usuario)
         {
-            // 1. ACTUALIZAR ESTADO DEL INTEGRANTE EN EL GRUPO
             int bit = estado ? 1 : 0;
             string fechaFin = estado ? "NULL" : $"'{DateTime.Now:yyyyMMdd}'";
 
@@ -385,19 +374,13 @@ namespace SistemaGestionCGI.BLL
             string accion = estado ? "REACTIVACIÓN" : "BAJA";
             RegistrarHistorial(id, accion, motivo, usuario);
 
-            // =========================================================================
-            // [NUEVO] EFECTO CASCADA: SI ES BAJA, LIMPIAR CARGOS DE COORDINADOR
-            // =========================================================================
-            if (!estado) // Si se está desactivando...
+            if (!estado) 
             {
-                // A. OBTENER LA CÉDULA DEL INTEGRANTE QUE ACABAMOS DE APAGAR
                 var integrante = ObtenerIntegrantePorId(id);
                 if (integrante != null && !string.IsNullOrEmpty(integrante.strCedula_int))
                 {
                     string cedula = integrante.strCedula_int.Trim();
 
-                    // B. DAR DE BAJA EN MÓDULO EJECUCIÓN (TABLA DE MIEMBROS)
-                    // Desactivamos cualquier rol activo que tenga esa cédula en cualquier proyecto
                     string sqlBajaEjecucionMiembros = $@"
                 UPDATE INVGCCEJECUCION_MIEMBROS 
                 SET bitActivo_miembro = 0, dtFechaFin_miembro = GETDATE()
@@ -405,9 +388,6 @@ namespace SistemaGestionCGI.BLL
 
                     _dal.UpdateSql(sqlBajaEjecucionMiembros);
 
-                    // C. LIMPIAR CABECERAS DE PROYECTOS ACTIVOS (EJECUCIÓN)
-                    // Si él figura como jefe en la cabecera, ponemos '-- SIN ASIGNAR --' pero mantenemos la cédula
-                    // (Igual que como hicimos en la lógica de baja manual del otro módulo)
                     string sqlLimpiarCabeceraEjec = $@"
                 UPDATE INVGCCEJECUCION_PROYECTO 
                 SET strCoordinador_ejec = '-- SIN ASIGNAR --'
@@ -415,8 +395,6 @@ namespace SistemaGestionCGI.BLL
 
                     _dal.UpdateSql(sqlLimpiarCabeceraEjec);
 
-                    // D. LIMPIAR CABECERAS DE PROYECTOS (INSCRIPCIÓN)
-                    // Rompemos el enlace FK para que no salga su nombre, pero mantenemos la cédula histórica
                     string sqlLimpiarCabeceraInsc = $@"
                 UPDATE INVGCCINSCRIPCION_PROYECTOS 
                 SET strCoordinador_pro = '-- SIN ASIGNAR --',
@@ -426,7 +404,6 @@ namespace SistemaGestionCGI.BLL
                     _dal.UpdateSql(sqlLimpiarCabeceraInsc);
                 }
             }
-            // =========================================================================
         }
 
         public void EliminarIntegranteFisico(string id)
@@ -542,5 +519,18 @@ namespace SistemaGestionCGI.BLL
             return lista?.FirstOrDefault();
         }
 
+        //
+
+        public List<InvgccFacultades> ObtenerFacultades()
+        {
+            string sql = "SELECT IdFacultad, Nombre FROM INVGCCFACULTADES ORDER BY Nombre";
+            return _dal.SelectSql<InvgccFacultades>(sql);
+        }
+
+        public List<InvgccCarreras> ObtenerCarrerasPorFacultad(int facultadId)
+        {
+            string sql = $"SELECT IdCarrera, Nombre FROM INVGCCCARRERAS WHERE IdFacultad = {facultadId} ORDER BY Nombre";
+            return _dal.SelectSql<InvgccCarreras>(sql);
+        }
     }
 }

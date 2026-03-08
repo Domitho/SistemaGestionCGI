@@ -39,6 +39,11 @@ namespace SistemaGestionCGI
                 CargarCombosIniciales();
                 CargarGrillaEjecucion();
 
+                if (Request.QueryString["idTeam"] != null && int.TryParse(Request.QueryString["idTeam"], out int idProyecto))
+                {
+                    CargarEquipo(idProyecto);
+                }
+
                 if (Session["TempMsg"] != null)
                 {
                     Msg(Session["TempMsg"].ToString(), Session["TempTipo"].ToString());
@@ -372,7 +377,7 @@ namespace SistemaGestionCGI
                     {
                         if (btnRenovar != null)
                         {
-                            btnRenovar.Visible = true; 
+                            btnRenovar.Visible = true;
                         }
 
                         if (lit != null) lit.Text = "";
@@ -420,7 +425,7 @@ namespace SistemaGestionCGI
 
                         if (btnEditarM != null) btnEditarM.Visible = false;
                         if (btnEliminarM != null) btnEliminarM.Visible = false;
-                        if (btnToggle != null) btnToggle.Visible = true;     
+                        if (btnToggle != null) btnToggle.Visible = true;
                     }
                     else
                     {
@@ -526,9 +531,7 @@ namespace SistemaGestionCGI
 
             txtRolMiembro.Text = "MIEMBRO DE PROYECTO";
 
-            ddlFacultadMiembro.SelectedIndex = 0;
-            ddlCarreraMiembro.Items.Clear();
-            ddlCarreraMiembro.Items.Add(new ListItem("-- Seleccione Facultad Primero --", ""));
+            CargarFacultadesEnCombo();
         }
 
         protected void btnGuardarMiembro_Click(object sender, EventArgs e)
@@ -541,19 +544,17 @@ namespace SistemaGestionCGI
                     return;
                 }
 
-                DateTime fechaInicio;
-                if (!DateTime.TryParse(txtFechaInicioMiembro.Text, out fechaInicio))
+                if (!DateTime.TryParse(txtFechaInicioMiembro.Text, out DateTime fechaInicio))
                 {
                     Msg("La fecha de inicio no es válida.", "ww");
                     return;
                 }
 
-                string cedulaObjetivo = txtCedulaMiembro.Text.Trim();
+                string cedula = txtCedulaMiembro.Text.Trim();
                 int idProyecto = int.Parse(hfIdEjecucionEquipo.Value);
                 int? idEdicion = string.IsNullOrEmpty(hfIdMiembroEdit.Value) ? (int?)null : int.Parse(hfIdMiembroEdit.Value);
-                string errorCedula;
 
-                if (!CumpleRequisitosCedula(cedulaObjetivo, idProyecto, idEdicion, out errorCedula))
+                if (!CumpleRequisitosCedula(cedula, idProyecto, idEdicion, out string errorCedula))
                 {
                     txtCedulaMiembro.CssClass = "form-control is-invalid";
                     Msg("BLOQUEO DE SEGURIDAD: " + errorCedula, "ee");
@@ -562,72 +563,96 @@ namespace SistemaGestionCGI
 
                 string tipoSeleccion = ddlTipoMiembro.SelectedValue;
                 string tipoFinal = "";
-                string facultadFinal = "";
-                string carreraFinal = "";
+                string idFacultadFinal = "0";
+                string idCarreraFinal = "0";
                 string entidadFinal = "";
 
-                if (tipoSeleccion == "DocenteGrupo" || tipoSeleccion == "DocenteLibre")
+                switch (tipoSeleccion)
                 {
-                    tipoFinal = hfTipoRealMiembro.Value;
+                    case "DocenteGrupo":
+                        tipoFinal = "MiembroGrupo";
+                        idFacultadFinal = ddlFacultadMiembro.SelectedValue;
+                        idCarreraFinal = ddlCarreraMiembro.SelectedValue;
+                        entidadFinal = "";
+                        break;
 
-                    if (tipoFinal == "Externo")
-                    {
-                        entidadFinal = txtEntidadMiembro.Text.Trim(); 
-                        facultadFinal = "EXTERNO";
-                    }
-                    else
-                    {
-                        facultadFinal = ddlFacultadMiembro.SelectedValue;
-                        carreraFinal = ddlCarreraMiembro.SelectedValue;
-                    }
-                }
-                else 
-                {
-                    tipoFinal = ddlTipoMiembro.SelectedValue;
-                    if (tipoFinal == "Interno")
-                    {
-                        facultadFinal = ddlFacultadMiembro.SelectedValue;
-                        carreraFinal = ddlCarreraMiembro.SelectedValue;
-                    }
-                    else 
-                    {
+                    case "DocenteLibre":
+                        tipoFinal = "Docente";
+                        idFacultadFinal = ddlFacultadMiembro.SelectedValue;
+                        idCarreraFinal = ddlCarreraMiembro.SelectedValue;
+                        entidadFinal = "";
+                        break;
+
+                    case "Externo":
+                        tipoFinal = "Externo";
+                        idFacultadFinal = "0";
+                        idCarreraFinal = "0";
                         entidadFinal = txtEntidadMiembro.Text.Trim();
-                        facultadFinal = "EXTERNO";
-                    }
+                        break;
+
+                    default:
+                        tipoFinal = "Interno";
+                        idFacultadFinal = ddlFacultadMiembro.SelectedValue;
+                        idCarreraFinal = ddlCarreraMiembro.SelectedValue;
+                        entidadFinal = "";
+                        break;
                 }
 
-                var nuevoMiembro = new InvgccEjecucionMiembros
+                var miembro = new InvgccEjecucionMiembros
                 {
                     fkId_ejec = idProyecto,
-                    strCedula_miembro = cedulaObjetivo,
+                    strCedula_miembro = cedula,
                     strNombres_miembro = txtNombresMiembro.Text.Trim().ToUpper(),
                     strApellidos_miembro = txtApellidosMiembro.Text.Trim().ToUpper(),
                     strCorreo_miembro = txtCorreoMiembro.Text.Trim().ToLower(),
-
                     strTipo_miembro = tipoFinal,
-                    strFacultad_miembro = facultadFinal,
-                    strCarrera_miembro = carreraFinal,
+                    strFacultad_miembro = idFacultadFinal,
+                    strCarrera_miembro = idCarreraFinal,
                     strEntidad_miembro = entidadFinal,
-
                     bitActivo_miembro = true,
                     dtFechaInicio_miembro = fechaInicio
                 };
 
                 if (idEdicion == null)
                 {
-                    nuevoMiembro.strRol_miembro = "MIEMBRO DE PROYECTO";
-                    _manejador.GuardarMiembro(nuevoMiembro);
+                    miembro.strRol_miembro = "MIEMBRO DE PROYECTO";
+                    _manejador.GuardarMiembro(miembro);
+
+                    var agregado = _manejador.ObtenerMiembros(miembro.fkId_ejec)
+                        .FirstOrDefault(m => m.strCedula_miembro == miembro.strCedula_miembro && m.bitActivo_miembro);
+
+                    if (agregado != null)
+                    {
+                        _manejador.RegistrarHistorialMiembro(
+                            agregado.strId_miembro,
+                            "NUEVO",
+                            "Integrante agregado al equipo",
+                            Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA"
+                        );
+                    }
+
                     SetFlashMessage("Integrante agregado al equipo correctamente.", "ss");
                 }
                 else
                 {
-                    nuevoMiembro.strId_miembro = idEdicion.Value;
-                    nuevoMiembro.strRol_miembro = txtRolMiembro.Text;
-                    _manejador.ActualizarMiembro(nuevoMiembro);
+                    miembro.strId_miembro = idEdicion.Value;
+
+                    var rolActual = _manejador.ObtenerMiembroPorId(idEdicion.Value)?.strRol_miembro ?? "MIEMBRO DE PROYECTO";
+                    miembro.strRol_miembro = string.IsNullOrWhiteSpace(txtRolMiembro.Text) ? rolActual : txtRolMiembro.Text;
+
+                    _manejador.ActualizarMiembro(miembro);
+
+                    _manejador.RegistrarHistorialMiembro(
+                        miembro.strId_miembro,
+                        "ACTUALIZACIÓN",
+                        "Datos actualizados",
+                        Session["UsuarioLogueado"]?.ToString() ?? "SISTEMA"
+                    );
+
                     SetFlashMessage("Datos del integrante actualizados.", "ss");
                 }
 
-                Response.Redirect($"EjecucionProAprobados.aspx", false);
+                Response.Redirect($"EjecucionProAprobados.aspx?idTeam={hfIdEjecucionEquipo.Value}", false);
             }
             catch (Exception ex)
             {
@@ -668,10 +693,10 @@ namespace SistemaGestionCGI
                     }
 
                     string script = $@"
-                        document.getElementById('lblNombreMiembroEstado').innerText = '{nombre}';
-                        {jsRolUpdate} 
-                        document.getElementById('txtMotivoCambio').value = ''; 
-                        new bootstrap.Modal(document.getElementById('modalEstadoMiembro')).show();";
+                document.getElementById('lblNombreMiembroEstado').innerText = '{nombre}';
+                {jsRolUpdate} 
+                document.getElementById('txtMotivoCambio').value = ''; 
+                new bootstrap.Modal(document.getElementById('modalEstadoMiembro')).show();";
 
                     ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalEstado", script, true);
                 }
@@ -722,12 +747,17 @@ namespace SistemaGestionCGI
                     else
                     {
                         ddlTipoMiembro.SelectedValue = "Interno";
+
+                        CargarFacultadesEnCombo();
+
                         if (ddlFacultadMiembro.Items.FindByValue(m.strFacultad_miembro) != null)
                         {
                             ddlFacultadMiembro.SelectedValue = m.strFacultad_miembro;
-                            CargarCarrerasEnCombo(ddlCarreraMiembro, m.strFacultad_miembro);
 
-                            if (ddlCarreraMiembro.Items.FindByValue(m.strCarrera_miembro) != null)
+                            int idFacultad = int.Parse(m.strFacultad_miembro);
+                            CargarCarrerasEnCombo(ddlCarreraMiembro, idFacultad);
+
+                            if (!string.IsNullOrEmpty(m.strCarrera_miembro) && ddlCarreraMiembro.Items.FindByValue(m.strCarrera_miembro) != null)
                                 ddlCarreraMiembro.SelectedValue = m.strCarrera_miembro;
                         }
                     }
@@ -1554,7 +1584,7 @@ namespace SistemaGestionCGI
 
             string texto = textoDuracion.ToLower();
             DateTime fechaCalculada = fechaInicio;
-            bool seEncontroAlgo = false; 
+            bool seEncontroAlgo = false;
 
             var matchAnios = Regex.Match(texto, @"(\d+)\s*a(ñ|n)o");
             if (matchAnios.Success)
@@ -1707,7 +1737,7 @@ namespace SistemaGestionCGI
                 if (!((provincia >= 1 && provincia <= 24) || provincia == 30)) return false;
 
                 int tercerDigito = int.Parse(cedula.Substring(2, 1));
-                if (tercerDigito >= 6) return false; // Solo personas naturales
+                if (tercerDigito >= 6) return false;
 
                 int[] coeficientes = { 2, 1, 2, 1, 2, 1, 2, 1, 2 };
                 int suma = 0;
@@ -1731,77 +1761,25 @@ namespace SistemaGestionCGI
 
         protected void ddlFacultadMiembro_SelectedIndexChanged(object sender, EventArgs e)
         {
-            CargarCarrerasEnCombo(ddlCarreraMiembro, ddlFacultadMiembro.SelectedValue);
+            ddlCarreraMiembro.Items.Clear();
 
-            string script = "toggleTipoIntegrante();";
-            ScriptManager.RegisterStartupScript(this, GetType(), "RestoreUI", script, true);
-        }
-
-        private void CargarCarrerasEnCombo(DropDownList ddlCarrera, string facultad)
-        {
-            ddlCarrera.Items.Clear();
-            if (string.IsNullOrEmpty(facultad))
+            if (int.TryParse(ddlFacultadMiembro.SelectedValue, out int idFac) && idFac > 0)
             {
-                ddlCarrera.Items.Add(new ListItem("-- Seleccione Facultad Primero --", ""));
-                return;
+                ddlCarreraMiembro.Items.Add(new ListItem("-- Seleccione Carrera --", ""));
+
+                var carreras = _manejador.ObtenerCarrerasPorFacultad(idFac);
+
+                foreach (var c in carreras)
+                {
+                    ddlCarreraMiembro.Items.Add(new ListItem(c.Nombre?.ToString() ?? "", c.IdCarrera.ToString()));
+                }
+            }
+            else
+            {
+                ddlCarreraMiembro.Items.Add(new ListItem("-- Seleccione Facultad Primero --", ""));
             }
 
-            ddlCarrera.Items.Add(new ListItem("-- Seleccione Carrera --", ""));
-
-            switch (facultad)
-            {
-                case "CIYA":
-                    ddlCarrera.Items.Add(new ListItem("SISTEMAS DE INFORMACIÓN", "SISTEMAS DE INFORMACIÓN"));
-                    ddlCarrera.Items.Add(new ListItem("INDUSTRIAL", "INDUSTRIAL"));
-                    ddlCarrera.Items.Add(new ListItem("ELECTROMECÁNICA", "ELECTROMECANICA"));
-                    ddlCarrera.Items.Add(new ListItem("ELECTRICIDAD", "ELECTRICIDAD"));
-                    ddlCarrera.Items.Add(new ListItem("HIDRAULICA", "HIDRAULICA"));
-                    ddlCarrera.Items.Add(new ListItem("SOFTWARE", "SOFTWARE"));
-                    break;
-                case "CAREN":
-                    ddlCarrera.Items.Add(new ListItem("AGRONOMÍA", "AGRONOMIA"));
-                    ddlCarrera.Items.Add(new ListItem("VETERINARIA", "VETERINARIA"));
-                    ddlCarrera.Items.Add(new ListItem("AMBIENTE", "AMBIENTE"));
-                    ddlCarrera.Items.Add(new ListItem("TURISMO", "TURISMO"));
-                    ddlCarrera.Items.Add(new ListItem("AGROPECUARIAS", "AGROPECUARIAS"));
-                    ddlCarrera.Items.Add(new ListItem("BIOTECNOLOGIA", "BIOTECNOLOGIA"));
-                    break;
-                case "CAYE":
-                    ddlCarrera.Items.Add(new ListItem("ADMINISTRACIÓN DE EMPRESAS", "ADMINISTRACIÓN DE EMPRESAS"));
-                    ddlCarrera.Items.Add(new ListItem("CONTABILIDAD", "CONTABILIDAD"));
-                    ddlCarrera.Items.Add(new ListItem("ECONOMIA", "ECONOMIA"));
-                    ddlCarrera.Items.Add(new ListItem("FINANZAS", "FINANZAS"));
-                    ddlCarrera.Items.Add(new ListItem("MERCADOTÉCNIA", "MERCADOTÉCNIA"));
-                    ddlCarrera.Items.Add(new ListItem("GESTIÓN DEL TALENTO HUMANO", "GESTIÓN DEL TALENTO HUMANO"));
-                    break;
-                case "CSAYE":
-                    ddlCarrera.Items.Add(new ListItem("DISEÑO GRAFICO", "DISEÑO GRAFICO"));
-                    ddlCarrera.Items.Add(new ListItem("DISEÑO GRAFICO INTERACTIVO", "DISEÑO GRAFICO INTERACTIVO"));
-                    ddlCarrera.Items.Add(new ListItem("COMUNICACIÓN", "COMUNICACIÓN"));
-                    ddlCarrera.Items.Add(new ListItem("TRABAJO SOCIAL", "TRABAJO SOCIAL"));
-                    ddlCarrera.Items.Add(new ListItem("ANIMACIÓN DIGITAL", "ANIMACIÓN DIGITAL"));
-                    ddlCarrera.Items.Add(new ListItem("PSICOLOGÍA SOCIAL", "PSICOLOGÍA SOCIAL"));
-                    break;
-                case "SALUD":
-                    ddlCarrera.Items.Add(new ListItem("ENFERMERIA", "ENFERMERIA"));
-                    break;
-                case "PUJILI":
-                    ddlCarrera.Items.Add(new ListItem("EDUCACIÓN INICIAL", "EDUCACIÓN INICIAL"));
-                    ddlCarrera.Items.Add(new ListItem("EDUCACIÓN BASICA", "EDUCACIÓN BASICA"));
-                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DEL IDIOMA INGLÉS", "PEDAGOGÍA DEL IDIOMA INGLÉS"));
-                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DE LA LENGUA Y LITERATURA", "PEDAGOGÍA DE LA LENGUA Y LITERATURA"));
-                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DE LAS MATEMÁTICAS Y LA FÍSICA", "PEDAGOGÍA DE LAS MATEMÁTICAS Y LA FÍSICA"));
-                    break;
-                case "LAMANA":
-                    ddlCarrera.Items.Add(new ListItem("CONTABILIDAD_LM", "CONTABILIDAD_LM"));
-                    ddlCarrera.Items.Add(new ListItem("ADMINISTRACIÓN_LM", "ADMINISTRACIÓN_LM"));
-                    ddlCarrera.Items.Add(new ListItem("ELECTROMECÁNICA_LM", "ELECTROMECÁNICA_LM"));
-                    ddlCarrera.Items.Add(new ListItem("SISTEMAS DE INFORMACIÓN_LM", "SISTEMAS DE INFORMACIÓN_LM"));
-                    ddlCarrera.Items.Add(new ListItem("TURISMO_LM", "TURISMO_LM"));
-                    ddlCarrera.Items.Add(new ListItem("AGRONOMÍA_LM", "AGRONOMÍA_LM"));
-                    ddlCarrera.Items.Add(new ListItem("AGROINDUSTRIAS_LM", "AGROINDUSTRIAS_LM"));
-                    break;
-            }
+            ScriptManager.RegisterStartupScript(this, GetType(), "RestoreUI", "toggleTipoIntegrante();", true);
         }
 
         protected void btnGuardarObservacion_Click(object sender, EventArgs e)
@@ -1880,7 +1858,7 @@ namespace SistemaGestionCGI
 
             pnlSeleccionAutomatica.Visible = false;
             btnVerDocumentoCandidato.Visible = false;
-            hfTipoRealMiembro.Value = ""; 
+            hfTipoRealMiembro.Value = "";
 
             txtCedulaMiembro.Text = "";
             txtNombresMiembro.Text = "";
@@ -1894,8 +1872,8 @@ namespace SistemaGestionCGI
                 litTituloSeleccion.Text = "INTEGRANTES DEL GRUPO (Disponibles)";
                 CargarCandidatos("GRUPO");
 
-                AlternarBloqueoCampos(true); 
-                OcultarPanelesManuales();  
+                AlternarBloqueoCampos(true);
+                OcultarPanelesManuales();
             }
             else if (seleccion == "DocenteLibre")
             {
@@ -1957,7 +1935,7 @@ namespace SistemaGestionCGI
                     ddlCandidatos.Items.Add(item);
                 }
             }
-            else 
+            else
             {
                 lista = _manejador.ObtenerDocentesCategorizadosLibres();
 
@@ -1983,13 +1961,17 @@ namespace SistemaGestionCGI
             string idSeleccionado = ddlCandidatos.SelectedValue;
             string tipoOrigen = ddlTipoMiembro.SelectedValue;
 
-            if (string.IsNullOrEmpty(idSeleccionado)) { btnVerDocumentoCandidato.Visible = false; return; }
+            if (string.IsNullOrEmpty(idSeleccionado))
+            {
+                btnVerDocumentoCandidato.Visible = false;
+                return;
+            }
 
             string rutaPdf = "";
-            string facultad = "";
-            string carrera = "";
+            string idFacultad = "";
+            string idCarrera = "";
             string entidad = "";
-            string tipoReal = "Interno"; 
+            string tipoReal = "";
 
             if (tipoOrigen == "DocenteGrupo")
             {
@@ -2001,14 +1983,25 @@ namespace SistemaGestionCGI
                     txtApellidosMiembro.Text = datos.strApellidos_int;
                     txtCorreoMiembro.Text = datos.strCorreo_int;
 
-                    rutaPdf = datos.strCertificado_int; 
-                    tipoReal = datos.strTipo_int; 
+                    rutaPdf = datos.strCertificado_int;
 
-                    if (tipoReal == "Externo") entidad = datos.strEntidad_int;
-                    else { facultad = datos.strFacultad_int; carrera = datos.strCarrera_int; }
+                    tipoReal = "MiembroGrupo";
+                    hfTipoRealMiembro.Value = tipoReal;
+
+                    if (datos.strTipo_int == "Externo")
+                    {
+                        entidad = datos.strEntidad_int;
+                    }
+                    else
+                    {
+                        idFacultad = datos.strFacultad_int;
+                        idCarrera = datos.strCarrera_int;
+                    }
+
+                    txtRolMiembro.Text = "MIEMBRO DE GRUPO";
                 }
             }
-            else
+            else if (tipoOrigen == "DocenteLibre")
             {
                 var datos = _manejador.ObtenerDatosDocenteCategorizado(idSeleccionado);
                 if (datos != null)
@@ -2018,40 +2011,77 @@ namespace SistemaGestionCGI
                     txtApellidosMiembro.Text = datos.strApellidos_doc;
                     txtCorreoMiembro.Text = datos.strCorreo_doc;
 
-                    rutaPdf = datos.strCertificado_doc; 
-                    tipoReal = "Docente"; 
-                    facultad = datos.strFacultad_doc;
-                    carrera = datos.strCarrera_doc;
+                    rutaPdf = datos.strCertificado_doc;
+
+                    tipoReal = "Docente";
+                    hfTipoRealMiembro.Value = tipoReal;
+
+                    idFacultad = datos.strFacultad_doc;
+                    idCarrera = datos.strCarrera_doc;
+
+                    txtRolMiembro.Text = "DOCENTE";
                 }
             }
 
-            hfTipoRealMiembro.Value = tipoReal;
-
-            if (tipoReal != "Externo")
+            if (tipoReal == "Interno" || tipoReal == "Externo")
             {
-                if (ddlFacultadMiembro.Items.FindByValue(facultad) != null)
-                    ddlFacultadMiembro.SelectedValue = facultad;
+                divCamposInternos.Style["display"] = tipoReal == "Interno" ? "flex" : "none";
+                divCamposExternos.Style["display"] = tipoReal == "Externo" ? "flex" : "none";
 
-                CargarCarrerasEnCombo(ddlCarreraMiembro, facultad);
-
-                if (ddlCarreraMiembro.Items.FindByValue(carrera) != null)
-                    ddlCarreraMiembro.SelectedValue = carrera;
+                if (!string.IsNullOrEmpty(idFacultad) && int.TryParse(idFacultad, out int idFac))
+                {
+                    ddlFacultadMiembro.SelectedValue = idFacultad;
+                    CargarCarrerasEnCombo(ddlCarreraMiembro, idFac);
+                    if (ddlCarreraMiembro.Items.FindByValue(idCarrera) != null)
+                        ddlCarreraMiembro.SelectedValue = idCarrera;
+                }
             }
             else
             {
-                txtEntidadMiembro.Text = entidad;
+                divCamposInternos.Style["display"] = "none";
+                divCamposExternos.Style["display"] = "none";
             }
 
-            if (!string.IsNullOrEmpty(rutaPdf))
-            {
-                btnVerDocumentoCandidato.Visible = true;
+            btnVerDocumentoCandidato.Visible = !string.IsNullOrEmpty(rutaPdf);
+            if (btnVerDocumentoCandidato.Visible)
                 btnVerDocumentoCandidato.HRef = ResolveUrl(rutaPdf);
-            }
-            else
+
+            pnlFormularioMiembro.Visible = true;
+        }
+
+        //
+
+        private void CargarCarrerasEnCombo(DropDownList ddlCarrera, int idFacultad)
+        {
+            ddlCarrera.Items.Clear();
+            ddlCarrera.Items.Add(new ListItem("-- Seleccione Carrera --", "0"));
+
+            if (idFacultad <= 0) return;
+
+            var carreras = _manejador.ObtenerCarrerasPorFacultad(idFacultad);
+            foreach (var c in carreras)
             {
-                btnVerDocumentoCandidato.Visible = false;
+                string nombre = c.Nombre?.ToString() ?? "";
+                string id = c.IdCarrera.ToString();
+                ddlCarrera.Items.Add(new ListItem(nombre, id));
             }
         }
 
+        private void CargarFacultadesEnCombo()
+        {
+            ddlFacultadMiembro.Items.Clear();
+            ddlFacultadMiembro.Items.Add(new ListItem("-- Seleccione Facultad --", "0"));
+
+            var facultades = _manejador.ObtenerFacultades();
+            foreach (var f in facultades)
+            {
+                string nombre = f.Nombre?.ToString() ?? "";
+                string id = f.IdFacultad.ToString();
+                ddlFacultadMiembro.Items.Add(new ListItem(nombre, id));
+            }
+
+            ddlCarreraMiembro.Items.Clear();
+            ddlCarreraMiembro.Items.Add(new ListItem("-- Seleccione Facultad Primero --", "0"));
+        }
     }
 }
