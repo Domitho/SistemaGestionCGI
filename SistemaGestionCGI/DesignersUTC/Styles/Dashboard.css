@@ -1,40 +1,132 @@
-﻿.kpi-card {
-    transition: transform 0.2s ease-in-out;
+﻿/* =======================================
+   Dashboard - Estilos UTC
+   ======================================= */
+
+/* ---------------------------------------
+   KPI Cards
+--------------------------------------- */
+.kpi-card {
+    transition: all 0.25s ease-in-out;
+    cursor: pointer;
 }
 
     .kpi-card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 14px rgba(49, 39, 131, 0.25);
     }
 
-.kpi-icon {
-    font-size: 2.5rem;
-    opacity: 0.15;
-    position: absolute;
-    right: 20px;
-    top: 20px;
-}
+    .kpi-card .kpi-value {
+        font-size: 2rem;
+        font-weight: 600;
+    }
 
-.kpi-value {
-    font-size: 2.2rem;
-    font-weight: 700;
-    color: var(--utc-azul); /* [cite: 17] */
-    line-height: 1;
-}
+    .kpi-card .kpi-label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--utc-gris-oscuro);
+    }
 
-.kpi-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: #6c757d;
-    letter-spacing: 0.5px;
-}
+    .kpi-card .btn-kpi {
+        margin-top: 10px;
+        font-size: 0.85rem;
+        padding: 5px 12px;
+    }
 
-.badge-subtotal {
-    font-size: 0.75rem;
-    font-weight: 500;
-    padding: 5px 10px;
-    border-radius: 50rem;
-    display: inline-flex;
+/* ---------------------------------------
+   Modal encabezado (Docentes / Proyectos)
+--------------------------------------- */
+.modal-header-info {
+    display: flex;
+    justify-content: center;
     align-items: center;
-    width: fit-content;
+    gap: 20px;
+    background-color: #495057; /* gris neutro */
+    color: #fff;
+    font-weight: 600;
+    padding: 12px 15px;
+    border-radius: 8px 8px 0 0;
+    position: relative;
+    margin-bottom: 10px;
+}
+
+    .modal-header-info .btn-close {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        filter: brightness(0) invert(1); /* blanco */
+    }
+
+/* ---------------------------------------
+   Tablas dentro de los modales
+--------------------------------------- */
+#modalDetalleDocentes table,
+#modalDetalleProyectos table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#modalDetalleDocentes th,
+#modalDetalleProyectos th {
+    background: #312783; /* gris neutro */
+    color: #fff;
+    font-weight: 600;
+    text-align: center;
+}
+
+#modalDetalleDocentes td,
+#modalDetalleProyectos td {
+    text-align: center;
+    padding: 6px 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+#modalDetalleDocentes tbody tr:nth-child(even),
+#modalDetalleProyectos tbody tr:nth-child(even) {
+    background-color: #f5f6fa; /* gris claro */
+}
+
+#modalDetalleDocentes tbody tr:hover,
+#modalDetalleProyectos tbody tr:hover {
+    background-color: #343a40; /* hover oscuro */
+    color: #fff;
+}
+
+/* ---------------------------------------
+   Colores institucionales para KPI / Gráficos
+--------------------------------------- */
+:root {
+    --utc-azul: #312783;
+    --utc-verde: #1b9e4b;
+    --utc-amarillo: #ffc107;
+    --utc-rojo: #d9534f;
+    --utc-gris-oscuro: #495057;
+}
+
+/* ---------------------------------------
+   Gráficos
+--------------------------------------- */
+.chart-container {
+    width: 100%;
+    height: 100%;
+}
+
+/* ---------------------------------------
+   Otros ajustes visuales
+--------------------------------------- */
+.shadow-utc {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-radius: 0.5rem;
+}
+
+.utc-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--utc-azul);
+}
+
+.utc-subtitle {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--utc-azul);
 }

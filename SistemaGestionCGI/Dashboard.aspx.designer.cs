@@ -42,6 +42,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.Label lblIntegrantesCentros;
 
         /// <summary>
+        /// Control btnCentros.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnCentros;
+
+        /// <summary>
         /// Control lblConvocatorias.
         /// </summary>
         /// <remarks>
@@ -49,6 +58,15 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblConvocatorias;
+
+        /// <summary>
+        /// Control btnConvocatorias.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnConvocatorias;
 
         /// <summary>
         /// Control lblGrupos.
@@ -69,6 +87,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.Label lblIntegrantesGrupos;
 
         /// <summary>
+        /// Control btnGrupos.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnGrupos;
+
+        /// <summary>
         /// Control lblTotalDocentes.
         /// </summary>
         /// <remarks>
@@ -76,5 +103,14 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblTotalDocentes;
+
+        /// <summary>
+        /// Control btnDocentes.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnDocentes;
     }
 }
