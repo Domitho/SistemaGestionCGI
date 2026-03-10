@@ -8,36 +8,8 @@
     <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/modal-historial-reporte.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/papelera.css" rel="stylesheet" />
-
-    <style>
-        .popover {
-            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            font-size: 0.8rem; 
-            max-width: 240px; 
-            border: 1px solid rgba(49, 39, 131, 0.2); 
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); 
-            border-radius: 0.5rem;
-        }
-
-        .popover-header {
-            background-color: #f8f9fa;
-            color: #312783; 
-            font-weight: 700;
-            font-size: 0.85rem;
-            padding: 0.5rem 0.75rem; 
-            border-bottom: 1px solid #eaeaea;
-        }
-
-        .popover-body {
-            padding: 0.6rem 0.75rem; 
-            color: #444;
-            line-height: 1.4;
-        }
-    
-        .bs-popover-top > .popover-arrow::after {
-            border-top-color: #f8f9fa;
-        }
-    </style>
+    <link href="DesignersUTC/Styles/utc-popover.css" rel="stylesheet" />
+    <link href="DesignersUTC/Styles/utc-datatables-export.css" rel="stylesheet" />
 
     <%-- ENCABEZADO PRINCIPAL --%>
     <div id="headerCentros" runat="server" class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
@@ -1003,20 +975,23 @@
 
     <%-- LIBRERÍAS EXTERNAS --%>
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
-    <script type="text/javascript">
+    <script src="DesignersUTC/Scripts/utc-datatables.js"></script>
 
-        // Configuración global para DataTables
-        const dtConfig = {
-            responsive: true,
-            autoWidth: false,
-            pageLength: 10,
-            language: { url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json" },
-            dom: "<'row align-items-center mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-end'f>><'row'<'col-sm-12'tr>><'row mt-3 align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
-        };
+    <script type="text/javascript">
 
         Sys.Application.add_load(function () {
 
-            initTables();
+            UTC_DataTable.init('#tablaCentros', {
+                exportTitle: 'Centros_Investigacion',
+                pageLength: 10,
+                excludeLastColumn: true
+            });
+
+            UTC_DataTable.init('#tablaIntegrantes', {
+                exportTitle: 'Integrantes_Centros',
+                pageLength: 10,
+                excludeLastColumn: true
+            });
 
             if (typeof UTC_FileInput === 'function') {
                 initMyFileInput('wrapperResolucion', '<%= flpResolucion.ClientID %>');
@@ -1079,17 +1054,6 @@
                     removeBtn.style.display = 'block';
                     removeBtn.onclick = function () { hf.value = ''; };
                 }
-            }
-        }
-
-        function initTables() {
-            if (document.getElementById('tablaCentros')) {
-                if ($.fn.DataTable.isDataTable('#tablaCentros')) $('#tablaCentros').DataTable().destroy();
-                $('#tablaCentros').DataTable(dtConfig);
-            }
-            if (document.getElementById('tablaIntegrantes')) {
-                if ($.fn.DataTable.isDataTable('#tablaIntegrantes')) $('#tablaIntegrantes').DataTable().destroy();
-                $('#tablaIntegrantes').DataTable(dtConfig);
             }
         }
 

@@ -4,24 +4,8 @@
 
     <link href="DesignersUTC/Styles/utc-full-design.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
-
-    <style>
-        .modal-header.bg-utc {
-            background: linear-gradient(90deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%) !important;
-            color: #fff !important;
-            border-top-left-radius: 10px !important;
-            border-top-right-radius: 10px !important;
-        }
-
-        .modal-header.bg-utc .modal-title {
-            color: #fff !important;
-            font-weight: 600 !important;
-        }
-
-        .form-stack {
-            max-width: 100% !important;
-        }
-    </style>
+    <link href="DesignersUTC/Styles/modal-selector-tiempo.css" rel="stylesheet" />
+    <link href="DesignersUTC/Styles/utc-datatables-export.css" rel="stylesheet" />
 
     <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
         <h3 class="utc-title mb-0">
@@ -543,25 +527,17 @@
 
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
     <script src="DesignersUTC/Scripts/utc-selector-tiempo.js"></script>
+    <script src="DesignersUTC/Scripts/utc-datatables.js"></script>
 
     <script type="text/javascript">
 
-        const dtConfigProyectos = {
-            responsive: true, autoWidth: false, ordering: true, pageLength: 10,
-            language: { url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json" },
-            dom: "<'row align-items-center mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-end'f>><'row mb-3'<'col-sm-12 text-center'B>><'row'<'col-sm-12'tr>><'row mt-3 align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-            buttons: [
-                { extend: 'excelHtml5', text: '<i class="fa-solid fa-file-excel"></i> Excel', className: 'btn btn-success btn-sm rounded-pill mx-1' },
-                { extend: 'pdfHtml5', text: '<i class="fa-solid fa-file-pdf"></i> PDF', className: 'btn btn-danger btn-sm rounded-pill mx-1', orientation: 'landscape', pageSize: 'A4' },
-                { extend: 'print', text: '<i class="fa-solid fa-print"></i> Imprimir', className: 'btn btn-secondary btn-sm rounded-pill mx-1' }
-            ],
-            columnDefs: [{ targets: -1, orderable: false, searchable: false }]
-        };
-
         Sys.Application.add_load(function () {
-            const tabla = '#tablaProyectos';
-            if ($.fn.DataTable && $.fn.DataTable.isDataTable(tabla)) $(tabla).DataTable().destroy();
-            if ($(tabla).length) $(tabla).DataTable(dtConfigProyectos);
+
+            UTC_DataTable.init('#tablaProyectos', {
+                exportTitle: 'Inscripcion_Proyectos',
+                pageLength: 10,
+                excludeLastColumn: true
+            });
 
             if (typeof UTC_FileInput === 'function') {
                 if (document.getElementById('wrapperArchivo')) {

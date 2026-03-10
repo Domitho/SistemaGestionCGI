@@ -9,72 +9,7 @@
     <link href="DesignersUTC/Styles/modal-historial-reporte.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/papelera.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/informe-observaciones.css" rel="stylesheet" />
-
-    <style>
-        .hover-lift {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .hover-lift:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
-            background-color: #fff !important;
-            border-color: var(--utc-azul) !important; 
-        }
-
-        .bg-opacity-10 {
-            --bs-bg-opacity: 0.1;
-        }
-
-        .btn-locked {
-            opacity: 0.5 !important;
-            pointer-events: none !important;
-            cursor: not-allowed !important;
-            filter: grayscale(100%) !important;
-            position: relative;
-        }
-
-        .btn-locked::after {
-            content: "\f023"; 
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: #6c757d;
-            font-size: 1.2rem;
-        }
-
-        .btn-disabled-utc {
-            opacity: 0.5 !important;    
-            pointer-events: none !important;   
-            cursor: not-allowed !important;   
-            background-color: #e9ecef !important;
-            border-color: #dee2e6 !important;
-            color: #adb5bd !important;
-            box-shadow: none !important;
-        }
-
-        .table .badge {
-            font-weight: 500;
-            font-size: 0.75rem;
-            padding: 5px 8px;
-            letter-spacing: 0.5px;
-            display: inline-flex;
-            align-items: center;
-        }
-
-        @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
-            70% { box-shadow: 0 0 0 6px rgba(220, 53, 69, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
-        }
-
-        .badge.bg-danger {
-            animation: pulse-red 2s infinite;
-        }
-
-    </style>
+    <link href="DesignersUTC/Styles/utc-datatables-export.css" rel="stylesheet" />
 
     <div id="headerEjecucion" runat="server" class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
         <h3 class="utc-title mb-0">
@@ -1460,13 +1395,23 @@
     </div>
 
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
+    <script src="DesignersUTC/Scripts/utc-datatables.js"></script>
 
     <script type="text/javascript">
 
         Sys.Application.add_load(function () {
 
-            initTable('#tablaEjecucion');
-            initTable('#tablaMiembros');
+            UTC_DataTable.init('#tablaEjecucion', {
+                exportTitle: 'Proyectos_Investigacion',
+                pageLength: 10,
+                excludeLastColumn: true
+            });
+
+            UTC_DataTable.init('#tablaMiembros', {
+                exportTitle: 'Miembros_Investigacion',
+                pageLength: 10,
+                excludeLastColumn: true
+            });
 
             if (typeof UTC_FileInput === 'function') {
                 initInput("wrapperArchivoAdd", "<%= flpArchivoAdd.ClientID %>");
@@ -1478,27 +1423,6 @@
 
             toggleTipoIntegrante();
         });
-
-        function initTable(id) {
-            if ($.fn.DataTable && $.fn.DataTable.isDataTable(id)) {
-                $(id).DataTable().destroy();
-            }
-            if ($(id).length) {
-                $(id).DataTable({
-                    responsive: true,
-                    autoWidth: false,
-                    ordering: true,
-                    pageLength: 10,
-                    language: { url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json" },
-                    dom: "<'row align-items-center mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-end'f>><'row mb-3'<'col-sm-12 text-center'B>><'row'<'col-sm-12'tr>><'row mt-3 align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-                    buttons: [
-                        { extend: 'excelHtml5', className: 'btn btn-success btn-sm rounded-pill mx-1', text: '<i class="fa-solid fa-file-excel"></i> Excel' },
-                        { extend: 'pdfHtml5', className: 'btn btn-danger btn-sm rounded-pill mx-1', text: '<i class="fa-solid fa-file-pdf"></i> PDF', orientation: 'landscape' },
-                        { extend: 'print', className: 'btn btn-secondary btn-sm rounded-pill mx-1', text: '<i class="fa-solid fa-print"></i>' }
-                    ]
-                });
-            }
-        }
 
         function initInput(wrapperId, inputId) {
             if (document.getElementById(wrapperId)) {

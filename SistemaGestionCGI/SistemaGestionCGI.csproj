@@ -122,6 +122,7 @@
     <Content Include="Dashboard.aspx" />
     <Content Include="Default.aspx" />
     <Content Include="DesignersUTC\Images\default-group.png" />
+    <Content Include="DesignersUTC\Scripts\utc-datatables.js" />
     <Content Include="DesignersUTC\Scripts\utc-fileinput.js" />
     <Content Include="DesignersUTC\Scripts\utc-selector-tiempo.js" />
     <Content Include="DesignersUTC\Scripts\validaciones-grupos.js" />
@@ -133,12 +134,15 @@
     <Content Include="DesignersUTC\Styles\modal-form-docentes.css" />
     <Content Include="DesignersUTC\Styles\modal-historial-reporte.css" />
     <Content Include="DesignersUTC\Styles\modal-informes.css" />
+    <Content Include="DesignersUTC\Styles\modal-selector-tiempo.css" />
     <Content Include="DesignersUTC\Styles\modal-vista-integrantes.css" />
     <Content Include="DesignersUTC\Styles\papelera.css" />
     <Content Include="DesignersUTC\Styles\proyectos-pro-coordinador.css" />
+    <Content Include="DesignersUTC\Styles\utc-datatables-export.css" />
     <Content Include="DesignersUTC\Styles\utc-fileinput.css" />
     <Content Include="DesignersUTC\Styles\utc-full-design.css" />
     <Content Include="DesignersUTC\Styles\utc-images.css" />
+    <Content Include="DesignersUTC\Styles\utc-popover.css" />
     <Content Include="EjecucionProAprobados.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />

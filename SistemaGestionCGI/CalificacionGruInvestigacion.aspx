@@ -6,6 +6,7 @@
     <link href="DesignersUTC/Styles/utc-full-design.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/modal-calificacion-informe.css" rel="stylesheet" />
+    <link href="DesignersUTC/Styles/utc-datatables-export.css" rel="stylesheet" />
 
     <%-- HEADER PRINCIPAL --%>
     <div id="headerCalificacion" runat="server" class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
@@ -361,6 +362,8 @@
 
     <%-- SCRIPTS OPTIMIZADOS --%>
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
+    <script src="DesignersUTC/Scripts/utc-datatables.js"></script>
+
     <script type="text/javascript">
         function activarEdicionArchivo(tipo) {
             var pnlInfo = document.querySelector('[id$="pnlInfo' + tipo + '"]');
@@ -383,23 +386,13 @@
             if (fileInput) fileInput.value = '';
         }
 
-        const dtConfig = {
-            responsive: true,
-            autoWidth: false,
-            pageLength: 10,
-            language: { url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json" },
-            dom: "<'row align-items-center mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-end'f>><'row'<'col-sm-12'tr>><'row mt-3 align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
-        };
-
         Sys.Application.add_load(function () {
 
-            const tabla = '#tablaCalificaciones';
-            if ($.fn.DataTable && $.fn.DataTable.isDataTable(tabla)) {
-                $(tabla).DataTable().destroy();
-            }
-            if ($(tabla).length) {
-                $(tabla).DataTable(dtConfig);
-            }
+            UTC_DataTable.init('#tablaCalificaciones', {
+                exportTitle: 'Calificaciones_grupos',
+                pageLength: 10,
+                excludeLastColumn: true
+            });
 
             var wrapperAdd = document.getElementById('wrapperArchivoAdd');
             if (wrapperAdd && typeof UTC_FileInput === 'function') {

@@ -3,28 +3,20 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
 
     <%-- RECURSOS UTC --%>
-    <link href="DesignersUTC/Styles/utc-full-design.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
-
-    <%-- ESTILOS LOCALES --%>
-    <style>
-        .form-stack { max-width: 100% !important; }
-        textarea.form-control { resize: vertical; min-height: 100px; }
-        .col-desc { width: 40%; }
-        .modal-header.bg-dark { border-bottom: 0; }
-    </style>
+    <link href="DesignersUTC/Styles/utc-datatables-export.css" rel="stylesheet" />
 
     <%-- HEADER PRINCIPAL --%>
     <div id="headerConvocatoria" runat="server" class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
         <h3 class="utc-title mb-0">
-            <i class="fa-solid fa-bullhorn me-2"></i> 
+            <i class="fa-solid fa-bullhorn me-2"></i>
             <asp:Label ID="lblTituloPrincipal" runat="server" Text="CONVOCATORIAS DE INVESTIGACIÓN"></asp:Label>
         </h3>
         <div class="d-flex gap-2 mt-2 mt-md-0">
             <asp:LinkButton runat="server" ID="lbtNuevaConv" CssClass="btn btn-primary btn-pill d-flex align-items-center" OnClick="lbtNuevaConv_Click">
                 <i class="fa-solid fa-plus me-2"></i> NUEVA CONVOCATORIA
             </asp:LinkButton>
-            
+
             <asp:LinkButton runat="server" ID="btnRegresar" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="btnRegresar_Click" Visible="false" CausesValidation="false">
                 <i class="fa-solid fa-chevron-left me-2"></i> REGRESAR
             </asp:LinkButton>
@@ -58,12 +50,12 @@
                                         <i class="fa-solid fa-eye"></i>
                                     </asp:LinkButton>
 
-                                    <asp:LinkButton ID="btnEditar" runat="server" CommandName="Editar" CommandArgument='<%# Eval("strId_conv") %>' 
+                                    <asp:LinkButton ID="btnEditar" runat="server" CommandName="Editar" CommandArgument='<%# Eval("strId_conv") %>'
                                         CssClass="btn btn-warning btn-sm rounded-circle me-1" ToolTip="Editar">
                                         <i class="fa-solid fa-pen"></i>
                                     </asp:LinkButton>
 
-                                    <asp:LinkButton ID="btnEliminar" runat="server" CommandName="Eliminar" CommandArgument='<%# Eval("strId_conv") %>' 
+                                    <asp:LinkButton ID="btnEliminar" runat="server" CommandName="Eliminar" CommandArgument='<%# Eval("strId_conv") %>'
                                         CssClass="btn btn-eliminar btn-sm rounded-circle" OnClientClick="return confirmarEliminar(this, '¿Está seguro de eliminar este registro? Esta acción no se puede deshacer.');" ToolTip="Eliminar">
                                         <i class="fa-solid fa-trash"></i>
                                     </asp:LinkButton>
@@ -82,7 +74,7 @@
             <h4 class="utc-subtitle mb-4 text-center">
                 <i class="fa-solid fa-file-circle-plus me-2"></i> Formulario de Registro
             </h4>
-            
+
             <div class="row g-3">
                 <div class="col-12">
                     <label class="form-label fw-bold">Nombre de la Convocatoria</label>
@@ -90,7 +82,7 @@
                     <asp:RequiredFieldValidator ID="rfvNombreAdd" runat="server" ControlToValidate="txtNombreAdd" ErrorMessage="Requerido" CssClass="text-danger small" Display="Dynamic" ValidationGroup="Guardar" />
                 </div>
 
-                <div class="col-12"> 
+                <div class="col-12">
                     <label class="form-label">Fecha de Publicación</label>
                     <asp:TextBox ID="txtFechaIniAdd" runat="server" CssClass="form-control" TextMode="Date" />
                     <asp:RequiredFieldValidator ID="rfvFechaIniAdd" runat="server" ControlToValidate="txtFechaIniAdd" ErrorMessage="Requerido" CssClass="text-danger small" Display="Dynamic" ValidationGroup="Guardar" />
@@ -103,8 +95,7 @@
 
                 <div class="col-12">
                     <label class="form-label fw-semibold">Archivo de Bases (PDF/Excel)</label>
-                    
-                    <%-- UTC FILE INPUT ADD --%>
+
                     <div class="utc-fileinput-wrapper" id="wrapperArchivoAdd">
                         <div class="utc-fileinput-header">
                             <div class="utc-fileinput-icon"><i class="fa-solid fa-file-pdf"></i></div>
@@ -116,15 +107,15 @@
                                 </div>
                             </div>
                         </div>
-   
+
                         <input type="text" class="form-control form-control-sm utc-edit-name-field" placeholder="Renombrar archivo..." />
                         <div class="utc-fileinput-preview" id="previewArchivoAdd"></div>
                         <div class="utc-fileinput-loader" id="loaderArchivoAdd"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
-                        
+
                         <div class="utc-dropzone" id="dropzoneArchivoAdd">
                             <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-primary"></i><br />Arrastra archivo aquí
                         </div>
-                        
+
                         <asp:FileUpload ID="flpArchivoAdd" runat="server" CssClass="utc-fileinput-input" accept=".pdf,.doc,.docx,.xls,.xlsx" />
                     </div>
                 </div>
@@ -134,7 +125,7 @@
                 <asp:LinkButton ID="lbtGuardar" runat="server" CssClass="btn btn-primary btn-pill px-4" OnClick="lbtGuardar_Click" ValidationGroup="Guardar" OnClientClick="return validarPesoArchivo('Add');">
                     <i class="fa-solid fa-floppy-disk me-2"></i> Guardar
                 </asp:LinkButton>
-                
+
                 <asp:LinkButton ID="lbtCancelar" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="lbtCancelar_Click" CausesValidation="false">
                     <i class="fa-solid fa-ban me-2"></i> Cancelar
                 </asp:LinkButton>
@@ -148,7 +139,7 @@
             <h4 class="utc-subtitle mb-4 text-center">
                 <i class="fa-solid fa-pen-to-square me-2"></i> Edición de Datos
             </h4>
-            
+
             <asp:HiddenField ID="hfIdConvEdit" runat="server" />
             <asp:HiddenField ID="hfArchivoActual" runat="server" />
 
@@ -170,8 +161,7 @@
 
                 <div class="col-12">
                     <label class="form-label fw-semibold">Reemplazar Archivo (Opcional)</label>
-                    
-                    <%-- UTC FILE INPUT EDIT --%>
+
                     <div class="utc-fileinput-wrapper" id="wrapperArchivoEdit">
                         <div class="utc-fileinput-header">
                             <div class="utc-fileinput-icon"><i class="fa-solid fa-file-pdf"></i></div>
@@ -187,11 +177,11 @@
                         <input type="text" class="form-control form-control-sm utc-edit-name-field" placeholder="Renombrar archivo..." />
                         <div class="utc-fileinput-preview" id="previewArchivoEdit"></div>
                         <div class="utc-fileinput-loader" id="loaderArchivoEdit"><i class="fa-solid fa-spinner fa-spin me-2"></i> Cargando...</div>
-                        
+
                         <div class="utc-dropzone" id="dropzoneArchivoEdit">
                             <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 text-primary"></i><br />Arrastra para reemplazar
                         </div>
-                        
+
                         <asp:FileUpload ID="flpArchivoEdit" runat="server" CssClass="utc-fileinput-input" accept=".pdf,.doc,.docx,.xls,.xlsx" />
                     </div>
                 </div>
@@ -201,7 +191,7 @@
                 <asp:LinkButton ID="lbtActualizar" runat="server" CssClass="btn btn-primary btn-pill px-4" OnClick="lbtActualizar_Click" ValidationGroup="Editar" OnClientClick="return validarPesoArchivo('Edit');">
                     <i class="fa-solid fa-floppy-disk me-2"></i> Actualizar
                 </asp:LinkButton>
-                
+
                 <asp:LinkButton ID="lbtCancelarEdit" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="lbtCancelarEdit_Click" CausesValidation="false">
                     <i class="fa-solid fa-ban me-2"></i> Cancelar
                 </asp:LinkButton>
@@ -229,31 +219,18 @@
         </div>
     </div>
 
-    <%-- SCRIPTS OPTIMIZADOS --%>
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
+    <script src="DesignersUTC/Scripts/utc-datatables.js"></script>
 
     <script type="text/javascript">
-        
-        const dtConfig = {
-            responsive: true,
-            autoWidth: false,
-            ordering: true,
-            order: [],
-            pageLength: 10,
-            language: { url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json" },
-            dom: "<'row align-items-center mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-end'f>><'row'<'col-sm-12'tr>><'row mt-3 align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
-        };
 
         Sys.Application.add_load(function () {
-            
-            // Inicializar DataTables
-            const $table = $('#tablaConvocatorias');
-            if ($table.length) {
-                if ($.fn.DataTable.isDataTable('#tablaConvocatorias')) $table.DataTable().destroy();
-                $table.DataTable(dtConfig);
-            }
+            UTC_DataTable.init('#tablaConvocatorias', {
+                exportTitle: 'Convocatorias_Investigacion',
+                pageLength: 10,
+                excludeLastColumn: true
+            });
 
-            // Inicializar FileInputs 
             if (typeof UTC_FileInput === 'function') {
                 initInput("wrapperArchivoAdd", "<%= flpArchivoAdd.ClientID %>");
                 initInput("wrapperArchivoEdit", "<%= flpArchivoEdit.ClientID %>");
@@ -273,24 +250,30 @@
         }
 
         function validarPesoArchivo(tipo) {
-            var inputId = tipo === 'Add' ? '<%= flpArchivoAdd.ClientID %>' : '<%= flpArchivoEdit.ClientID %>';
+            var inputId = tipo === 'Add'
+                ? '<%= flpArchivoAdd.ClientID %>'
+                : '<%= flpArchivoEdit.ClientID %>';
+
             var input = document.getElementById(inputId);
 
             if (input && input.files && input.files[0]) {
                 var peso = input.files[0].size;
                 var limite = 8 * 1024 * 1024;
+
                 if (peso > limite) {
                     alert('El archivo supera los 8MB permitidos.');
                     input.value = "";
                     return false;
                 }
             }
+
             return true;
         }
 
         function VerPDF(url) {
             document.getElementById('framePdf').src = url;
             document.getElementById('btnDescargarDirecto').href = url;
+
             var myModal = new bootstrap.Modal(document.getElementById('modalVistaPrevia'));
             myModal.show();
         }
@@ -298,9 +281,12 @@
         function CerrarVistaPrevia() {
             var el = document.getElementById('modalVistaPrevia');
             var modal = bootstrap.Modal.getInstance(el);
+
             if (modal) modal.hide();
+
             document.getElementById('framePdf').src = 'about:blank';
         }
+
     </script>
 
 </asp:Content>

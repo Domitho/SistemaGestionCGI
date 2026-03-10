@@ -9,6 +9,7 @@
     <link href="DesignersUTC/Styles/modal-informes.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/proyectos-pro-coordinador.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/informes-coordinadores-pro.css" rel="stylesheet" />
+    <link href="DesignersUTC/Styles/utc-datatables-export.css" rel="stylesheet" />
 
     <div class="utc-hero p-3 p-md-4 mb-4 d-flex justify-content-between align-items-start flex-wrap gap-3">
         <div>
@@ -472,6 +473,7 @@
     <uc:GeneradorInforme ID="ucGenerador" runat="server" OnInformeGuardado="ucGenerador_InformeGuardado" />
 
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
+    <script src="DesignersUTC/Scripts/utc-datatables.js"></script>
 
     <script type="text/javascript">
         function AbrirSubModalUpload() {
@@ -494,14 +496,12 @@
         }
 
         Sys.Application.add_load(function () {
-            if ($('#tablaMiembros').length) {
-                if ($.fn.DataTable.isDataTable('#tablaMiembros')) $('#tablaMiembros').DataTable().destroy();
-                $('#tablaMiembros').DataTable({
-                    responsive: true, autoWidth: false, pageLength: 10,
-                    language: { url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json" },
-                    dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>><'row'<'col-sm-12'tr>><'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
-                });
-            }
+
+            UTC_DataTable.init('#tablaMiembros', {
+                exportTitle: 'Miembros_EjecucionProyectos',
+                pageLength: 10,
+                excludeLastColumn: true
+            });
 
             if (typeof UTC_FileInput === 'function' && document.getElementById("wrapperArchivoInf")) {
                 UTC_FileInput({

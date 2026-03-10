@@ -7,16 +7,7 @@
         <link href="DesignersUTC/Styles/modal-historial-reporte.css" rel="stylesheet" />
         <link href="DesignersUTC/Styles/papelera.css" rel="stylesheet" />
         <link href="DesignersUTC/Styles/utc-images.css" rel="stylesheet" />
-
-        <style>
-            .transition-hover {
-                transition: transform 0.2s ease, box-shadow 0.2s ease;
-            }
-            .transition-hover:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
-            } 
-        </style>
+        <link href="DesignersUTC/Styles/utc-datatables-export.css" rel="stylesheet" />
 
         <div id="headerGrupos" runat="server" class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
             <h3 class="utc-title mb-0">
@@ -1087,20 +1078,21 @@
         </div>
 
         <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
+        <script src="DesignersUTC/Scripts/utc-datatables.js"></script>
         <script type="text/javascript">
 
-            const dtConfig = {
-                responsive: true,
-                autoWidth: false,
-                pageLength: 10,
-                order: [],
-                language: { url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json" },
-                dom: "<'row align-items-center mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-end'f>><'row'<'col-sm-12'tr>><'row mt-3 align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
-            };
-
             Sys.Application.add_load(function () {
-                initTable('#tablaGrupos');
-                initTable('#tablaIntegrantes');
+                UTC_DataTable.init('#tablaGrupos', {
+                    exportTitle: 'Grupos_Investigacion',
+                    pageLength: 10,
+                    excludeLastColumn: true
+                });
+
+                UTC_DataTable.init('#tablaIntegrantes', {
+                    exportTitle: 'Integrantes_Grupo',
+                    pageLength: 10,
+                    excludeLastColumn: true
+                });
 
                 if (typeof UTC_FileInput === 'function') {
                     initFileInput('wrapperArchivoGrupo', '<%= flpArchivoGrupo.ClientID %>');
@@ -1114,14 +1106,6 @@
                     }
                 }
             });
-
-            function initTable(id) {
-                const $table = $(id);
-                if ($table.length) {
-                    if ($.fn.DataTable.isDataTable(id)) $table.DataTable().destroy();
-                    $table.DataTable(dtConfig);
-                }
-            }
 
             function initFileInput(wrapperId, inputId) {
                 if (document.getElementById(wrapperId)) {

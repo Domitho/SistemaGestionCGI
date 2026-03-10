@@ -7,6 +7,7 @@
     <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/modal-historial-reporte.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/papelera.css" rel="stylesheet" />
+    <link href="DesignersUTC/Styles/utc-datatables-export.css" rel="stylesheet" />
 
     <%-- ENCABEZADO PRINCIPAL --%>
     <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
@@ -490,19 +491,55 @@
     <%-- SCRIPTS --%>
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
     <script type="text/javascript">
-        $(document).ready(function () {
-            $('#tablaDocentes').DataTable({
-                responsive: true,
-                language: { url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json" },
-                dom: "<'row align-items-center mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-end'f>><'row'<'col-sm-12'tr>><'row mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
-            });
-        });
-
         Sys.Application.add_load(function () {
+            inicializarTablaDocentes();
+
             if (typeof UTC_FileInput === 'function') {
                 initFileInput('wrapperCertificado', '<%= flpCertificado.ClientID %>');
             }
         });
+
+        function inicializarTablaDocentes() {
+            var $table = $('#tablaDocentes');
+
+            if (!$table.length) return;
+
+            if ($.fn.DataTable.isDataTable('#tablaDocentes')) {
+                $table.DataTable().destroy();
+            }
+
+            $table.DataTable({
+                responsive: true,
+                autoWidth: false,
+                ordering: true,
+                pageLength: 10,
+                language: {
+                    url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json"
+                },
+                dom:
+                    "<'row align-items-center mb-3'<'col-sm-12 col-md-4'l><'col-sm-12 col-md-4 text-center'B><'col-sm-12 col-md-4 text-end'f>>" +
+                    "<'row'<'col-12'tr>>" +
+                    "<'row mt-3 align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="fa-solid fa-file-excel"></i><span>Excel</span>',
+                        className: 'dt-btn-export'
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: '<i class="fa-solid fa-file-pdf"></i><span>PDF</span>',
+                        className: 'dt-btn-export',
+                        orientation: 'landscape'
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fa-solid fa-print"></i><span>Imprimir</span>',
+                        className: 'dt-btn-export'
+                    }
+                ]
+            });
+        }
 
         function initFileInput(wrapperId, inputId) {
             var wrapper = document.getElementById(wrapperId);
