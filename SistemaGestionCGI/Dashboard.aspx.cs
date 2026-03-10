@@ -40,7 +40,6 @@ namespace SistemaGestionCGI
         {
             try
             {
-                // 1. KPI Cards
                 var kpis = _bll.ObtenerContadoresGenerales();
 
                 lblCentros.Text = kpis.TotalCentros.ToString();
@@ -53,24 +52,20 @@ namespace SistemaGestionCGI
 
                 lblTotalDocentes.Text = kpis.TotalDocentes.ToString();
 
-                // 2. Gráficos
                 var proyectos = _bll.ObtenerProyectosPorEstado();
                 var docentes = _bll.ObtenerDocentesPorCategoria();
 
                 JsonProyectos = JsonConvert.SerializeObject(proyectos);
                 JsonDocentes = JsonConvert.SerializeObject(docentes);
 
-                // 3. Detalle de docentes para modal
                 var docentesDetalle = _bll.ObtenerDocentesPorCategoriaDetalleTodos();
                 JsonDocentesDetalle = JsonConvert.SerializeObject(docentesDetalle);
 
-                // 4. Detalle de proyectos para modal
                 var proyectosDetalle = _bll.ObtenerProyectosDetalleTodos();
                 JsonProyectosDetalle = JsonConvert.SerializeObject(proyectosDetalle);
             }
             catch (Exception ex)
             {
-                // Logging mínimo; se puede mejorar con NLog, Serilog, etc.
                 Console.WriteLine("Error Dashboard: " + ex.Message);
             }
         }

@@ -365,9 +365,9 @@ namespace SistemaGestionCGI.BLL
             string fechaFin = estado ? "NULL" : $"'{DateTime.Now:yyyyMMdd}'";
 
             string sql = $@"
-        UPDATE INVGCCGRUPO_INTEGRANTES 
-        SET bitActivo_int = {bit}, dtFechafin_int = {fechaFin}
-        WHERE strId_int = '{id}'";
+                UPDATE INVGCCGRUPO_INTEGRANTES 
+                SET bitActivo_int = {bit}, dtFechafin_int = {fechaFin}
+                WHERE strId_int = '{id}'";
 
             _dal.UpdateSql(sql);
 

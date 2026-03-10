@@ -447,7 +447,6 @@ namespace SistemaGestionCGI
 
                 _manejador.GuardarInforme(nuevoInforme, cicloActual);
 
-                // 5. CERRAR Y LIMPIAR
                 string scriptFin = $"limpiarBorrador(); bootstrap.Modal.getInstance(document.getElementById('modalGeneradorInforme')).hide(); resetWizard({idEjecucion});";
                 ScriptManager.RegisterStartupScript(this, GetType(), "CloseGen", scriptFin, true);
 

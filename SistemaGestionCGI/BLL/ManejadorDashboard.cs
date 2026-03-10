@@ -123,7 +123,7 @@ namespace SistemaGestionCGI.BLL
                 SELECT 
                     e.strId_ejec AS Id,
                     e.fkId_pro AS Codigo,
-                    p.strTema_pro AS NombreProyecto,
+                    COALESCE(p.strTema_pro, 'Nombre no disponible') AS NombreProyecto,
                     e.strCoordinador_ejec AS Coordinador,
                     e.strPeriodo_ejec AS Periodo,
                     e.dtFechaini_ejec AS FechaInicio,
@@ -131,8 +131,8 @@ namespace SistemaGestionCGI.BLL
                     e.strInforme_ejec AS Informe,
                     e.strEstado_ejec AS Estado
                 FROM INVGCCEJECUCION_PROYECTO e
-                LEFT JOIN INVGCCINSCRIPCION_PROYECTOS p 
-                    ON e.fkId_pro = p.strId_pro
+                LEFT JOIN INVGCCINSCRIPCION_PROYECTOS p
+                    ON UPPER(LTRIM(RTRIM(e.fkId_pro))) = UPPER(LTRIM(RTRIM(p.strId_pro)))
                 WHERE e.strEstado_ejec LIKE '{estado.Replace("'", "''")}'";
 
             return _dal.SelectSql<ProyectoDetalleDTO>(sql) ?? new List<ProyectoDetalleDTO>();

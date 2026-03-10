@@ -225,7 +225,6 @@
         </div>
     </asp:Panel>
 
-    <%-- MODAL MÉTRICAS ACTUALIZADO (Paso clave) --%>
     <div class="modal fade" id="modalMetricas" tabindex="-1" aria-hidden="true" ClientIDMode="Static" runat="server">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow-utc border-0">

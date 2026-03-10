@@ -226,7 +226,7 @@ namespace SistemaGestionCGI
                     _manejador.GuardarUsuario(u);
                     Msg("Usuario creado exitosamente.", "ss");
                 }
-                else // EDITAR
+                else 
                 {
                     u.intId_usu = int.Parse(hfIdUsuario.Value);
                     if (string.IsNullOrEmpty(u.strClave_usu))

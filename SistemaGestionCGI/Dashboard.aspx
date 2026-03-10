@@ -33,10 +33,10 @@
                     </div>
                     <div class="badge-subtotal bg-primary bg-opacity-10 text-primary mt-3 border border-primary border-opacity-10">
                         <i class="fa-solid fa-users me-2"></i>
-                        <asp:Label ID="lblIntegrantesCentros" runat="server" Text="0"></asp:Label> Integrantes
+                        <asp:Label ID="lblIntegrantesCentros" runat="server" Text="0"></asp:Label>
                     </div>
                     <asp:Button ID="btnCentros" runat="server" CssClass="btn btn-primary btn-kpi" Text="Ver Centros"
-                        OnClientClick="window.location='ModuloCentros.aspx'; return false;" />
+                        OnClientClick="window.location='CentrosInvestigacion.aspx'; return false;" />
                 </div>
             </div>
         </div>
@@ -54,7 +54,7 @@
                         <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill">Registradas</span>
                     </div>
                     <asp:Button ID="btnConvocatorias" runat="server" CssClass="btn btn-danger btn-kpi" Text="Ver Convocatorias"
-                        OnClientClick="window.location='ModuloConvocatorias.aspx'; return false;" />
+                        OnClientClick="window.location='ConvocatoriaGruInvestigacion.aspx'; return false;" />
                 </div>
             </div>
         </div>
@@ -66,14 +66,14 @@
                 <div class="d-flex flex-column justify-content-between h-100">
                     <div>
                         <span class="kpi-value"><asp:Label ID="lblGrupos" runat="server" Text="0"></asp:Label></span>
-                        <div class="kpi-label mt-1">Grupos de Inv.</div>
+                        <div class="kpi-label mt-1">Grupos de Investigacion</div>
                     </div>
                     <div class="badge-subtotal bg-warning bg-opacity-10 text-dark mt-3 border border-warning border-opacity-25">
                         <i class="fa-solid fa-users me-2"></i>
-                        <asp:Label ID="lblIntegrantesGrupos" runat="server" Text="0"></asp:Label> Integrantes
+                        <asp:Label ID="lblIntegrantesGrupos" runat="server" Text="0"></asp:Label>
                     </div>
                     <asp:Button ID="btnGrupos" runat="server" CssClass="btn btn-warning btn-kpi" Text="Ver Grupos"
-                        OnClientClick="window.location='ModuloGrupos.aspx'; return false;" />
+                        OnClientClick="window.location='GruposInvestigacion.aspx'; return false;" />
                 </div>
             </div>
         </div>
@@ -91,7 +91,7 @@
                         <span class="badge bg-success bg-opacity-10 text-success rounded-pill">Categorizados</span>
                     </div>
                     <asp:Button ID="btnDocentes" runat="server" CssClass="btn btn-success btn-kpi" Text="Ver Docentes"
-                        OnClientClick="window.location='ModuloDocentes.aspx'; return false;" />
+                        OnClientClick="window.location='CategorizacionDocentes.aspx'; return false;" />
                 </div>
             </div>
         </div>

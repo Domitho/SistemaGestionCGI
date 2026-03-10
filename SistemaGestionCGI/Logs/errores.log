@@ -1,0 +1,21 @@
+[09/03/2026 11:20:57 a. m.] System.Exception: Error SQL: The DELETE statement conflicted with the REFERENCE constraint "FK_INVGCCPROYECTO_INVGCCCONVOCATORI". The conflict occurred in database "INVESTIGACION", table "dbo.INVGCCINSCRIPCION_PROYECTOS", column 'fkId_conv'.
+The statement has been terminated.
+   en SistemaGestionCGI.Settings.ConnectionSqlServer.ExecuteBase[T](String sql, Func`2 action) en C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\Settings\ConnectionSqlServer.cs:línea 50
+   en SistemaGestionCGI.Settings.ConnectionSqlServer.Delete(String table, String where) en C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\Settings\ConnectionSqlServer.cs:línea 168
+   en SistemaGestionCGI.BLL.ManejadorConvocatorias.EliminarConvocatoria(String id) en C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\BLL\ManejadorConvocatorias.cs:línea 68
+   en SistemaGestionCGI.ConvocatoriaGruInvestigacion.rptConvocatorias_ItemCommand(Object source, RepeaterCommandEventArgs e) en C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\ConvocatoriaGruInvestigacion.aspx.cs:línea 151
+
+[09/03/2026 11:21:03 a. m.] System.Exception: Error SQL: The DELETE statement conflicted with the REFERENCE constraint "FK_INVGCCPROYECTO_INVGCCCONVOCATORI". The conflict occurred in database "INVESTIGACION", table "dbo.INVGCCINSCRIPCION_PROYECTOS", column 'fkId_conv'.
+The statement has been terminated.
+   en SistemaGestionCGI.Settings.ConnectionSqlServer.ExecuteBase[T](String sql, Func`2 action) en C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\Settings\ConnectionSqlServer.cs:línea 50
+   en SistemaGestionCGI.Settings.ConnectionSqlServer.Delete(String table, String where) en C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\Settings\ConnectionSqlServer.cs:línea 168
+   en SistemaGestionCGI.BLL.ManejadorConvocatorias.EliminarConvocatoria(String id) en C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\BLL\ManejadorConvocatorias.cs:línea 68
+   en SistemaGestionCGI.ConvocatoriaGruInvestigacion.rptConvocatorias_ItemCommand(Object source, RepeaterCommandEventArgs e) en C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\ConvocatoriaGruInvestigacion.aspx.cs:línea 151
+
+[09/03/2026 02:45:47 p. m.] System.Exception: Error SQL: The DELETE statement conflicted with the REFERENCE constraint "FK_INVGCCPROYECTO_INVGCCCONVOCATORI". The conflict occurred in database "INVESTIGACION", table "dbo.INVGCCINSCRIPCION_PROYECTOS", column 'fkId_conv'.
+The statement has been terminated.
+   en SistemaGestionCGI.Settings.ConnectionSqlServer.ExecuteBase[T](String sql, Func`2 action) en C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\Settings\ConnectionSqlServer.cs:línea 50
+   en SistemaGestionCGI.Settings.ConnectionSqlServer.Delete(String table, String where) en C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\Settings\ConnectionSqlServer.cs:línea 168
+   en SistemaGestionCGI.BLL.ManejadorConvocatorias.EliminarConvocatoria(String id) en C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\BLL\ManejadorConvocatorias.cs:línea 68
+   en SistemaGestionCGI.ConvocatoriaGruInvestigacion.rptConvocatorias_ItemCommand(Object source, RepeaterCommandEventArgs e) en C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\ConvocatoriaGruInvestigacion.aspx.cs:línea 151
+

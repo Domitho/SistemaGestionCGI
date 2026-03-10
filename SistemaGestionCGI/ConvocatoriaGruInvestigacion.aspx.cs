@@ -138,20 +138,33 @@ namespace SistemaGestionCGI
                     try
                     {
                         var obj = _manejador.ObtenerConvocatoriaPorId(id);
-                        // CAMBIO 4: Resolución de ruta para eliminar
+
                         if (obj != null && !string.IsNullOrEmpty(obj.strArchivo_conv))
                         {
                             string rutaFisica = ObtenerRutaFisica(obj.strArchivo_conv);
                             if (File.Exists(rutaFisica))
                             {
-                                try { File.Delete(rutaFisica); } catch { }
+                                try { File.Delete(rutaFisica); } catch (Exception exDel) { Msg("Error eliminando archivo del servidor.", "ww", exDel); }
                             }
                         }
 
                         _manejador.EliminarConvocatoria(id);
                         Redireccionar("Convocatoria eliminada.", "ss");
                     }
-                    catch (Exception ex) { Msg("Error al eliminar: " + ex.Message, "ee"); }
+                    catch (Exception ex)
+                    {
+                        string mensajeUsuario;
+                        if (ex.Message.Contains("REFERENCE constraint") || ex.Message.Contains("conflicted with"))
+                        {
+                            mensajeUsuario = "No se puede eliminar esta convocatoria porque está asociada a uno o más proyectos.";
+                            Msg(mensajeUsuario, "ww", ex);
+                        }
+                        else
+                        {
+                            mensajeUsuario = "Ocurrió un error al eliminar la convocatoria. Contacte al administrador.";
+                            Msg(mensajeUsuario, "ee", ex);
+                        }
+                    }
                     break;
 
                 case "VerArchivo":
@@ -297,11 +310,32 @@ namespace SistemaGestionCGI
             Response.Redirect("ConvocatoriaGruInvestigacion.aspx", false);
         }
 
-        private void Msg(string msg, string type)
+        private void Msg(string friendlyMessage, string type, Exception ex = null)
         {
-            if (string.IsNullOrEmpty(msg)) return;
+            if (ex != null)
+            {
+                try
+                {
+                    string logsDir = Server.MapPath("~/Logs");
 
-            string cleanMsg = msg
+                    if (!System.IO.Directory.Exists(logsDir))
+                        System.IO.Directory.CreateDirectory(logsDir);
+
+                    string logFile = System.IO.Path.Combine(logsDir, "errores.log");
+
+                    System.IO.File.AppendAllText(
+                        logFile,
+                        $"[{DateTime.Now}] {ex}\r\n\r\n"
+                    );
+                }
+                catch
+                {
+                }
+            }
+
+            if (string.IsNullOrEmpty(friendlyMessage)) return;
+
+            string cleanMsg = friendlyMessage
                 .Replace("\\", "\\\\")
                 .Replace("'", "\\'")
                 .Replace("\"", "\\\"")
