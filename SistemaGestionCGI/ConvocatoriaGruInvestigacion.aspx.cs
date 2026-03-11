@@ -54,10 +54,6 @@ namespace SistemaGestionCGI
             catch (Exception ex) { Msg("Error al cargar convocatorias: " + ex.Message, "ee"); }
         }
 
-        // =============================================
-        // CRUD CONVOCATORIAS
-        // =============================================
-
         protected void lbtNuevaConv_Click(object sender, EventArgs e)
         {
             CambiarVista(Vista.Agregar);
@@ -70,6 +66,29 @@ namespace SistemaGestionCGI
         {
             try
             {
+                bool valido = true;
+
+                txtNombreAdd.CssClass = "form-control";
+                txtFechaIniAdd.CssClass = "form-control";
+
+                if (string.IsNullOrWhiteSpace(txtNombreAdd.Text))
+                {
+                    txtNombreAdd.CssClass = "form-control is-invalid";
+                    valido = false;
+                }
+
+                if (string.IsNullOrWhiteSpace(txtFechaIniAdd.Text))
+                {
+                    txtFechaIniAdd.CssClass = "form-control is-invalid";
+                    valido = false;
+                }
+
+                if (!valido)
+                {
+                    Msg("Debe completar los campos obligatorios.", "ww");
+                    return;
+                }
+
                 if (!flpArchivoAdd.HasFile)
                 {
                     Msg("Debe adjuntar el archivo de bases.", "ww");
@@ -78,14 +97,17 @@ namespace SistemaGestionCGI
 
                 if (!ValidarArchivo(flpArchivoAdd.FileName)) return;
 
-                string rutaRelativa = GuardarArchivoVirtual(flpArchivoAdd, $"CONV_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivoAdd.FileName)}");
+                string rutaRelativa = GuardarArchivoVirtual(
+                    flpArchivoAdd,
+                    $"CONV_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivoAdd.FileName)}"
+                );
 
                 var conv = new InvgccConvocatoriaGruInvestigacion
                 {
                     strNombre_conv = txtNombreAdd.Text.Trim(),
                     dtFechaini_conv = DateTime.Parse(txtFechaIniAdd.Text),
                     strDescripcion_conv = HttpUtility.HtmlEncode(txtDescAdd.Text),
-                    strArchivo_conv = rutaRelativa // Se guarda "~/Archivos/..."
+                    strArchivo_conv = rutaRelativa
                 };
 
                 conv.dtFechafin_conv = new DateTime(1900, 1, 1);
@@ -93,35 +115,72 @@ namespace SistemaGestionCGI
                 _manejador.GuardarConvocatoria(conv);
                 Redireccionar("Convocatoria creada exitosamente.", "ss");
             }
-            catch (Exception ex) { Msg("Error al guardar: " + ex.Message, "ee"); }
+            catch (Exception ex)
+            {
+                Msg("Error al guardar: " + ex.Message, "ee");
+            }
         }
 
         protected void lbtActualizar_Click(object sender, EventArgs e)
         {
             try
             {
+                bool valido = true;
+
+                txtNombreEdit.CssClass = "form-control";
+                txtFechaIniEdit.CssClass = "form-control";
+
+                if (string.IsNullOrWhiteSpace(txtNombreEdit.Text))
+                {
+                    txtNombreEdit.CssClass = "form-control is-invalid";
+                    valido = false;
+                }
+
+                if (string.IsNullOrWhiteSpace(txtFechaIniEdit.Text))
+                {
+                    txtFechaIniEdit.CssClass = "form-control is-invalid";
+                    valido = false;
+                }
+
+                if (!valido)
+                {
+                    Msg("Debe completar los campos obligatorios.", "ww");
+                    CambiarVista(Vista.Editar);
+                    return;
+                }
+
                 var conv = new InvgccConvocatoriaGruInvestigacion
                 {
                     strId_conv = hfIdConvEdit.Value,
                     strNombre_conv = txtNombreEdit.Text.Trim(),
                     dtFechaini_conv = DateTime.Parse(txtFechaIniEdit.Text),
                     strDescripcion_conv = HttpUtility.HtmlEncode(txtDescEdit.Text),
-                    strArchivo_conv = hfArchivoActual.Value, // Mantiene la ruta actual por defecto
+                    strArchivo_conv = hfArchivoActual.Value,
                     dtFechafin_conv = new DateTime(1900, 1, 1)
                 };
 
                 if (flpArchivoEdit.HasFile)
                 {
-                    if (!ValidarArchivo(flpArchivoEdit.FileName)) return;
+                    if (!ValidarArchivo(flpArchivoEdit.FileName))
+                    {
+                        CambiarVista(Vista.Editar);
+                        return;
+                    }
 
-                    // CAMBIO 3: Guardado virtual en edición
-                    conv.strArchivo_conv = GuardarArchivoVirtual(flpArchivoEdit, $"CONV_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivoEdit.FileName)}");
+                    conv.strArchivo_conv = GuardarArchivoVirtual(
+                        flpArchivoEdit,
+                        $"CONV_{DateTime.Now.Ticks}{Path.GetExtension(flpArchivoEdit.FileName)}"
+                    );
                 }
 
                 _manejador.ActualizarConvocatoria(conv);
                 Redireccionar("Convocatoria actualizada.", "ss");
             }
-            catch (Exception ex) { Msg("Error al actualizar: " + ex.Message, "ee"); }
+            catch (Exception ex)
+            {
+                Msg("Error al actualizar: " + ex.Message, "ee");
+                CambiarVista(Vista.Editar);
+            }
         }
 
         protected void rptConvocatorias_ItemCommand(object source, RepeaterCommandEventArgs e)

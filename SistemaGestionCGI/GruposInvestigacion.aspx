@@ -100,7 +100,7 @@
                 <div class="row g-3 mb-4">
                     <div class="col-12">
                         <label class="form-label text-muted small fw-bold">Nombre del Grupo <span class="text-danger">*</span></label>
-                        <asp:TextBox ID="txtNombreGru" runat="server" CssClass="form-control" autocomplete="off" placeholder="Ingrese el nombre oficial..." />
+                        <asp:TextBox ID="txtNombreGru" runat="server" CssClass="form-control" autocomplete="off" placeholder="Ingrese el nombre del grupo" />
                     </div>
 
                     <div class="col-12">

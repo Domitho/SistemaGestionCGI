@@ -68,7 +68,7 @@
                         </div>
 
                          <div class="modal-footer mt-4 d-flex justify-content-center">
-                            <a href="#" target="_blank">¿Olvidó su contraseña?</a>
+                            
                         </div>
                     </div>
                 </div>

@@ -685,7 +685,7 @@
                             <asp:DropDownList ID="ddlTipoDirModal" runat="server" CssClass="form-select shadow-sm"
                                 AutoPostBack="true" 
                                 OnSelectedIndexChanged="ddlTipoDirModal_SelectedIndexChanged">
-                                <asp:ListItem Text="INTERNO (Docente / Administrativo)" Value="Interno" Selected="True" />
+                                <asp:ListItem Text="INTERNO (Administrativo/Estudiante)" Value="Interno" Selected="True" />
                                 <asp:ListItem Text="EXTERNO (Invitado)" Value="Externo" />
                             </asp:DropDownList>
                         </div>
@@ -893,7 +893,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modalPapelera" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="modalPapelera" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content utc-modal-premium">
             

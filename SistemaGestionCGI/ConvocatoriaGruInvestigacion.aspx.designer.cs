@@ -87,15 +87,6 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.TextBox txtNombreAdd;
 
         /// <summary>
-        /// Control rfvNombreAdd.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.RequiredFieldValidator rfvNombreAdd;
-
-        /// <summary>
         /// Control txtFechaIniAdd.
         /// </summary>
         /// <remarks>
@@ -103,15 +94,6 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtFechaIniAdd;
-
-        /// <summary>
-        /// Control rfvFechaIniAdd.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.RequiredFieldValidator rfvFechaIniAdd;
 
         /// <summary>
         /// Control txtDescAdd.

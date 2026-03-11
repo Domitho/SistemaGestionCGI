@@ -78,14 +78,12 @@
             <div class="row g-3">
                 <div class="col-12">
                     <label class="form-label fw-bold">Nombre de la Convocatoria</label>
-                    <asp:TextBox ID="txtNombreAdd" runat="server" CssClass="form-control" autocomplete="off" />
-                    <asp:RequiredFieldValidator ID="rfvNombreAdd" runat="server" ControlToValidate="txtNombreAdd" ErrorMessage="Requerido" CssClass="text-danger small" Display="Dynamic" ValidationGroup="Guardar" />
+                    <asp:TextBox ID="txtNombreAdd" runat="server" CssClass="form-control" autocomplete="off" placeholders="Ingrese el nombre de la convocatoria" />
                 </div>
 
                 <div class="col-12">
                     <label class="form-label">Fecha de Publicación</label>
                     <asp:TextBox ID="txtFechaIniAdd" runat="server" CssClass="form-control" TextMode="Date" />
-                    <asp:RequiredFieldValidator ID="rfvFechaIniAdd" runat="server" ControlToValidate="txtFechaIniAdd" ErrorMessage="Requerido" CssClass="text-danger small" Display="Dynamic" ValidationGroup="Guardar" />
                 </div>
 
                 <div class="col-12">
@@ -122,7 +120,8 @@
             </div>
 
             <div class="d-flex justify-content-center gap-3 mt-4">
-                <asp:LinkButton ID="lbtGuardar" runat="server" CssClass="btn btn-primary btn-pill px-4" OnClick="lbtGuardar_Click" ValidationGroup="Guardar" OnClientClick="return validarPesoArchivo('Add');">
+                <asp:LinkButton ID="lbtGuardar" runat="server" CssClass="btn btn-primary btn-pill px-4"
+                    OnClick="lbtGuardar_Click" OnClientClick="return validarPesoArchivo('Add');">
                     <i class="fa-solid fa-floppy-disk me-2"></i> Guardar
                 </asp:LinkButton>
 
@@ -144,9 +143,10 @@
             <asp:HiddenField ID="hfArchivoActual" runat="server" />
 
             <div class="row g-3">
+
                 <div class="col-12">
                     <label class="form-label fw-bold">Nombre de la Convocatoria</label>
-                    <asp:TextBox ID="txtNombreEdit" runat="server" CssClass="form-control" autocomplete="off" />
+                    <asp:TextBox ID="txtNombreEdit" runat="server" CssClass="form-control" autocomplete="off" placeholders="Ingrese el nombre de la convocatoria"/>
                 </div>
 
                 <div class="col-12">
@@ -185,10 +185,12 @@
                         <asp:FileUpload ID="flpArchivoEdit" runat="server" CssClass="utc-fileinput-input" accept=".pdf,.doc,.docx,.xls,.xlsx" />
                     </div>
                 </div>
+
             </div>
 
             <div class="d-flex justify-content-center gap-3 mt-4">
-                <asp:LinkButton ID="lbtActualizar" runat="server" CssClass="btn btn-primary btn-pill px-4" OnClick="lbtActualizar_Click" ValidationGroup="Editar" OnClientClick="return validarPesoArchivo('Edit');">
+                <asp:LinkButton ID="lbtActualizar" runat="server" CssClass="btn btn-primary btn-pill px-4"
+                    OnClick="lbtActualizar_Click" OnClientClick="return validarPesoArchivo('Edit');">
                     <i class="fa-solid fa-floppy-disk me-2"></i> Actualizar
                 </asp:LinkButton>
 
