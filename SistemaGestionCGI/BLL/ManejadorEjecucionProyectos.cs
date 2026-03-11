@@ -495,13 +495,28 @@ namespace SistemaGestionCGI.BLL
 
         public void GuardarCiclo(DateTime fechaInicio, DateTime fechaFin)
         {
+            int anioCiclo = fechaInicio.Year;
+
+            string sqlCheck = $@"
+        SELECT COUNT(*) AS Cantidad
+        FROM INVGCCEJECUCION_PROYECTO_CICLOS
+        WHERE YEAR(dtInicio_ciclo) = {anioCiclo}
+          AND CONVERT(date, dtInicio_ciclo) = '{fechaInicio:yyyy-MM-dd}'
+          AND CONVERT(date, dtFin_ciclo) = '{fechaFin:yyyy-MM-dd}'";
+
+            var resultado = _dal.SelectSql<dynamic>(sqlCheck);
+            int cantidad = (resultado != null && resultado.Count > 0) ? Convert.ToInt32(resultado[0].Cantidad) : 0;
+
+            if (cantidad > 0)
+                throw new Exception($"Ya existe un ciclo registrado con las fechas {fechaInicio:dd/MM/yyyy} - {fechaFin:dd/MM/yyyy} en el año {anioCiclo}.");
+
             string nombreCiclo = $"{fechaInicio.ToString("MMMM yyyy").ToUpper()} - {fechaFin.ToString("MMMM yyyy").ToUpper()}";
 
             string sqlInsert = $@"
-                INSERT INTO INVGCCEJECUCION_PROYECTO_CICLOS 
-                (strNombre_ciclo, dtInicio_ciclo, dtFin_ciclo) 
-                VALUES 
-                ('{nombreCiclo}', '{fechaInicio:yyyy-MM-dd}', '{fechaFin:yyyy-MM-dd}')";
+        INSERT INTO INVGCCEJECUCION_PROYECTO_CICLOS
+        (strNombre_ciclo, dtInicio_ciclo, dtFin_ciclo)
+        VALUES
+        ('{nombreCiclo}', '{fechaInicio:yyyy-MM-dd}', '{fechaFin:yyyy-MM-dd}')";
 
             _dal.UpdateSql(sqlInsert);
         }
@@ -754,6 +769,66 @@ namespace SistemaGestionCGI.BLL
             string sql = $"SELECT * FROM INVGCCCATEGORIZACION_DOCENTES WHERE strCedula_doc = '{cedula}'";
             var lista = _dal.SelectSql<dynamic>(sql);
             return lista.FirstOrDefault();
+        }
+
+        // CICLOS
+
+        public dynamic ObtenerCicloPorId(int idCiclo)
+        {
+            string sql = $@"
+        SELECT id_ciclo, strNombre_ciclo, dtInicio_ciclo, dtFin_ciclo
+        FROM INVGCCEJECUCION_PROYECTO_CICLOS
+        WHERE id_ciclo = {idCiclo}";
+
+            var lista = _dal.SelectSql<dynamic>(sql);
+            return lista != null && lista.Count > 0 ? lista[0] : null;
+        }
+
+        public void EliminarCiclo(int idCiclo)
+        {
+            string sqlUso = $@"
+        SELECT COUNT(*) AS Total
+        FROM INVGCCEJECUCION_PROYECTO
+        WHERE fkId_ciclo = {idCiclo}";
+
+            var resultado = _dal.SelectSql<dynamic>(sqlUso);
+            int total = (resultado != null && resultado.Count > 0) ? Convert.ToInt32(resultado[0].Total) : 0;
+
+            if (total > 0)
+                throw new Exception("No se puede eliminar este periodo porque ya está asignado a uno o más proyectos.");
+
+            string sqlDelete = $"DELETE FROM INVGCCEJECUCION_PROYECTO_CICLOS WHERE id_ciclo = {idCiclo}";
+            _dal.DeleteSql(sqlDelete);
+        }
+
+        public void ActualizarCiclo(int idCiclo, DateTime fechaInicio, DateTime fechaFin)
+        {
+            int anioCiclo = fechaInicio.Year;
+
+            string sqlCheck = $@"
+        SELECT COUNT(*) AS Cantidad
+        FROM INVGCCEJECUCION_PROYECTO_CICLOS
+        WHERE YEAR(dtInicio_ciclo) = {anioCiclo}
+          AND CONVERT(date, dtInicio_ciclo) = '{fechaInicio:yyyy-MM-dd}'
+          AND CONVERT(date, dtFin_ciclo) = '{fechaFin:yyyy-MM-dd}'
+          AND id_ciclo <> {idCiclo}";
+
+            var resultado = _dal.SelectSql<dynamic>(sqlCheck);
+            int cantidad = (resultado != null && resultado.Count > 0) ? Convert.ToInt32(resultado[0].Cantidad) : 0;
+
+            if (cantidad > 0)
+                throw new Exception($"Ya existe un ciclo registrado con las fechas {fechaInicio:dd/MM/yyyy} - {fechaFin:dd/MM/yyyy} en el año {anioCiclo}.");
+
+            string nombreCiclo = $"{fechaInicio.ToString("MMMM yyyy").ToUpper()} - {fechaFin.ToString("MMMM yyyy").ToUpper()}";
+
+            string sqlUpdate = $@"
+        UPDATE INVGCCEJECUCION_PROYECTO_CICLOS
+        SET strNombre_ciclo = '{nombreCiclo}',
+            dtInicio_ciclo = '{fechaInicio:yyyy-MM-dd}',
+            dtFin_ciclo = '{fechaFin:yyyy-MM-dd}'
+        WHERE id_ciclo = {idCiclo}";
+
+            _dal.UpdateSql(sqlUpdate);
         }
 
     }

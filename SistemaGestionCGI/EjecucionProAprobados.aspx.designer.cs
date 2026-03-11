@@ -30,7 +30,7 @@ namespace SistemaGestionCGI
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlButton btnGestionarCiclos;
+        protected global::System.Web.UI.WebControls.LinkButton btnGestionarCiclos;
 
         /// <summary>
         /// Control btnNuevoEjecucion.
@@ -798,6 +798,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.LinkButton btnAprobarCierre;
 
         /// <summary>
+        /// Control btnConfirmarAprobacion.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnConfirmarAprobacion;
+
+        /// <summary>
         /// Control modalSubirFinal.
         /// </summary>
         /// <remarks>
@@ -987,6 +996,24 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.Repeater rptHistorialMiembro;
 
         /// <summary>
+        /// Control pnlFormularioCiclo.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlFormularioCiclo;
+
+        /// <summary>
+        /// Control hfIdCicloEdit.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfIdCicloEdit;
+
+        /// <summary>
         /// Control txtMesInicio.
         /// </summary>
         /// <remarks>
@@ -1012,6 +1039,42 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnGuardarCiclo;
+
+        /// <summary>
+        /// Control btnCancelarEdicion.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnCancelarEdicion;
+
+        /// <summary>
+        /// Control pnlListadoCiclos.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlListadoCiclos;
+
+        /// <summary>
+        /// Control btnNuevoCiclo.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnNuevoCiclo;
+
+        /// <summary>
+        /// Control rptCiclos.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptCiclos;
 
         /// <summary>
         /// Control modalRenovarCiclo.

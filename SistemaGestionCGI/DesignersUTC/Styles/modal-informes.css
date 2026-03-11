@@ -131,3 +131,8 @@
         box-shadow: 0 6px 15px rgba(27, 158, 75, 0.4);
         color: white;
     }
+
+/* Coloca en tu CSS global del módulo EjecucionProAprobados */
+.swal2-container {
+    z-index: 2000 !important;
+}

@@ -1,4 +1,3 @@
-C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\obj\Debug\SistemaGestionCGI.csproj.AssemblyReference.cache
 C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\obj\Debug\SistemaGestionCGI.csproj.CoreCompileInputs.cache
 C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\bin\SistemaGestionCGI.dll.config
 C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\bin\SistemaGestionCGI.dll
@@ -150,3 +149,4 @@ C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\bin\r
 C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\bin\roslyn\vbc.rsp
 C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\bin\roslyn\VBCSCompiler.exe
 C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\bin\roslyn\VBCSCompiler.exe.config
+C:\Users\Lenovo ideapad G\source\repos\SistemaGestionCGI\SistemaGestionCGI\obj\Debug\SistemaGestionCGI.csproj.AssemblyReference.cache

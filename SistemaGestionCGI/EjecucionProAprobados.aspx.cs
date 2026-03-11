@@ -868,43 +868,6 @@ namespace SistemaGestionCGI
             ddlCiclo.Items.Insert(0, new ListItem("-- Seleccione Ciclo --", "0"));
         }
 
-        protected void btnGuardarCiclo_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(txtMesInicio.Text) || string.IsNullOrEmpty(txtMesFin.Text))
-                {
-                    Msg("Debe seleccionar ambas fechas.", "ww");
-                    return;
-                }
-
-                DateTime inicio = DateTime.Parse(txtMesInicio.Text);
-
-                DateTime finRaw = DateTime.Parse(txtMesFin.Text);
-                DateTime fin = new DateTime(finRaw.Year, finRaw.Month, DateTime.DaysInMonth(finRaw.Year, finRaw.Month));
-
-                _manejador.GuardarCiclo(inicio, fin);
-
-                CargarComboCiclos();
-
-                if (ddlCiclo.Items.Count > 1)
-                    ddlCiclo.SelectedIndex = 1;
-
-                Msg("Ciclo registrado correctamente.", "ss");
-
-                string scriptCierre = @"
-                    var el = document.getElementById('modalCrearCiclo');
-                    var modal = bootstrap.Modal.getInstance(el);
-                    if(modal){ modal.hide(); } else { new bootstrap.Modal(el).hide(); }";
-
-                ScriptManager.RegisterStartupScript(this, GetType(), "CloseModalCiclo", scriptCierre, true);
-            }
-            catch (Exception ex)
-            {
-                Msg("Error al crear ciclo: " + ex.Message, "ee");
-            }
-        }
-
         private void CargarInformes(int idEjecucion)
         {
             try
@@ -2080,5 +2043,195 @@ namespace SistemaGestionCGI
             ddlCarreraMiembro.Items.Clear();
             ddlCarreraMiembro.Items.Add(new ListItem("-- Seleccione Facultad Primero --", "0"));
         }
+
+        // CICLOS
+
+        private void CargarCiclosEnModal()
+        {
+            try
+            {
+                rptCiclos.DataSource = _manejador.ObtenerCiclosConFechas();
+                rptCiclos.DataBind();
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al cargar ciclos: " + ex.Message, "ee");
+            }
+        }
+
+        protected void btnGestionarCiclos_Click(object sender, EventArgs e)
+        {
+            hfIdCicloEdit.Value = "";
+            txtMesInicio.Text = "";
+            txtMesFin.Text = "";
+
+            btnGuardarCiclo.Text = "Registrar Periodo";
+
+            pnlListadoCiclos.Visible = true;
+            pnlFormularioCiclo.Visible = false;
+
+            CargarCiclosEnModal();
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalCiclo",
+                "new bootstrap.Modal(document.getElementById('modalCrearCiclo')).show();", true);
+        }
+
+        protected void btnNuevoCiclo_Click(object sender, EventArgs e)
+        {
+            hfIdCicloEdit.Value = "";
+            txtMesInicio.Text = "";
+            txtMesFin.Text = "";
+
+            btnGuardarCiclo.Text = "Registrar Periodo";
+
+            pnlListadoCiclos.Visible = false;
+            pnlFormularioCiclo.Visible = true;
+            btnCancelarEdicion.Visible = true;
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalCicloNuevo",
+                "new bootstrap.Modal(document.getElementById('modalCrearCiclo')).show();", true);
+        }
+
+        protected void btnGuardarCiclo_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(txtMesInicio.Text) || string.IsNullOrEmpty(txtMesFin.Text))
+                {
+                    Msg("Debe seleccionar ambas fechas.", "ww");
+
+                    pnlFormularioCiclo.Visible = true;
+                    pnlListadoCiclos.Visible = false;
+
+                    ScriptManager.RegisterStartupScript(this, GetType(), "ReopenModalCiclo",
+                        "new bootstrap.Modal(document.getElementById('modalCrearCiclo')).show();", true);
+                    return;
+                }
+
+                DateTime inicio = DateTime.Parse(txtMesInicio.Text);
+                DateTime finRaw = DateTime.Parse(txtMesFin.Text);
+                DateTime fin = new DateTime(finRaw.Year, finRaw.Month, DateTime.DaysInMonth(finRaw.Year, finRaw.Month));
+
+                if (fin < inicio)
+                {
+                    Msg("La fecha fin no puede ser menor que la fecha inicio.", "ww");
+
+                    pnlFormularioCiclo.Visible = true;
+                    pnlListadoCiclos.Visible = false;
+
+                    ScriptManager.RegisterStartupScript(this, GetType(), "ReopenModalCiclo",
+                        "new bootstrap.Modal(document.getElementById('modalCrearCiclo')).show();", true);
+                    return;
+                }
+
+                if (!string.IsNullOrEmpty(hfIdCicloEdit.Value))
+                {
+                    int idCiclo = int.Parse(hfIdCicloEdit.Value);
+                    _manejador.ActualizarCiclo(idCiclo, inicio, fin);
+                    Msg("Periodo actualizado correctamente.", "ss");
+                }
+                else
+                {
+                    _manejador.GuardarCiclo(inicio, fin);
+                    Msg("Ciclo registrado correctamente.", "ss");
+                }
+
+                hfIdCicloEdit.Value = "";
+                txtMesInicio.Text = "";
+                txtMesFin.Text = "";
+                btnGuardarCiclo.Text = "Registrar Periodo";
+
+                pnlFormularioCiclo.Visible = false;
+                pnlListadoCiclos.Visible = true;
+
+                CargarComboCiclos();
+                CargarCiclosEnModal();
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "ReopenModalCicloListado",
+                    "new bootstrap.Modal(document.getElementById('modalCrearCiclo')).show();", true);
+            }
+            catch (Exception ex)
+            {
+                Msg(ex.Message, "ee");
+
+                pnlFormularioCiclo.Visible = true;
+                pnlListadoCiclos.Visible = false;
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "ReopenModalCiclo",
+                    "new bootstrap.Modal(document.getElementById('modalCrearCiclo')).show();", true);
+            }
+        }
+
+        protected void rptCiclos_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            try
+            {
+                int idCiclo = int.Parse(e.CommandArgument.ToString());
+
+                if (e.CommandName == "Editar")
+                {
+                    var ciclo = _manejador.ObtenerCicloPorId(idCiclo);
+
+                    if (ciclo != null)
+                    {
+                        hfIdCicloEdit.Value = ciclo.id_ciclo.ToString();
+
+                        DateTime fechaInicio = Convert.ToDateTime(ciclo.dtInicio_ciclo);
+                        DateTime fechaFin = Convert.ToDateTime(ciclo.dtFin_ciclo);
+
+                        txtMesInicio.Text = fechaInicio.ToString("yyyy-MM");
+                        txtMesFin.Text = fechaFin.ToString("yyyy-MM");
+
+                        btnGuardarCiclo.Text = "Actualizar Periodo";
+                        pnlListadoCiclos.Visible = false;
+                        pnlFormularioCiclo.Visible = true;
+
+                        ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalCicloEdit",
+                            "new bootstrap.Modal(document.getElementById('modalCrearCiclo')).show();", true);
+                    }
+                }
+                else if (e.CommandName == "Eliminar")
+                {
+                    _manejador.EliminarCiclo(idCiclo);
+
+                    hfIdCicloEdit.Value = "";
+                    txtMesInicio.Text = "";
+                    txtMesFin.Text = "";
+                    btnGuardarCiclo.Text = "Registrar Periodo";
+
+                    CargarComboCiclos();
+                    CargarCiclosEnModal();
+
+                    Msg("Ciclo eliminado correctamente.", "ss");
+
+                    ScriptManager.RegisterStartupScript(this, GetType(), "ReOpenModalCiclo",
+                        "new bootstrap.Modal(document.getElementById('modalCrearCiclo')).show();", true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Msg("Error en la gestión del ciclo: " + ex.Message, "ee");
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "KeepOpenModalCiclo",
+                    "new bootstrap.Modal(document.getElementById('modalCrearCiclo')).show();", true);
+            }
+        }
+
+        protected void btnCancelarEdicion_Click(object sender, EventArgs e)
+        {
+            hfIdCicloEdit.Value = "";
+            txtMesInicio.Text = "";
+            txtMesFin.Text = "";
+
+            btnGuardarCiclo.Text = "Registrar Periodo";
+            pnlFormularioCiclo.Visible = false;
+            pnlListadoCiclos.Visible = true;
+
+            CargarCiclosEnModal();
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "OpenModalCiclo",
+                "new bootstrap.Modal(document.getElementById('modalCrearCiclo')).show();", true);
+        }
+
     }
 }
