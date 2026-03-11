@@ -848,15 +848,25 @@ namespace SistemaGestionCGI
 
         private void SeleccionarCombo(DropDownList ddl, string valor)
         {
+            if (ddl.Items.Count == 0) return;
+
             string valorLimpio = !string.IsNullOrEmpty(valor) ? valor.Trim() : "";
-            if (ddl.Items.FindByValue(valorLimpio) != null)
+
+            ListItem item = ddl.Items.FindByValue(valorLimpio);
+            if (item != null)
             {
                 ddl.SelectedValue = valorLimpio;
+                return;
             }
-            else
+
+            item = ddl.Items.FindByText(valorLimpio);
+            if (item != null)
             {
-                ddl.SelectedIndex = 0;
+                item.Selected = true;
+                return;
             }
+
+            ddl.SelectedIndex = 0;
         }
 
         protected void ddlFacultadInt_SelectedIndexChanged(object sender, EventArgs e)
