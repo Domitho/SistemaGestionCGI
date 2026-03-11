@@ -1,10 +1,4 @@
-﻿/* =======================================
-   Dashboard - Estilos UTC
-   ======================================= */
-
-/* ---------------------------------------
-   KPI Cards
---------------------------------------- */
+﻿
 .kpi-card {
     transition: all 0.25s ease-in-out;
     cursor: pointer;
@@ -32,15 +26,12 @@
         padding: 5px 12px;
     }
 
-/* ---------------------------------------
-   Modal encabezado (Docentes / Proyectos)
---------------------------------------- */
 .modal-header-info {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 20px;
-    background-color: #495057; /* gris neutro */
+    background-color: #495057; 
     color: #fff;
     font-weight: 600;
     padding: 12px 15px;
@@ -54,12 +45,9 @@
         right: 10px;
         top: 50%;
         transform: translateY(-50%);
-        filter: brightness(0) invert(1); /* blanco */
+        filter: brightness(0) invert(1);
     }
 
-/* ---------------------------------------
-   Tablas dentro de los modales
---------------------------------------- */
 #modalDetalleDocentes table,
 #modalDetalleProyectos table {
     width: 100%;
@@ -68,7 +56,7 @@
 
 #modalDetalleDocentes th,
 #modalDetalleProyectos th {
-    background: #312783; /* gris neutro */
+    background: #312783; 
     color: #fff;
     font-weight: 600;
     text-align: center;
@@ -83,18 +71,15 @@
 
 #modalDetalleDocentes tbody tr:nth-child(even),
 #modalDetalleProyectos tbody tr:nth-child(even) {
-    background-color: #f5f6fa; /* gris claro */
+    background-color: #f5f6fa; 
 }
 
 #modalDetalleDocentes tbody tr:hover,
 #modalDetalleProyectos tbody tr:hover {
-    background-color: #343a40; /* hover oscuro */
+    background-color: #343a40; 
     color: #fff;
 }
 
-/* ---------------------------------------
-   Colores institucionales para KPI / Gráficos
---------------------------------------- */
 :root {
     --utc-azul: #312783;
     --utc-verde: #1b9e4b;
@@ -103,17 +88,11 @@
     --utc-gris-oscuro: #495057;
 }
 
-/* ---------------------------------------
-   Gráficos
---------------------------------------- */
 .chart-container {
     width: 100%;
     height: 100%;
 }
 
-/* ---------------------------------------
-   Otros ajustes visuales
---------------------------------------- */
 .shadow-utc {
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     border-radius: 0.5rem;
@@ -130,3 +109,324 @@
     font-weight: 600;
     color: var(--utc-azul);
 }
+
+/* DASHBOARD PDF - EXCEL -IMPRESION */
+
+.dt-buttons .btn {
+    margin-right: 0.4rem;
+    margin-bottom: 0.5rem;
+}
+
+@media print {
+    .no-print,
+    .btn,
+    .modal,
+    .dt-buttons,
+    .dataTables_filter,
+    .dataTables_length,
+    .dataTables_paginate,
+    .dataTables_info,
+    .navbar,
+    footer {
+        display: none !important;
+    }
+
+    body,
+    .utc-content-wrapper {
+        background: #fff !important;
+    }
+
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+
+    #dashboardExportable {
+        width: 100% !important;
+    }
+}
+ /* DISEÑO MODALES */
+
+.modal-utc {
+    border: 0;
+    border-radius: 1.25rem;
+    overflow: hidden;
+    box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.18);
+    background: #ffffff;
+}
+
+.modal-utc-header {
+    background: linear-gradient(135deg, #312783 0%, #4338a3 100%);
+    color: #fff;
+    padding: 1.25rem 1.5rem;
+}
+
+.modal-utc-header-content {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+    min-height: 90px;
+}
+
+    .modal-utc-header-content > div {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+.modal-utc-header .d-flex.flex-wrap.gap-2 {
+    justify-content: center;
+}
+
+.modal-utc-header .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-utc-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.modal-utc-close {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
+    opacity: 1;
+}
+
+.modal-badge-info {
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 0.55rem 0.9rem;
+    font-weight: 600;
+}
+
+.modal-badge-total {
+    background: #ffffff;
+    color: #312783;
+    padding: 0.55rem 0.9rem;
+    font-weight: 700;
+}
+
+.modal-utc-content {
+    background: #f7f8fc;
+    padding: 1.25rem 1.5rem 0.75rem;
+}
+
+.modal-table-shell {
+    background: #fff;
+    border-radius: 1rem;
+    padding: 1rem;
+    box-shadow: 0 0.25rem 1rem rgba(49, 39, 131, 0.08);
+    border: 1px solid #ececf4;
+}
+
+.modal-dt-toolbar {
+    gap: 0.75rem;
+}
+
+    .modal-dt-toolbar .dt-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .modal-dt-toolbar .dataTables_filter {
+        margin: 0;
+    }
+
+        .modal-dt-toolbar .dataTables_filter label {
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        .modal-dt-toolbar .dataTables_filter input {
+            border-radius: 0.75rem !important;
+            border: 1px solid #d6d9e4 !important;
+            padding: 0.45rem 0.75rem !important;
+            min-width: 220px;
+            margin-left: 0.5rem !important;
+            background: #fff;
+        }
+
+.modal-utc-table {
+    margin-bottom: 0 !important;
+}
+
+    .modal-utc-table thead th {
+        background: linear-gradient(135deg, #312783 0%, #241c69 100%);
+        color: #fff;
+        font-weight: 700;
+        border-color: #2d2377 !important;
+        text-transform: uppercase;
+        font-size: 0.88rem;
+        letter-spacing: 0.2px;
+        vertical-align: middle;
+    }
+
+    .modal-utc-table tbody td {
+        vertical-align: middle;
+        font-size: 0.94rem;
+    }
+
+    .modal-utc-table.table-striped > tbody > tr:nth-of-type(odd) > * {
+        background-color: #f8f9fd;
+    }
+
+    .modal-utc-table.table-hover > tbody > tr:hover > * {
+        background-color: #eef1ff;
+    }
+
+#tablaDetalleDocentes_wrapper .dataTables_info,
+#tablaDetalleProyectos_wrapper .dataTables_info {
+    color: #5b6474;
+    font-weight: 500;
+}
+
+#tablaDetalleDocentes_wrapper .dataTables_paginate .paginate_button,
+#tablaDetalleProyectos_wrapper .dataTables_paginate .paginate_button {
+    border-radius: 0.7rem !important;
+    margin: 0 2px;
+}
+
+    #tablaDetalleDocentes_wrapper .dataTables_paginate .paginate_button.current,
+    #tablaDetalleProyectos_wrapper .dataTables_paginate .paginate_button.current {
+        background: #312783 !important;
+        color: #fff !important;
+        border: 1px solid #312783 !important;
+    }
+
+@media (max-width: 768px) {
+    .modal-utc-header,
+    .modal-utc-content {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .modal-utc-header-content {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .modal-dt-toolbar {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+
+        .modal-dt-toolbar .dataTables_filter input {
+            min-width: 100%;
+            margin-left: 0 !important;
+            margin-top: 0.35rem;
+        }
+}
+
+/* BUTTONS DATATABLES */
+
+.modal-dt-toolbar .dt-buttons {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+    .modal-dt-toolbar .dt-button,
+    .modal-dt-toolbar .dt-buttons .btn {
+        border: 0 !important;
+        border-radius: 999px !important;
+        padding: 0.5rem 1rem !important;
+        font-size: 0.88rem !important;
+        font-weight: 600 !important;
+        line-height: 1.2 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.35rem !important;
+        box-shadow: 0 0.2rem 0.6rem rgba(0, 0, 0, 0.08);
+        transition: all 0.2s ease;
+        margin: 0 !important;
+    }
+
+        .modal-dt-toolbar .dt-button:hover,
+        .modal-dt-toolbar .dt-buttons .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0.35rem 0.9rem rgba(0, 0, 0, 0.12);
+        }
+
+.modal-dt-toolbar .buttons-excel {
+    background: #198754 !important;
+    color: #fff !important;
+}
+
+.modal-dt-toolbar .buttons-pdf {
+    background: #dc3545 !important;
+    color: #fff !important;
+}
+
+.modal-dt-toolbar .buttons-print {
+    background: #f59e0b !important;
+    color: #fff !important;
+}
+
+.modal-dt-toolbar .buttons-excel:hover {
+    background: #157347 !important;
+    color: #fff !important;
+}
+
+.modal-dt-toolbar .buttons-pdf:hover {
+    background: #bb2d3b !important;
+    color: #fff !important;
+}
+
+.modal-dt-toolbar .buttons-print:hover {
+    background: #d97706 !important;
+    color: #fff !important;
+}
+
+.modal-dt-toolbar .dt-button:focus,
+.modal-dt-toolbar .dt-buttons .btn:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 0.2rem rgba(49, 39, 131, 0.18) !important;
+}
+
+
+/* */
+
+.modal-dt-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+    .modal-dt-toolbar .dataTables_filter {
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+        .modal-dt-toolbar .dataTables_filter label {
+            margin: 0;
+            font-weight: 600;
+            color: #4b5563;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-dt-toolbar .dataTables_filter input {
+            border-radius: 999px !important;
+            border: 1px solid #d6d9e4 !important;
+            padding: 0.5rem 0.9rem !important;
+            min-width: 230px;
+            margin-left: 0 !important;
+            background: #fff !important;
+        }

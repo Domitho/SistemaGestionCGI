@@ -10,21 +10,17 @@ namespace SistemaGestionCGI
     {
         private readonly ManejadorDashboard _bll = new ManejadorDashboard();
 
-        // JSON para gráficos
         public string JsonProyectos { get; set; } = "[]";
         public string JsonDocentes { get; set; } = "[]";
 
-        // JSON para detalle completo de docentes por categoría (para modal)
         public string JsonDocentesDetalle { get; set; } = "[]";
 
-        // JSON para detalle completo de proyectos (para modal)
         public string JsonProyectosDetalle { get; set; } = "[]";
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
-                // Validar sesión
                 if (Session["UsuarioLogueado"] == null)
                 {
                     Response.Redirect("Login.aspx", false);
@@ -32,6 +28,7 @@ namespace SistemaGestionCGI
                     return;
                 }
 
+                lblFechaActual.Text = DateTime.Now.ToString("dddd, dd 'de' MMMM 'de' yyyy");
                 CargarDashboard();
             }
         }
