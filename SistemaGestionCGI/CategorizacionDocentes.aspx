@@ -415,8 +415,8 @@
                     <div class="bg-white bg-opacity-25 rounded-circle p-3 mb-3 backdrop-blur">
                         <i class="fa-solid fa-trash-arrow-up fa-2x"></i>
                     </div>
-                    <h4 class="fw-bold mb-1">Papelera de Integrantes</h4>
-                    <p class="mb-0 small opacity-75">Recuperación de miembros dados de baja</p>
+                    <h4 class="fw-bold mb-1">Papelera de Docentes</h4>
+                    <p class="mb-0 small opacity-75">Recuperación de docentes dados de baja</p>
                 </div>
 
                 <div class="modal-body p-4 bg-light">
@@ -460,19 +460,23 @@
                                 </div>
                         </ItemTemplate>
                         <FooterTemplate>
-                            <asp:Panel Visible='<%# rptPapelera.Items.Count == 0 %>' runat="server" CssClass="w-100 py-5 text-center">
-                                <div class="bg-white rounded-5 p-5 shadow-sm d-inline-block mx-auto">
-                                    <i class="fa-solid fa-leaf fa-4x text-success opacity-25 mb-3"></i>
-                                    <h5 class="text-muted fw-bold">¡Todo está en orden!</h5>
-                                    <p class="text-muted mb-0">No hay registros inactivos para procesar.</p>
-                                </div>
+                            <asp:Panel Visible='<%# rptPapelera.Items.Count == 0 %>' runat="server">
+                                    <div class="text-center py-5">
+                                        <div class="mb-3 text-muted opacity-25">
+                                            <i class="fa-solid fa-trash-can fa-4x"></i>
+                                        </div>
+                                        <h6 class="fw-bold text-secondary">Papelera Vacía</h6>
+                                        <p class="text-muted small mb-0">No hay docentes inactivos en este grupo.</p>
+                                    </div>
                             </asp:Panel>
                         </FooterTemplate>
                     </asp:Repeater>
                 </div>
 
-                <div class="modal-footer bg-white border-0 py-3 px-4">
-                    <button type="button" class="btn btn-light px-4 rounded-pill fw-bold text-muted" data-bs-dismiss="modal">SALIR</button>
+                <div class="modal-footer border-0 bg-light justify-content-center pb-4">
+                        <button type="button" class="btn btn-outline-secondary btn-pill px-5" data-bs-dismiss="modal">
+                            Cerrar Ventana
+                        </button>
                 </div>
             </div>
         </div>
