@@ -1,0 +1,15 @@
+﻿.modal-header.bg-utc {
+    background: linear-gradient(90deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%) !important;
+    color: #fff !important;
+    border-top-left-radius: 10px !important;
+    border-top-right-radius: 10px !important;
+}
+
+    .modal-header.bg-utc .modal-title {
+        color: #fff !important;
+        font-weight: 600 !important;
+    }
+
+.form-stack {
+    max-width: 100% !important;
+}

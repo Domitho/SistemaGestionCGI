@@ -9,82 +9,20 @@
     <link href="DesignersUTC/Styles/modal-historial-reporte.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/papelera.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/informe-observaciones.css" rel="stylesheet" />
-
-    <style>
-        .hover-lift {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .hover-lift:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
-            background-color: #fff !important;
-            border-color: var(--utc-azul) !important; 
-        }
-
-        .bg-opacity-10 {
-            --bs-bg-opacity: 0.1;
-        }
-
-        .btn-locked {
-            opacity: 0.5 !important;
-            pointer-events: none !important;
-            cursor: not-allowed !important;
-            filter: grayscale(100%) !important;
-            position: relative;
-        }
-
-        .btn-locked::after {
-            content: "\f023"; 
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: #6c757d;
-            font-size: 1.2rem;
-        }
-
-        .btn-disabled-utc {
-            opacity: 0.5 !important;    
-            pointer-events: none !important;   
-            cursor: not-allowed !important;   
-            background-color: #e9ecef !important;
-            border-color: #dee2e6 !important;
-            color: #adb5bd !important;
-            box-shadow: none !important;
-        }
-
-        .table .badge {
-            font-weight: 500;
-            font-size: 0.75rem;
-            padding: 5px 8px;
-            letter-spacing: 0.5px;
-            display: inline-flex;
-            align-items: center;
-        }
-
-        @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
-            70% { box-shadow: 0 0 0 6px rgba(220, 53, 69, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
-        }
-
-        .badge.bg-danger {
-            animation: pulse-red 2s infinite;
-        }
-
-    </style>
+    <link href="DesignersUTC/Styles/utc-datatables-export.css" rel="stylesheet" />
 
     <div id="headerEjecucion" runat="server" class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
         <h3 class="utc-title mb-0">
             <i class="fa-solid fa-person-digging me-2"></i> PROYECTOS EN EJECUCIÓN
         </h3>
-
+           
         <div class="d-flex gap-2 mt-2 mt-md-0">
-            <button type="button" id="btnGestionarCiclos" runat="server" class="btn btn-outline-secondary btn-pill px-3" onclick="abrirModalCiclo()">
+            <asp:LinkButton ID="btnGestionarCiclos" runat="server"
+                CssClass="btn btn-outline-secondary btn-pill px-3"
+                OnClick="btnGestionarCiclos_Click"
+                CausesValidation="false">
                 <i class="fa-solid fa-calendar-days me-2"></i> Periodos / Ciclos
-            </button>
+            </asp:LinkButton>
 
             <asp:LinkButton runat="server" ID="btnNuevoEjecucion" CssClass="btn btn-primary btn-pill d-flex align-items-center" OnClick="btnNuevoEjecucion_Click">
                 <i class="fa-solid fa-plus me-2"></i> INICIAR EJECUCIÓN
@@ -231,7 +169,7 @@
                 </div>
 
                 <div class="col-12">
-                    <label class="form-label fw-semibold">Informe Inicial / Planificación (Opcional)</label>
+                    <label class="form-label fw-semibold">Informe Inicial / Planificación </label>
                     
                     <div class="utc-fileinput-wrapper" id="wrapperArchivoAdd">
                         <div class="utc-fileinput-header">
@@ -447,157 +385,119 @@
     <asp:Panel ID="pnlFormularioMiembro" runat="server" Visible="false">
         <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-4 rounded shadow-utc border header-utc-line">
             <h3 class="utc-title mb-0">
-                <i class="fa-solid fa-users-gear me-2"></i> GESTIÓN DE EQUIPO
+                <i class="fa-solid fa-users me-2"></i> GESTIÓN DE INTEGRANTES
             </h3>
-            <asp:LinkButton ID="btnVolverFormMiembro" runat="server"
-                CssClass="btn btn-outline-primary btn-pill px-4"
-                OnClick="btnCancelarMiembro_Click" CausesValidation="false">
+            <asp:LinkButton ID="btnCancelarMiembroTop" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="btnCancelarMiembro_Click" CausesValidation="false">
                 <i class="fa-solid fa-chevron-left me-2"></i> REGRESAR
             </asp:LinkButton>
         </div>
 
         <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4">
-        
             <h4 class="utc-subtitle mb-4 text-center">
-                <i class="fa-solid fa-user-plus me-2"></i>
-                <asp:Label runat="server" ID="lblTituloFormMiembro" Text="Nuevo Integrante" />
+                <i class="fa-solid fa-user-plus me-2"></i> 
+                <asp:Label ID="lblTituloFormMiembro" runat="server" Text="Nuevo Integrante" />
             </h4>
 
             <asp:HiddenField ID="hfIdMiembroEdit" runat="server" />
+            <asp:HiddenField ID="hfIdCandidatoSeleccionado" runat="server" />
             <asp:HiddenField ID="hfTipoRealMiembro" runat="server" />
 
-            <div class="utc-section-header mb-3">
-                <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2">
-                    <i class="fa-solid fa-database me-2"></i> 1. Origen del Integrante
-                </h6>
+            <div class="mb-4">
+                <label class="form-label fw-bold text-primary small">TIPO DE INTEGRANTE</label>
+                <asp:DropDownList ID="ddlTipoMiembro" runat="server" CssClass="form-select shadow-sm border-primary"
+                                  AutoPostBack="true" OnSelectedIndexChanged="ddlTipoMiembro_SelectedIndexChanged">
+                    <asp:ListItem Text="Interno" Value="Interno" Selected="True" />
+                    <asp:ListItem Text="Miembro de Grupo" Value="MiembroGrupo" />
+                    <asp:ListItem Text="Docente" Value="Docente" />
+                    <asp:ListItem Text="Externo" Value="Externo" />
+                </asp:DropDownList>
             </div>
 
-            <div class="row g-3 mb-4">
-                <div class="col-12">
-                    <label class="form-label fw-bold">Seleccione Origen</label>
-                    <asp:DropDownList ID="ddlTipoMiembro" runat="server" CssClass="form-select shadow-sm border-primary"
-                        AutoPostBack="true" OnSelectedIndexChanged="ddlTipoMiembro_SelectedIndexChanged">
-                        <asp:ListItem Value="Interno" Selected="True">Manual / Interno (Estudiante/Admin)</asp:ListItem>
-                        <asp:ListItem Value="DocenteGrupo" style="font-weight:bold; color:#0d6efd;">★ MIEMBRO DEL GRUPO (Recomendado)</asp:ListItem>
-                        <asp:ListItem Value="DocenteLibre" style="font-weight:bold; color:#198754;">★ DOCENTE CATEGORIZADO (Sin Grupo)</asp:ListItem>
-                        <asp:ListItem Value="Externo">Manual / Externo (Otra Institución)</asp:ListItem>
-                    </asp:DropDownList>
+            <!-- Panel Selección Automática -->
+            <asp:Panel ID="pnlSeleccionAutomatica" runat="server" CssClass="mb-4 p-4 bg-primary bg-opacity-10 rounded-4 border border-primary border-opacity-25 shadow-sm" Visible="false">
+                <label class="form-label fw-bold text-primary small mb-2">SELECCIONAR INTEGRANTE</label>
+                <asp:DropDownList ID="ddlCandidatos" runat="server" CssClass="form-select" AutoPostBack="true" OnSelectedIndexChanged="ddlCandidatos_SelectedIndexChanged">
+                    <asp:ListItem Text="-- Seleccione Candidato --" Value="" />
+                </asp:DropDownList>
+                <div class="form-text mt-2 small text-muted">
+                    <i class="fa-solid fa-circle-info me-1"></i> Solo aparecen integrantes disponibles del grupo o docentes categorizados.
                 </div>
+            </asp:Panel>
 
-                <asp:Panel ID="pnlSeleccionAutomatica" runat="server" Visible="false" CssClass="col-12 animate__animated animate__fadeIn">
-                    <div class="card border-primary border-opacity-25 bg-primary bg-opacity-10 shadow-sm">
-                        <div class="card-body">
-                            <label class="form-label fw-bold text-primary small">
-                                <i class="fa-solid fa-user-check me-1"></i> 
-                                <asp:Literal ID="litTituloSeleccion" runat="server">SELECCIONAR CANDIDATO</asp:Literal>
-                            </label>
-                        
-                            <div class="input-group">
-                                <span class="input-group-text bg-white text-primary border-primary"><i class="fa-solid fa-magnifying-glass"></i></span>
-                                <asp:DropDownList ID="ddlCandidatos" runat="server" CssClass="form-select border-primary fw-bold"
-                                    AutoPostBack="true" OnSelectedIndexChanged="ddlCandidatos_SelectedIndexChanged">
-                                </asp:DropDownList>
-                            
-                                <a id="btnVerDocumentoCandidato" runat="server" target="_blank" visible="false"
-                                   class="btn btn-primary d-flex align-items-center shadow-sm" title="Ver Documento de Soporte">
-                                    <i class="fa-solid fa-file-pdf me-2"></i> Ver Archivo
-                                </a>
-                            </div>
-                        
-                            <div class="form-text small text-muted mt-2">
-                                <i class="fa-solid fa-filter me-1"></i> 
-                                El sistema solo muestra personas disponibles (no vinculadas a otros proyectos).
-                            </div>
+            <!-- Datos Personales -->
+            <asp:Panel ID="pnlDatosPersonalesMiembro" runat="server">
+                <div class="row g-3">
+
+                    <div class="col-12"><h6 class="text-primary fw-bold border-bottom pb-2">Datos Personales</h6></div>
+
+                    <div class="col-12">
+                        <label class="form-label">Cédula <span class="text-danger">*</span></label>
+                        <div class="input-group gap-2">
+                            <asp:TextBox ID="txtCedulaMiembro" runat="server" CssClass="form-control" MaxLength="15" placeholder="Ingrese Cédula" />
+                            <asp:LinkButton ID="btnValidarCedula" runat="server" CssClass="btn btn-primary" OnClick="btnValidarCedula_Click" CausesValidation="false" ToolTip="Validar Disponibilidad">
+                                <i class="fa-solid fa-magnifying-glass"></i> Validar
+                            </asp:LinkButton>
                         </div>
                     </div>
-                </asp:Panel>
-            </div>
 
-            <div class="utc-section-header mb-3">
-                <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2">
-                    <i class="fa-regular fa-id-card me-2"></i> 2. Datos Personales
-                </h6>
-            </div>
-
-            <div class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <label class="form-label">Cédula <span class="text-danger">*</span></label>
-                    <div class="input-group">
-                        <asp:TextBox ID="txtCedulaMiembro" runat="server" CssClass="form-control" placeholder="10 dígitos" MaxLength="15" />
-                        <asp:LinkButton ID="btnValidarCedula" runat="server" CssClass="btn btn-primary" OnClick="btnValidarCedula_Click" CausesValidation="false">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                        </asp:LinkButton>
+                    <div class="col-md-6">
+                        <label class="form-label">Nombres</label>
+                        <asp:TextBox ID="txtNombresMiembro" runat="server" CssClass="form-control" />
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Nombres <span class="text-danger">*</span></label>
-                    <asp:TextBox ID="txtNombresMiembro" runat="server" CssClass="form-control" />
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Apellidos <span class="text-danger">*</span></label>
-                    <asp:TextBox ID="txtApellidosMiembro" runat="server" CssClass="form-control" />
-                </div>
-                <div class="col-12">
-                    <label class="form-label">Correo Institucional <span class="text-danger">*</span></label>
-                    <asp:TextBox ID="txtCorreoMiembro" runat="server" CssClass="form-control" TextMode="Email" />
-                </div>
-            </div>
 
-            <div id="divCamposInternos" class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label class="form-label">Facultad / Extensión</label>
-                    <asp:DropDownList ID="ddlFacultadMiembro" runat="server" CssClass="form-select" 
-                        AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadMiembro_SelectedIndexChanged">
-                        <asp:ListItem Text="-- Seleccione --" Value="" />
-                        <asp:ListItem Value="CAREN">FACULTAD DE CIENCIAS AGROPECUARIAS (CAREN)</asp:ListItem>
-                        <asp:ListItem Value="CIYA">FACULTAD DE CIENCIAS DE LA INGENIERIA (CIYA)</asp:ListItem>
-                        <asp:ListItem Value="CAYE">FACULTAD DE CIENCIAS ADMINISTRATIVAS (CAYE)</asp:ListItem>
-                        <asp:ListItem Value="CSAYE">FACULTAD DE CIENCIAS SOCIALES (CSAYE)</asp:ListItem>
-                        <asp:ListItem Value="SALUD">FACULTAD CIENCIAS DE LA SALUD (CS)</asp:ListItem>
-                        <asp:ListItem Value="PUJILI">EXTENSIÓN PUJILÍ</asp:ListItem>
-                        <asp:ListItem Value="LAMANA">EXTENSION LA MANA</asp:ListItem>
-                    </asp:DropDownList>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Carrera</label>
-                    <asp:DropDownList ID="ddlCarreraMiembro" runat="server" CssClass="form-select">
-                        <asp:ListItem Text="-- Seleccione Facultad --" Value="" />
-                    </asp:DropDownList>
-                </div>
-            </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Apellidos</label>
+                        <asp:TextBox ID="txtApellidosMiembro" runat="server" CssClass="form-control" />
+                    </div>
 
-            <div id="divCamposExternos" class="row g-3 mb-4" style="display:none;">
-                <div class="col-12">
-                    <label class="form-label fw-bold">Institución / Entidad de Origen</label>
-                    <asp:TextBox ID="txtEntidadMiembro" runat="server" CssClass="form-control" placeholder="Ej: SENESCYT..." />
-                </div>
-            </div>
+                    <div class="col-12">
+                        <label class="form-label">Correo</label>
+                        <asp:TextBox ID="txtCorreoMiembro" runat="server" CssClass="form-control" TextMode="Email" />
+                    </div>
 
-            <div class="utc-section-header mb-3">
-                <h6 class="text-primary fw-bold text-uppercase border-bottom pb-2">
-                    <i class="fa-solid fa-briefcase me-2"></i> 3. Vinculación al Proyecto
-                </h6>
-            </div>
+                    <!-- Campos Internos (Facultad / Carrera) -->
+                    <div id="divInterno" runat="server" class="col-12 row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Facultad / Extensión</label>
+                            <asp:DropDownList ID="ddlFacultadMiembro" runat="server" CssClass="form-select" AutoPostBack="true" OnSelectedIndexChanged="ddlFacultadMiembro_SelectedIndexChanged">
+                                <asp:ListItem Text="-- Seleccione Facultad --" Value="0" />
+                            </asp:DropDownList>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Carrera / Departamento</label>
+                            <asp:DropDownList ID="ddlCarreraMiembro" runat="server" CssClass="form-select">
+                                <asp:ListItem Text="-- Seleccione Facultad Primero --" Value="0" />
+                            </asp:DropDownList>
+                        </div>
+                    </div>
 
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Fecha de Inicio <span class="text-danger">*</span></label>
-                    <asp:TextBox ID="txtFechaInicioMiembro" runat="server" CssClass="form-control" TextMode="Date" />
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Rol Asignado</label>
-                    <asp:TextBox ID="txtRolMiembro" runat="server" CssClass="form-control bg-light fw-bold text-primary" ReadOnly="true" Text="MIEMBRO DE PROYECTO" />
-                </div>
-            </div>
+                    <!-- Campos Externos -->
+                    <div id="divExterno" runat="server" class="col-12" Visible="false">
+                        <label class="form-label">Entidad de Origen</label>
+                        <asp:TextBox ID="txtEntidadMiembro" runat="server" CssClass="form-control" placeholder="Ej: Universidad Central..." />
+                    </div>
 
-            <div class="d-flex justify-content-center gap-3 mt-5">
-                <asp:LinkButton ID="btnGuardarMiembro" runat="server" CssClass="btn btn-primary btn-pill px-5 shadow-sm" OnClick="btnGuardarMiembro_Click">
-                    <i class="fa-solid fa-floppy-disk me-2"></i> Guardar
-                </asp:LinkButton>
-                <asp:LinkButton ID="btnCancelarMiembro" runat="server" CssClass="btn btn-outline-secondary btn-pill px-5" OnClick="btnCancelarMiembro_Click" CausesValidation="false">
-                    <i class="fa-solid fa-ban me-2"></i> Cancelar
-                </asp:LinkButton>
-            </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Función Asignada</label>
+                        <asp:TextBox ID="txtRolMiembro" runat="server" CssClass="form-control bg-light text-primary fw-bold" ReadOnly="true" Text="Miembro Investigador" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Fecha Inicio</label>
+                        <asp:TextBox ID="txtFechaInicioMiembro" runat="server" CssClass="form-control" TextMode="Date" />
+                    </div>
+
+                </div>
+
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <asp:LinkButton ID="btnGuardarMiembro" runat="server" CssClass="btn btn-primary btn-pill px-4" OnClientClick="return ValidarFormularioIntegrante();" OnClick="btnGuardarMiembro_Click">
+                        <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Integrante
+                    </asp:LinkButton>
+                    <asp:LinkButton ID="btnCancelarMiembro" runat="server" CssClass="btn btn-outline-primary btn-pill px-4" OnClick="btnCancelarMiembro_Click" CausesValidation="false">
+                        <i class="fa-solid fa-ban me-2"></i> Cancelar
+                    </asp:LinkButton>
+                </div>
+            </asp:Panel>
         </div>
     </asp:Panel>
 
@@ -1016,18 +916,21 @@
                         </div>
 
                         <div class="d-grid gap-2 mt-4">
+
                             <asp:LinkButton ID="btnGuardarCierre" runat="server" 
                                 CssClass="btn btn-warning text-dark fw-bold btn-lg shadow hover-scale"
                                 OnClick="btnGuardarCierre_Click">
                                 <i class="fa-solid fa-paper-plane me-2"></i> <asp:Literal ID="litBtnCierreTexto" runat="server">Enviar a Revisión</asp:Literal>
                             </asp:LinkButton>
 
-                            <asp:LinkButton ID="btnAprobarCierre" runat="server" Visible="false"
+                            <asp:LinkButton ID="btnAprobarCierre" runat="server" Visible="true"
                                 CssClass="btn btn-success fw-bold btn-lg shadow hover-scale"
-                                OnClientClick="return confirm('¿Está seguro de APROBAR este informe?\n\n- Se bloqueará la edición.\n- Se habilitará el Informe Final.');"
-                                OnClick="btnAprobarCierre_Click">
-                                <i class="fa-solid fa-check-double me-2"></i> APROBAR DOCUMENTO
+                                OnClientClick="return confirmarAccionModal(this, '¿Está seguro de APROBAR este informe?\n\n- Se bloqueará la edición.\n- Se habilitará el Informe Final.');">
+                                <i class="fa-solid fa-check-double me-2"></i> Aprobar Documento
                             </asp:LinkButton>
+
+                            <asp:Button ID="btnConfirmarAprobacion" runat="server" OnClick="btnAprobarCierre_Click" Style="display:none;" />
+
                         </div>
                     </asp:Panel>
 
@@ -1068,8 +971,6 @@
                             </a>
                         </div>
                     </asp:Panel>
-
-                    <label class="form-label fw-bold small text-secondary">Documento Final (PDF)</label>
             
                     <asp:Panel ID="pnlCargaFinal" runat="server">
                         <label class="form-label fw-bold small text-secondary">Documento Final (PDF)</label>
@@ -1265,62 +1166,183 @@
 
 
     <div class="modal fade" id="modalCrearCiclo" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-            
-                <div class="modal-header border-0 pb-0 pt-4 justify-content-center position-relative bg-light">
-                    <div class="text-center">
-                        <div class="d-inline-flex align-items-center justify-content-center bg-white shadow-sm rounded-circle mb-2" style="width: 60px; height: 60px;">
-                            <i class="fa-solid fa-calendar-plus fs-3 text-primary"></i>
+
+                <div class="modal-header border-0 py-4 justify-content-center position-relative text-center"
+                     style="background: linear-gradient(90deg, #312783 0%, #241d66 100%);">
+
+                    <div>
+                        <div class="d-inline-flex align-items-center justify-content-center bg-white bg-opacity-10 shadow-sm rounded-circle mb-3"
+                             style="width:70px;height:70px; backdrop-filter: blur(4px);">
+                            <i class="fa-solid fa-calendar-plus fs-2 text-white"></i>
                         </div>
-                        <h6 class="modal-title fw-bold text-dark mb-1">Nuevo Periodo Académico</h6>
-                        <p class="text-muted small mb-0">Configure el rango de fechas</p>
+
+                        <h5 class="modal-title fw-bold text-white mb-1">
+                            Gestión de Periodos Académicos
+                        </h5>
+
+                        <p class="small mb-0 text-white-50">
+                            Crear y administrar ciclos académicos
+                        </p>
                     </div>
-                    <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"></button>
+
+                    <button type="button"
+                            class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+                            data-bs-dismiss="modal"></button>
                 </div>
 
                 <div class="modal-body px-4 pt-4 pb-4">
-                
-                    <div class="position-relative">
-                    
-                        <div class="position-absolute start-0 ms-4 h-100 border-start border-2 border-light" style="top: 10px; z-index: 0;"></div>
 
-                        <div class="position-relative mb-4" style="z-index: 1;">
-                            <label class="form-label fw-bold small text-secondary ms-1">Inicio del Ciclo</label>
-                            <div class="input-group shadow-sm rounded-3 overflow-hidden">
-                                <span class="input-group-text bg-white border-end-0 ps-3">
-                                    <i class="fa-regular fa-calendar-check text-success"></i>
-                                </span>
-                                <asp:TextBox ID="txtMesInicio" runat="server" TextMode="Month" CssClass="form-control border-start-0 ps-0 fw-semibold text-dark" style="background:white;"></asp:TextBox>
+                    <asp:Panel ID="pnlFormularioCiclo" runat="server" Visible="false">
+                        <asp:HiddenField ID="hfIdCicloEdit" runat="server" />
+
+                        <div class="mb-3">
+                            <h6 class="fw-bold text-primary mb-0">
+                                <i class="fa-solid fa-pen-to-square me-2"></i>
+                                Formulario de periodo
+                            </h6>
+                            <small class="text-muted">Complete el rango de fechas del ciclo académico.</small>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-secondary">
+                                    Inicio del Ciclo
+                                </label>
+                                <div class="input-group shadow-sm rounded-3 overflow-hidden">
+                                    <span class="input-group-text bg-white border-end-0 ps-3">
+                                        <i class="fa-regular fa-calendar-check text-success"></i>
+                                    </span>
+                                    <asp:TextBox ID="txtMesInicio"
+                                        runat="server"
+                                        TextMode="Month"
+                                        CssClass="form-control border-start-0 ps-0 fw-semibold text-dark"
+                                        style="background:white;">
+                                    </asp:TextBox>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-secondary">
+                                    Fin del Ciclo
+                                </label>
+                                <div class="input-group shadow-sm rounded-3 overflow-hidden">
+                                    <span class="input-group-text bg-white border-end-0 ps-3">
+                                        <i class="fa-solid fa-flag-checkered text-danger"></i>
+                                    </span>
+                                    <asp:TextBox ID="txtMesFin"
+                                        runat="server"
+                                        TextMode="Month"
+                                        CssClass="form-control border-start-0 ps-0 fw-semibold text-dark"
+                                        style="background:white;">
+                                    </asp:TextBox>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="position-relative mb-4" style="z-index: 1;">
-                            <label class="form-label fw-bold small text-secondary ms-1">Fin del Ciclo</label>
-                            <div class="input-group shadow-sm rounded-3 overflow-hidden">
-                                <span class="input-group-text bg-white border-end-0 ps-3">
-                                    <i class="fa-solid fa-flag-checkered text-danger"></i>
-                                </span>
-                                <asp:TextBox ID="txtMesFin" runat="server" TextMode="Month" CssClass="form-control border-start-0 ps-0 fw-semibold text-dark" style="background:white;"></asp:TextBox>
+                        <div class="d-grid gap-2 mb-4">
+                            <asp:Button ID="btnGuardarCiclo"
+                                runat="server"
+                                Text="Registrar Periodo"
+                                CssClass="btn btn-primary btn-pill fw-bold py-2 shadow-sm"
+                                OnClick="btnGuardarCiclo_Click" />
+
+                            <asp:Button ID="btnCancelarEdicion"
+                                runat="server"
+                                Text="Cancelar"
+                                CssClass="btn btn-outline-secondary btn-pill py-2"
+                                OnClick="btnCancelarEdicion_Click"
+                                CausesValidation="false" />
+                        </div>
+                    </asp:Panel>
+
+                    <asp:Panel ID="pnlListadoCiclos" runat="server" Visible="true">
+
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                            <div>
+                                <h6 class="mb-0 fw-bold text-secondary">Periodos registrados</h6>
+                                <small class="text-muted">Administre los ciclos académicos disponibles.</small>
+                            </div>
+
+                            <div class="flex-shrink-0">
+                                <asp:LinkButton ID="btnNuevoCiclo"
+                                    runat="server"
+                                    OnClick="btnNuevoCiclo_Click"
+                                    CausesValidation="false"
+                                    CssClass="btn btn-primary shadow-sm"
+                                    Style="display:inline-flex; align-items:center; justify-content:center; white-space:nowrap; min-width:170px; height:40px; border-radius:999px; padding:0 18px; font-weight:600;">
+                                    <i class="fa-solid fa-plus me-2"></i>
+                                    <span>Nuevo periodo</span>
+                                </asp:LinkButton>
                             </div>
                         </div>
 
-                    </div>
+                        <div class="border rounded-3 shadow-sm">
+                            <div class="bg-light px-3 py-2 border-bottom">
+                                <small class="fw-bold text-secondary">
+                                    Listado de periodos académicos
+                                </small>
+                            </div>
 
-                    <div class="d-grid mt-2">
-                        <asp:Button ID="btnGuardarCiclo" runat="server" Text="Registrar Periodo" 
-                            CssClass="btn btn-primary btn-pill fw-bold py-2 shadow-sm hover-lift" 
-                            OnClick="btnGuardarCiclo_Click" />
-                    </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle text-center mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Periodo</th>
+                                            <th>Inicio</th>
+                                            <th>Fin</th>
+                                            <th style="width:120px;">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <asp:Repeater ID="rptCiclos" runat="server" OnItemCommand="rptCiclos_ItemCommand">
+                                            <ItemTemplate>
+                                                <tr>
+                                                    <td>
+                                                        <%# Eval("strNombre_ciclo") %>
+                                                    </td>
+                                                    <td>
+                                                        <%# Convert.ToDateTime(Eval("dtInicio_ciclo")).ToString("dd/MM/yyyy") %>
+                                                    </td>
+                                                    <td>
+                                                        <%# Convert.ToDateTime(Eval("dtFin_ciclo")).ToString("dd/MM/yyyy") %>
+                                                    </td>
+                                                    <td>
+                                                        <asp:LinkButton runat="server"
+                                                            CommandName="Editar"
+                                                            CommandArgument='<%# Eval("id_ciclo") %>'
+                                                            CssClass="btn btn-sm btn-warning me-1"
+                                                            ToolTip="Editar">
+                                                            <i class="fa-solid fa-pen"></i>
+                                                        </asp:LinkButton>
 
+                                                        <asp:LinkButton runat="server"
+                                                            CommandName="Eliminar"
+                                                            CommandArgument='<%# Eval("id_ciclo") %>'
+                                                            CssClass="btn btn-sm btn-danger"
+                                                            ToolTip="Eliminar"
+                                                            OnClientClick="return confirmarEliminarCiclo(this, '¿Eliminar este ciclo? Esta accion es irreversible.');">
+                                                            <i class="fa-solid fa-trash"></i>
+                                                        </asp:LinkButton>
+                                                    </td>
+                                                </tr>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </asp:Panel>
                 </div>
-            
+
                 <div class="modal-footer bg-light border-0 py-2 justify-content-center">
-                    <small class="text-muted" style="font-size: 0.7rem;">
-                        <i class="fa-solid fa-circle-info me-1"></i> El nombre se generará automáticamente.
+                    <small class="text-muted" style="font-size:0.75rem;">
+                        <i class="fa-solid fa-circle-info me-1"></i>
+                        El nombre del periodo se genera automáticamente.
                     </small>
                 </div>
-
             </div>
         </div>
     </div>
@@ -1485,7 +1507,6 @@
                 <div class="modal-footer bg-light py-3">
                     <button type="button" class="btn btn-link text-secondary text-decoration-none" data-bs-dismiss="modal">Cancelar</button>
                 
-                    <%-- Botón Guardar --%>
                     <asp:LinkButton ID="btnGuardarObservacion" runat="server" 
                         CssClass="btn btn-warning px-4 fw-bold rounded-pill shadow-sm" 
                         OnClick="btnGuardarObservacion_Click">
@@ -1498,13 +1519,23 @@
     </div>
 
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
+    <script src="DesignersUTC/Scripts/utc-datatables.js"></script>
 
     <script type="text/javascript">
 
         Sys.Application.add_load(function () {
 
-            initTable('#tablaEjecucion');
-            initTable('#tablaMiembros');
+            UTC_DataTable.init('#tablaEjecucion', {
+                exportTitle: 'Proyectos_Investigacion',
+                pageLength: 10,
+                excludeLastColumn: true
+            });
+
+            UTC_DataTable.init('#tablaMiembros', {
+                exportTitle: 'Miembros_Investigacion',
+                pageLength: 10,
+                excludeLastColumn: true
+            });
 
             if (typeof UTC_FileInput === 'function') {
                 initInput("wrapperArchivoAdd", "<%= flpArchivoAdd.ClientID %>");
@@ -1516,27 +1547,6 @@
 
             toggleTipoIntegrante();
         });
-
-        function initTable(id) {
-            if ($.fn.DataTable && $.fn.DataTable.isDataTable(id)) {
-                $(id).DataTable().destroy();
-            }
-            if ($(id).length) {
-                $(id).DataTable({
-                    responsive: true,
-                    autoWidth: false,
-                    ordering: true,
-                    pageLength: 10,
-                    language: { url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json" },
-                    dom: "<'row align-items-center mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-end'f>><'row mb-3'<'col-sm-12 text-center'B>><'row'<'col-sm-12'tr>><'row mt-3 align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-                    buttons: [
-                        { extend: 'excelHtml5', className: 'btn btn-success btn-sm rounded-pill mx-1', text: '<i class="fa-solid fa-file-excel"></i> Excel' },
-                        { extend: 'pdfHtml5', className: 'btn btn-danger btn-sm rounded-pill mx-1', text: '<i class="fa-solid fa-file-pdf"></i> PDF', orientation: 'landscape' },
-                        { extend: 'print', className: 'btn btn-secondary btn-sm rounded-pill mx-1', text: '<i class="fa-solid fa-print"></i>' }
-                    ]
-                });
-            }
-        }
 
         function initInput(wrapperId, inputId) {
             if (document.getElementById(wrapperId)) {
@@ -1620,7 +1630,7 @@
             } else {
                 var link = document.createElement('a');
                 link.href = url;
-                link.download = url.split('/').pop(); 
+                link.download = url.split('/').pop();
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -1683,21 +1693,33 @@
 
         function toggleTipoIntegrante() {
             var ddl = document.getElementById('<%= ddlTipoMiembro.ClientID %>');
-
             if (!ddl) return;
 
             var val = ddl.value;
-            var divInt = document.getElementById('divCamposInternos');
-            var divExt = document.getElementById('divCamposExternos');
+            var divInt = document.getElementById('divInterno');
+            var divExt = document.getElementById('divExterno');
+            var divGenerales = document.getElementById('divCamposGenerales');
+            var pnlSeleccion = document.getElementById('<%= pnlSeleccionAutomatica.ClientID %>');
 
-            if (divInt && divExt) {
-                if (val === 'Externo') {
-                    divInt.style.display = 'none';
-                    divExt.style.display = 'block';
-                } else {
-                    divInt.style.display = 'flex'; 
-                    divExt.style.display = 'none';
-                }
+            if (!divInt || !divExt || !divGenerales || !pnlSeleccion) return;
+
+            if (val === 'Interno') {
+                divInt.style.display = 'flex';
+                divExt.style.display = 'none';
+                divGenerales.style.display = 'flex';
+                pnlSeleccion.style.display = 'none';
+            }
+            else if (val === 'Externo') {
+                divInt.style.display = 'none';
+                divExt.style.display = 'flex';
+                divGenerales.style.display = 'flex';
+                pnlSeleccion.style.display = 'none';
+            }
+            else if (val === 'MiembroGrupo' || val === 'Docente') {
+                divInt.style.display = 'none';
+                divExt.style.display = 'none';
+                divGenerales.style.display = 'none';
+                pnlSeleccion.style.display = 'block';
             }
         }
 
@@ -1757,6 +1779,61 @@
                 ventana.print();
                 ventana.close();
             }, 500);
+        }
+    </script>
+
+    <script>
+        function confirmarAccionModal(source, mensaje) {
+            if (window.event) window.event.preventDefault();
+
+            Swal.fire({
+                title: '<span style="color:#312783">¿Está seguro?</span>',
+                html: mensaje || "Esta acción se ejecutará permanentemente.",
+                icon: 'warning',
+                iconColor: '#d9534f',
+                showCancelButton: true,
+                confirmButtonColor: '#d9534f',
+                cancelButtonColor: '#312783',
+                confirmButtonText: '<i class="fa-solid fa-check"></i> Sí, continuar',
+                cancelButtonText: 'Cancelar',
+                backdrop: 'rgba(49, 39, 131, 0.1)',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                customClass: { popup: 'shadow-lg border-0 rounded-4' }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var btn = document.getElementById('<%= btnConfirmarAprobacion.ClientID %>');
+                    if (btn) {
+                        btn.click();
+                    }
+                }
+            });
+
+            return false;
+        }
+    </script>
+
+    <script>
+        function confirmarEliminarCiclo(link, mensaje) {
+            Swal.fire({
+                title: '¿Está seguro?',
+                text: mensaje || 'Esta acción es irreversible.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d9534f',
+                cancelButtonColor: '#312783',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var target = link.href.split("'")[1];
+                    __doPostBack(target, '');
+                }
+            });
+
+            return false;
         }
     </script>
 

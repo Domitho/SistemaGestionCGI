@@ -32,6 +32,7 @@ namespace SistemaGestionCGI
             }
 
             CargarCombos();
+            CargarFacultades();
             CargarGrilla();
 
             if (Session["TempMsg"] != null)
@@ -762,13 +763,12 @@ namespace SistemaGestionCGI
                     txtCorreoInt.Text = GetProp(docente, "strCorreo_doc");
                     hfIdDocenteInt.Value = GetProp(docente, "strId_doc");
 
-                    string facultadBD = GetProp(docente, "strFacultad_doc");
-                    SeleccionarCombo(ddlFacultadInt, facultadBD);
+                    string idFacultad = GetProp(docente, "strFacultad_doc");
+                    string idCarrera = GetProp(docente, "strCarrera_doc");
 
-                    CargarCarrerasEnCombo(ddlCarreraInt, facultadBD);
-
-                    string carreraBD = GetProp(docente, "strCarrera_doc");
-                    SeleccionarCombo(ddlCarreraInt, carreraBD);
+                    SeleccionarCombo(ddlFacultadInt, idFacultad);
+                    CargarCarrerasEnCombo(ddlCarreraInt, idFacultad);
+                    SeleccionarCombo(ddlCarreraInt, idCarrera);
 
                     string rutaArchivo = GetProp(docente, "strCertificado_doc");
                     if (!string.IsNullOrEmpty(rutaArchivo))
@@ -782,7 +782,7 @@ namespace SistemaGestionCGI
                     divInternoModal.Visible = true;
                     divExternoModal.Visible = false;
 
-                    HabilitarEdicion(false); 
+                    HabilitarEdicion(false);
 
                     Msg("Datos del docente cargados y vinculados.", "ss");
                 }
@@ -824,66 +824,25 @@ namespace SistemaGestionCGI
             }
         }
 
-        private void CargarCarrerasEnCombo(DropDownList ddlCarrera, string facultad)
+        private void CargarCarrerasEnCombo(DropDownList ddlCarrera, string idFacultad)
         {
             ddlCarrera.Items.Clear();
             ddlCarrera.Items.Add(new ListItem("-- Seleccione Carrera --", ""));
 
-            if (string.IsNullOrEmpty(facultad)) return;
+            if (!int.TryParse(idFacultad, out int facultadId))
+                return;
 
-            switch (facultad)
+            var carreras = _manejador.ObtenerCarrerasPorFacultad(facultadId);
+
+            if (carreras != null)
             {
-                case "CIYA":
-                    ddlCarrera.Items.Add(new ListItem("SISTEMAS DE INFORMACIÓN", "SISTEMAS DE INFORMACIÓN"));
-                    ddlCarrera.Items.Add(new ListItem("INDUSTRIAL", "INDUSTRIAL"));
-                    ddlCarrera.Items.Add(new ListItem("ELECTROMECÁNICA", "ELECTROMECANICA"));
-                    ddlCarrera.Items.Add(new ListItem("ELECTRICIDAD", "ELECTRICIDAD"));
-                    ddlCarrera.Items.Add(new ListItem("HIDRAULICA", "HIDRAULICA"));
-                    ddlCarrera.Items.Add(new ListItem("SOFTWARE", "SOFTWARE"));
-                    break;
-                case "CAREN":
-                    ddlCarrera.Items.Add(new ListItem("AGRONOMÍA", "AGRONOMIA"));
-                    ddlCarrera.Items.Add(new ListItem("VETERINARIA", "VETERINARIA"));
-                    ddlCarrera.Items.Add(new ListItem("AMBIENTE", "AMBIENTE"));
-                    ddlCarrera.Items.Add(new ListItem("TURISMO", "TURISMO"));
-                    ddlCarrera.Items.Add(new ListItem("AGROPECUARIAS", "AGROPECUARIAS"));
-                    ddlCarrera.Items.Add(new ListItem("BIOTECNOLOGIA", "BIOTECNOLOGIA"));
-                    break;
-                case "CAYE":
-                    ddlCarrera.Items.Add(new ListItem("ADMINISTRACIÓN DE EMPRESAS", "ADMINISTRACIÓN DE EMPRESAS"));
-                    ddlCarrera.Items.Add(new ListItem("CONTABILIDAD", "CONTABILIDAD"));
-                    ddlCarrera.Items.Add(new ListItem("ECONOMIA", "ECONOMIA"));
-                    ddlCarrera.Items.Add(new ListItem("FINANZAS", "FINANZAS"));
-                    ddlCarrera.Items.Add(new ListItem("MERCADOTÉCNIA", "MERCADOTÉCNIA"));
-                    ddlCarrera.Items.Add(new ListItem("GESTIÓN DEL TALENTO HUMANO", "GESTIÓN DEL TALENTO HUMANO"));
-                    break;
-                case "CSAYE":
-                    ddlCarrera.Items.Add(new ListItem("DISEÑO GRAFICO", "DISEÑO GRAFICO"));
-                    ddlCarrera.Items.Add(new ListItem("DISEÑO GRAFICO INTERACTIVO", "DISEÑO GRAFICO INTERACTIVO"));
-                    ddlCarrera.Items.Add(new ListItem("COMUNICACIÓN", "COMUNICACIÓN"));
-                    ddlCarrera.Items.Add(new ListItem("TRABAJO SOCIAL", "TRABAJO SOCIAL"));
-                    ddlCarrera.Items.Add(new ListItem("ANIMACIÓN DIGITAL", "ANIMACIÓN DIGITAL"));
-                    ddlCarrera.Items.Add(new ListItem("PSICOLOGÍA SOCIAL", "PSICOLOGÍA SOCIAL"));
-                    break;
-                case "SALUD":
-                    ddlCarrera.Items.Add(new ListItem("ENFERMERIA", "ENFERMERIA"));
-                    break;
-                case "PUJILI":
-                    ddlCarrera.Items.Add(new ListItem("EDUCACIÓN INICIAL", "EDUCACIÓN INICIAL"));
-                    ddlCarrera.Items.Add(new ListItem("EDUCACIÓN BASICA", "EDUCACIÓN BASICA"));
-                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DEL IDIOMA INGLÉS", "PEDAGOGÍA DEL IDIOMA INGLÉS"));
-                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DE LA LENGUA Y LITERATURA", "PEDAGOGÍA DE LA LENGUA Y LITERATURA"));
-                    ddlCarrera.Items.Add(new ListItem("PEDAGOGÍA DE LAS MATEMÁTICAS Y LA FÍSICA", "PEDAGOGÍA DE LAS MATEMÁTICAS Y LA FÍSICA"));
-                    break;
-                case "LAMANA":
-                    ddlCarrera.Items.Add(new ListItem("CONTABILIDAD_LM", "CONTABILIDAD_LM"));
-                    ddlCarrera.Items.Add(new ListItem("ADMINISTRACIÓN_LM", "ADMINISTRACIÓN_LM"));
-                    ddlCarrera.Items.Add(new ListItem("ELECTROMECÁNICA_LM", "ELECTROMECÁNICA_LM"));
-                    ddlCarrera.Items.Add(new ListItem("SISTEMAS DE INFORMACIÓN_LM", "SISTEMAS DE INFORMACIÓN_LM"));
-                    ddlCarrera.Items.Add(new ListItem("TURISMO_LM", "TURISMO_LM"));
-                    ddlCarrera.Items.Add(new ListItem("AGRONOMÍA_LM", "AGRONOMÍA_LM"));
-                    ddlCarrera.Items.Add(new ListItem("AGROINDUSTRIAS_LM", "AGROINDUSTRIAS_LM"));
-                    break;
+                foreach (var item in carreras)
+                {
+                    string id = GetProp(item, "IdCarrera");
+                    string nombre = GetProp(item, "Nombre");
+
+                    ddlCarrera.Items.Add(new ListItem(nombre, id));
+                }
             }
         }
 
@@ -974,5 +933,33 @@ namespace SistemaGestionCGI
             }
         }
 
+
+        // FACULTADES - CARRERAS
+
+        private void CargarFacultades()
+        {
+            try
+            {
+                ddlFacultadInt.Items.Clear();
+                ddlFacultadInt.Items.Add(new ListItem("-- Seleccione --", ""));
+
+                var facultades = _manejador.ObtenerFacultades();
+
+                if (facultades != null)
+                {
+                    foreach (var item in facultades)
+                    {
+                        string id = GetProp(item, "IdFacultad");
+                        string nombre = GetProp(item, "Nombre");
+
+                        ddlFacultadInt.Items.Add(new ListItem(nombre, id));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al cargar facultades: " + ex.Message, "ee");
+            }
+        }
     }
 }

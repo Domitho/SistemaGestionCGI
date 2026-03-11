@@ -1,11 +1,10 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="GeneradorInforme.ascx.cs" Inherits="SistemaGestionCGI.GeneradorInforme" %>
 
 <style>
-    /* === ESTILOS DEL WIZARD (PROFESIONAL) === */
     .wizard-steps { display: flex; justify-content: center; margin-bottom: 25px; position: relative; }
     .wizard-steps::before { content: ""; position: absolute; top: 15px; left: 10%; right: 10%; height: 2px; background: #e9ecef; z-index: 0; }
     
-    .step-item { position: relative; z-index: 1; text-align: center; width: 18%; } /* Ajustado para 5 pasos */
+    .step-item { position: relative; z-index: 1; text-align: center; width: 18%; } 
     .step-circle {
         width: 32px; height: 32px; border-radius: 50%; background-color: #fff; border: 2px solid #e9ecef;
         color: #adb5bd; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px auto;
@@ -16,7 +15,6 @@
     .step-label { font-size: 0.65rem; font-weight: 700; color: #adb5bd; text-transform: uppercase; }
     .step-item.active .step-label { color: #312783; }
 
-    /* ESTILOS DE FORMULARIO (Mantenemos tu estilo tabla) */
     .form-grid { border: 1px solid #dee2e6; border-radius: 8px; overflow: hidden; background-color: #fff; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
     .form-row { display: flex; border-bottom: 1px solid #dee2e6; }
     .form-row:last-child { border-bottom: none; }
@@ -176,7 +174,6 @@
     let idProyectoActual = 0;
     const STORAGE_KEY_PREFIX = 'UTC_Draft_';
 
-    // 1. INICIALIZACIÓN
     function resetWizard(idEjecucion) {
         idProyectoActual = idEjecucion;
         pasoActual = 1;
@@ -186,43 +183,33 @@
         setTimeout(restaurarBorrador, 200);
     }
 
-    // 2. NAVEGACIÓN
     function navegar(dir) {
         pasoActual += dir;
 
-        // CORRECCIÓN AQUÍ: Límites cambiados de 3 a 5
         if (pasoActual < 1) pasoActual = 1;
         if (pasoActual > 5) pasoActual = 5;
 
         actualizarVista();
     }
 
-    // 3. ACTUALIZAR VISTA
     function actualizarVista() {
-        // Ocultar todos los pasos (del 1 al 5)
         for (let i = 1; i <= 5; i++) {
             let step = document.getElementById('step' + i);
             if (step) step.classList.add('d-none');
         }
 
-        // Mostrar el actual
         document.getElementById('step' + pasoActual).classList.remove('d-none');
 
-        // --- BOTONES ---
         const btnAtras = document.getElementById('btnAtras');
         const btnSig = document.getElementById('btnSiguiente');
         const btnFin = document.getElementById('btnGroupFinal');
 
-        // Atrás: Visible si NO es el paso 1
         btnAtras.classList.toggle('d-none', pasoActual === 1);
 
-        // Siguiente: Visible si NO es el paso 5 (CORRECCIÓN AQUÍ)
         btnSig.classList.toggle('d-none', pasoActual === 5);
 
-        // Finalizar: Visible SOLO si es el paso 5 (CORRECCIÓN AQUÍ)
         btnFin.classList.toggle('d-none', pasoActual !== 5);
 
-        // --- STEPPER VISUAL (BOLITAS) ---
         for (let i = 1; i <= 5; i++) {
             let item = document.getElementById('stInd' + i);
             if (!item) continue;

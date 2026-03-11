@@ -2,30 +2,11 @@
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
 
-    <%-- ESTILOS Y RECURSOS --%>
     <link href="DesignersUTC/Styles/utc-full-design.css" rel="stylesheet" />
     <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
+    <link href="DesignersUTC/Styles/modal-selector-tiempo.css" rel="stylesheet" />
+    <link href="DesignersUTC/Styles/utc-datatables-export.css" rel="stylesheet" />
 
-    <style>
-        /* Estilos centralizados para Modals UTC */
-        .modal-header.bg-utc {
-            background: linear-gradient(90deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%) !important;
-            color: #fff !important;
-            border-top-left-radius: 10px !important;
-            border-top-right-radius: 10px !important;
-        }
-
-        .modal-header.bg-utc .modal-title {
-            color: #fff !important;
-            font-weight: 600 !important;
-        }
-
-        .form-stack {
-            max-width: 100% !important;
-        }
-    </style>
-
-    <%-- HEADER PRINCIPAL --%>
     <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-3 rounded shadow-utc border header-utc-line">
         <h3 class="utc-title mb-0">
             <i class="fa-solid fa-clipboard-list me-2"></i> INSCRIPCIÓN DE PROYECTOS
@@ -47,7 +28,6 @@
         </div>
     </div>
 
-    <%-- PANEL 1: TABLA DE PROYECTOS (GRILLA) --%>
     <asp:Panel ID="pnlGrilla" runat="server" Visible="true">
         <div class="table-responsive bg-white p-3 rounded shadow-utc">
             <table id="tablaProyectos" class="table table-bordered table-hover table-utc align-middle text-center" style="width: 100%">
@@ -149,16 +129,13 @@
         </div>
     </asp:Panel>
 
-    <%-- PANEL ÚNICO DE GESTIÓN (CREAR Y EDITAR) --%>
     <asp:Panel ID="pnlGestion" runat="server" Visible="false">
         <div class="form-stack w-100 mx-auto shadow-utc border-0 rounded-4 p-4">
             
-            <%-- Título dinámico (se cambia desde C#) --%>
             <h4 class="utc-subtitle mb-4 text-center">
                 <i class="fa-solid fa-clipboard-list me-2"></i> <asp:Label ID="lblTituloGestion" runat="server" Text="Gestionar Proyecto"></asp:Label>
             </h4>
 
-            <%-- HIDDEN FIELDS DE CONTROL --%>
             <asp:HiddenField ID="hfIdProyecto" runat="server" /> 
             <asp:HiddenField ID="hfArchivoActual" runat="server" />
 
@@ -168,7 +145,6 @@
                     <asp:DropDownList ID="ddlGrupo" runat="server" CssClass="form-select" AutoPostBack="true" OnSelectedIndexChanged="ddlGrupo_SelectedIndexChanged"></asp:DropDownList>
                 </div>
 
-                <%-- PANEL INFO GRUPO (Solo visible al seleccionar grupo) --%>
                 <asp:Panel ID="pnlInfoGrupo" runat="server" Visible="false" CssClass="col-12 animate__animated animate__fadeIn">
                     <div class="alert alert-primary shadow-sm border-0 d-flex align-items-center" role="alert">
                         <div class="me-3 display-6"><i class="fa-solid fa-users-viewfinder"></i></div>
@@ -199,7 +175,6 @@
                     <asp:TextBox ID="txtTema" runat="server" CssClass="form-control" autocomplete="off" />
                 </div>
 
-                <%-- DURACIÓN (INPUT GROUP + HIDDEN FIELDS) --%>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Duración Estimada</label>
                     <div class="input-group gap-2">
@@ -211,7 +186,6 @@
                             <i class="fa-solid fa-stopwatch me-2"></i> Definir Tiempo
                         </button>
                     </div>
-                    <%-- Solo un set de HiddenFields --%>
                     <asp:HiddenField ID="hfAnios" runat="server" ClientIDMode="Static" Value="0" />
                     <asp:HiddenField ID="hfMeses" runat="server" ClientIDMode="Static" Value="0" />
                     <asp:HiddenField ID="hfSemanas" runat="server" ClientIDMode="Static" Value="0" />
@@ -233,11 +207,9 @@
                     <asp:DropDownList ID="ddlConv" runat="server" CssClass="form-select"></asp:DropDownList>
                 </div>
 
-                <%-- SECCIÓN ARCHIVO (UNIFICADA) --%>
                 <div class="col-12">
                     <label class="form-label fw-semibold">Archivo del Proyecto</label>
                     
-                    <%-- Label para mostrar el archivo actual en modo Edición --%>
                     <asp:Panel ID="pnlArchivoActual" runat="server" Visible="false" CssClass="alert alert-secondary d-flex justify-content-between align-items-center py-2 mb-2">
                         <span><i class="fa-solid fa-file-pdf me-2 text-danger"></i> <asp:Label ID="lblNombreArchivoActual" runat="server" Text="Archivo.pdf" CssClass="fw-bold"></asp:Label></span>
                         <span class="badge bg-secondary">Actual</span>
@@ -279,7 +251,6 @@
         </div>
     </asp:Panel>
 
-    <%-- MODAL: ESTADO --%>
     <div class="modal fade" id="modalEstadoPro" tabindex="-1" aria-hidden="true" ClientIDMode="Static" runat="server">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow-utc border-0">
@@ -554,31 +525,19 @@
         </div>
     </div>
 
-    <%-- SCRIPTS OPTIMIZADOS --%>
     <script src="DesignersUTC/Scripts/utc-fileinput.js"></script>
     <script src="DesignersUTC/Scripts/utc-selector-tiempo.js"></script>
+    <script src="DesignersUTC/Scripts/utc-datatables.js"></script>
 
     <script type="text/javascript">
 
-        // ==========================================
-        // 1. CONFIGURACIÓN INICIAL (Tabla y Archivos)
-        // ==========================================
-        const dtConfigProyectos = {
-            responsive: true, autoWidth: false, ordering: true, pageLength: 10,
-            language: { url: "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json" },
-            dom: "<'row align-items-center mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-end'f>><'row mb-3'<'col-sm-12 text-center'B>><'row'<'col-sm-12'tr>><'row mt-3 align-items-center'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-            buttons: [
-                { extend: 'excelHtml5', text: '<i class="fa-solid fa-file-excel"></i> Excel', className: 'btn btn-success btn-sm rounded-pill mx-1' },
-                { extend: 'pdfHtml5', text: '<i class="fa-solid fa-file-pdf"></i> PDF', className: 'btn btn-danger btn-sm rounded-pill mx-1', orientation: 'landscape', pageSize: 'A4' },
-                { extend: 'print', text: '<i class="fa-solid fa-print"></i> Imprimir', className: 'btn btn-secondary btn-sm rounded-pill mx-1' }
-            ],
-            columnDefs: [{ targets: -1, orderable: false, searchable: false }]
-        };
-
         Sys.Application.add_load(function () {
-            const tabla = '#tablaProyectos';
-            if ($.fn.DataTable && $.fn.DataTable.isDataTable(tabla)) $(tabla).DataTable().destroy();
-            if ($(tabla).length) $(tabla).DataTable(dtConfigProyectos);
+
+            UTC_DataTable.init('#tablaProyectos', {
+                exportTitle: 'Inscripcion_Proyectos',
+                pageLength: 10,
+                excludeLastColumn: true
+            });
 
             if (typeof UTC_FileInput === 'function') {
                 if (document.getElementById('wrapperArchivo')) {
@@ -590,9 +549,6 @@
                 }
             });
 
-        // ==========================================
-        // 2. MODALS SIMPLES (Llamados desde Backend)
-        // ==========================================
         function AbrirModalEstadoPro() {
             var el = document.getElementById('modalEstadoPro');
             var modal = bootstrap.Modal.getOrCreateInstance(el);
@@ -605,9 +561,6 @@
             modal.show();
         }
 
-        // ==========================================
-        // 3. SELECTOR DE TIEMPO (Parche y Conexión)
-        // ==========================================
         function AbrirModalDuracion() {
             document.getElementById('tmpAnios').value = document.getElementById('hfAnios').value || 0;
             document.getElementById('tmpMeses').value = document.getElementById('hfMeses').value || 0;
@@ -636,9 +589,6 @@
             modal.hide();
         }
 
-        // ==========================================
-        // 4. VALIDACIONES Y UTILIDADES
-        // ==========================================
         function ValidarPuntajeProyecto() {
             var inputTema = document.getElementById('<%= txtTema.ClientID %>');
             var inputPuntaje = document.getElementById('<%= txtPuntaje.ClientID %>');

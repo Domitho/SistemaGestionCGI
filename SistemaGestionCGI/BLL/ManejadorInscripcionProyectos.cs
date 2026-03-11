@@ -516,5 +516,31 @@ namespace SistemaGestionCGI.BLL
                 }
             }
         }
+
+        // CARRERAS - FACULTADES
+        public List<dynamic> ObtenerFacultades()
+        {
+            string sql = @"
+                SELECT 
+                    IdFacultad,
+                    Nombre
+                FROM INVGCCFACULTADES
+                ORDER BY Nombre";
+
+            return _dal.SelectSql<dynamic>(sql);
+        }
+
+        public List<dynamic> ObtenerCarrerasPorFacultad(int idFacultad)
+        {
+            string sql = $@"
+                SELECT 
+                    IdCarrera,
+                    Nombre
+                FROM INVGCCCARRERAS
+                WHERE IdFacultad = {idFacultad}
+                ORDER BY Nombre";
+
+            return _dal.SelectSql<dynamic>(sql);
+        }
     }
 }

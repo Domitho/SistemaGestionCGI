@@ -1,0 +1,245 @@
+﻿/* =========================================================
+   UTC DATATABLES EXPORT
+   Estilo reutilizable para DataTables + Buttons + Bootstrap 5
+   ========================================================= */
+
+/* Contenedor general de la barra superior */
+.dataTables_wrapper .row.align-items-center.mb-3,
+.dataTables_wrapper .row.align-items-center.mb-2 {
+    row-gap: 10px;
+}
+
+/* Selector de cantidad de registros */
+.dataTables_wrapper .dataTables_length {
+    text-align: left !important;
+    margin-bottom: 0 !important;
+}
+
+    .dataTables_wrapper .dataTables_length label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0 !important;
+    }
+
+    .dataTables_wrapper .dataTables_length select {
+        min-width: 82px;
+        border-radius: 12px !important;
+        border: 1px solid #ced4da !important;
+        padding: 4px 28px 4px 10px !important;
+        font-size: 0.95rem !important;
+        box-shadow: none !important;
+    }
+
+/* Filtro de búsqueda */
+.dataTables_wrapper .dataTables_filter {
+    text-align: right !important;
+    margin-bottom: 0 !important;
+}
+
+    .dataTables_wrapper .dataTables_filter label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0 !important;
+    }
+
+    .dataTables_wrapper .dataTables_filter input {
+        margin-left: 8px !important;
+        border-radius: 12px !important;
+        border: 1px solid #ced4da !important;
+        min-width: 220px;
+        padding: 6px 12px !important;
+        box-shadow: none !important;
+    }
+
+/* Contenedor de botones */
+.dataTables_wrapper .dt-buttons {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+    /* Botones de exportación */
+    .dataTables_wrapper .dt-buttons .dt-button,
+    .dataTables_wrapper .dt-buttons .btn,
+    .dataTables_wrapper .dt-buttons .dt-btn-export {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        line-height: 1 !important;
+        padding: 7px 14px !important;
+        min-height: 34px !important;
+        border: 1px solid #d0d7de !important;
+        border-right: 0 !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        background: #ffffff !important;
+        color: #344054 !important;
+        box-shadow: none !important;
+        text-decoration: none !important;
+        background-image: none !important;
+        transition: all 0.2s ease;
+    }
+
+        /* Primer botón */
+        .dataTables_wrapper .dt-buttons .dt-button:first-child,
+        .dataTables_wrapper .dt-buttons .btn:first-child,
+        .dataTables_wrapper .dt-buttons .dt-btn-export:first-child {
+            border-top-left-radius: 10px !important;
+            border-bottom-left-radius: 10px !important;
+        }
+
+        /* Último botón */
+        .dataTables_wrapper .dt-buttons .dt-button:last-child,
+        .dataTables_wrapper .dt-buttons .btn:last-child,
+        .dataTables_wrapper .dt-buttons .dt-btn-export:last-child {
+            border-right: 1px solid #d0d7de !important;
+            border-top-right-radius: 10px !important;
+            border-bottom-right-radius: 10px !important;
+        }
+
+        .dataTables_wrapper .dt-buttons .dt-button:hover,
+        .dataTables_wrapper .dt-buttons .btn:hover,
+        .dataTables_wrapper .dt-buttons .dt-btn-export:hover {
+            background: #f8fafc !important;
+            color: #1d4ed8 !important;
+            border-color: #cbd5e1 !important;
+            transform: none !important;
+            filter: none !important;
+        }
+
+        .dataTables_wrapper .dt-buttons .dt-button:focus,
+        .dataTables_wrapper .dt-buttons .btn:focus,
+        .dataTables_wrapper .dt-buttons .dt-btn-export:focus {
+            outline: none !important;
+            box-shadow: 0 0 0 0.18rem rgba(49, 39, 131, 0.12) !important;
+            position: relative;
+            z-index: 2;
+        }
+
+        .dataTables_wrapper .dt-buttons .dt-button i,
+        .dataTables_wrapper .dt-buttons .btn i,
+        .dataTables_wrapper .dt-buttons .dt-btn-export i {
+            font-size: 13px !important;
+            margin: 0 !important;
+            line-height: 1 !important;
+        }
+
+        .dataTables_wrapper .dt-buttons .dt-button span,
+        .dataTables_wrapper .dt-buttons .btn span,
+        .dataTables_wrapper .dt-buttons .dt-btn-export span {
+            display: inline-flex;
+            align-items: center;
+            line-height: 1;
+        }
+
+    /* Colores por tipo */
+    .dataTables_wrapper .dt-buttons .buttons-excel {
+        color: #15803d !important;
+    }
+
+    .dataTables_wrapper .dt-buttons .buttons-pdf {
+        color: #dc2626 !important;
+    }
+
+    .dataTables_wrapper .dt-buttons .buttons-print {
+        color: #a16207 !important;
+    }
+
+    /* Hover específico */
+    .dataTables_wrapper .dt-buttons .buttons-excel:hover {
+        background: #f0fdf4 !important;
+        color: #166534 !important;
+    }
+
+    .dataTables_wrapper .dt-buttons .buttons-pdf:hover {
+        background: #fef2f2 !important;
+        color: #b91c1c !important;
+    }
+
+    .dataTables_wrapper .dt-buttons .buttons-print:hover {
+        background: #fffbeb !important;
+        color: #92400e !important;
+    }
+
+/* Tabla */
+.dataTables_wrapper table.dataTable {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+/* Información inferior */
+.dataTables_wrapper .dataTables_info {
+    padding-top: 0.85rem !important;
+    color: #495057;
+    font-weight: 500;
+}
+
+/* Paginación */
+.dataTables_wrapper .dataTables_paginate {
+    padding-top: 0.5rem !important;
+}
+
+.dataTables_wrapper .pagination {
+    margin-bottom: 0 !important;
+}
+
+.dataTables_wrapper .page-link {
+    border-radius: 10px !important;
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        text-align: center !important;
+    }
+
+        .dataTables_wrapper .dataTables_filter input {
+            min-width: 180px;
+            width: 100%;
+            max-width: 280px;
+            margin-left: 0 !important;
+            margin-top: 8px !important;
+        }
+
+        .dataTables_wrapper .dataTables_filter label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+    .dataTables_wrapper .dt-buttons {
+        justify-content: center !important;
+        margin-top: 6px !important;
+        margin-bottom: 6px !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .dataTables_wrapper .dt-buttons {
+        width: 100%;
+        justify-content: center !important;
+    }
+
+        .dataTables_wrapper .dt-buttons .dt-button,
+        .dataTables_wrapper .dt-buttons .btn,
+        .dataTables_wrapper .dt-buttons .dt-btn-export {
+            width: 100% !important;
+            max-width: 220px;
+            font-size: 12px !important;
+            padding: 6px 10px !important;
+        }
+
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+        text-align: center !important;
+    }
+}
