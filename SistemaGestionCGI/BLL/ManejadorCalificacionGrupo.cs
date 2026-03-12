@@ -10,12 +10,7 @@ namespace SistemaGestionCGI.BLL
 {
     public class ManejadorCalificacionGrupo
     {
-        // Instancia del DAL (Singleton)
         private readonly ConnectionSqlServer _dal = ConnectionSqlServer.Instance;
-
-        // =============================================================
-        // 1. GESTIÓN DE CALIFICACIONES (CRUD)
-        // =============================================================
 
         public List<InvgccCalificacionGrupo> ObtenerCalificaciones(int anioFiltro = 0)
         {
@@ -36,7 +31,6 @@ namespace SistemaGestionCGI.BLL
 
         public InvgccCalificacionGrupo ObtenerPorId(string id)
         {
-            // Nota: Usar parámetros sería mejor, pero mantenemos compatibilidad con tu DAL actual
             string sql = $"SELECT * FROM INVGCCCALIFICACION_GRUPO WHERE strId_valo = '{id}'";
             var lista = _dal.SelectSql<InvgccCalificacionGrupo>(sql);
             return lista?.FirstOrDefault();
@@ -44,10 +38,8 @@ namespace SistemaGestionCGI.BLL
 
         public void GuardarCalificacion(InvgccCalificacionGrupo obj)
         {
-            // 1. Generar ID único
             obj.strId_valo = GenerarCodigoAlfanumerico("INVGCCCALIFICACION_GRUPO", "strId_valo", "VAL");
 
-            // 2. Preparar datos para inserción segura usando Hashtable (Evita SQL Injection manual)
             Hashtable data = new Hashtable
             {
                 { "strId_valo", obj.strId_valo },
@@ -61,16 +53,13 @@ namespace SistemaGestionCGI.BLL
                 { "strCategoria_valo", obj.strCategoria_valo }
             };
 
-            // 3. Insertar usando el método nativo del DAL
             _dal.Insert("INVGCCCALIFICACION_GRUPO", data);
 
-            // 4. Actualizar estado del grupo vinculado
             ActualizarEstadoGrupo(obj.fkId_gru, obj.strCategoria_valo);
         }
 
         public void ActualizarCalificacion(InvgccCalificacionGrupo obj)
         {
-            // 1. Preparar datos para actualización segura
             Hashtable data = new Hashtable
             {
                 { "dtFecha_valo", obj.dtFecha_valo.ToString("yyyy-MM-dd HH:mm:ss") },
@@ -103,29 +92,19 @@ namespace SistemaGestionCGI.BLL
             _dal.DeleteSql(sql);
         }
 
-        // =============================================================
-        // 2. GESTIÓN DE MÉTRICAS (CONFIGURACIÓN ACTUALIZADA)
-        // =============================================================
-
-        /// <summary>
-        /// Obtiene la configuración completa (Consolidado y Emergente) para un año específico.
-        /// </summary>
         public InvgccMetricas ObtenerConfiguracionMetricas(int anio)
         {
-            // Se incluye minEmergente en la consulta
             string sql = $"SELECT anio, minConsolidado, minEmergente FROM INVGCC_METRICAS WHERE anio = {anio}";
 
             var res = _dal.SelectSql<InvgccMetricas>(sql)?.FirstOrDefault();
 
             if (res != null) return res;
 
-            // Valores por defecto seguros si no existe configuración
             return new InvgccMetricas { anio = anio, minConsolidado = 80, minEmergente = 60 };
         }
 
         public void GuardarMetrica(InvgccMetricas metrica)
         {
-            // Verificamos existencia
             string check = $"SELECT COUNT(*) as conteo FROM INVGCC_METRICAS WHERE anio = {metrica.anio}";
             var res = _dal.SelectSql<dynamic>(check)?.FirstOrDefault();
 
@@ -142,7 +121,6 @@ namespace SistemaGestionCGI.BLL
 
             if (count > 0)
             {
-                // UPDATE incluyendo minEmergente
                 string sqlUpdate = $@"UPDATE INVGCC_METRICAS 
                                       SET minConsolidado = {metrica.minConsolidado}, 
                                           minEmergente = {metrica.minEmergente} 
@@ -151,16 +129,12 @@ namespace SistemaGestionCGI.BLL
             }
             else
             {
-                // INSERT incluyendo minEmergente
                 string sqlInsert = $@"INSERT INTO INVGCC_METRICAS (anio, minConsolidado, minEmergente) 
                                       VALUES ({metrica.anio}, {metrica.minConsolidado}, {metrica.minEmergente})";
                 _dal.InsertSql(sqlInsert);
             }
         }
 
-        // =============================================================
-        // 3. UTILIDADES Y COMBOS
-        // =============================================================
 
         public List<InvgccGrupoInvestigacion> ObtenerGruposParaCombo(int anio, string idGrupoIncluir = "")
         {
@@ -195,7 +169,6 @@ namespace SistemaGestionCGI.BLL
             return ExtraerListaEnteros(sql, "anio");
         }
 
-        // Método auxiliar para evitar repetir la lógica de extracción de enteros (dynamic/JObject)
         private List<int> ExtraerListaEnteros(string sql, string campo)
         {
             var lista = _dal.SelectSql<dynamic>(sql);

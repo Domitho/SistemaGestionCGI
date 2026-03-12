@@ -21,7 +21,6 @@ namespace SistemaGestionCGI
                     return;
                 }
 
-                // Seguridad: Si es Coordinador, lo mandamos a su panel, no puede estar aquí.
                 if (Session["RolUsuario"]?.ToString() == "COORDINADOR")
                 {
                     Response.Redirect("EjecucionProAprobados.aspx");
@@ -53,8 +52,6 @@ namespace SistemaGestionCGI
             CargarUsuarios(txtBuscar.Text.Trim());
         }
 
-        // --- NAVEGACIÓN ---
-
         private void MostrarFormulario(bool mostrar)
         {
             pnlGrilla.Visible = !mostrar;
@@ -84,10 +81,6 @@ namespace SistemaGestionCGI
         {
             MostrarFormulario(false);
         }
-
-        // =========================================================
-        // LÓGICA DE VINCULACIÓN (SOLO PARA COORDINADORES)
-        // =========================================================
 
         protected void ddlRol_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -139,7 +132,6 @@ namespace SistemaGestionCGI
                 string cedula = ddlCandidatos.SelectedValue;
                 ViewState["CedulaVinculada"] = cedula;
 
-                // Auto-rellenar nombre
                 string textoCombo = ddlCandidatos.SelectedItem.Text;
                 string nombreCompleto = textoCombo.Split('(')[0].Trim();
                 txtUsername.Text = nombreCompleto.Replace(" ", ".");
@@ -151,9 +143,6 @@ namespace SistemaGestionCGI
             }
         }
 
-        // =========================================================
-        // CRUD LOGIC
-        // =========================================================
 
         protected void rptUsuarios_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
@@ -173,10 +162,8 @@ namespace SistemaGestionCGI
 
                     chkActivo.Checked = u.bActivo_usu;
 
-                    // Al editar, recuperamos la cédula existente en memoria
                     ViewState["CedulaVinculada"] = u.strCedula_ref;
 
-                    // No permitimos cambiar la vinculación al editar para evitar inconsistencias
                     pnlSeleccionCoordinador.Visible = false;
 
                     lblTituloFormulario.Text = "Editar: " + u.strNombre_usu;
@@ -219,16 +206,25 @@ namespace SistemaGestionCGI
                     strCedula_ref = cedulaFinal
                 };
 
-                if (string.IsNullOrEmpty(hfIdUsuario.Value)) 
+                if (string.IsNullOrEmpty(hfIdUsuario.Value))
                 {
-                    if (string.IsNullOrEmpty(u.strClave_usu)) { Msg("Ingrese contraseña.", "ww"); return; }
+                    if (string.IsNullOrEmpty(u.strClave_usu))
+                    {
+                        Msg("Ingrese una contraseña.", "ww");
+                        return;
+                    }
 
                     _manejador.GuardarUsuario(u);
+
+                    string usuarioActual = Session["UsuarioLogueado"]?.ToString() ?? "Sistema";
+                    _manejador.RegistrarHistorial(u, "CREACION", usuarioActual);
+
                     Msg("Usuario creado exitosamente.", "ss");
                 }
-                else 
+                else
                 {
                     u.intId_usu = int.Parse(hfIdUsuario.Value);
+
                     if (string.IsNullOrEmpty(u.strClave_usu))
                     {
                         var old = _manejador.ObtenerUsuarioPorId(u.intId_usu);
@@ -236,6 +232,15 @@ namespace SistemaGestionCGI
                     }
 
                     _manejador.ActualizarUsuario(u);
+
+                    string usuarioActual = Session["UsuarioLogueado"]?.ToString() ?? "Sistema";
+                    _manejador.RegistrarHistorial(u, "ACTUALIZACION", usuarioActual);
+
+                    if (!u.bActivo_usu)
+                    {
+                        _manejador.RegistrarHistorial(u, "INACTIVACION", usuarioActual);
+                    }
+
                     Msg("Usuario actualizado.", "ss");
                 }
 
@@ -256,6 +261,21 @@ namespace SistemaGestionCGI
             string cleanMsg = msg.Replace("'", "\\'").Replace("\r\n", " ");
             ScriptManager.RegisterStartupScript(this, GetType(), "alert",
                 $"$(function() {{ toastify('{type}', '{cleanMsg}', 'Sistema'); }});", true);
+        }
+
+
+        // HISTORIAL
+
+        protected void btnVerHistorial_Click(object sender, EventArgs e)
+        {
+            int idUsuario = int.Parse(((LinkButton)sender).CommandArgument);
+            var historial = _manejador.ObtenerHistorialUsuario(idUsuario);
+
+            rptHistorialModal.DataSource = historial;
+            rptHistorialModal.DataBind();
+
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "mostrarModal",
+                "var myModal = new bootstrap.Modal(document.getElementById('modalHistorial')); myModal.show();", true);
         }
     }
 }

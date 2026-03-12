@@ -4,144 +4,9 @@
     
     <%-- RECURSOS DE ESTILO UTC --%>
     <link href="DesignersUTC/Styles/utc-full-design.css" rel="stylesheet" />
-        <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
+    <link href="DesignersUTC/Styles/utc-fileinput.css" rel="stylesheet" />
+    <link href="DesignersUTC/Styles/gestion-usuarios.css" rel="stylesheet" />
 
-    <style>
-        /* --- ESTILOS ESPECÍFICOS PARA TARJETAS DE USUARIO (UTC) --- */
-        
-        .user-grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .user-card-pro {
-            background: #fff;
-            border-radius: 16px;
-            padding: 25px;
-            position: relative;
-            border: 1px solid #eef2f7;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05); /* Sombra suave inicial */
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            overflow: hidden;
-        }
-
-        /* Efecto Hover Institucional */
-        .user-card-pro:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 56, 118, 0.15); /* Sombra Azul UTC */
-            border-color: var(--utc-azul);
-        }
-
-        /* Avatar con colores UTC */
-        .pro-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            /* Degradado Institucional */
-            background: linear-gradient(135deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%);
-            color: #fff;
-            font-size: 2rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 15px;
-            border: 4px solid #fff;
-            box-shadow: 0 5px 15px rgba(0, 56, 118, 0.2);
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-        }
-
-        /* Indicador de Estado */
-        .status-badge {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.65rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .st-active { background-color: #d1e7dd; color: #0f5132; }
-        .st-inactive { background-color: #f8d7da; color: #842029; }
-
-        /* Rol Badge */
-        .role-pill {
-            display: inline-block;
-            padding: 4px 12px;
-            background: #eef2f7;
-            color: var(--utc-azul-oscuro);
-            border-radius: 6px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-        /* Resaltar Coordinador */
-        .role-coord { 
-            background: #fff3cd; 
-            color: #856404; 
-            border-color: #ffecb5;
-        }
-
-        /* Botones de acción */
-        .card-actions {
-            margin-top: auto;
-            width: 100%;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            padding-top: 15px;
-            border-top: 1px solid #f8f9fa;
-        }
-
-        .btn-card-action {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
-            border: none;
-            cursor: pointer;
-            text-decoration: none;
-        }
-        
-        /* Botón EDITAR (Amarillo con ícono oscuro) */
-        .btn-card-edit { 
-            background-color: #ffc107 !important; /* Amarillo estándar */
-            color: #212529 !important;            /* Ícono oscuro para contraste */
-            border: none;
-        }
-        .btn-card-edit:hover { 
-            background-color: #e0a800 !important; /* Amarillo más oscuro al pasar el mouse */
-            color: #000 !important;
-            transform: scale(1.1); 
-        }
-        
-        /* Botón ELIMINAR (Rojo con ícono rojo) */
-        .btn-card-del { 
-            background-color: #fff; 
-            border: 1px solid #dc3545; 
-            color: #dc3545; 
-        }
-        .btn-card-del:hover { 
-            background-color: #dc3545; 
-            color: #fff; 
-            transform: scale(1.1); 
-        }
-
-    </style>
-
-    <%-- ENCABEZADO PRINCIPAL --%>
     <div class="d-flex justify-content-between align-items-center flex-wrap bg-white p-3 mb-4 rounded shadow-utc border header-utc-line">
         
         <div class="d-flex align-items-center">
@@ -164,33 +29,27 @@
 
     </div>
 
-    <%-- PANEL DE LISTADO --%>
     <asp:Panel ID="pnlGrilla" runat="server">
         
-        <%-- BARRA DE BÚSQUEDA FLOTANTE --%>
         <div class="bg-white p-3 rounded-4 shadow-utc mb-4 border d-flex align-items-center">
             <i class="fa-solid fa-magnifying-glass text-primary fs-5 ms-2 me-3"></i>
             <asp:TextBox ID="txtBuscar" runat="server" CssClass="form-control border-0 shadow-none bg-transparent fs-6" 
                 placeholder="Buscar por nombre de usuario, rol o ID..." AutoPostBack="true" OnTextChanged="txtBuscar_TextChanged"></asp:TextBox>
         </div>
 
-        <%-- GRID DE TARJETAS --%>
         <div class="user-grid-container">
             <asp:Repeater ID="rptUsuarios" runat="server" OnItemCommand="rptUsuarios_ItemCommand">
                 <ItemTemplate>
                     
                     <div class="user-card-pro">
-                        <%-- Badge de Estado --%>
                         <div class='status-badge <%# Convert.ToBoolean(Eval("bActivo_usu")) ? "st-active" : "st-inactive" %>'>
                              <%# Convert.ToBoolean(Eval("bActivo_usu")) ? "<i class='fa-solid fa-circle me-1' style='font-size:6px; vertical-align:middle;'></i>ACTIVO" : "<i class='fa-solid fa-circle me-1' style='font-size:6px; vertical-align:middle;'></i>INACTIVO" %>
                         </div>
 
-                        <%-- Avatar --%>
                         <div class="pro-avatar">
                             <%# ObtenerIniciales(Eval("strNombre_usu").ToString()) %>
                         </div>
 
-                        <%-- Nombre y Rol --%>
                         <h5 class="fw-bold text-dark mb-1 text-truncate w-100" title='<%# Eval("strNombre_usu") %>'>
                             <%# Eval("strNombre_usu") %>
                         </h5>
@@ -203,7 +62,6 @@
                             <i class="fa-solid fa-fingerprint me-1 text-primary"></i> ID: <strong><%# Eval("intId_usu") %></strong>
                         </div>
 
-                        <%-- Acciones --%>
                         <div class="card-actions">
                             <asp:LinkButton ID="btnEditar" runat="server" CommandName="Editar" CommandArgument='<%# Eval("intId_usu") %>'
                                 CssClass="btn-card-action btn-card-edit shadow-sm" ToolTip="Editar Perfil">
@@ -215,6 +73,13 @@
                                 OnClientClick="return confirm('¿CONFIRMAR BAJA DE USUARIO?\n\nEl usuario perderá el acceso al sistema.');" ToolTip="Cambiar Estado / Baja">
                                 <i class="fa-solid fa-power-off"></i>
                             </asp:LinkButton>
+
+                            <asp:LinkButton ID="btnVerHistorial" runat="server"
+                                CommandArgument='<%# Eval("intId_usu") %>'
+                                CssClass="btn btn-outline-primary btn-sm me-1"
+                                OnClick="btnVerHistorial_Click">
+                                <i class="fa-solid fa-history me-1"></i> Historial
+                            </asp:LinkButton>
                         </div>
                     </div>
 
@@ -222,7 +87,6 @@
             </asp:Repeater>
         </div>
         
-        <%-- Mensaje Sin Resultados --%>
         <asp:Panel ID="pnlNoData" runat="server" Visible="false" CssClass="text-center py-5 bg-white rounded-4 shadow-utc mt-3">
             <div class="opacity-25 mb-3">
                 <i class="fa-solid fa-user-slash fa-4x text-muted"></i>
@@ -233,7 +97,6 @@
 
     </asp:Panel>
 
-    <%-- PANEL DE FORMULARIO --%>
     <asp:Panel ID="pnlFormulario" runat="server" Visible="false">
         
         <div class="row justify-content-center">
@@ -241,7 +104,6 @@
                 
                 <div class="card border-0 shadow-utc rounded-4 overflow-hidden">
                     
-                    <%-- Cabecera del Formulario --%>
                     <div class="card-header bg-white p-4 text-center border-0">
                         <div class="mb-3">
                             <span class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle" style="width: 60px; height: 60px;">
@@ -257,7 +119,6 @@
                     <div class="card-body p-4 p-md-5 pt-2 bg-white">
                         <asp:HiddenField ID="hfIdUsuario" runat="server" />
 
-                        <%-- Sección Credenciales --%>
                         <div class="mb-4">
                             <h6 class="text-uppercase small fw-bold text-secondary mb-3 border-bottom pb-2">
                                 <i class="fa-solid fa-key me-1"></i> Credenciales
@@ -277,7 +138,6 @@
                             </div>
                         </div>
 
-                        <%-- Sección Permisos --%>
                         <div class="mb-4">
                             <h6 class="text-uppercase small fw-bold text-secondary mb-3 border-bottom pb-2">
                                 <i class="fa-solid fa-shield-halved me-1"></i> Permisos y Estado
@@ -322,7 +182,6 @@
                             </div>
                         </div>
 
-                        <%-- Botones de Acción --%>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-5">
                             <asp:LinkButton ID="btnGuardar" runat="server" CssClass="btn btn-primary btn-pill px-5 py-2 shadow fw-bold" OnClick="btnGuardar_Click">
                                 <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Cambios
@@ -339,5 +198,56 @@
         </div>
 
     </asp:Panel>
+
+
+    <!-- Modal Historial de Usuario -->
+    <div class="modal fade" id="modalHistorial" tabindex="-1" aria-labelledby="modalHistorialLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content shadow-utc rounded-4">
+                <div class="modal-header bg-primary bg-opacity-10 border-0">
+                    <h5 class="modal-title text-primary fw-bold" id="modalHistorialLabel">
+                        Historial del Usuario
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <asp:Repeater ID="rptHistorialModal" runat="server">
+                        <HeaderTemplate>
+                            <table class="table table-striped table-bordered table-hover">
+                                <thead class="bg-primary bg-opacity-10">
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Evento</th>
+                                        <th>Rol</th>
+                                        <th>Activo</th>
+                                        <th>Realizado por</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        </HeaderTemplate>
+                        <ItemTemplate>
+                            <tr>
+                                <td><%# Eval("FechaEvento") %></td>
+                                <td><%# Eval("TipoEvento") %></td>
+                                <td><%# Eval("Rol") %></td>
+                                <td><%# Convert.ToBoolean(Eval("Activo")) ? "Sí" : "No" %></td>
+                                <td><%# Eval("RealizadoPor") %></td>
+                            </tr>
+                        </ItemTemplate>
+                        <FooterTemplate>
+                                </tbody>
+                            </table>
+                        </FooterTemplate>
+                    </asp:Repeater>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary btn-pill" data-bs-dismiss="modal">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 </asp:Content>

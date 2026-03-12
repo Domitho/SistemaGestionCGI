@@ -8,16 +8,11 @@ namespace SistemaGestionCGI.BLL
     {
         private readonly ConnectionSqlServer _dal = ConnectionSqlServer.Instance;
 
-        // =========================================================
-        // 1. LOGIN
-        // =========================================================
         public InvgccUsuario Autenticar(string usuario, string clave)
         {
             string userLimpio = usuario.Trim();
-            // Asegúrate de que este hash coincida con el de tu BD
             string claveEncriptada = SeguridadHelper.EncriptarSHA256(clave.Trim());
 
-            // Usamos nombres en INGLÉS porque tu modelo tiene [JsonProperty("UserID")]
             string sql = $@"
                 SELECT 
                     UserID, 
@@ -39,23 +34,14 @@ namespace SistemaGestionCGI.BLL
             }
             return null;
         }
-
-        // =========================================================
-        // 2. LISTAR TODOS
-        // =========================================================
         public List<InvgccUsuario> ObtenerUsuarios()
         {
-            // Sin Alias, dejamos que JsonProperty haga el trabajo
             string sql = "SELECT UserID, Username, Password, Role, IsActive, strCedula_ref FROM Users ORDER BY Username ASC";
             return _dal.SelectSql<InvgccUsuario>(sql);
         }
 
-        // =========================================================
-        // 3. OBTENER POR ID (CORREGIDO: QUITAMOS LOS ALIAS)
-        // =========================================================
         public InvgccUsuario ObtenerUsuarioPorId(int id)
         {
-            // CORRECCIÓN: Quitamos 'AS intId_usu', usamos 'UserID' para que coincida con el JsonProperty
             string sql = $@"
                 SELECT 
                     UserID, 
@@ -71,15 +57,11 @@ namespace SistemaGestionCGI.BLL
             return (lista != null && lista.Count > 0) ? lista[0] : null;
         }
 
-        // =========================================================
-        // 4. GUARDAR
-        // =========================================================
         public void GuardarUsuario(InvgccUsuario u)
         {
             string claveEncriptada = SeguridadHelper.EncriptarSHA256(u.strClave_usu.Trim());
             int activo = u.bActivo_usu ? 1 : 0;
 
-            // Manejo de Nulos para la cédula
             string cedula = string.IsNullOrEmpty(u.strCedula_ref) ? "NULL" : $"'{u.strCedula_ref}'";
 
             string sql = $@"
@@ -89,9 +71,6 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sql);
         }
 
-        // =========================================================
-        // 5. ACTUALIZAR
-        // =========================================================
         public void ActualizarUsuario(InvgccUsuario u)
         {
             int activo = u.bActivo_usu ? 1 : 0;
@@ -100,7 +79,6 @@ namespace SistemaGestionCGI.BLL
             string passwordFinal = u.strClave_usu.Trim();
             string sql;
 
-            // Si la longitud no es 64 (SHA256), asumimos que es una nueva clave en texto plano
             if (passwordFinal.Length != 64)
             {
                 passwordFinal = SeguridadHelper.EncriptarSHA256(passwordFinal);
@@ -116,7 +94,6 @@ namespace SistemaGestionCGI.BLL
             }
             else
             {
-                // No tocamos el Password
                 sql = $@"
                     UPDATE Users 
                     SET Username = '{u.strNombre_usu.Trim()}',
@@ -129,9 +106,6 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sql);
         }
 
-        // =========================================================
-        // 6. ELIMINAR
-        // =========================================================
         public void EliminarUsuario(int id)
         {
             _dal.UpdateSql($"UPDATE Users SET IsActive = 0 WHERE UserID = {id}");
@@ -151,6 +125,32 @@ namespace SistemaGestionCGI.BLL
                 AND strCedulaCoordinador_ejec NOT IN (SELECT strCedula_ref FROM Users WHERE strCedula_ref IS NOT NULL)";
 
             return _dal.SelectSql<InvgccUsuario>(sql);
+        }
+
+        //
+
+        public void RegistrarHistorial(InvgccUsuario u, string tipoEvento, string realizadoPor)
+        {
+            int activo = u.bActivo_usu ? 1 : 0;
+            string sql = $@"
+                INSERT INTO INVGCCHISTORIAL_USUARIOS
+                    (IdUsuario, NombreUsuario, Rol, Activo, TipoEvento, FechaEvento, RealizadoPor)
+                VALUES
+                    ({u.intId_usu}, '{u.strNombre_usu.Trim()}', '{u.strRol_usu}', {activo}, '{tipoEvento}', GETDATE(), '{realizadoPor}')
+            ";
+
+            _dal.UpdateSql(sql);
+        }
+
+        public List<InvgccUsuarioHistorial> ObtenerHistorialUsuario(int idUsuario)
+        {
+            string sql = $@"
+                SELECT IdHistorial, IdUsuario, NombreUsuario, Rol, Activo, TipoEvento, FechaEvento, RealizadoPor
+                FROM INVGCCHISTORIAL_USUARIOS
+                WHERE IdUsuario = {idUsuario}
+                ORDER BY FechaEvento DESC";
+
+            return _dal.SelectSql<InvgccUsuarioHistorial>(sql);
         }
 
     }

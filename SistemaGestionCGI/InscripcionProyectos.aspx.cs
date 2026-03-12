@@ -943,7 +943,6 @@ namespace SistemaGestionCGI
             }
         }
 
-
         // FACULTADES - CARRERAS
 
         private void CargarFacultades()

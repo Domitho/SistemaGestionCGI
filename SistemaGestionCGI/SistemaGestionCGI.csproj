@@ -127,6 +127,7 @@
     <Content Include="DesignersUTC\Scripts\utc-selector-tiempo.js" />
     <Content Include="DesignersUTC\Scripts\validaciones-grupos.js" />
     <Content Include="DesignersUTC\Styles\Dashboard.css" />
+    <Content Include="DesignersUTC\Styles\gestion-usuarios.css" />
     <Content Include="DesignersUTC\Styles\informe-observaciones.css" />
     <Content Include="DesignersUTC\Styles\informes-coordinadores-pro.css" />
     <Content Include="DesignersUTC\Styles\login-full.css" />
@@ -339,6 +340,7 @@
     <Compile Include="Models\InvgccIntegrantesHistorial.cs" />
     <Compile Include="Models\InvgccMetricas.cs" />
     <Compile Include="Models\InvgccUsuario.cs" />
+    <Compile Include="Models\InvgccUsuarioHistorial.cs" />
     <Compile Include="Models\ProyectoDetalleDTO.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProyectosAprobadosCoordinadores.aspx.cs">
