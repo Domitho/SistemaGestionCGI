@@ -27,15 +27,42 @@
     <asp:Panel ID="pnlFiltros" runat="server" Visible="true">
         <div class="bg-white p-3 mb-3 rounded shadow-utc border">
             <div class="row align-items-center">
+
                 <div class="col-md-6 d-flex align-items-center gap-2">
                     <label class="fw-bold text-secondary">FILTRAR POR AÑO:</label>
-                    <asp:DropDownList ID="ddlFiltroAnio" runat="server" AutoPostBack="true" CssClass="form-select w-auto" OnSelectedIndexChanged="ddlFiltroAnio_SelectedIndexChanged"></asp:DropDownList>
+
+                    <asp:DropDownList 
+                        ID="ddlFiltroAnio" 
+                        runat="server" 
+                        AutoPostBack="true"
+                        CssClass="form-select w-auto"
+                        OnSelectedIndexChanged="ddlFiltroAnio_SelectedIndexChanged">
+                    </asp:DropDownList>
                 </div>
-                <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" onclick="AbrirModalMetricas()">
-                        <i class="fa-solid fa-sliders me-1"></i> Configurar Métricas
+
+                <div class="col-md-6 text-md-end mt-3 mt-md-0 d-flex justify-content-end gap-2">
+
+                    <asp:LinkButton ID="btnHistorialGlobal"
+                        runat="server"
+                        CssClass="btn btn-outline-info btn-sm rounded-pill"
+                        OnClick="btnHistorialGlobal_Click">
+
+                        <i class="fa-solid fa-clock-rotate-left me-1"></i>
+                        Ver Historial
+
+                    </asp:LinkButton>
+
+                    <button type="button"
+                        class="btn btn-outline-secondary btn-sm rounded-pill"
+                        onclick="AbrirModalMetricas()">
+
+                        <i class="fa-solid fa-sliders me-1"></i>
+                        Configurar Métricas
+
                     </button>
+
                 </div>
+
             </div>
         </div>
     </asp:Panel>
@@ -350,6 +377,75 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalHistorial" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content shadow-utc border-0">
+
+                <div class="modal-header bg-utc text-white">
+                    <h5 class="modal-title">
+                        <i class="fa-solid fa-clock-rotate-left me-2"></i>
+                        Historial de la Calificación
+                    </h5>
+
+                    <button type="button" class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="table-responsive">
+
+                        <table class="table table-bordered table-hover text-center">
+
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Acción</th>
+                                    <th>Usuario</th>
+                                    <th>Descripción</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                <asp:Repeater ID="rptHistorial" runat="server">
+                                    <ItemTemplate>
+
+                                        <tr>
+                                            <td>
+                                                <%# Convert.ToDateTime(Eval("fechaAccion")).ToString("dd/MM/yyyy HH:mm") %>
+                                            </td>
+
+                                            <td>
+                                                <span class="badge bg-secondary">
+                                                    <%# Eval("accion") %>
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <%# Eval("usuarioAccion") %>
+                                            </td>
+
+                                            <td class="text-start">
+                                                <%# Eval("descripcion") %>
+                                            </td>
+                                        </tr>
+
+                                    </ItemTemplate>
+                                </asp:Repeater>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <script type="text/javascript">
         function AbrirModalArchivos() {
             var el = document.getElementById('modalArchivos');
@@ -358,6 +454,15 @@
                 modal.show();
             }
         }
+
+        function AbrirModalHistorial() {
+            var el = document.getElementById('modalHistorial');
+            if (el) {
+                var modal = new bootstrap.Modal(el);
+                modal.show();
+            }
+        }
+
     </script>
 
     <%-- SCRIPTS OPTIMIZADOS --%>
@@ -446,6 +551,15 @@
             var el = document.getElementById('modalMetricas');
             if (el) { var modal = bootstrap.Modal.getOrCreateInstance(el); modal.show(); }
         }
+
+        function AbrirModalHistorialGlobal() {
+            var el = document.getElementById('modalHistorial');
+            if (el) {
+                var modal = new bootstrap.Modal(el);
+                modal.show();
+            }
+        }
+
     </script>
 
     <script type="text/javascript">

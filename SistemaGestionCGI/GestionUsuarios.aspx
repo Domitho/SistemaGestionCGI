@@ -199,35 +199,47 @@
 
     </asp:Panel>
 
-
-    <!-- Modal Historial de Usuario -->
     <div class="modal fade" id="modalHistorial" tabindex="-1" aria-labelledby="modalHistorialLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content shadow-utc rounded-4">
-                <div class="modal-header bg-primary bg-opacity-10 border-0">
-                    <h5 class="modal-title text-primary fw-bold" id="modalHistorialLabel">
-                        Historial del Usuario
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content shadow-utc rounded-4 border-0">
+
+                <div class="modal-header utc-modal-header border-0">
+                    <div class="d-flex align-items-center">
+                        <div class="utc-modal-icon me-3">
+                            <i class="fa-solid fa-clock-rotate-left fa-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0 text-white" id="modalHistorialLabel">
+                                Historial del Usuario
+                            </h5>
+                            <p class="small mb-0 mt-1 text-white-50">
+                                Visualice todas las acciones realizadas
+                            </p>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
+
                 <div class="modal-body p-3">
                     <asp:Repeater ID="rptHistorialModal" runat="server">
                         <HeaderTemplate>
-                            <table class="table table-striped table-bordered table-hover">
-                                <thead class="bg-primary bg-opacity-10">
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Evento</th>
-                                        <th>Rol</th>
-                                        <th>Activo</th>
-                                        <th>Realizado por</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered table-hover text-center">
+                                    <thead class="bg-primary bg-opacity-10">
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Evento</th>
+                                            <th>Rol</th>
+                                            <th>Activo</th>
+                                            <th>Realizado por</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
                         </HeaderTemplate>
                         <ItemTemplate>
                             <tr>
-                                <td><%# Eval("FechaEvento") %></td>
+                                <td><%# Eval("FechaEvento", "{0:dd/MM/yyyy HH:mm}") %></td>
                                 <td><%# Eval("TipoEvento") %></td>
                                 <td><%# Eval("Rol") %></td>
                                 <td><%# Convert.ToBoolean(Eval("Activo")) ? "Sí" : "No" %></td>
@@ -235,19 +247,21 @@
                             </tr>
                         </ItemTemplate>
                         <FooterTemplate>
-                                </tbody>
-                            </table>
+                                    </tbody>
+                                </table>
+                            </div>
                         </FooterTemplate>
                     </asp:Repeater>
                 </div>
+
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-outline-secondary btn-pill" data-bs-dismiss="modal">
                         Cerrar
                     </button>
                 </div>
+
             </div>
         </div>
     </div>
-
 
 </asp:Content>

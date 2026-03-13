@@ -5,6 +5,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using SistemaGestionCGI.Models;
 using SistemaGestionCGI.Settings;
+using Newtonsoft.Json;
 
 namespace SistemaGestionCGI.BLL
 {
@@ -36,7 +37,7 @@ namespace SistemaGestionCGI.BLL
             return lista?.FirstOrDefault();
         }
 
-        public void GuardarCalificacion(InvgccCalificacionGrupo obj)
+        public void GuardarCalificacion(InvgccCalificacionGrupo obj, string usuario, int idUsuario)
         {
             obj.strId_valo = GenerarCodigoAlfanumerico("INVGCCCALIFICACION_GRUPO", "strId_valo", "VAL");
 
@@ -56,10 +57,22 @@ namespace SistemaGestionCGI.BLL
             _dal.Insert("INVGCCCALIFICACION_GRUPO", data);
 
             ActualizarEstadoGrupo(obj.fkId_gru, obj.strCategoria_valo);
+
+            RegistrarHistorico(
+                obj.strId_valo,
+                obj.fkId_gru,
+                "REGISTRO",
+                usuario,
+                idUsuario,
+                null,
+                obj
+            );
         }
 
-        public void ActualizarCalificacion(InvgccCalificacionGrupo obj)
+        public void ActualizarCalificacion(InvgccCalificacionGrupo obj, string usuario, int idUsuario)
         {
+            var anterior = ObtenerPorId(obj.strId_valo);
+
             Hashtable data = new Hashtable
             {
                 { "dtFecha_valo", obj.dtFecha_valo.ToString("yyyy-MM-dd HH:mm:ss") },
@@ -68,16 +81,24 @@ namespace SistemaGestionCGI.BLL
                 { "strInforme_valo", obj.strInforme_valo ?? "" },
                 { "strResolucion_valo", obj.strResolucion_valo ?? "" },
                 { "strCategoria_valo", obj.strCategoria_valo }
-                // No actualizamos fkId_gru ni intAnioMetrica por consistencia histórica
             };
 
-            string where = $"strId_valo = '{obj.strId_valo}'";
+            string idSeguro = (obj.strId_valo ?? "").Replace("'", "''");
+            string where = $"strId_valo = '{idSeguro}'";
 
-            // 2. Actualizar usando el método nativo del DAL
             _dal.Update("INVGCCCALIFICACION_GRUPO", data, where);
 
-            // 3. Sincronizar estado del grupo
             ActualizarEstadoGrupo(obj.fkId_gru, obj.strCategoria_valo);
+
+            RegistrarHistorico(
+                obj.strId_valo,
+                obj.fkId_gru,
+                "ACTUALIZACION",
+                usuario,
+                idUsuario,
+                anterior,
+                obj
+            );
         }
 
         private void ActualizarEstadoGrupo(string idGrupo, string nuevaCategoria)
@@ -86,10 +107,26 @@ namespace SistemaGestionCGI.BLL
             _dal.UpdateSql(sqlUpdateGrupo);
         }
 
-        public void EliminarCalificacion(string id)
+        public void EliminarCalificacion(string id, string usuario, int idUsuario)
         {
-            string sql = $"DELETE FROM INVGCCCALIFICACION_GRUPO WHERE strId_valo = '{id}'";
+            var anterior = ObtenerPorId(id);
+
+            if (anterior == null) return;
+
+            string idSeguro = id.Replace("'", "''");
+
+            string sql = $"DELETE FROM INVGCCCALIFICACION_GRUPO WHERE strId_valo = '{idSeguro}'";
             _dal.DeleteSql(sql);
+
+            RegistrarHistorico(
+                anterior.strId_valo,
+                anterior.fkId_gru,
+                "ELIMINACION",
+                usuario,
+                idUsuario,
+                anterior,
+                null
+            );
         }
 
         public InvgccMetricas ObtenerConfiguracionMetricas(int anio)
@@ -189,10 +226,6 @@ namespace SistemaGestionCGI.BLL
             return resultados;
         }
 
-        // =============================================================
-        // 4. GENERADOR DE CÓDIGOS
-        // =============================================================
-
         private string GenerarCodigoAlfanumerico(string tabla, string campoId, string prefijo)
         {
             string sql = $"SELECT TOP 1 {campoId} FROM {tabla} ORDER BY Len({campoId}) DESC, {campoId} DESC";
@@ -221,5 +254,115 @@ namespace SistemaGestionCGI.BLL
 
             return $"{prefijo}{siguienteNumero}";
         }
+
+        private void RegistrarHistorico(string idCalificacion, string idGrupo, string accion, string usuario, int idUsuario, object datosAnteriores, object datosNuevos)
+        {
+            string nombreGrupo = ObtenerNombreGrupo(idGrupo);
+            string descripcion = ConstruirDescripcion(accion, usuario, nombreGrupo);
+
+            string jsonAntes = datosAnteriores != null
+                ? JsonConvert.SerializeObject(datosAnteriores).Replace("'", "''")
+                : null;
+
+            string jsonNuevos = datosNuevos != null
+                ? JsonConvert.SerializeObject(datosNuevos).Replace("'", "''")
+                : null;
+
+            idCalificacion = (idCalificacion ?? "").Replace("'", "''");
+            idGrupo = (idGrupo ?? "").Replace("'", "''");
+            accion = (accion ?? "").Replace("'", "''");
+            usuario = (usuario ?? "").Replace("'", "''");
+
+            string sql = $@"
+                INSERT INTO INVGCCCALIFICACION_GRUPO_HISTORICO
+                (
+                    idCalificacion,
+                    idGrupo,
+                    accion,
+                    usuarioAccion,
+                    IdUsuario,
+                    fechaAccion,
+                    descripcion,
+                    datosAnteriores,
+                    datosNuevos
+                )
+                VALUES
+                (
+                    '{idCalificacion}',
+                    '{idGrupo}',
+                    '{accion}',
+                    '{usuario}',
+                    {idUsuario},
+                    GETDATE(),
+                    '{descripcion}',
+                    {(jsonAntes != null ? $"N'{jsonAntes}'" : "NULL")},
+                    {(jsonNuevos != null ? $"N'{jsonNuevos}'" : "NULL")}
+                )";
+
+            _dal.UpdateSql(sql);
+        }
+
+
+        public List<dynamic> ObtenerHistorialGlobal()
+        {
+            string sql = @"
+            SELECT 
+                idCalificacion,
+                accion,
+                usuarioAccion,
+                fechaAccion,
+                descripcion
+            FROM INVGCCCALIFICACION_GRUPO_HISTORICO
+            ORDER BY fechaAccion DESC";
+
+            return _dal.SelectSql<dynamic>(sql);
+        }
+
+        private string ObtenerNombreGrupo(string idGrupo)
+        {
+            string idSeguro = (idGrupo ?? "").Replace("'", "''");
+
+            string sql = $@"
+                SELECT TOP 1 strNombre_gru
+                FROM INVGCCGRUPO_INVESTIGACION
+                WHERE strId_gru = '{idSeguro}'";
+
+            var lista = _dal.SelectSql<dynamic>(sql);
+
+            if (lista != null && lista.Count > 0)
+            {
+                var item = lista[0];
+                try
+                {
+                    if (item is Newtonsoft.Json.Linq.JObject jobj)
+                        return jobj["strNombre_gru"]?.ToString() ?? "";
+                    return item.GetType().GetProperty("strNombre_gru")?.GetValue(item, null)?.ToString() ?? "";
+                }
+                catch
+                {
+                    return "";
+                }
+            }
+            return "";
+        }
+
+        private string ConstruirDescripcion(string accion, string usuario, string nombreGrupo)
+        {
+            usuario = string.IsNullOrWhiteSpace(usuario) ? "Usuario no identificado" : usuario;
+            nombreGrupo = string.IsNullOrWhiteSpace(nombreGrupo) ? "Grupo no identificado" : nombreGrupo;
+
+            switch (accion)
+            {
+                case "REGISTRO":
+                    return $"{usuario} registró una nueva calificación del grupo {nombreGrupo}.";
+                case "ACTUALIZACION":
+                    return $"{usuario} actualizó la calificación del grupo {nombreGrupo}.";
+                case "ELIMINACION":
+                    return $"{usuario} eliminó la calificación del grupo {nombreGrupo}.";
+                default:
+                    return $"{usuario} realizó una acción sobre la calificación del grupo {nombreGrupo}.";
+            }
+        }
+
     }
 }

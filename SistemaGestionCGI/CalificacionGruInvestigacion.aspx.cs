@@ -307,15 +307,18 @@ namespace SistemaGestionCGI
                     strResolucion_valo = rutaResolucion
                 };
 
+                string usuarioSesion = Session["UsuarioLogueado"]?.ToString() ?? "SIN_USUARIO";
+                int idUsuarioSesion = Session["IdUsuario"] != null ? (int)Session["IdUsuario"] : 0;
+
                 if (esEdicion)
                 {
-                    _manejador.ActualizarCalificacion(obj);
+                    _manejador.ActualizarCalificacion(obj, usuarioSesion, idUsuarioSesion);
                     IdCalificacionEnEdicion = null;
                     Redireccionar($"Actualización exitosa. Estado resultante: <b>{categoria}</b>", "ss");
                 }
                 else
                 {
-                    _manejador.GuardarCalificacion(obj);
+                    _manejador.GuardarCalificacion(obj, usuarioSesion, idUsuarioSesion);
                     Redireccionar($"Registro creado. Estado resultante: <b>{categoria}</b>", "ss");
                 }
             }
@@ -334,7 +337,9 @@ namespace SistemaGestionCGI
             {
                 try
                 {
-                    _manejador.EliminarCalificacion(id);
+                    string usuarioSesion = Session["UsuarioLogueado"]?.ToString() ?? "SIN_USUARIO";
+                    int idUsuarioSesion = Session["IdUsuario"] != null ? (int)Session["IdUsuario"] : 0;
+                    _manejador.EliminarCalificacion(id, usuarioSesion, idUsuarioSesion);
                     Redireccionar("Calificación eliminada correctamente.", "ss");
                 }
                 catch (Exception ex) { Msg("Error al eliminar: " + ex.Message, "ee"); }
@@ -675,5 +680,31 @@ namespace SistemaGestionCGI
 
             IdCalificacionEnEdicion = null;
         }
+
+
+        //
+        protected void btnHistorialGlobal_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var historial = _manejador.ObtenerHistorialGlobal();
+
+                rptHistorial.DataSource = historial;
+                rptHistorial.DataBind();
+
+                ScriptManager.RegisterStartupScript(
+                    this,
+                    GetType(),
+                    "OpenHistorial",
+                    "AbrirModalHistorial();",
+                    true
+                );
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al cargar historial: " + ex.Message, "ee");
+            }
+        }
+
     }
 }

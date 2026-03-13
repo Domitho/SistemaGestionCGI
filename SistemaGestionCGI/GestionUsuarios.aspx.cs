@@ -175,6 +175,20 @@ namespace SistemaGestionCGI
             else if (e.CommandName == "Eliminar")
             {
                 _manejador.EliminarUsuario(id);
+
+                var usuario = _manejador.ObtenerUsuarioPorId(id);
+                if (usuario != null)
+                {
+                    usuario.bActivo_usu = false; 
+
+                    string usuarioActual = Session["UsuarioLogueado"]?.ToString() ?? "Sistema";
+                    int? idUsuarioResponsable = Session["IdUsuario"] != null
+                        ? Convert.ToInt32(Session["IdUsuario"])
+                        : (int?)null;
+
+                    _manejador.RegistrarHistorial(usuario, "INACTIVACION", idUsuarioResponsable, usuarioActual);
+                }
+
                 Msg("Usuario desactivado.", "ss");
                 CargarUsuarios(txtBuscar.Text);
             }
@@ -216,8 +230,18 @@ namespace SistemaGestionCGI
 
                     _manejador.GuardarUsuario(u);
 
+                    var usuarioCreado = _manejador.ObtenerUsuarioPorUsername(u.strNombre_usu);
+                    if (usuarioCreado != null)
+                    {
+                        u.intId_usu = usuarioCreado.intId_usu;
+                    }
+
                     string usuarioActual = Session["UsuarioLogueado"]?.ToString() ?? "Sistema";
-                    _manejador.RegistrarHistorial(u, "CREACION", usuarioActual);
+                    int? idUsuarioResponsable = Session["IdUsuario"] != null
+                        ? Convert.ToInt32(Session["IdUsuario"])
+                        : (int?)null;
+
+                    _manejador.RegistrarHistorial(u, "CREACION", idUsuarioResponsable, usuarioActual);
 
                     Msg("Usuario creado exitosamente.", "ss");
                 }
@@ -234,11 +258,14 @@ namespace SistemaGestionCGI
                     _manejador.ActualizarUsuario(u);
 
                     string usuarioActual = Session["UsuarioLogueado"]?.ToString() ?? "Sistema";
-                    _manejador.RegistrarHistorial(u, "ACTUALIZACION", usuarioActual);
+                    int? idUsuarioResponsable = Session["IdUsuario"] != null
+                        ? Convert.ToInt32(Session["IdUsuario"])
+                        : (int?)null;
+                    _manejador.RegistrarHistorial(u, "ACTUALIZACION", idUsuarioResponsable, usuarioActual);
 
                     if (!u.bActivo_usu)
                     {
-                        _manejador.RegistrarHistorial(u, "INACTIVACION", usuarioActual);
+                        _manejador.RegistrarHistorial(u, "INACTIVACION", idUsuarioResponsable, usuarioActual);
                     }
 
                     Msg("Usuario actualizado.", "ss");

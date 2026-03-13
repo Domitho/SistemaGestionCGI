@@ -46,7 +46,7 @@ namespace SistemaGestionCGI
                     string rol = (usuarioLogueado.strRol_usu ?? "").Trim().ToUpper();
                     Session["RolUsuario"] = rol;
 
-                    Session["UserId"] = usuarioLogueado.intId_usu;
+                    Session["IdUsuario"] = usuarioLogueado.intId_usu;
 
                     Session["CedulaUsuario"] = usuarioLogueado.strCedula_ref ?? "";
 

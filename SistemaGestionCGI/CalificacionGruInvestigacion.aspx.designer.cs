@@ -60,6 +60,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.DropDownList ddlFiltroAnio;
 
         /// <summary>
+        /// Control btnHistorialGlobal.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnHistorialGlobal;
+
+        /// <summary>
         /// Control pnlGrilla.
         /// </summary>
         /// <remarks>
@@ -346,5 +355,14 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.HyperLink lnkDescargarResolucion;
+
+        /// <summary>
+        /// Control rptHistorial.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptHistorial;
     }
 }

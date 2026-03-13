@@ -311,6 +311,7 @@
     </Compile>
     <Compile Include="Models\DocenteDetalleDTO.cs" />
     <Compile Include="Models\InvgccCalificacionGrupo.cs" />
+    <Compile Include="Models\InvgccCalificacionGrupoHistorico.cs" />
     <Compile Include="Models\InvgccCarreras.cs" />
     <Compile Include="Models\InvgccCategoria.cs" />
     <Compile Include="Models\InvgccCategorizacionDocentes.cs" />

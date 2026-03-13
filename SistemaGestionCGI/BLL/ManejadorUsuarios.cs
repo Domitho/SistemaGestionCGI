@@ -129,15 +129,34 @@ namespace SistemaGestionCGI.BLL
 
         //
 
-        public void RegistrarHistorial(InvgccUsuario u, string tipoEvento, string realizadoPor)
+        public void RegistrarHistorial(InvgccUsuario u, string tipoEvento, int? idUsuarioResponsable, string realizadoPor)
         {
             int activo = u.bActivo_usu ? 1 : 0;
+            string responsableId = idUsuarioResponsable.HasValue ? idUsuarioResponsable.Value.ToString() : "NULL";
+
             string sql = $@"
                 INSERT INTO INVGCCHISTORIAL_USUARIOS
-                    (IdUsuario, NombreUsuario, Rol, Activo, TipoEvento, FechaEvento, RealizadoPor)
+                (
+                    IdUsuario,
+                    NombreUsuario,
+                    Rol,
+                    Activo,
+                    TipoEvento,
+                    FechaEvento,
+                    RealizadoPor,
+                    IdUsuarioResponsable
+                )
                 VALUES
-                    ({u.intId_usu}, '{u.strNombre_usu.Trim()}', '{u.strRol_usu}', {activo}, '{tipoEvento}', GETDATE(), '{realizadoPor}')
-            ";
+                (
+                    {u.intId_usu},
+                    '{u.strNombre_usu.Trim().Replace("'", "''")}',
+                    '{u.strRol_usu.Replace("'", "''")}',
+                    {activo},
+                    '{tipoEvento}',
+                    GETDATE(),
+                    '{realizadoPor.Replace("'", "''")}',
+                    {responsableId}
+                )";
 
             _dal.UpdateSql(sql);
         }
@@ -151,6 +170,18 @@ namespace SistemaGestionCGI.BLL
                 ORDER BY FechaEvento DESC";
 
             return _dal.SelectSql<InvgccUsuarioHistorial>(sql);
+        }
+
+
+        public InvgccUsuario ObtenerUsuarioPorUsername(string username)
+        {
+            string sql = $@"
+                SELECT UserID, Username, Password, Role, IsActive, strCedula_ref
+                FROM Users
+                WHERE Username = '{username.Trim().Replace("'", "''")}'";
+
+            var lista = _dal.SelectSql<InvgccUsuario>(sql);
+            return (lista != null && lista.Count > 0) ? lista[0] : null;
         }
 
     }
