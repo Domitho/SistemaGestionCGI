@@ -70,7 +70,7 @@
 
                             <asp:LinkButton ID="btnEliminar" runat="server" CommandName="Eliminar" CommandArgument='<%# Eval("intId_usu") %>'
                                 CssClass="btn-card-action btn-card-del shadow-sm"
-                                OnClientClick="return confirm('¿CONFIRMAR BAJA DE USUARIO?\n\nEl usuario perderá el acceso al sistema.');" ToolTip="Cambiar Estado / Baja">
+                                OnClientClick="return confirmarEliminar(this, '¿CONFIRMAR BAJA DE USUARIO?\n\nEl usuario perderá el acceso al sistema.');" ToolTip="Cambiar Estado / Baja">
                                 <i class="fa-solid fa-power-off"></i>
                             </asp:LinkButton>
 

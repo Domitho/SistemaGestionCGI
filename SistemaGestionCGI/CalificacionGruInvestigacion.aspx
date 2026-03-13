@@ -96,7 +96,16 @@
                                 <td>
                                     <asp:LinkButton ID="btnEditar" runat="server" CommandName="Editar" CommandArgument='<%# Eval("strId_valo") %>' CssClass="btn btn-warning btn-sm rounded-circle me-1 text-white"><i class="fa-solid fa-pen"></i></asp:LinkButton>
                                     <asp:LinkButton ID="btnVer" runat="server" CommandName="Ver" CommandArgument='<%# Eval("strId_valo") %>' CssClass="btn btn-ver btn-sm rounded-circle me-1" ToolTip="Ver Informe"><i class="fa-solid fa-eye"></i></asp:LinkButton>
-                                    <asp:LinkButton ID="btnEliminar" runat="server" CommandName="Eliminar" CommandArgument='<%# Eval("strId_valo") %>' CssClass="btn btn-eliminar btn-sm rounded-circle" OnClientClick="return confirmarEliminar(this, '¿Está seguro de eliminar este proyecto? Esta acción no se puede deshacer.');" ToolTip="Eliminar"><i class="fa-solid fa-trash"></i></asp:LinkButton>
+                                    <asp:LinkButton 
+                                        ID="btnEliminar" 
+                                        runat="server" 
+                                        CommandName="Eliminar" 
+                                        CommandArgument='<%# Eval("strId_valo") %>' 
+                                        CssClass="btn btn-eliminar btn-sm rounded-circle" 
+                                        ToolTip="Eliminar"
+                                        OnClientClick="return confirmarEliminar(this, '¿Está seguro de eliminar este proyecto? Esta acción no se puede deshacer.');">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </asp:LinkButton>
                                 </td>
                             </tr>
                         </ItemTemplate>
