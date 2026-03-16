@@ -9,7 +9,6 @@ namespace SistemaGestionCGI.BLL
     {
         private readonly ConnectionSqlServer _dal = ConnectionSqlServer.Instance;
 
-        // 1. KPIs
         public DashboardCountersDTO ObtenerContadoresGenerales()
         {
             string sql = @"
@@ -25,7 +24,6 @@ namespace SistemaGestionCGI.BLL
             return resultado != null && resultado.Count > 0 ? resultado[0] : new DashboardCountersDTO();
         }
 
-        // 2. Gráfico: Estado de proyectos
         public List<DashboardChartDTO> ObtenerProyectosPorEstado()
         {
             string sql = @"
@@ -49,7 +47,6 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<DashboardChartDTO>(sql) ?? new List<DashboardChartDTO>();
         }
 
-        // 3. Gráfico: Docentes por categoría
         public List<DashboardChartDTO> ObtenerDocentesPorCategoria()
         {
             string sql = @"
@@ -66,7 +63,6 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<DashboardChartDTO>(sql) ?? new List<DashboardChartDTO>();
         }
 
-        // 4. Detalle docente por categoría (filtrado)
         public List<DocenteDetalleDTO> ObtenerDocentesPorCategoriaDetalle(string categoria)
         {
             string sql = $@"
@@ -91,7 +87,6 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<DocenteDetalleDTO>(sql) ?? new List<DocenteDetalleDTO>();
         }
 
-        // 5. Detalle completo docentes para modal
         public List<DocenteDetalleDTO> ObtenerDocentesPorCategoriaDetalleTodos()
         {
             string sql = @"
@@ -116,7 +111,6 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<DocenteDetalleDTO>(sql) ?? new List<DocenteDetalleDTO>();
         }
 
-        // 6. Detalle proyectos por estado (para modal)
         public List<ProyectoDetalleDTO> ObtenerProyectosPorEstadoDetalle(string estado)
         {
             string sql = $@"
@@ -138,7 +132,6 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<ProyectoDetalleDTO>(sql) ?? new List<ProyectoDetalleDTO>();
         }
 
-        // 7. Detalle completo proyectos para modal
         public List<ProyectoDetalleDTO> ObtenerProyectosDetalleTodos()
         {
             string sql = @"

@@ -11,9 +11,6 @@ namespace SistemaGestionCGI.BLL
     {
         private readonly ConnectionSqlServer _dal = ConnectionSqlServer.Instance;
 
-        // ========================
-        // 1. GESTIÓN DE CENTROS (CRUD)
-        // ========================
 
         public List<InvgccCentroInvestigacion> ObtenerTodos()
         {
@@ -87,14 +84,10 @@ namespace SistemaGestionCGI.BLL
 
         public void Eliminar(string id)
         {
-            // Baja lógica
             string sql = $"UPDATE INVGCCCENTRO_INVESTIGACION SET bitActivo_cen = 0 WHERE strId_cen = '{id}'";
             _dal.UpdateSql(sql);
         }
 
-        // ==========================================
-        // 2. GESTIÓN DE INTEGRANTES DEL CENTRO
-        // ==========================================
 
         public List<InvgccCentroIntegrantes> ObtenerIntegrantesPorCentro(string idCentro)
         {
@@ -119,7 +112,6 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<InvgccCentroIntegrantes>(sql)?.FirstOrDefault();
         }
 
-        // UNIFICADO: Solo dejamos este método GuardarIntegrante
         public void GuardarIntegrante(InvgccCentroIntegrantes obj, string usuarioLogueado)
         {
             obj.strId_cin = GenerarCodigoAlfanumerico("INVGCCCENTRO_INVESTIGACION_INTEGRANTES", "strId_cin", "CIN");
@@ -134,8 +126,7 @@ namespace SistemaGestionCGI.BLL
                  '{obj.strCarrera_cin}', '{obj.strFacultad_cin}', '{obj.strEntidad_cin}', 1, GETDATE())";
 
             _dal.InsertSql(sql);
-
-            // Registro automático en historial al crear
+            
             GuardarHistorial(obj.strId_cin, "NUEVO", "Ingreso inicial al Centro de Investigación", usuarioLogueado);
         }
 
@@ -182,7 +173,6 @@ namespace SistemaGestionCGI.BLL
 
         public InvgccCentroIntegrantes BuscarDirectorDelCentro(string idCentro)
         {
-            // Buscar solo el director ACTIVO
             string sql = $@"
                 SELECT TOP 1 * FROM INVGCCCENTRO_INVESTIGACION_INTEGRANTES 
                 WHERE fkId_cen = '{idCentro}' AND strFuncion_cin = 'Director' AND bitActivo_cin = 1";
@@ -190,9 +180,6 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<InvgccCentroIntegrantes>(sql)?.FirstOrDefault();
         }
 
-        // ========================
-        // 3. GENERADORES DE CÓDIGO
-        // ========================
 
         private string GenerarNuevoIdCentro()
         {
@@ -245,9 +232,6 @@ namespace SistemaGestionCGI.BLL
             return $"{prefijo}{siguienteNumero}";
         }
 
-        // ==========================================
-        // 4. GESTIÓN DE HISTORIAL (MOVIMIENTOS)
-        // ==========================================
 
         public List<InvgccCentroIntegrantesHistorial> ObtenerHistorial(string idIntegrante)
         {
@@ -271,9 +255,6 @@ namespace SistemaGestionCGI.BLL
 
         //
 
-        // ==========================================
-        // 5. GESTIÓN DE PAPELERA (SOLO INTEGRANTES)
-        // ==========================================
 
         public List<InvgccCentroIntegrantes> ObtenerIntegrantesPapelera(string idCentro)
         {
@@ -384,9 +365,6 @@ namespace SistemaGestionCGI.BLL
 
         //
 
-        // ==========================================
-        // MÉTODO ESPECÍFICO PARA ACTUALIZAR ARCHIVOS
-        // ==========================================
         public void ActualizarArchivosCentro(string idCentro, string rutaResolucion, string rutaAceptacion)
         {
             string setSql = "";

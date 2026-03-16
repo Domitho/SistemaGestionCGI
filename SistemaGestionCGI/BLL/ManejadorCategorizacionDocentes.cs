@@ -10,9 +10,6 @@ namespace SistemaGestionCGI.BLL
     {
         private readonly ConnectionSqlServer _dal = ConnectionSqlServer.Instance;
 
-        // ==========================================
-        // 1. LECTURA DE DATOS
-        // ==========================================
         public List<InvgccCategorizacionDocentes> ObtenerTodos()
         {
             string sql = @"
@@ -73,9 +70,6 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<InvgccCategorizacionDocentesHistorial>(sql);
         }
 
-        // ==========================================
-        // 2. LÓGICA DE NEGOCIO PRINCIPAL (GUARDAR)
-        // ==========================================
 
         public bool ValidarCedulaEcuatoriana(string cedula)
         {
@@ -188,9 +182,6 @@ namespace SistemaGestionCGI.BLL
             }
         }
 
-        // ==========================================
-        // 3. OPERACIONES ESPECÍFICAS
-        // ==========================================
 
         public void EliminarCategorizacion(string idDocente, string usuario, string motivo)
         {
@@ -202,10 +193,6 @@ namespace SistemaGestionCGI.BLL
 
             RegistrarHistorial(idDocente, "ELIMINACION CATEGORIA", catAnterior, "SIN ASIGNAR", motivo, usuario);
         }
-
-        // ==========================================
-        // 4. MÉTODOS PRIVADOS Y UTILITARIOS
-        // ==========================================
 
         private void RegistrarHistorial(string idDoc, string accion, string anterior, string nuevo, string motivo, string usuario)
         {
@@ -229,7 +216,6 @@ namespace SistemaGestionCGI.BLL
             if (lista != null && lista.Count > 0)
             {
                 string ultimoId = lista[0].strId_doc;
-                // Extrae números del final (DOC005 -> 5)
                 if (int.TryParse(ultimoId.Substring(prefijo.Length), out int num))
                     siguiente = num + 1;
             }

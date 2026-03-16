@@ -196,25 +196,27 @@
 
                                 <li class="nav-item dropdown" id="liDropdownGrupos" runat="server">
                                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownGrupos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fa-solid fa-people-group"></i> Grupos Investigación
+                                        <i class="fa-solid fa-people-group"></i> Gestion de Grupos
                                     </a>
                                     <ul class="dropdown-menu shadow-utc border-0" style="width: auto !important; min-width: 240px;" aria-labelledby="navbarDropdownGrupos">
-                                        <li><a class="dropdown-item" href="ConvocatoriaGruInvestigacion.aspx" id="lnkMenuConvocatorias" runat="server"><i class="fa-solid fa-bullhorn text-primary"></i> Convocatorias</a></li>
                                         <li><a class="dropdown-item" href="CentrosInvestigacion.aspx" id="lnkMenuCentros" runat="server"><i class="fa-solid fa-building-columns text-primary"></i> Centros Investigación</a></li>
                                         <li><hr class="dropdown-divider" /></li>
                                         <li><a class="dropdown-item" href="GruposInvestigacion.aspx" id="lnkMenuGrupos" runat="server"><i class="fa-solid fa-people-group text-primary"></i> Grupos Investigación</a></li>
                                         <li><hr class="dropdown-divider" /></li>
                                         <li><a class="dropdown-item" href="CalificacionGruInvestigacion.aspx" id="lnkMenuCalificacion" runat="server"><i class="fa-solid fa-star text-warning"></i> Calificación Grupos</a></li>
                                         <li><a class="dropdown-item" href="CategorizacionDocentes.aspx" id="lnkMenuCategorizacion" runat="server"><i class="fa-solid fa-id-card text-primary"></i> Categorización Docentes</a></li>
-                                        <li><a class="dropdown-item" href="Certificados.aspx" runat="server"><i class="fa-solid fa-id-card text-primary"></i> Certificados</a></li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li><a class="dropdown-item" href="Certificados.aspx" runat="server"><i class="fa-solid fa-file-signature text-primary"></i> Certificados</a></li>
                                     </ul>
                                 </li>
 
                                 <li class="nav-item dropdown" id="liDropdownProyectos" runat="server">
                                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownProyectos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fa-solid fa-folder-open"></i> Proyectos Inv.
+                                        <i class="fa-solid fa-folder-open"></i> Gestion de Proyectos
                                     </a>
                                     <ul class="dropdown-menu dropdown-menu-end shadow-utc border-0" style="width: auto !important; min-width: 240px;" aria-labelledby="navbarDropdownProyectos">
+                                        <li><a class="dropdown-item" href="ConvocatoriaGruInvestigacion.aspx" id="lnkMenuConvocatorias" runat="server"><i class="fa-solid fa-bullhorn text-primary"></i> Convocatorias</a></li>
+                                        <li><hr class="dropdown-divider" /></li>
                                         <li><a class="dropdown-item" href="InscripcionProyectos.aspx" id="lnkMenuInscripcion" runat="server"><i class="fa-solid fa-file-contract text-primary"></i> Inscripción Proyectos</a></li>
                                         <li><a class="dropdown-item" href="EjecucionProAprobados.aspx" id="lnkMenuEjecucion" runat="server"><i class="fa-solid fa-person-digging text-primary"></i> Ejecución Proyectos</a></li>
                                     </ul>
@@ -243,19 +245,15 @@
 
     </form>
 
-    <%-- Dependencias exportación: primero --%>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
-    <%-- DataTables base + Bootstrap 5 + Responsive + Buttons core --%>
     <script src="https://cdn.datatables.net/v/bs5/dt-1.13.8/r-2.5.0/b-2.4.2/datatables.min.js"></script>
 
-    <%-- Plugins específicos de exportación --%>
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
 
-    <%-- Visor PDF --%>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         if (window['pdfjsLib']) {

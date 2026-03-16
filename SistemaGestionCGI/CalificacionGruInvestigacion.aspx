@@ -44,7 +44,7 @@
 
                     <asp:LinkButton ID="btnHistorialGlobal"
                         runat="server"
-                        CssClass="btn btn-outline-info btn-sm rounded-pill"
+                        CssClass="btn btn-outline-primary btn-sm rounded-pill"
                         OnClick="btnHistorialGlobal_Click">
 
                         <i class="fa-solid fa-clock-rotate-left me-1"></i>
@@ -432,8 +432,7 @@
                                 <div class="col-12">
                                     <div class="alert alert-secondary py-3 small mb-0 rounded-3">
                                         <i class="fa-solid fa-info-circle me-1"></i>
-                                        El periodo se genera automáticamente según el año seleccionado:
-                                        <strong>12/12/(año-1)</strong> al <strong>12/12/(año)</strong>.
+                                        El periodo se genera automáticamente según el año seleccionado.
                                     </div>
                                 </div>
                             </div>

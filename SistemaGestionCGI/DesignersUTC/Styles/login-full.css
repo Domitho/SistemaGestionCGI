@@ -1,8 +1,4 @@
-﻿/* =========================================================
-           🟦 LOGIN UTC — DISEÑO INSTITUCIONAL PROFESIONAL
-========================================================= */
-
-body {
+﻿body {
     font-family: 'Varela Round', sans-serif;
     background-color: #f5f5f7;
     margin: 0 !important;
@@ -13,7 +9,6 @@ body {
     margin: 15px;
 }
 
-/* HEADER UTC */
 .utc-header {
     background: linear-gradient(90deg, #312783 0%, #241d66 100%);
     padding: 25px 40px;
@@ -38,7 +33,6 @@ body {
     letter-spacing: 0.12em;
 }
 
-/* CARD DE LOGIN */
 .modal-login {
     width: 420px;
     max-width: 100%;
@@ -53,7 +47,6 @@ body {
         position: relative;
     }
 
-    /* AVATAR */
     .modal-login .avatar {
         position: absolute;
         left: 0;
@@ -80,7 +73,6 @@ body {
             opacity: 1 !important;
         }
 
-    /* TITULO */
     .modal-login h4 {
         text-align: center;
         font-size: 26px;
@@ -90,7 +82,6 @@ body {
         letter-spacing: 0.03em;
     }
 
-/* INPUTS */
 .form-control {
     border-radius: 10px;
     padding: 12px 14px;
@@ -103,7 +94,6 @@ body {
         box-shadow: 0 0 0 0.15rem rgba(49, 39, 131, 0.25);
     }
 
-/* BOTONES */
 .modal-login .btn {
     background: #312783 !important;
     color: white !important;
@@ -120,7 +110,6 @@ body {
         background: #241d66 !important;
     }
 
-/* FOOTER */
 .modal-footer {
     background: transparent !important;
     border: none !important;
@@ -138,7 +127,6 @@ body {
             color: #241d66;
         }
 
-/* RESPONSIVE */
 @media (max-width: 576px) {
     .utc-header {
         flex-direction: column;

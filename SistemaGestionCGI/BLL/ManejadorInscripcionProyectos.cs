@@ -10,9 +10,6 @@ namespace SistemaGestionCGI.BLL
     {
         private readonly ConnectionSqlServer _dal = ConnectionSqlServer.Instance;
 
-        // =============================================================
-        // LECTURA DE DATOS
-        // =============================================================
 
         public List<dynamic> ObtenerTodos()
         {
@@ -202,10 +199,6 @@ namespace SistemaGestionCGI.BLL
             return null;
         }
 
-        // =============================================================
-        // MÉTODOS AUXILIARES
-        // =============================================================
-
         private string ObtenerCedulaPorId(string idIntegrante)
         {
             if (string.IsNullOrEmpty(idIntegrante)) return null;
@@ -298,9 +291,6 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<InvgccGrupoIntegrantes>(sql);
         }
 
-        // =============================================================
-        // LÓGICA DE NEGOCIO PRIVADA (IDS Y FECHAS)
-        // =============================================================
 
         private int ObtenerAnioDeConvocatoria(string idConvocatoria)
         {

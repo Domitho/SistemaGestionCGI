@@ -430,9 +430,6 @@ namespace SistemaGestionCGI.BLL
             return _dal.SelectSql<InvgccIntegrantesHistorial>(sql);
         }
 
-        // =============================================================
-        // 4. UTILIDADES (Generador de IDs)
-        // =============================================================
 
         private string GenerarCodigoAlfanumerico(string tabla, string campoId, string prefijo)
         {

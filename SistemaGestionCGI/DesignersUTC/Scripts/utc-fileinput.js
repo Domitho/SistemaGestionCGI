@@ -117,7 +117,6 @@
         `;
     }
 
-    // --- NUEVA FUNCIÓN PARA MOSTRAR ZIP/CARPETA ---
     function showZip(file, isFolder = false) {
         loader.style.display = "none";
         preview.style.display = "block";
@@ -143,17 +142,11 @@
         `;
     }
 
-    // --- FUNCIÓN PRINCIPAL CORREGIDA ---
     function handleFile(file) {
-        // 1. Detectar si es una subida masiva (Carpeta)
         const isMultiple = realInput.files && realInput.files.length > 1;
 
-        // 2. Regex Actualizado: Incluye ZIP, RAR, 7Z
         const extensionesPermitidas = /(\.pdf|\.doc|\.docx|\.zip|\.rar|\.7z)$/i;
 
-        // 3. Validación Inteligente:
-        // Si NO es múltiple Y NO cumple la extensión -> Error
-        // (Si es múltiple, asumimos que es carpeta y confiamos en el backend)
         if (!isMultiple && !extensionesPermitidas.exec(file.name)) {
             if (typeof toastify === 'function') {
                 toastify('ww', 'Formato no permitido. Solo PDF, WORD o ZIP.', 'Sistema');
@@ -176,11 +169,9 @@
         }
 
         setTimeout(() => {
-            // Obtenemos extensión para decidir qué visor usar
             let ext = file.name.split('.').pop().toLowerCase();
 
             if (isMultiple) {
-                // Si son varios archivos, mostramos el icono de carpeta/zip
                 showZip(file, true);
             }
             else if (file.type.includes("pdf") || ext === 'pdf') {
@@ -190,7 +181,6 @@
                 showImage(file);
             }
             else if (file.type.includes("zip") || file.type.includes("compressed") || ['zip', 'rar', '7z'].includes(ext)) {
-                // Si es un archivo ZIP único
                 showZip(file, false);
             }
             else {
@@ -199,9 +189,6 @@
         }, 400);
     }
 
-    /* ============================
-       DRAG & DROP
-    ============================ */
     dropzone.addEventListener("click", () => realInput.click());
 
     dropzone.addEventListener("dragover", (e) => {
@@ -224,18 +211,12 @@
         }
     });
 
-    /* ============================
-       SELECCIÓN NORMAL
-    ============================ */
     realInput.addEventListener("change", function () {
         if (this.files.length > 0) {
             handleFile(this.files[0]);
         }
     });
 
-    /* ============================
-       RENOMBRAR ARCHIVO
-    ============================ */
     renameBtn?.addEventListener("click", () => {
         renameField.style.display = "block";
         renameField.value = fileNameLabel.textContent.trim();
@@ -248,9 +229,6 @@
         renameField.style.display = "none";
     });
 
-    /* ============================
-       ELIMINAR ARCHIVO (X)
-    ============================ */
     removeBtn?.addEventListener("click", () => {
         fileNameLabel.textContent = "Ningún archivo seleccionado";
         realInput.value = "";

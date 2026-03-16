@@ -1,15 +1,9 @@
-﻿/* =========================================================
-   UTC DATATABLES EXPORT
-   Estilo reutilizable para DataTables + Buttons + Bootstrap 5
-   ========================================================= */
-
-/* Contenedor general de la barra superior */
+﻿
 .dataTables_wrapper .row.align-items-center.mb-3,
 .dataTables_wrapper .row.align-items-center.mb-2 {
     row-gap: 10px;
 }
 
-/* Selector de cantidad de registros */
 .dataTables_wrapper .dataTables_length {
     text-align: left !important;
     margin-bottom: 0 !important;
@@ -30,7 +24,6 @@
         box-shadow: none !important;
     }
 
-/* Filtro de búsqueda */
 .dataTables_wrapper .dataTables_filter {
     text-align: right !important;
     margin-bottom: 0 !important;
@@ -51,7 +44,6 @@
         box-shadow: none !important;
     }
 
-/* Contenedor de botones */
 .dataTables_wrapper .dt-buttons {
     display: flex !important;
     justify-content: center !important;
@@ -61,7 +53,6 @@
     margin-bottom: 0 !important;
 }
 
-    /* Botones de exportación */
     .dataTables_wrapper .dt-buttons .dt-button,
     .dataTables_wrapper .dt-buttons .btn,
     .dataTables_wrapper .dt-buttons .dt-btn-export {
@@ -86,15 +77,13 @@
         transition: all 0.2s ease;
     }
 
-        /* Primer botón */
         .dataTables_wrapper .dt-buttons .dt-button:first-child,
         .dataTables_wrapper .dt-buttons .btn:first-child,
         .dataTables_wrapper .dt-buttons .dt-btn-export:first-child {
             border-top-left-radius: 10px !important;
             border-bottom-left-radius: 10px !important;
         }
-
-        /* Último botón */
+        
         .dataTables_wrapper .dt-buttons .dt-button:last-child,
         .dataTables_wrapper .dt-buttons .btn:last-child,
         .dataTables_wrapper .dt-buttons .dt-btn-export:last-child {
@@ -138,7 +127,6 @@
             line-height: 1;
         }
 
-    /* Colores por tipo */
     .dataTables_wrapper .dt-buttons .buttons-excel {
         color: #15803d !important;
     }
@@ -151,7 +139,6 @@
         color: #a16207 !important;
     }
 
-    /* Hover específico */
     .dataTables_wrapper .dt-buttons .buttons-excel:hover {
         background: #f0fdf4 !important;
         color: #166534 !important;
@@ -167,20 +154,17 @@
         color: #92400e !important;
     }
 
-/* Tabla */
 .dataTables_wrapper table.dataTable {
     margin-top: 0 !important;
     margin-bottom: 0 !important;
 }
 
-/* Información inferior */
 .dataTables_wrapper .dataTables_info {
     padding-top: 0.85rem !important;
     color: #495057;
     font-weight: 500;
 }
 
-/* Paginación */
 .dataTables_wrapper .dataTables_paginate {
     padding-top: 0.5rem !important;
 }
@@ -193,7 +177,6 @@
     border-radius: 10px !important;
 }
 
-/* Responsive */
 @media (max-width: 991.98px) {
     .dataTables_wrapper .dataTables_length,
     .dataTables_wrapper .dataTables_filter {

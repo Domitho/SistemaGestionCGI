@@ -1,11 +1,9 @@
-﻿/* Colores Institucionales UTC */
-:root {
-    --utc-blue: #003366; /* Azul UTC */
+﻿:root {
+    --utc-blue: #003366;
     --utc-green: #28a745;
     --utc-light-blue: #f0f5fa;
 }
 
-/* Personalización del Modal */
 .modal-content.shadow-utc {
     box-shadow: 0 15px 35px rgba(0, 51, 102, 0.2) !important;
 }
@@ -18,7 +16,6 @@
     background-color: var(--utc-light-blue);
 }
 
-/* Inputs con estilo moderno */
 #modalNuevoDocente .form-control {
     border-radius: 8px;
     border: 1px solid #ced4da;
@@ -31,14 +28,12 @@
         box-shadow: 0 0 0 0.25rem rgba(0, 51, 102, 0.1);
     }
 
-/* Efecto en el Input Group con Iconos */
 #modalNuevoDocente .input-group-text {
     border-radius: 8px 0 0 8px;
     background-color: #fff;
     color: #003366;
 }
 
-/* Botones estilo Pill (Redondeados) */
 .btn-pill {
     border-radius: 50px;
     padding-left: 30px;
@@ -49,7 +44,6 @@
     letter-spacing: 0.5px;
 }
 
-/* Animación de entrada del modal */
 .modal.fade .modal-dialog {
     transform: scale(0.9);
     transition: transform 0.3s ease-out;

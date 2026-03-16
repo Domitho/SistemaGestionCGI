@@ -2,8 +2,8 @@
 let esEdicionDuracion = false;
 
 /**
- * Abre el modal y carga los datos actuales desde los HiddenFields
- * @param {boolean} esEdit - True si estamos editando, False si es nuevo
+ * 
+ * @param {boolean} esEdit 
  */
 function AbrirModalDuracion(esEdit) {
     esEdicionDuracion = esEdit;
@@ -22,9 +22,9 @@ function AbrirModalDuracion(esEdit) {
 }
 
 /**
- * Aumenta o disminuye el valor de un stepper
- * @param {string} tipo - 'anios', 'meses', 'semanas', 'dias'
- * @param {number} cantidad - +1 o -1
+ * 
+ * @param {string} tipo
+ * @param {number} cantidad 
  */
 function Step(tipo, cantidad) {
     let inputId = "";

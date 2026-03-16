@@ -1,8 +1,4 @@
-﻿/* =========================================================
-   1. TARJETA HERO DEL PROYECTO (Vista Principal)
-   ========================================================= */
-
-/* Contenedor principal de la tarjeta */
+﻿
 .card-hero-project {
     border: none;
     background: #fff;
@@ -17,7 +13,6 @@
         box-shadow: 0 15px 35px rgba(49, 39, 131, 0.15) !important;
     }
 
-    /* Borde lateral decorativo (Izquierda) */
     .card-hero-project::before {
         content: '';
         position: absolute;
@@ -29,7 +24,6 @@
         z-index: 2;
     }
 
-/* Cajas de Métricas Internas (Periodo, Inicio, Informes) */
 .metric-box-hero {
     background-color: #f8f9fa;
     border-radius: 12px;
@@ -53,7 +47,6 @@
     margin-bottom: 0.5rem;
 }
 
-/* Columna de Acción (Derecha) */
 .action-column {
     background: linear-gradient(135deg, #fdfdfd 0%, #f4f6f9 100%);
     border-left: 1px solid rgba(0,0,0,0.05);
@@ -63,9 +56,6 @@
     position: relative;
 }
 
-/* =========================================================
-   2. PESTAÑAS MODERNAS (Panel de Gestión)
-   ========================================================= */
 
 .nav-tabs-utc {
     border-bottom: 2px solid #e9ecef;
@@ -91,7 +81,6 @@
             background: transparent;
         }
 
-            /* Línea inferior animada para la pestaña activa */
             .nav-tabs-utc .nav-link.active::after {
                 content: '';
                 position: absolute;
@@ -103,11 +92,6 @@
                 border-radius: 3px 3px 0 0;
             }
 
-/* =========================================================
-   3. CRONOLOGÍA DETALLADA (Rich Timeline)
-   ========================================================= */
-
-/* Contenedor de la tarjeta del historial */
 .history-card {
     background-color: #fff;
     border: 1px solid #f0f0f0;
@@ -119,14 +103,12 @@
     overflow: hidden;
 }
 
-    /* Efecto Hover */
     .history-card:hover {
         background-color: #fdfdfd;
         box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         transform: translateX(2px);
     }
 
-    /* Borde de color lateral (Más grueso) */
     .history-card.border-avance {
         border-left: 5px solid var(--utc-azul) !important;
     }
@@ -139,7 +121,6 @@
         border-left: 5px solid var(--utc-verde) !important;
     }
 
-/* Fondo sutil para el icono según el tipo */
 .icon-box-history {
     width: 45px;
     height: 45px;
@@ -191,7 +172,6 @@
         background-color: #ffeaea;
     }
 
-/* Efecto de elevación al pasar el mouse */
 .hover-lift {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -201,7 +181,6 @@
         box-shadow: 0 4px 8px rgba(0,0,0,0.08) !important;
     }
 
-/* Scrollbar personalizado delgado */
 .scroll-cronologia::-webkit-scrollbar {
     width: 6px;
 }
@@ -221,30 +200,29 @@
         background-color: #9ca3af;
     }
 
-/* Ajuste de espaciado de letras */
 .letter-spacing-1 {
     letter-spacing: 1px;
 }
 
 .btn-confirmar-utc {
-    background-color: #312783 !important; /* Azul UTC */
+    background-color: #312783 !important; 
     color: #ffffff !important;
     border: 1px solid #241d66 !important;
-    border-radius: 50rem !important; /* Redondeado tipo píldora */
+    border-radius: 50rem !important;
     padding: 6px 16px !important;
     font-size: 0.85rem !important;
     font-weight: 600 !important;
     text-decoration: none !important;
-    display: inline-flex !important; /* Alinea icono y texto */
+    display: inline-flex !important; 
     align-items: center !important;
-    gap: 8px !important; /* Espacio entre icono y texto */
+    gap: 8px !important;
     transition: all 0.2s ease-in-out;
     box-shadow: 0 2px 4px rgba(49, 39, 131, 0.2);
     cursor: pointer;
 }
 
     .btn-confirmar-utc:hover {
-        background-color: #241d66 !important; /* Azul más oscuro al pasar mouse */
+        background-color: #241d66 !important;
         transform: translateY(-1px);
         box-shadow: 0 4px 8px rgba(49, 39, 131, 0.3);
         color: #ffffff !important;
