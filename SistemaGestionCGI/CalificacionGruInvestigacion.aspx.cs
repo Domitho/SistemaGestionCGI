@@ -34,6 +34,7 @@ namespace SistemaGestionCGI
 
             CargarCombos();
             CargarGrilla();
+            CargarMetricas();
 
             if (Session["TempMsg"] != null)
             {
@@ -192,7 +193,9 @@ namespace SistemaGestionCGI
                         </div>
                     </div>
                     <div class='text-end mt-2'>
-                        <small class='text-muted fst-italic'>* Normativa vigente del año <b>{anio}</b></small>
+                        <small class='text-muted fst-italic'>
+                            * Vigencia: <b>{metricas.fechaInicio:dd/MM/yyyy}</b> al <b>{metricas.fechaFin:dd/MM/yyyy}</b>
+                        </small>
                     </div>";
             }
             else
@@ -420,9 +423,6 @@ namespace SistemaGestionCGI
             }
         }
 
-        // =============================================
-        // GESTIÓN DE MÉTRICAS (CONFIGURACIÓN)
-        // =============================================
 
         protected void btnGuardarMetricas_Click(object sender, EventArgs e)
         {
@@ -439,9 +439,11 @@ namespace SistemaGestionCGI
 
                 if (minEmer >= minCons)
                 {
-                    Msg("Error Lógico: El mínimo para EMERGENTE debe ser menor que el de CONSOLIDADO.", "ww");
+                    Msg("Error lógico: el mínimo para EMERGENTE debe ser menor que el de CONSOLIDADO.", "ww");
                     return;
                 }
+
+                bool estabaEditando = ViewState["MetricaEnEdicion"] != null;
 
                 var m = new InvgccMetricas
                 {
@@ -452,19 +454,36 @@ namespace SistemaGestionCGI
 
                 _manejador.GuardarMetrica(m);
 
-                if (ddlAnioMetricaSeleccion.SelectedValue == m.anio.ToString())
+                ViewState["MetricaEnEdicion"] = null;
+
+                CargarCombos();
+                CargarMetricas();
+                MostrarListadoMetricas();
+
+                if (ddlAnioMetricaSeleccion.Items.FindByValue(m.anio.ToString()) != null &&
+                    ddlAnioMetricaSeleccion.SelectedValue == m.anio.ToString())
                 {
                     ActualizarMetricaVisual();
                 }
 
-                Redireccionar($"Métricas {m.anio} actualizadas correctamente.", "ss");
+                ScriptManager.RegisterStartupScript(
+                    this,
+                    GetType(),
+                    "OpenModalMetricasAfterSave",
+                    "AbrirModalMetricas();",
+                    true
+                );
+
+                Msg(estabaEditando
+                    ? $"Métrica del año {m.anio} actualizada correctamente."
+                    : $"Métrica del año {m.anio} registrada correctamente.", "ss");
             }
-            catch (Exception ex) { Msg("Error al guardar métrica: " + ex.Message, "ee"); }
+            catch (Exception ex)
+            {
+                Msg("Error al guardar métrica: " + ex.Message, "ee");
+            }
         }
 
-        // =============================================
-        // UTILIDADES Y AYUDAS
-        // =============================================
 
         private void VisualizarArchivo(string rutaVirtual)
         {
@@ -697,6 +716,165 @@ namespace SistemaGestionCGI
                 Msg("Error al cargar historial: " + ex.Message, "ee");
             }
         }
+
+        // METRICAS
+
+        private void CargarMetricas()
+        {
+            try
+            {
+                rptMetricas.DataSource = _manejador.ObtenerMetricas();
+                rptMetricas.DataBind();
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al cargar métricas: " + ex.Message, "ee");
+            }
+        }
+
+        protected void rptMetricas_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            try
+            {
+                int anio = Convert.ToInt32(e.CommandArgument);
+
+                if (e.CommandName == "EditarMetrica")
+                {
+                    var metrica = _manejador.ObtenerMetricaPorAnio(anio);
+
+                    if (metrica == null)
+                    {
+                        Msg("No se encontró la métrica seleccionada.", "ww");
+                        return;
+                    }
+
+                    ddlAnioMetricas.SelectedValue = metrica.anio.ToString();
+                    txtMinConsolidado.Text = metrica.minConsolidado.ToString();
+                    txtMinEmergente.Text = metrica.minEmergente.ToString();
+
+                    ViewState["MetricaEnEdicion"] = metrica.anio;
+
+                    MostrarFormularioMetricas();
+
+                    ScriptManager.RegisterStartupScript(
+                        this,
+                        GetType(),
+                        "OpenModalMetricasEdit",
+                        "AbrirModalMetricas();",
+                        true
+                    );
+                }
+                else if (e.CommandName == "EliminarMetrica")
+                {
+                    _manejador.EliminarMetrica(anio);
+                    CargarMetricas();
+                    MostrarListadoMetricas();
+
+                    ScriptManager.RegisterStartupScript(
+                        this,
+                        GetType(),
+                        "OpenModalMetricasDelete",
+                        "AbrirModalMetricas();",
+                        true
+                    );
+
+                    Msg("Métrica eliminada correctamente.", "ss");
+                }
+            }
+            catch (Exception ex)
+            {
+                Msg("Error en operación de métricas: " + ex.Message, "ee");
+            }
+        }
+
+        private void LimpiarFormularioMetricas()
+        {
+            string currentYear = DateTime.Now.Year.ToString();
+
+            if (ddlAnioMetricas.Items.FindByValue(currentYear) != null)
+                ddlAnioMetricas.SelectedValue = currentYear;
+
+            txtMinConsolidado.Text = "";
+            txtMinEmergente.Text = "";
+            ViewState["MetricaEnEdicion"] = null;
+        }
+
+        protected void btnAbrirMetricas_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                CargarMetricas();
+                MostrarListadoMetricas();
+
+                ScriptManager.RegisterStartupScript(
+                    this,
+                    GetType(),
+                    "OpenModalMetricas",
+                    "AbrirModalMetricas();",
+                    true
+                );
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al abrir métricas: " + ex.Message, "ee");
+            }
+        }
+
+        protected void btnNuevaMetrica_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                LimpiarFormularioMetricas();
+                MostrarFormularioMetricas();
+
+                ScriptManager.RegisterStartupScript(
+                    this,
+                    GetType(),
+                    "OpenModalNuevaMetrica",
+                    "AbrirModalMetricas();",
+                    true
+                );
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al preparar nueva métrica: " + ex.Message, "ee");
+            }
+        }
+
+        protected void btnVolverListadoMetricas_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                CargarMetricas();
+                MostrarListadoMetricas();
+
+                ScriptManager.RegisterStartupScript(
+                    this,
+                    GetType(),
+                    "OpenModalVolverListado",
+                    "AbrirModalMetricas();",
+                    true
+                );
+            }
+            catch (Exception ex)
+            {
+                Msg("Error al volver al listado de métricas: " + ex.Message, "ee");
+            }
+        }
+
+        private void MostrarListadoMetricas()
+        {
+            pnlListadoMetricas.Visible = true;
+            pnlFormularioMetricas.Visible = false;
+        }
+
+        private void MostrarFormularioMetricas()
+        {
+            pnlListadoMetricas.Visible = false;
+            pnlFormularioMetricas.Visible = true;
+        }
+
+
 
     }
 }

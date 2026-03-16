@@ -52,17 +52,15 @@
 
                     </asp:LinkButton>
 
-                    <button type="button"
-                        class="btn btn-outline-secondary btn-sm rounded-pill"
-                        onclick="AbrirModalMetricas()">
-
+                    <asp:LinkButton ID="btnAbrirMetricas"
+                        runat="server"
+                        CssClass="btn btn-outline-secondary btn-sm rounded-pill"
+                        OnClick="btnAbrirMetricas_Click"
+                        CausesValidation="false">
                         <i class="fa-solid fa-sliders me-1"></i>
                         Configurar Métricas
-
-                    </button>
-
+                    </asp:LinkButton>
                 </div>
-
             </div>
         </div>
     </asp:Panel>
@@ -263,44 +261,209 @@
     </asp:Panel>
 
     <div class="modal fade" id="modalMetricas" tabindex="-1" aria-hidden="true" ClientIDMode="Static" runat="server">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content shadow-utc border-0">
-                <div class="modal-header bg-utc text-white text-center">
-                    <h5 class="modal-title w-100"><i class="fa-solid fa-sliders me-2"></i> Configurar Métricas</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Año a configurar:</label>
-                        <asp:DropDownList ID="ddlAnioMetricas" runat="server" CssClass="form-select"></asp:DropDownList>
-                    </div>
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content shadow-utc border-0 rounded-4 overflow-hidden">
 
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label text-success fw-bold">
-                                <i class="fa-solid fa-circle-check me-1"></i> Mínimo CONSOLIDADO
-                            </label>
-                            <asp:TextBox ID="txtMinConsolidado" runat="server" CssClass="form-control text-center fw-bold" TextMode="Number" placeholder="Ej: 80"></asp:TextBox>
+                <div class="modal-header bg-utc text-white border-0 py-4">
+                    <div class="w-100 text-center position-relative">
+                        <div class="mb-3">
+                            <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-white bg-opacity-10"
+                                 style="width:72px;height:72px;">
+                                <i class="fa-solid fa-sliders fa-2x text-white"></i>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-warning fw-bold">
-                                <i class="fa-solid fa-triangle-exclamation me-1"></i> Mínimo EMERGENTE
-                            </label>
-                            <asp:TextBox ID="txtMinEmergente" runat="server" CssClass="form-control text-center fw-bold" TextMode="Number" placeholder="Ej: 60"></asp:TextBox>
-                        </div>
-                    </div>
-                    
-                    <div class="alert alert-secondary py-2 small">
-                        <i class="fa-solid fa-info-circle me-1"></i> Regla: Puntajes inferiores al mínimo emergente (o 0) serán <strong>DISUELTO</strong>.
+
+                        <h4 class="fw-bold mb-1">Gestión de Métricas de Calificación</h4>
+                        <div class="text-white-50 small">Crear y administrar periodos de evaluación</div>
+
+                        <button type="button"
+                            class="btn-close btn-close-white position-absolute top-0 end-0 m-2"
+                            data-bs-dismiss="modal"
+                            aria-label="Close">
+                        </button>
                     </div>
                 </div>
-                <div class="modal-footer justify-content-center">
-                    <asp:LinkButton ID="btnGuardarMetricas" runat="server" 
-                        CssClass="btn btn-primary btn-pill px-4" 
-                        OnClientClick="return ValidarMetricas();"
-                        OnClick="btnGuardarMetricas_Click">
-                        Guardar Configuración
-                    </asp:LinkButton>
+
+                <div class="modal-body bg-light p-4">
+
+                    <%-- PANEL LISTADO --%>
+                    <asp:Panel ID="pnlListadoMetricas" runat="server" Visible="true">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap mb-3 gap-2">
+                            <div>
+                                <h5 class="fw-bold text-secondary mb-1">Periodos registrados</h5>
+                                <div class="text-muted">Administre las métricas de calificación disponibles.</div>
+                            </div>
+
+                            <asp:LinkButton
+                                ID="btnNuevaMetrica"
+                                runat="server"
+                                CssClass="btn btn-primary btn-pill px-4"
+                                OnClick="btnNuevaMetrica_Click"
+                                CausesValidation="false">
+                                <i class="fa-solid fa-plus me-2"></i> Nueva métrica
+                            </asp:LinkButton>
+                        </div>
+
+                        <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card-header bg-white border-0 fw-bold text-secondary rounded-top-4 py-3">
+                                Listado de métricas configuradas
+                            </div>
+
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-bordered text-center align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Año</th>
+                                                <th>Periodo</th>
+                                                <th>Inicio</th>
+                                                <th>Fin</th>
+                                                <th>Consolidado</th>
+                                                <th>Emergente</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <asp:Repeater ID="rptMetricas" runat="server" OnItemCommand="rptMetricas_ItemCommand">
+                                                <ItemTemplate>
+                                                    <tr>
+                                                        <td>
+                                                            <span class="badge bg-primary fs-6">
+                                                                <%# Eval("anio") %>
+                                                            </span>
+                                                        </td>
+
+                                                        <td class="fw-bold text-dark">
+                                                            <%# Convert.ToDateTime(Eval("fechaInicio")).ToString("dd/MM/yyyy") %>
+                                                            &nbsp;-&nbsp;
+                                                            <%# Convert.ToDateTime(Eval("fechaFin")).ToString("dd/MM/yyyy") %>
+                                                        </td>
+
+                                                        <td>
+                                                            <%# Convert.ToDateTime(Eval("fechaInicio")).ToString("dd/MM/yyyy") %>
+                                                        </td>
+
+                                                        <td>
+                                                            <%# Convert.ToDateTime(Eval("fechaFin")).ToString("dd/MM/yyyy") %>
+                                                        </td>
+
+                                                        <td>
+                                                            <span class="badge bg-success fs-6">
+                                                                <%# Eval("minConsolidado") %>
+                                                            </span>
+                                                        </td>
+
+                                                        <td>
+                                                            <span class="badge bg-warning text-dark fs-6">
+                                                                <%# Eval("minEmergente") %>
+                                                            </span>
+                                                        </td>
+
+                                                        <td>
+                                                            <asp:LinkButton
+                                                                ID="btnEditarMetrica"
+                                                                runat="server"
+                                                                CommandName="EditarMetrica"
+                                                                CommandArgument='<%# Eval("anio") %>'
+                                                                CssClass="btn btn-warning btn-sm rounded-circle me-1 text-dark"
+                                                                ToolTip="Editar">
+                                                                <i class="fa-solid fa-pen"></i>
+                                                            </asp:LinkButton>
+
+                                                            <asp:LinkButton
+                                                                ID="btnEliminarMetrica"
+                                                                runat="server"
+                                                                CommandName="EliminarMetrica"
+                                                                CommandArgument='<%# Eval("anio") %>'
+                                                                CssClass="btn btn-danger btn-sm rounded-circle"
+                                                                ToolTip="Eliminar"
+                                                                OnClientClick="return confirmarEliminar(this, '¿Eliminar esta métrica? Esta acción no se puede deshacer.');">
+                                                                <i class="fa-solid fa-trash"></i>
+                                                            </asp:LinkButton>
+                                                        </td>
+                                                    </tr>
+                                                </ItemTemplate>
+                                            </asp:Repeater>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </asp:Panel>
+
+                    <%-- PANEL FORMULARIO --%>
+                    <asp:Panel ID="pnlFormularioMetricas" runat="server" Visible="false">
+                        <div class="bg-white rounded-4 shadow-sm border p-4">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap mb-3 gap-2">
+                                <h5 class="fw-bold text-primary mb-0">
+                                    <i class="fa-solid fa-pen-to-square me-2"></i>
+                                    Configurar métrica
+                                </h5>
+
+                                <asp:LinkButton ID="btnVolverListadoMetricas"
+                                    runat="server"
+                                    CssClass="btn btn-outline-secondary btn-pill px-4"
+                                    OnClick="btnVolverListadoMetricas_Click"
+                                    CausesValidation="false">
+                                    <i class="fa-solid fa-arrow-left me-2"></i> Volver al listado
+                                </asp:LinkButton>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Año</label>
+                                    <asp:DropDownList ID="ddlAnioMetricas" runat="server" CssClass="form-select"></asp:DropDownList>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold text-success">
+                                        <i class="fa-solid fa-circle-check me-1"></i> Mínimo CONSOLIDADO
+                                    </label>
+                                    <asp:TextBox ID="txtMinConsolidado" runat="server" CssClass="form-control text-center fw-bold" TextMode="Number" placeholder="Ej: 80"></asp:TextBox>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold text-warning">
+                                        <i class="fa-solid fa-triangle-exclamation me-1"></i> Mínimo EMERGENTE
+                                    </label>
+                                    <asp:TextBox ID="txtMinEmergente" runat="server" CssClass="form-control text-center fw-bold" TextMode="Number" placeholder="Ej: 60"></asp:TextBox>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="alert alert-secondary py-3 small mb-0 rounded-3">
+                                        <i class="fa-solid fa-info-circle me-1"></i>
+                                        El periodo se genera automáticamente según el año seleccionado:
+                                        <strong>12/12/(año-1)</strong> al <strong>12/12/(año)</strong>.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-center gap-3 mt-4">
+                                <asp:LinkButton ID="btnGuardarMetricas" runat="server"
+                                    CssClass="btn btn-primary btn-pill px-5"
+                                    OnClientClick="return ValidarMetricas();"
+                                    OnClick="btnGuardarMetricas_Click">
+                                    <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Métrica
+                                </asp:LinkButton>
+
+                                <asp:LinkButton ID="btnCancelarMetricas"
+                                    runat="server"
+                                    CssClass="btn btn-outline-secondary btn-pill px-4"
+                                    OnClick="btnVolverListadoMetricas_Click"
+                                    CausesValidation="false">
+                                    <i class="fa-solid fa-ban me-2"></i> Cancelar
+                                </asp:LinkButton>
+                            </div>
+                        </div>
+                    </asp:Panel>
+
+                </div>
+
+                <div class="modal-footer bg-light border-0 justify-content-center pb-4">
+                    <div class="small text-muted text-center">
+                        <i class="fa-solid fa-circle-info me-1"></i>
+                        Las métricas se aplican automáticamente según el periodo configurado.
+                    </div>
                 </div>
             </div>
         </div>

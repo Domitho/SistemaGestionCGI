@@ -131,17 +131,30 @@ namespace SistemaGestionCGI.BLL
 
         public InvgccMetricas ObtenerConfiguracionMetricas(int anio)
         {
-            string sql = $"SELECT anio, minConsolidado, minEmergente FROM INVGCC_METRICAS WHERE anio = {anio}";
+            string sql = $@"
+                SELECT anio, minConsolidado, minEmergente, fechaInicio, fechaFin
+                FROM INVGCC_METRICAS
+                WHERE anio = {anio}";
 
             var res = _dal.SelectSql<InvgccMetricas>(sql)?.FirstOrDefault();
 
             if (res != null) return res;
 
-            return new InvgccMetricas { anio = anio, minConsolidado = 80, minEmergente = 60 };
+            return new InvgccMetricas
+            {
+                anio = anio,
+                minConsolidado = 80,
+                minEmergente = 60,
+                fechaInicio = new DateTime(anio - 1, 12, 12),
+                fechaFin = new DateTime(anio, 12, 12)
+            };
         }
 
         public void GuardarMetrica(InvgccMetricas metrica)
         {
+            metrica.fechaInicio = new DateTime(metrica.anio - 1, 12, 12);
+            metrica.fechaFin = new DateTime(metrica.anio, 12, 12);
+
             string check = $"SELECT COUNT(*) as conteo FROM INVGCC_METRICAS WHERE anio = {metrica.anio}";
             var res = _dal.SelectSql<dynamic>(check)?.FirstOrDefault();
 
@@ -158,16 +171,26 @@ namespace SistemaGestionCGI.BLL
 
             if (count > 0)
             {
-                string sqlUpdate = $@"UPDATE INVGCC_METRICAS 
-                                      SET minConsolidado = {metrica.minConsolidado}, 
-                                          minEmergente = {metrica.minEmergente} 
-                                      WHERE anio = {metrica.anio}";
+                string sqlUpdate = $@"
+                    UPDATE INVGCC_METRICAS 
+                    SET minConsolidado = {metrica.minConsolidado}, 
+                        minEmergente = {metrica.minEmergente},
+                        fechaInicio = '{metrica.fechaInicio:yyyy-MM-dd}',
+                        fechaFin = '{metrica.fechaFin:yyyy-MM-dd}'
+                    WHERE anio = {metrica.anio}";
                 _dal.UpdateSql(sqlUpdate);
             }
             else
             {
-                string sqlInsert = $@"INSERT INTO INVGCC_METRICAS (anio, minConsolidado, minEmergente) 
-                                      VALUES ({metrica.anio}, {metrica.minConsolidado}, {metrica.minEmergente})";
+                string sqlInsert = $@"
+                    INSERT INTO INVGCC_METRICAS (anio, minConsolidado, minEmergente, fechaInicio, fechaFin) 
+                    VALUES (
+                        {metrica.anio},
+                        {metrica.minConsolidado},
+                        {metrica.minEmergente},
+                        '{metrica.fechaInicio:yyyy-MM-dd}',
+                        '{metrica.fechaFin:yyyy-MM-dd}'
+                    )";
                 _dal.InsertSql(sqlInsert);
             }
         }
@@ -362,6 +385,44 @@ namespace SistemaGestionCGI.BLL
                 default:
                     return $"{usuario} realizó una acción sobre la calificación del grupo {nombreGrupo}.";
             }
+        }
+
+        // METRICAS
+
+        public List<InvgccMetricas> ObtenerMetricas()
+        {
+            string sql = @"
+                SELECT 
+                    anio,
+                    minConsolidado,
+                    minEmergente,
+                    fechaInicio,
+                    fechaFin
+                FROM INVGCC_METRICAS
+                ORDER BY anio DESC";
+
+            return _dal.SelectSql<InvgccMetricas>(sql);
+        }
+
+        public InvgccMetricas ObtenerMetricaPorAnio(int anio)
+        {
+            string sql = $@"
+                SELECT 
+                    anio,
+                    minConsolidado,
+                    minEmergente,
+                    fechaInicio,
+                    fechaFin
+                FROM INVGCC_METRICAS
+                WHERE anio = {anio}";
+
+            return _dal.SelectSql<InvgccMetricas>(sql)?.FirstOrDefault();
+        }
+
+        public void EliminarMetrica(int anio)
+        {
+            string sql = $"DELETE FROM INVGCC_METRICAS WHERE anio = {anio}";
+            _dal.DeleteSql(sql);
         }
 
     }

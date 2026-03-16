@@ -69,6 +69,15 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.WebControls.LinkButton btnHistorialGlobal;
 
         /// <summary>
+        /// Control btnAbrirMetricas.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnAbrirMetricas;
+
+        /// <summary>
         /// Control pnlGrilla.
         /// </summary>
         /// <remarks>
@@ -267,6 +276,51 @@ namespace SistemaGestionCGI
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl modalMetricas;
 
         /// <summary>
+        /// Control pnlListadoMetricas.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlListadoMetricas;
+
+        /// <summary>
+        /// Control btnNuevaMetrica.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnNuevaMetrica;
+
+        /// <summary>
+        /// Control rptMetricas.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptMetricas;
+
+        /// <summary>
+        /// Control pnlFormularioMetricas.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlFormularioMetricas;
+
+        /// <summary>
+        /// Control btnVolverListadoMetricas.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnVolverListadoMetricas;
+
+        /// <summary>
         /// Control ddlAnioMetricas.
         /// </summary>
         /// <remarks>
@@ -301,6 +355,15 @@ namespace SistemaGestionCGI
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnGuardarMetricas;
+
+        /// <summary>
+        /// Control btnCancelarMetricas.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnCancelarMetricas;
 
         /// <summary>
         /// Control iconInforme.
