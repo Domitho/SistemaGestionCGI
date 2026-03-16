@@ -112,6 +112,8 @@
     <Content Include="CalificacionGruInvestigacion.aspx" />
     <Content Include="CategorizacionDocentes.aspx" />
     <Content Include="CentrosInvestigacion.aspx" />
+    <Content Include="CertificadoGrupo.aspx" />
+    <Content Include="Certificados.aspx" />
     <Content Include="Contact.aspx" />
     <Content Include="Content\bootstrap-theme.css" />
     <Content Include="Content\bootstrap-theme.min.css" />
@@ -215,6 +217,7 @@
     <Compile Include="BLL\ManejadorCalificacionGrupo.cs" />
     <Compile Include="BLL\ManejadorCategorizacionDocentes.cs" />
     <Compile Include="BLL\ManejadorCentroInvestigacion.cs" />
+    <Compile Include="BLL\ManejadorCertificados.cs" />
     <Compile Include="BLL\ManejadorConvocatorias.cs" />
     <Compile Include="BLL\ManejadorDashboard.cs" />
     <Compile Include="BLL\ManejadorEjecucionProyectos.cs" />
@@ -242,6 +245,20 @@
     </Compile>
     <Compile Include="CentrosInvestigacion.aspx.designer.cs">
       <DependentUpon>CentrosInvestigacion.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="CertificadoGrupo.aspx.cs">
+      <DependentUpon>CertificadoGrupo.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CertificadoGrupo.aspx.designer.cs">
+      <DependentUpon>CertificadoGrupo.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Certificados.aspx.cs">
+      <DependentUpon>Certificados.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Certificados.aspx.designer.cs">
+      <DependentUpon>Certificados.aspx</DependentUpon>
     </Compile>
     <Compile Include="Contact.aspx.cs">
       <DependentUpon>Contact.aspx</DependentUpon>
@@ -309,7 +326,9 @@
     <Compile Include="InscripcionProyectos.aspx.designer.cs">
       <DependentUpon>InscripcionProyectos.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Models\CertificadoGrupoDTO.cs" />
     <Compile Include="Models\DocenteDetalleDTO.cs" />
+    <Compile Include="Models\HistorialIntegranteDTO.cs" />
     <Compile Include="Models\InvgccCalificacionGrupo.cs" />
     <Compile Include="Models\InvgccCalificacionGrupoHistorico.cs" />
     <Compile Include="Models\InvgccCarreras.cs" />

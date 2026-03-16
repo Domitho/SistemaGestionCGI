@@ -42,14 +42,11 @@
 
     <script>
         function confirmarEliminar(source, mensaje) {
-            // Si ya confirmamos, dejamos que el postback ocurra
             if (source.dataset.confirmed === "true") return true;
 
-            // Bloqueamos el postback nativo
             if (event.preventDefault) event.preventDefault();
             else event.returnValue = false;
 
-            // SweetAlert
             Swal.fire({
                 title: '<span style="color:#312783">¿Está seguro?</span>',
                 html: mensaje || "Esta acción eliminará el registro permanentemente.",
@@ -68,18 +65,15 @@
                 if (result.isConfirmed) {
                     source.dataset.confirmed = "true";
 
-                    // Simula el postback que antes hacía WebForms automáticamente
                     if (source.tagName.toLowerCase() === 'a' && source.href) {
-                        // Para HyperLink
                         source.click();
                     } else if (source.tagName.toLowerCase() === 'button' || source.tagName.toLowerCase() === 'input') {
-                        // Para LinkButton
                         __doPostBack(source.id, '');
                     }
                 }
             });
 
-            return false; // Evita postback hasta que se confirme
+            return false; 
         }
 
         function confirmarRestaurar(source, mensaje) {
@@ -212,6 +206,7 @@
                                         <li><hr class="dropdown-divider" /></li>
                                         <li><a class="dropdown-item" href="CalificacionGruInvestigacion.aspx" id="lnkMenuCalificacion" runat="server"><i class="fa-solid fa-star text-warning"></i> Calificación Grupos</a></li>
                                         <li><a class="dropdown-item" href="CategorizacionDocentes.aspx" id="lnkMenuCategorizacion" runat="server"><i class="fa-solid fa-id-card text-primary"></i> Categorización Docentes</a></li>
+                                        <li><a class="dropdown-item" href="Certificados.aspx" runat="server"><i class="fa-solid fa-id-card text-primary"></i> Certificados</a></li>
                                     </ul>
                                 </li>
 

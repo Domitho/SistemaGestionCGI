@@ -11,10 +11,6 @@ namespace SistemaGestionCGI.BLL
     {
         private readonly ConnectionSqlServer _dal = ConnectionSqlServer.Instance;
 
-        // =============================================================
-        // 1. GESTIÓN DE CONVOCATORIAS
-        // =============================================================
-
         public List<InvgccConvocatoriaGruInvestigacion> ObtenerConvocatorias()
         {
             string sql = "SELECT * FROM INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION ORDER BY dtFechaini_conv DESC";
@@ -66,10 +62,6 @@ namespace SistemaGestionCGI.BLL
 
         public void EliminarConvocatoria(string id) =>
             _dal.Delete("INVGCCCONVOCATORIA_GRUPOS_INVESTIGACION", $"strId_conv = '{id}'");
-
-        // =============================================================
-        // 2. UTILIDADES (Generador de IDs)
-        // =============================================================
 
         private string GenerarCodigoAlfanumerico(string tabla, string campoId, string prefijo)
         {

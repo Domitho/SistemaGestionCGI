@@ -43,10 +43,6 @@ namespace SistemaGestionCGI
             }
         }
 
-        // =============================================
-        // CARGA DE DATOS 
-        // =============================================
-
         private void CargarGrilla()
         {
             try
@@ -117,10 +113,6 @@ namespace SistemaGestionCGI
             }
             catch (Exception ex) { Msg("Error al cargar grupos: " + ex.Message, "ee"); }
         }
-
-        // =============================================
-        // EVENTOS DE INTERFAZ
-        // =============================================
 
         protected void ddlFiltroAnio_SelectedIndexChanged(object sender, EventArgs e)
         {
