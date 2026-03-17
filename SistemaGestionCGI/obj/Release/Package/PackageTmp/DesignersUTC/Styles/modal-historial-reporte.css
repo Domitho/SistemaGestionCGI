@@ -1,16 +1,8 @@
-﻿/* =============================================================
-   ESTILOS UNIFICADOS: MODALES, HISTORIAL Y REPORTES UTC
-   ARCHIVO: modal-historial-reporte.css
-   ============================================================= */
-
-/* -------------------------------------------------------------
-   1. AJUSTES GENERALES Y MODALES
-   ------------------------------------------------------------- */
+﻿
 .form-stack {
     max-width: 100% !important;
 }
 
-/* Cabecera del Modal con Degradado Institucional */
 .modal-header.bg-utc {
     background: linear-gradient(90deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%) !important;
     color: #fff !important;
@@ -32,9 +24,6 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
 }
 
-/* -------------------------------------------------------------
-   2. TABLA DE HISTORIAL (ESTILO GRID DENTRO DEL MODAL)
-   ------------------------------------------------------------- */
 .table-historial-utc {
     border-collapse: separate;
     border-spacing: 0;
@@ -53,7 +42,7 @@
     }
 
     .table-historial-utc tbody tr:hover {
-        background-color: rgba(0, 56, 118, 0.05) !important; /* Azul muy tenue al pasar mouse */
+        background-color: rgba(0, 56, 118, 0.05) !important; 
     }
 
     .table-historial-utc td {
@@ -63,7 +52,6 @@
         font-size: 0.9rem;
     }
 
-/* Badges (Etiquetas) Personalizados para la Tabla */
 .badge-historial {
     background-color: var(--utc-azul-oscuro, #002a5c) !important;
     font-weight: normal;
@@ -73,20 +61,19 @@
 }
 
 .badge-baja {
-    background-color: #dc3545 !important; /* Rojo */
+    background-color: #dc3545 !important;
     font-weight: normal;
     font-size: 0.75rem;
     padding: 6px 12px;
 }
 
 .badge-alta, .badge-success {
-    background-color: #198754 !important; /* Verde */
+    background-color: #198754 !important;
     font-weight: normal;
     font-size: 0.75rem;
     padding: 6px 12px;
 }
 
-/* Imagen de avatar en tablas (para módulo Grupos) */
 .img-avatar-table {
     width: 40px;
     height: 40px;
@@ -96,9 +83,6 @@
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* -------------------------------------------------------------
-   3. HOJA DE REPORTE (VISTA PREVIA / PAPEL)
-   ------------------------------------------------------------- */
 .report-paper {
     background: #ffffff;
     padding: 40px 50px;
@@ -110,7 +94,6 @@
     overflow: hidden;
 }
 
-/* Banner Superior Azul (Hero) */
 .header-hero-banner {
     background: linear-gradient(90deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%) !important;
     color: white !important;
@@ -126,11 +109,10 @@
         height: 80px;
         width: auto;
         object-fit: contain;
-        filter: brightness(0) invert(1); /* Vuelve el logo blanco */
+        filter: brightness(0) invert(1); 
         opacity: 0.95;
     }
 
-/* Sección Título y Metadatos */
 .header-info-split {
     display: flex;
     justify-content: space-between;
@@ -198,14 +180,11 @@
 }
 
 .ref-highlight {
-    color: #dc3545; /* Rojo para el ID */
+    color: #dc3545;
     font-family: 'Consolas', 'Courier New', monospace;
     font-size: 1.1rem;
 }
 
-/* -------------------------------------------------------------
-   4. TARJETA DE INFORMACIÓN (DATOS DEL DOCENTE/INTEGRANTE)
-   ------------------------------------------------------------- */
 .researcher-card {
     background-color: #f8faff;
     border: 1px solid #e1e8f0;
@@ -221,7 +200,7 @@
     display: flex;
     justify-content: space-between;
     margin-bottom: 15px;
-    flex-wrap: wrap; /* Permite que baje si no hay espacio */
+    flex-wrap: wrap;
 }
 
     .card-row:last-child {
@@ -230,7 +209,7 @@
 
 .card-item {
     flex: 1;
-    min-width: 150px; /* Evita que se aplasten */
+    min-width: 150px;
     padding-right: 10px;
 }
 
@@ -249,9 +228,6 @@
         color: var(--utc-azul-oscuro, #002a5c);
     }
 
-/* -------------------------------------------------------------
-   5. LÍNEA DE TIEMPO (TIMELINE)
-   ------------------------------------------------------------- */
 .timeline-container {
     padding: 0 10px;
 }
@@ -289,10 +265,9 @@
     position: relative;
     padding-left: 60px;
     margin-bottom: 30px;
-    page-break-inside: avoid; /* Evita que se corte al imprimir */
+    page-break-inside: avoid; 
 }
 
-/* Punto marcador */
 .timeline-marker {
     position: absolute;
     left: 18px;
@@ -333,7 +308,6 @@
     margin-left: 2px;
 }
 
-/* Badges dentro del Timeline */
 .action-badge {
     display: inline-block;
     padding: 4px 10px;
@@ -373,9 +347,6 @@
     gap: 5px;
 }
 
-/* -------------------------------------------------------------
-   6. PIE DE PÁGINA LEGAL
-   ------------------------------------------------------------- */
 .report-legal-footer {
     margin-top: 60px;
     padding-top: 20px;
@@ -386,21 +357,15 @@
     text-transform: uppercase;
 }
 
-/* -------------------------------------------------------------
-   7. MEDIA QUERY PARA IMPRESIÓN (CTRL + P)
-   ------------------------------------------------------------- */
 @media print {
-    /* Ocultar todo lo que no sea el reporte */
     body * {
         visibility: hidden;
     }
 
-    /* Mostrar solo el área de impresión */
     #arealmpresion, #areaImpresion, #arealmpresion *, #areaImpresion * {
         visibility: visible;
     }
 
-    /* Posicionar el reporte en la esquina superior */
     #arealmpresion, #areaImpresion {
         position: absolute;
         left: 0;
@@ -412,13 +377,11 @@
         box-shadow: none;
     }
 
-    /* Ajustar márgenes negativos para llenar el papel */
     .header-hero-banner {
         margin: -20px -20px 30px -20px;
         width: calc(100% + 40px);
     }
 
-    /* Ocultar elementos de UI del modal */
     .btn-close, .modal-header, .modal-footer, button, .no-print {
         display: none !important;
     }

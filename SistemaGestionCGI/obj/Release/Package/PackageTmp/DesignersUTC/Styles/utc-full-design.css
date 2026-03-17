@@ -1,35 +1,21 @@
-﻿/* =======================================================
-   🎓 UTC ESTILO INSTITUCIONAL - FULL DESIGN
-   Archivo: utc-full-design.css
-   Descripción: Estilos globales, layout, navbar y componentes base.
-   ======================================================= */
-
-/* ============================
-   1. VARIABLES GLOBALES
-   ============================ */
+﻿
 :root {
-    /* COLORES PRINCIPALES */
     --utc-azul: #312783;
-    --utc-azul-oscuro: #241d66; /* Azul Institucional Oscuro (Usado en Navbar) */
-    /* COLORES DE ESTADO */
+    --utc-azul-oscuro: #241d66; 
     --utc-verde: #1b9e4b;
     --utc-rojo: #d9534f;
     --utc-celeste-info: #00b4ff;
     --utc-celeste: #4BA3F7;
-    /* FONDOS */
     --utc-bg-light: #f8f9fa;
     --utc-gris-claro: #f5f6fa;
 }
 
-/* ============================
-   2. ESTRUCTURA GLOBAL Y BODY
-   ============================ */
 body {
     font-family: 'Varela Round', sans-serif !important;
-    font-size: 0.85rem !important; /* Aprox 13.6px */
+    font-size: 0.85rem !important; 
     line-height: 1.5;
     background-color: var(--utc-gris-claro) !important;
-    color: #495057; /* Gris oscuro suave */
+    color: #495057; 
     margin: 0 !important;
     padding: 0 !important;
 }
@@ -47,9 +33,6 @@ body {
     padding-right: 1rem;
 }
 
-/* ============================
-   3. TIPOGRAFÍA Y TÍTULOS
-   ============================ */
 h1, h2, h3, h4, h5, h6, .utc-title, .utc-subtitle {
     font-weight: 700 !important;
     letter-spacing: 0.5px;
@@ -81,9 +64,6 @@ h5, .h5 {
     font-size: 1.05rem !important;
 }
 
-/* ============================
-   4. CONTROLES DE FORMULARIO
-   ============================ */
 .form-control, .form-select, .btn {
     font-size: 0.85rem !important;
     border-radius: 8px !important;
@@ -106,9 +86,6 @@ h5, .h5 {
     margin-bottom: 0.3rem;
 }
 
-/* ============================
-   5. BOTONES
-   ============================ */
 .btn-pill {
     border-radius: 50rem !important;
     padding: 8px 20px !important;
@@ -161,7 +138,6 @@ h5, .h5 {
     color: #fff !important;
 }
 
-/* Botones de Acción (Iconos Circulares) */
 .btn-ver, .btn-eliminar, .btn-warning.btn-sm, .btn-primary.btn-sm, .rounded-circle {
     width: 32px;
     height: 32px;
@@ -193,9 +169,6 @@ h5, .h5 {
         background-color: #b52a36 !important;
     }
 
-/* ============================
-   6. PANELES Y TARJETAS
-   ============================ */
 .form-stack {
     background-color: #fff !important;
     border-radius: 12px !important;
@@ -227,9 +200,6 @@ h5, .h5 {
     border: 1px solid rgba(49, 39, 131, 0.18) !important;
 }
 
-/* ============================
-   7. TABLAS
-   ============================ */
 .table-utc, table.dataTable {
     border: 1px solid #e0e0e0 !important;
     border-radius: 10px;
@@ -262,10 +232,6 @@ h5, .h5 {
         cursor: pointer;
     }
 
-/* ============================
-   8. HEADER Y NAVBAR (#241D66)
-   ============================ */
-/* Header Institucional (Degradado) */
 .utc-header {
     background: linear-gradient(90deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%) !important;
     color: #fff !important;
@@ -274,19 +240,16 @@ h5, .h5 {
     padding: 15px 25px !important;
 }
 
-/* Barra de Navegación */
 .utc-navbar {
-    background-color: #241D66 !important; /* Color Navy Solicitado */
+    background-color: #241D66 !important;
     padding-top: 0.3rem !important;
     padding-bottom: 0.3rem !important;
-    /* Línea blanca semitransparente superior */
     border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
     border-radius: 0 0 12px 12px !important;
     font-size: 0.85rem;
 }
 
-    /* Enlaces del Menú */
     .utc-navbar .nav-link {
         color: rgba(255, 255, 255, 0.9) !important;
         font-weight: 600;
@@ -296,7 +259,6 @@ h5, .h5 {
         transition: all 0.25s ease-in-out;
     }
 
-        /* Efecto Hover */
         .utc-navbar .nav-link:hover,
         .utc-navbar .nav-link.active {
             background-color: rgba(255, 255, 255, 0.15) !important;
@@ -305,10 +267,9 @@ h5, .h5 {
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
-        /* Iconos del Menú */
         .utc-navbar .nav-link i {
             transition: transform 0.3s ease;
-            color: #4ba3f7; /* Celeste UTC */
+            color: #4ba3f7; 
             margin-right: 6px;
         }
 
@@ -317,7 +278,6 @@ h5, .h5 {
             color: #fff;
         }
 
-/* Toggler Móvil (Color blanco) */
 .navbar-toggler-icon {
     filter: invert(1);
 }
@@ -326,10 +286,9 @@ h5, .h5 {
     border-color: rgba(255,255,255,0.3) !important;
 }
 
-/* Menús Desplegables (Dropdowns) */
 .dropdown-menu.shadow-utc {
     border: none !important;
-    border-top: 3px solid var(--utc-verde) !important; /* Línea Institucional Verde */
+    border-top: 3px solid var(--utc-verde) !important;
     border-radius: 0 0 8px 8px !important;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2) !important;
     margin-top: 0px !important;
@@ -373,18 +332,13 @@ h5, .h5 {
     }
 }
 
-
-/* === BLOQUEO Y SPINNER UTC === */
-
-/* Estado del botón cuando está cargando */
 .utc-btn-loading {
     cursor: not-allowed !important;
     opacity: 0.75;
-    pointer-events: none; /* Bloquea clics adicionales físicamente */
+    pointer-events: none;
     transition: all 0.2s ease;
 }
 
-/* Spinner animado minimalista (blanco para resaltar sobre azul/verde UTC) */
 .utc-spinner {
     display: inline-block;
     width: 1em;

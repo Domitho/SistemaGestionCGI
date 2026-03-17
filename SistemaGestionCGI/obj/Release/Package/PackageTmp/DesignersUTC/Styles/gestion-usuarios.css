@@ -1,0 +1,149 @@
+﻿.utc-modal-header {
+    background: linear-gradient(90deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%) !important;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+    padding: 1rem 1.25rem;
+}
+
+.utc-modal-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.user-card-pro {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    position: relative;
+    border: 1px solid #eef2f7;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+}
+
+    .user-card-pro:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 56, 118, 0.15);
+        border-color: var(--utc-azul);
+    }
+
+.pro-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--utc-azul) 0%, var(--utc-azul-oscuro) 100%);
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    border: 4px solid #fff;
+    box-shadow: 0 5px 15px rgba(0, 56, 118, 0.2);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+.status-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.st-active {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.st-inactive {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+.role-pill {
+    display: inline-block;
+    padding: 4px 12px;
+    background: #eef2f7;
+    color: var(--utc-azul-oscuro);
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.role-coord {
+    background: #fff3cd;
+    color: #856404;
+    border-color: #ffecb5;
+}
+
+.card-actions {
+    margin-top: auto;
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    padding-top: 15px;
+    border-top: 1px solid #f8f9fa;
+}
+
+.btn-card-action {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-card-edit {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+    border: none;
+}
+
+    .btn-card-edit:hover {
+        background-color: #e0a800 !important;
+        color: #000 !important;
+        transform: scale(1.1);
+    }
+
+.btn-card-del {
+    background-color: #fff;
+    border: 1px solid #dc3545;
+    color: #dc3545;
+}
+
+    .btn-card-del:hover {
+        background-color: #dc3545;
+        color: #fff;
+        transform: scale(1.1);
+    }

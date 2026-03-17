@@ -222,10 +222,7 @@
                 <asp:LinkButton runat="server" ID="btnVerPapelera" 
                     CssClass="btn btn-outline-danger btn-pill" 
                     OnClick="btnVerPapelera_Click"
-                    data-bs-toggle="popover" 
-                    data-bs-trigger="hover focus"
-                    title="Papelera de Integrantes" 
-                    data-bs-content="Aquí puedes consultar el historial de eliminados y <b>restaurar</b> integrantes si es necesario.">
+                    Tooltip="Ver integrantes inactivos">
                     <i class="fa-solid fa-trash-can me-2"></i> PAPELERA
                 </asp:LinkButton>
                 <asp:LinkButton runat="server" ID="btnNuevoIntegrante" CssClass="btn btn-primary btn-pill" OnClick="btnNuevoIntegrante_Click">
@@ -277,29 +274,20 @@
                                 </td>
                                 <td>
                                     <asp:LinkButton ID="btnHistorial" runat="server" CommandName="Historial" CommandArgument='<%# Eval("strId_cin") %>' 
-                                        CssClass="btn btn-info btn-sm rounded-circle me-1 text-white" 
-                                        data-bs-toggle="popover" 
-                                        data-bs-trigger="hover focus"
-                                        title="Historial" 
-                                        data-bs-content="Consulta la cronología de movimientos y cambios de este integrante.">
+                                        CssClass="btn btn-info btn-sm rounded-circle me-1 text-white"
+                                        Tooltip="Ver Historial">
                                         <i class="fa-solid fa-clock-rotate-left"></i>
                                     </asp:LinkButton>
 
                                     <asp:LinkButton ID="btnEditarInt" runat="server" CommandName="Editar" CommandArgument='<%# Eval("strId_cin") %>' 
                                         CssClass="btn btn-warning btn-sm rounded-circle me-1" 
-                                        data-bs-toggle="popover" 
-                                        data-bs-trigger="hover focus"
-                                        title="Editar Datos" 
-                                        data-bs-content="Modifica la información personal o de vinculación.">
+                                        Tooltip="Editar Integrante">
                                         <i class="fa-solid fa-pen"></i>
                                     </asp:LinkButton>
 
                                     <asp:LinkButton ID="btnEliminarInt" runat="server" CommandName="Eliminar" CommandArgument='<%# Eval("strId_cin") %>' 
                                         CssClass='<%# Convert.ToBoolean(Eval("bitActivo_cin")) ? "btn btn-outline-danger btn-sm rounded-circle" : "btn btn-outline-success btn-sm rounded-circle" %>' 
-                                        data-bs-toggle="popover" 
-                                        data-bs-trigger="hover focus"
-                                        title='<%# Convert.ToBoolean(Eval("bitActivo_cin")) ? "Dar de Baja" : "Reactivar Integrante" %>'
-                                        data-bs-content='<%# Convert.ToBoolean(Eval("bitActivo_cin")) ? "El integrante pasará a estado <b>Inactivo</b>." : "El integrante volverá a estar <b>Activo</b> en el centro." %>'>
+                                        Tooltip="Eliminar Integrante">
                                         <i class="fa-solid fa-power-off"></i>
                                     </asp:LinkButton>
                                 </td>

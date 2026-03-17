@@ -1,4 +1,4 @@
-﻿/* UTC AVATAR UPLOADER */
+﻿
 .utc-avatar-wrapper {
     position: relative;
     width: 160px;
@@ -7,7 +7,7 @@
     border-radius: 50%;
     cursor: pointer;
     background: #fff;
-    padding: 5px; /* Espacio entre borde e imagen */
+    padding: 5px;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
     border: 2px solid var(--utc-gris-claro, #e9ecef);
     transition: all 0.3s ease;
@@ -32,7 +32,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(49, 39, 131, 0.6); /* Color UTC Azul con transparencia */
+    background: rgba(49, 39, 131, 0.6); 
     border-radius: 50%;
     display: flex;
     justify-content: center;

@@ -40,11 +40,11 @@
 }
 
 .file-card:hover .file-icon-box {
-    background-color: #eef1ff; /* Azul muy suave al pasar el mouse */
+    background-color: #eef1ff; 
 }
 
 .modal-header-utc {
-    background: linear-gradient(90deg, #312783 0%, #241d66 100%); /* Gradiente Institucional */
+    background: linear-gradient(90deg, #312783 0%, #241d66 100%);
     color: white;
 }
 

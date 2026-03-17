@@ -1,8 +1,4 @@
-﻿// ==========================================
-// UTILIDADES DE VALIDACIÓN (SISTEMA UTC)
-// ==========================================
-
-// Función auxiliar para mostrar errores
+﻿
 function mostrarError(campoId, mensaje) {
     if (typeof toastify === 'function') {
         toastify('ww', mensaje, 'Sistema');
@@ -19,27 +15,19 @@ function mostrarError(campoId, mensaje) {
     }
 }
 
-// Validador de Email
 function esEmailValido(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-/**
- * VALIDADOR DE CÉDULA ECUATORIANA (ALGORITMO MÓDULO 10)
- */
 function esCedulaValida(cedula) {
-    // 1. Validar que sean solo números y longitud 10
     if (cedula.length !== 10 || isNaN(cedula)) return false;
 
-    // 2. Validar Código de Provincia (01-24) y casos especiales (30)
     var provincia = parseInt(cedula.substring(0, 2), 10);
     if (provincia < 1 || (provincia > 24 && provincia !== 30)) return false;
 
-    // 3. Validar Tercer Dígito (Personas naturales: 0-5)
     var tercerDigito = parseInt(cedula.substring(2, 3), 10);
     if (tercerDigito >= 6) return false;
 
-    // 4. Algoritmo verificador
     var coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2];
     var verificador = parseInt(cedula.substring(9, 10), 10);
     var suma = 0;
@@ -54,9 +42,6 @@ function esCedulaValida(cedula) {
     return verificador === digitoCalculado;
 }
 
-// ==========================================
-// 1. VALIDACIÓN DE GRUPO
-// ==========================================
 function ValidarFormularioGrupo() {
     var idCentro = '<%= ddlCentro.ClientID %>';
     var idNombre = '<%= txtNombreGru.ClientID %>';
@@ -90,9 +75,6 @@ function ValidarFormularioGrupo() {
     return true;
 }
 
-// ==========================================
-// 2. VALIDACIÓN DE INTEGRANTE (ACTUALIZADA)
-// ==========================================
 function ValidarFormularioIntegrante() {
     var idCedula = '<%= txtCedulaInt.ClientID %>';
     var idNombres = '<%= txtNombresInt.ClientID %>';
@@ -103,7 +85,6 @@ function ValidarFormularioIntegrante() {
     var idFacultad = '<%= ddlFacultadInt.ClientID %>';
     var idEntidad = '<%= txtEntidadInt.ClientID %>';
 
-    // --- VALIDACIÓN DE CÉDULA ECUATORIANA ---
     var valCedula = document.getElementById(idCedula).value.trim();
     if (!esCedulaValida(valCedula)) {
         mostrarError(idCedula, 'La cédula ingresada es incorrecta o no es válida en Ecuador.');
@@ -148,13 +129,9 @@ function ValidarFormularioIntegrante() {
     return true;
 }
 
-// ==========================================
-// 3. VALIDACIÓN DE COORDINADOR (MODAL)
-// ==========================================
 function ValidarModalCoordinador() {
     var ddlTipo = document.getElementById('<%= ddlTipoCoord.ClientID %>');
 
-    // Si es búsqueda por docente, validamos que se haya cargado un nombre
     if (ddlTipo.value === 'Docente') {
         var nombreCargado = document.getElementById('<%= txtNombreCoord.ClientID %>').value;
         if (nombreCargado === "") {
@@ -164,7 +141,6 @@ function ValidarModalCoordinador() {
         }
     }
     else {
-        // Si es Interno o Externo manual, validamos la cédula también
         var idCedulaCoord = '<%= txtCedulaCoord.ClientID %>';
         var cedulaCoord = document.getElementById(idCedulaCoord).value.trim();
 

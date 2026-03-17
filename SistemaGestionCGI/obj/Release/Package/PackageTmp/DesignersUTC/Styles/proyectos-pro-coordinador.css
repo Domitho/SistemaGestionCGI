@@ -1,10 +1,4 @@
-﻿/* =====================================================
-   MODULO: ProyectosAprobadosCoordinadores
-   CSS institucional (sin degradados, cards blancos)
-   ===================================================== */
-
-/* Variables */
-:root {
+﻿:root {
     --utc-azul: #312783;
     --utc-border: rgba(49, 39, 131, 0.18);
     --utc-border-soft: rgba(0, 0, 0, 0.08);
@@ -12,9 +6,6 @@
     --utc-shadow-hover: 0 18px 40px rgba(15, 23, 42, 0.14);
 }
 
-/* =====================================================
-   HEADER
-   ===================================================== */
 .utc-hero {
     border-radius: 1.25rem;
     background: #ffffff;
@@ -35,9 +26,6 @@
     color: var(--utc-azul);
 }
 
-/* =====================================================
-   TARJETAS PROYECTO
-   ===================================================== */
 .project-card {
     border-radius: 1.25rem !important;
     border: 1px solid var(--utc-border) !important;
@@ -92,9 +80,6 @@
     line-height: 1.2;
 }
 
-/* =====================================================
-   METRICAS
-   ===================================================== */
 .metric-row {
     padding: 0 1.25rem 1rem 1.25rem;
 }
@@ -134,9 +119,6 @@
     align-items: center;
 }
 
-/* =====================================================
-   DETALLE INFORMATIVO (solo lectura)
-   ===================================================== */
 .project-detail {
     padding: 0 1.25rem 1rem 1.25rem;
     display: grid;
@@ -188,9 +170,6 @@
         text-align: right;
     }
 
-/* =====================================================
-   ACCIONES (únicas)
-   ===================================================== */
 .project-actions {
     padding: 1rem 1.25rem 1.25rem 1.25rem;
     border-top: 1px solid var(--utc-border-soft);
@@ -199,7 +178,6 @@
     margin-top: auto;
 }
 
-/* Botones */
 .btn-pill {
     border-radius: 999px !important;
     height: 44px !important;
@@ -223,9 +201,6 @@
         box-shadow: none !important;
     }
 
-/* =====================================================
-   MODO UNICO PROYECTO (layout)
-   ===================================================== */
 .single-project-layout {
     justify-content: center !important;
 }
@@ -253,18 +228,12 @@
     }
 }
 
-/* =====================================================
-   PANEL EQUIPO (NO CARD)
-   ===================================================== */
 #tablaMiembros th,
 #tablaMiembros td {
     vertical-align: middle !important;
     white-space: normal !important;
 }
 
-/* =====================================================
-   MODALES
-   ===================================================== */
 .modal-utc-shell {
     border-radius: 1.35rem !important;
     overflow: hidden;
@@ -317,9 +286,6 @@
     background-color: transparent !important;
 }
 
-/* =====================================================
-   DOC TILES
-   ===================================================== */
 .doc-tile {
     border-radius: 1.15rem;
     border: 1px solid var(--utc-border-soft);
@@ -363,9 +329,6 @@
     color: rgba(15, 23, 42, 0.55);
 }
 
-/* =====================================================
-   Z-INDEX MODALES (Generador)
-   ===================================================== */
 .modal-backdrop {
     z-index: 1040 !important;
 }
