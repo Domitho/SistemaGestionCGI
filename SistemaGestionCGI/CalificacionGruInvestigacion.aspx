@@ -173,7 +173,7 @@
                 </div>
 
                 <div class="col-12 mt-4">
-                    <label class="form-label fw-bold mb-2">1. Informe de Evaluación (PDF) <span class="text-danger">*</span></label>
+                    <label class="form-label fw-bold mb-2">1. Documentacion de Resolucion <span class="text-danger">*</span></label>
                  
                     <div id="pnlInfoEvaluacion" runat="server" class="d-flex align-items-center justify-content-between p-3 border rounded shadow-sm bg-white" visible="false">
                         <div class="d-flex align-items-center">
@@ -215,7 +215,7 @@
                 </div>
 
                 <div class="col-12 mt-3" id="contenedorResolucionTotal" runat="server" visible="false">
-                    <label class="form-label fw-bold mb-2 text-success">2. Documento de Resolución (PDF)</label>
+                    <label class="form-label fw-bold mb-2 text-success">2. Documento de Dictamen </label>
                  
                     <div id="pnlInfoResolucion" runat="server" class="d-flex align-items-center justify-content-between p-3 border rounded shadow-sm bg-white" visible="false">
                         <div class="d-flex align-items-center">
