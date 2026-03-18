@@ -19,9 +19,18 @@ namespace SistemaGestionCGI.Settings
 
         private string CreateConnectionString()
         {
-            return ConfigurationManager
-                   .ConnectionStrings["ConexionUTC"]
-                   .ConnectionString;
+            string connConfig = ConfigurationManager.ConnectionStrings["ConexionUTC"]?.ConnectionString;
+
+            if (!string.IsNullOrEmpty(connConfig))
+            {
+                return connConfig;
+            }
+
+            string baseConn = @"server=DESKTOP-A925LIU\SQLEXPRESS2019;database=INVESTIGACION;INTEGRATED SECURITY=true";
+
+            return (string.IsNullOrEmpty(Server) || string.IsNullOrEmpty(Database))
+                ? baseConn
+                : string.Format("server={0};database={1};INTEGRATED SECURITY=true", Server, Database);
         }
 
 
