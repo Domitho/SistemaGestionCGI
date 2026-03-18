@@ -81,12 +81,18 @@
                             <tr>
                                 <td><%# Eval("strId_valo") %></td>
                                 <td class="text-start fw-bold text-primary"><%# Eval("NombreGrupo") %></td>
-                                <td><span class="badge bg-secondary fs-6"><%# Eval("intPuntaje_valo") %></span></td>
+                                <td>
+                                    <%# Eval("intPuntaje_valo") == DBNull.Value || Eval("intPuntaje_valo") == null
+                                        ? "<span class='badge bg-light text-dark border fs-6'>POR DESIGNAR</span>"
+                                        : "<span class='badge bg-secondary fs-6'>" + Eval("intPuntaje_valo") + "</span>"
+                                    %>
+                                </td>
                                 <td>
                                     <%# 
                                         Eval("strCategoria_valo").ToString() == "CONSOLIDADO" ? "<span class='badge bg-success'>CONSOLIDADO</span>" : 
                                         (Eval("strCategoria_valo").ToString() == "EMERGENTE" ? "<span class='badge bg-warning text-dark'>EMERGENTE</span>" : 
-                                        "<span class='badge bg-danger'>DISUELTO</span>")
+                                        (Eval("strCategoria_valo").ToString() == "PENDIENTE" ? "<span class='badge bg-secondary'>PENDIENTE</span>" : 
+                                        "<span class='badge bg-danger'>DISUELTO</span>"))
                                     %>
                                 </td>
                                 <td><%# Eval("intAnioMetrica") %></td>
